@@ -9,6 +9,7 @@ import { useTheme } from "next-themes";
 import type { BlockNoteEditor, PartialBlock } from "@blocknote/core";
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/shadcn";
+import { schema, type AnvilSchema } from "@/components/editor/math-blocks";
 import { DocumentTitle } from "@/components/editor/document-title";
 import { AutosaveIndicator } from "@/components/editor/autosave-indicator";
 import { useDocumentStore } from "@/lib/stores/document-store";
@@ -18,12 +19,18 @@ import { useSettingsStore } from "@/lib/stores/settings-store";
 // title) never reach BlockNoteView. Re-rendering the editor mid IME
 // composition makes ProseMirror re-sync the DOM and duplicates the text being
 // composed (e.g. Bopomofo "你好" turning into "你你好").
+type AnvilEditorInstance = BlockNoteEditor<
+  AnvilSchema["blockSchema"],
+  AnvilSchema["inlineContentSchema"],
+  AnvilSchema["styleSchema"]
+>;
+
 const EditorSurface = memo(function EditorSurface({
   editor,
   theme,
   onChange,
 }: {
-  editor: BlockNoteEditor;
+  editor: AnvilEditorInstance;
   theme: "dark" | "light";
   onChange: () => void;
 }) {
@@ -45,14 +52,19 @@ export function AnvilEditor({ documentId }: { documentId: string }) {
   );
 
   // Snapshot the initial content once; the editor is uncontrolled afterwards.
-  const initialContent = useMemo<PartialBlock[] | undefined>(() => {
+  type AnvilPartialBlock = PartialBlock<
+    AnvilSchema["blockSchema"],
+    AnvilSchema["inlineContentSchema"],
+    AnvilSchema["styleSchema"]
+  >;
+  const initialContent = useMemo<AnvilPartialBlock[] | undefined>(() => {
     const blocks = useDocumentStore.getState().getDocument(documentId)?.blocks;
     return blocks && blocks.length > 0
-      ? (blocks as PartialBlock[])
+      ? (blocks as AnvilPartialBlock[])
       : undefined;
   }, [documentId]);
 
-  const bnEditor = useCreateBlockNote({ initialContent }, [documentId]);
+  const bnEditor = useCreateBlockNote({ schema, initialContent }, [documentId]);
 
   // True while an IME composition is in progress on the editor surface.
   const composingRef = useRef(false);
