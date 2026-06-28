@@ -1,0 +1,228 @@
+{
+  "app": {
+    "name": "AnvilNote",
+    "tagline": "Forge beautiful notes."
+  },
+  "nav": {
+    "newDocument": "New document",
+    "search": "Search",
+    "documents": "Documents",
+    "templates": "Templates",
+    "recent": "Recent",
+    "settings": "Settings"
+  },
+  "topbar": {
+    "search": "Search or run a command",
+    "export": "Export PDF",
+    "togglePanel": "Toggle panel",
+    "openMenu": "Open menu"
+  },
+  "common": {
+    "open": "Open",
+    "rename": "Rename",
+    "duplicate": "Duplicate",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "none": "None",
+    "optional": "Optional",
+    "required": "Required"
+  },
+  "editor": {
+    "untitled": "Untitled Lecture",
+    "titlePlaceholder": "Untitled document",
+    "writePlaceholder": "Start writing, or press \"/\" for commands",
+    "emptyTitle": "Nothing here yet",
+    "emptyDescription": "Select a document from the sidebar or create a new one to begin writing.",
+    "createDocument": "Create document",
+    "autosave": {
+      "saved": "Saved",
+      "saving": "Saving…",
+      "unsaved": "Unsaved"
+    }
+  },
+  "documents": {
+    "title": "Documents",
+    "subtitle": "All of your notes and handouts, synced through the API.",
+    "empty": "No documents yet.",
+    "emptyHint": "Create your first document to get started.",
+    "newDocument": "New document",
+    "count": "{count, plural, =0 {No documents} =1 {1 document} other {# documents}}",
+    "lastEdited": "Edited {date}",
+    "untitled": "Untitled document",
+    "deleteTitle": "Delete document",
+    "deleteDescription": "This will permanently remove \"{title}\". This cannot be undone.",
+    "templateLabel": "Template"
+  },
+  "templates": {
+    "title": "Templates",
+    "subtitle": "Choose a starting structure. Switching keeps your content.",
+    "current": "Current template",
+    "use": "Use template",
+    "inUse": "In use",
+    "categories": {
+      "note": "Note",
+      "lecture": "Lecture",
+      "academic": "Academic",
+      "teaching": "Teaching"
+    },
+    "items": {
+      "plain-note": {
+        "name": "Plain Note",
+        "description": "A clean page with no metadata. Just write."
+      },
+      "lecture-note": {
+        "name": "Lecture Note",
+        "description": "Capture a lecture with course, lecturer and date."
+      },
+      "academic-handout": {
+        "name": "Academic Handout",
+        "description": "A formal handout with author, institution and abstract."
+      },
+      "problem-set": {
+        "name": "Problem Set",
+        "description": "Structured problems with due date and solution toggle."
+      },
+      "reading-note": {
+        "name": "Reading Note",
+        "description": "Notes on a source with author, pages and a verdict."
+      }
+    },
+    "fields": {
+      "course": "Course",
+      "lecturer": "Lecturer",
+      "date": "Date",
+      "topic": "Topic",
+      "author": "Author",
+      "institution": "Institution",
+      "level": "Level",
+      "abstract": "Abstract",
+      "draft": "Mark as draft",
+      "instructor": "Instructor",
+      "dueDate": "Due date",
+      "difficulty": "Difficulty",
+      "showSolutions": "Show solutions",
+      "source": "Source",
+      "pages": "Pages",
+      "recommended": "Recommended"
+    },
+    "placeholders": {
+      "course": "e.g. Real Analysis",
+      "lecturer": "e.g. Dr. Lin",
+      "date": "",
+      "topic": "e.g. Compactness",
+      "author": "e.g. Anthony Sung",
+      "institution": "e.g. National Taiwan University",
+      "abstract": "A short summary",
+      "instructor": "e.g. Prof. Chen",
+      "dueDate": "",
+      "source": "e.g. Rudin, Principles of Mathematical Analysis",
+      "pages": "e.g. 12–34"
+    },
+    "options": {
+      "undergraduate": "Undergraduate",
+      "graduate": "Graduate",
+      "seminar": "Seminar",
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    }
+  },
+  "panel": {
+    "outline": "Outline",
+    "metadata": "Metadata",
+    "template": "Template",
+    "export": "Export",
+    "outlineEmpty": "Headings will appear here as you write.",
+    "outlineDocument": "Document",
+    "metadataEmpty": "This template has no metadata fields.",
+    "metadataHint": "Fields come from the selected template. Optional fields can stay empty."
+  },
+  "export": {
+    "title": "Export",
+    "subtitle": "Preview the export payload and render the current document to PDF.",
+    "template": "Template",
+    "pageSize": "Page size",
+    "fontPreset": "Font preset",
+    "includeMetadata": "Include metadata",
+    "fonts": {
+      "sans": "Sans",
+      "serif": "Serif",
+      "mono": "Mono"
+    },
+    "button": "Export PDF",
+    "exporting": "Preparing export…",
+    "payloadTitle": "Export payload",
+    "payloadHint": "This is the JSON that will be sent to the renderer."
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Preferences are stored locally on this device.",
+    "appearance": {
+      "title": "Appearance",
+      "description": "AnvilNote uses a single, focused visual mode.",
+      "theme": "Theme",
+      "themeHint": "Switch between light and dark, or follow the system.",
+      "themeLight": "Light",
+      "themeDark": "Dark",
+      "themeSystem": "System",
+      "mode": "Design mode",
+      "monochrome": "Monochrome"
+    },
+    "language": {
+      "title": "Language",
+      "description": "Choose the interface language.",
+      "label": "Interface language"
+    },
+    "editor": {
+      "title": "Editor",
+      "description": "Tune the writing experience.",
+      "autosave": "Autosave",
+      "autosaveHint": "Automatically save changes while you write.",
+      "spellcheck": "Spell check",
+      "spellcheckHint": "Underline possible spelling mistakes."
+    },
+    "export": {
+      "title": "Export defaults",
+      "description": "Defaults applied when exporting a document.",
+      "pageSize": "Default page size",
+      "fontPreset": "Default font preset",
+      "includeMetadata": "Include metadata by default"
+    }
+  },
+  "command": {
+    "placeholder": "Type a command or search…",
+    "empty": "No results found.",
+    "groups": {
+      "actions": "Actions",
+      "navigation": "Navigation",
+      "language": "Language"
+    },
+    "newDocument": "Create new document",
+    "goDocuments": "Go to documents",
+    "goTemplates": "Go to templates",
+    "goSettings": "Go to settings",
+    "export": "Export current document",
+    "switchLocale": "Switch language to {locale}"
+  },
+  "locale": {
+    "label": "Language",
+    "en": "English",
+    "zh-TW": "繁體中文"
+  },
+  "toast": {
+    "documentCreated": "Document created",
+    "documentDeleted": "Document deleted",
+    "documentRenamed": "Document renamed",
+    "documentSaved": "Document saved",
+    "templateSwitched": "Switched to {name}",
+    "exportMocked": "Export is mocked — the renderer is not connected yet.",
+    "exportReady": "PDF export is ready.",
+    "noDocument": "Open a document first.",
+    "saveFailed": "Could not save the document.",
+    "renderFailed": "Could not render the PDF.",
+    "settingsSaved": "Preferences saved",
+    "localeSwitched": "Language updated"
+  }
+}

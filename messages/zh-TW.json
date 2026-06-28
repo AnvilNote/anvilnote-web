@@ -1,0 +1,228 @@
+{
+  "app": {
+    "name": "AnvilNote",
+    "tagline": "鍛造優雅筆記。"
+  },
+  "nav": {
+    "newDocument": "新增文件",
+    "search": "搜尋",
+    "documents": "文件",
+    "templates": "範本",
+    "recent": "最近",
+    "settings": "設定"
+  },
+  "topbar": {
+    "search": "搜尋或執行指令",
+    "export": "匯出 PDF",
+    "togglePanel": "切換面板",
+    "openMenu": "開啟選單"
+  },
+  "common": {
+    "open": "開啟",
+    "rename": "重新命名",
+    "duplicate": "複製",
+    "delete": "刪除",
+    "cancel": "取消",
+    "save": "儲存",
+    "close": "關閉",
+    "none": "無",
+    "optional": "選填",
+    "required": "必填"
+  },
+  "editor": {
+    "untitled": "未命名講義",
+    "titlePlaceholder": "未命名文件",
+    "writePlaceholder": "開始書寫，或按「/」叫出指令",
+    "emptyTitle": "這裡還是空的",
+    "emptyDescription": "從側邊欄選擇文件，或建立新文件以開始書寫。",
+    "createDocument": "建立文件",
+    "autosave": {
+      "saved": "已儲存",
+      "saving": "儲存中…",
+      "unsaved": "未儲存"
+    }
+  },
+  "documents": {
+    "title": "文件",
+    "subtitle": "你所有的筆記與講義，都會透過 API 同步。",
+    "empty": "尚無文件。",
+    "emptyHint": "建立你的第一份文件以開始。",
+    "newDocument": "新增文件",
+    "count": "{count, plural, =0 {沒有文件} other {# 份文件}}",
+    "lastEdited": "編輯於 {date}",
+    "untitled": "未命名文件",
+    "deleteTitle": "刪除文件",
+    "deleteDescription": "這將永久移除「{title}」，且無法復原。",
+    "templateLabel": "範本"
+  },
+  "templates": {
+    "title": "範本",
+    "subtitle": "選擇起始結構。切換範本不會影響內容。",
+    "current": "目前範本",
+    "use": "使用範本",
+    "inUse": "使用中",
+    "categories": {
+      "note": "筆記",
+      "lecture": "講義",
+      "academic": "學術",
+      "teaching": "教學"
+    },
+    "items": {
+      "plain-note": {
+        "name": "純文件",
+        "description": "乾淨的頁面，沒有任何欄位，專心書寫。"
+      },
+      "lecture-note": {
+        "name": "課堂講義",
+        "description": "以課程、講者與日期記錄一堂課。"
+      },
+      "academic-handout": {
+        "name": "學術講義",
+        "description": "正式講義，含作者、機構與摘要。"
+      },
+      "problem-set": {
+        "name": "習題集",
+        "description": "結構化題目，含繳交日期與解答開關。"
+      },
+      "reading-note": {
+        "name": "閱讀筆記",
+        "description": "針對來源的筆記，含作者、頁數與評價。"
+      }
+    },
+    "fields": {
+      "course": "課程",
+      "lecturer": "講者",
+      "date": "日期",
+      "topic": "主題",
+      "author": "作者",
+      "institution": "機構",
+      "level": "層級",
+      "abstract": "摘要",
+      "draft": "標記為草稿",
+      "instructor": "授課教師",
+      "dueDate": "繳交日期",
+      "difficulty": "難度",
+      "showSolutions": "顯示解答",
+      "source": "來源",
+      "pages": "頁數",
+      "recommended": "推薦"
+    },
+    "placeholders": {
+      "course": "例如：實分析",
+      "lecturer": "例如：林博士",
+      "date": "",
+      "topic": "例如：緊緻性",
+      "author": "例如：宋品越",
+      "institution": "例如：國立臺灣大學",
+      "abstract": "簡短摘要",
+      "instructor": "例如：陳教授",
+      "dueDate": "",
+      "source": "例如：Rudin《數學分析原理》",
+      "pages": "例如：12–34"
+    },
+    "options": {
+      "undergraduate": "大學部",
+      "graduate": "研究所",
+      "seminar": "專題討論",
+      "easy": "簡單",
+      "medium": "中等",
+      "hard": "困難"
+    }
+  },
+  "panel": {
+    "outline": "大綱",
+    "metadata": "欄位",
+    "template": "範本",
+    "export": "匯出",
+    "outlineEmpty": "書寫時，標題會顯示在這裡。",
+    "outlineDocument": "文件",
+    "metadataEmpty": "此範本沒有任何欄位。",
+    "metadataHint": "欄位來自所選範本，選填欄位可留空。"
+  },
+  "export": {
+    "title": "匯出",
+    "subtitle": "預覽匯出內容，並將目前文件轉換為 PDF。",
+    "template": "範本",
+    "pageSize": "頁面尺寸",
+    "fontPreset": "字體預設",
+    "includeMetadata": "包含欄位資料",
+    "fonts": {
+      "sans": "無襯線",
+      "serif": "襯線",
+      "mono": "等寬"
+    },
+    "button": "匯出 PDF",
+    "exporting": "正在準備匯出…",
+    "payloadTitle": "匯出內容",
+    "payloadHint": "這是將傳送至轉換服務的 JSON。"
+  },
+  "settings": {
+    "title": "設定",
+    "subtitle": "偏好設定儲存於此裝置本機。",
+    "appearance": {
+      "title": "外觀",
+      "description": "AnvilNote 採用單一、專注的視覺風格。",
+      "theme": "主題",
+      "themeHint": "在淺色與深色之間切換，或跟隨系統設定。",
+      "themeLight": "淺色",
+      "themeDark": "深色",
+      "themeSystem": "系統",
+      "mode": "設計模式",
+      "monochrome": "黑白單色"
+    },
+    "language": {
+      "title": "語言",
+      "description": "選擇介面語言。",
+      "label": "介面語言"
+    },
+    "editor": {
+      "title": "編輯器",
+      "description": "調整書寫體驗。",
+      "autosave": "自動儲存",
+      "autosaveHint": "書寫時自動儲存變更。",
+      "spellcheck": "拼字檢查",
+      "spellcheckHint": "在可能的拼字錯誤下方標示底線。"
+    },
+    "export": {
+      "title": "匯出預設值",
+      "description": "匯出文件時套用的預設值。",
+      "pageSize": "預設頁面尺寸",
+      "fontPreset": "預設字體",
+      "includeMetadata": "預設包含欄位資料"
+    }
+  },
+  "command": {
+    "placeholder": "輸入指令或搜尋…",
+    "empty": "找不到結果。",
+    "groups": {
+      "actions": "動作",
+      "navigation": "導覽",
+      "language": "語言"
+    },
+    "newDocument": "建立新文件",
+    "goDocuments": "前往文件",
+    "goTemplates": "前往範本",
+    "goSettings": "前往設定",
+    "export": "匯出目前文件",
+    "switchLocale": "切換語言為 {locale}"
+  },
+  "locale": {
+    "label": "語言",
+    "en": "English",
+    "zh-TW": "繁體中文"
+  },
+  "toast": {
+    "documentCreated": "已建立文件",
+    "documentDeleted": "已刪除文件",
+    "documentRenamed": "已重新命名文件",
+    "documentSaved": "已儲存文件",
+    "templateSwitched": "已切換至 {name}",
+    "exportMocked": "匯出為模擬狀態——轉換服務尚未連接。",
+    "exportReady": "PDF 已產生。",
+    "noDocument": "請先開啟一份文件。",
+    "saveFailed": "無法儲存文件。",
+    "renderFailed": "無法轉換 PDF。",
+    "settingsSaved": "已儲存偏好設定",
+    "localeSwitched": "已更新語言"
+  }
+}
