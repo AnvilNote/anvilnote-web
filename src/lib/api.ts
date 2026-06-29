@@ -9,7 +9,25 @@ import type { AnvilDocument, AnvilMetadataValue } from "@/types/document";
 import type { AnvilTemplate } from "@/types/template";
 import type { ExportPayload } from "@/types/export";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+// Build-time default. In the desktop shell the API port is chosen at launch and
+// surfaced at runtime via the preload bridge (window.anvilnote.getApiBaseUrl()),
+// so resolveApiBaseUrl() prefers that when present.
+const BUILD_TIME_API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+declare global {
+  interface Window {
+    anvilnote?: { getApiBaseUrl?: () => string | null };
+  }
+}
+
+function resolveApiBaseUrl(): string {
+  if (typeof window !== "undefined") {
+    const bridged = window.anvilnote?.getApiBaseUrl?.();
+    if (bridged) return bridged;
+  }
+  return BUILD_TIME_API_BASE_URL;
+}
 
 type ApiDocument = {
   id: string;
@@ -41,7 +59,7 @@ type ApiRenderResponse = {
 };
 
 function apiUrl(pathname: string) {
-  return `${API_BASE_URL}${pathname}`;
+  return `${resolveApiBaseUrl()}${pathname}`;
 }
 
 async function requestJson<T>(pathname: string, init?: RequestInit): Promise<T> {
@@ -101,7 +119,7 @@ function fromApiTemplate(template: ApiTemplate): AnvilTemplate {
 }
 
 export function getApiBaseUrl() {
-  return API_BASE_URL;
+  return resolveApiBaseUrl();
 }
 
 export async function listDocuments() {
