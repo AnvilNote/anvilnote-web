@@ -84,3 +84,55 @@ export function extractOutline(content: JSONContent | undefined): OutlineItem[] 
   walk(content);
   return items;
 }
+
+function clampHeadingLevel(level: number) {
+  return Math.min(Math.max(level, 1), 6);
+}
+
+// Some older documents use H2/H3 as their top-level structure. Templates like
+// `bananote` then render those as `0.1`, `0.2`, ... because Typst treats the
+// missing H1 slot as zero. For export we normalize the whole document so the
+// shallowest heading becomes H1 while preserving relative nesting.
+export function normalizeHeadingLevels(content: JSONContent): JSONContent {
+  let minLevel = Number.POSITIVE_INFINITY;
+
+  const collect = (node: JSONContent) => {
+    if (node.type === "heading") {
+      const level =
+        typeof node.attrs?.level === "number" ? node.attrs.level : 1;
+      minLevel = Math.min(minLevel, level);
+    }
+    if (Array.isArray(node.content)) {
+      node.content.forEach(collect);
+    }
+  };
+
+  collect(content);
+
+  if (!Number.isFinite(minLevel) || minLevel <= 1) {
+    return content;
+  }
+
+  const shift = minLevel - 1;
+
+  const rewrite = (node: JSONContent): JSONContent => {
+    const next: JSONContent = {
+      ...node,
+      attrs:
+        node.type === "heading"
+          ? {
+              ...(node.attrs ?? {}),
+              level: clampHeadingLevel(
+                (typeof node.attrs?.level === "number" ? node.attrs.level : 1) - shift,
+              ),
+            }
+          : node.attrs,
+      content: Array.isArray(node.content)
+        ? node.content.map((child) => rewrite(child as JSONContent))
+        : node.content,
+    };
+    return next;
+  };
+
+  return rewrite(content);
+}

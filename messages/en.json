@@ -127,7 +127,8 @@
     },
     "table": {
       "figure": "Table",
-      "captionPlaceholder": "Enter a table caption"
+      "captionPlaceholder": "Enter a table caption",
+      "pickSize": "Choose table size"
     },
     "math": {
       "editTitle": "Edit equation",
@@ -244,7 +245,12 @@
       "tocDepth": "Contents depth",
       "paperSize": "Paper size",
       "lang": "Language",
-      "colorlinks": "Colored links"
+      "colorlinks": "Colored links",
+      "primaryLang": "Primary language",
+      "titleFont": "Title font",
+      "bodyFont": "Body font",
+      "dateFont": "Date font",
+      "mathMode": "Math font"
     },
     "placeholders": {
       "course": "e.g. Real Analysis",
@@ -269,7 +275,18 @@
       "a4": "A4",
       "letter": "Letter",
       "en": "English",
-      "zh": "中文"
+      "zh": "中文",
+      "ja": "Japanese",
+      "ko": "Korean",
+      "th": "Thai",
+      "taiwan-pearl": "TaiwanPearl (rounded)",
+      "source-han": "Source Han Sans",
+      "song": "MOE Song",
+      "kai": "MOE Kai",
+      "playfair": "Playfair Display",
+      "tai-heritage": "Tai Heritage Pro",
+      "default": "Default (New Computer Modern)",
+      "garamond": "Garamond (EB Garamond)"
     }
   },
   "panel": {

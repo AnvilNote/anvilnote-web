@@ -34,6 +34,7 @@ import {
   createSlashCommand,
   type SlashItem,
 } from "@/components/editor/slash-command-menu";
+import { TableSizeDialog } from "@/components/editor/table-size-picker";
 import { buildExtensions, type MathClickMode } from "@/lib/tiptap/extensions";
 import {
   insertBlockMath,
@@ -65,6 +66,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
 
   const [mathDialog, setMathDialog] = useState<MathDialogState>(CLOSED_MATH_DIALOG);
   const [linkOpen, setLinkOpen] = useState(false);
+  const [tableDialogOpen, setTableDialogOpen] = useState(false);
 
   // Snapshot the stored content once; the editor is uncontrolled afterwards so
   // store writes never feed back and disturb the cursor / IME composition.
@@ -85,6 +87,9 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
   const requestMath = useCallback((mode: MathClickMode) => {
     setMathDialog({ open: true, mode, pos: null, latex: "" });
   }, []);
+
+  // Inserting a table from the slash menu: open the size picker first.
+  const requestTable = useCallback(() => setTableDialogOpen(true), []);
 
   const extensions = useMemo(
     () =>
@@ -160,9 +165,10 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         title: tt("table"),
         icon: TableIcon,
         aliases: ["table", "grid"],
-        run: run((c) =>
-          c.insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
-        ),
+        run: ({ editor, range }) => {
+          editor.chain().focus().deleteRange(range).run();
+          requestTable();
+        },
       },
       {
         title: tt("image"),
@@ -202,7 +208,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         },
       },
     ];
-  }, [tt, requestMath]);
+  }, [tt, requestMath, requestTable]);
 
   // Keep the slash extension instance stable while letting it read the latest
   // (localized) items at trigger time through a ref updated in an effect.
@@ -333,6 +339,18 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
           if (!open) setMathDialog(CLOSED_MATH_DIALOG);
         }}
         onSave={handleMathSave}
+      />
+
+      <TableSizeDialog
+        open={tableDialogOpen}
+        onOpenChange={setTableDialogOpen}
+        onPick={(rows, cols) =>
+          editor
+            ?.chain()
+            .focus()
+            .insertTable({ rows, cols, withHeaderRow: true })
+            .run()
+        }
       />
     </div>
   );
