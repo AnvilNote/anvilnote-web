@@ -292,7 +292,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
       {/* Sticky editor header: toolbar (left) on the same line as the autosave
           indicator (right). Stays pinned to the top while the note scrolls. */}
       <div className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-        <div className="mx-auto flex w-full max-w-[820px] flex-col gap-1 px-2 py-1.5 md:px-3 lg:flex-row lg:items-center lg:gap-3 lg:px-2">
+        <div className="mx-auto flex w-full max-w-[820px] flex-col gap-1 pl-12 pr-3 py-1.5 lg:flex-row lg:items-center lg:gap-3">
           <div className="min-w-0 w-full flex-1">
             {editor ? (
               <TiptapToolbar
@@ -308,14 +308,14 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-[820px] px-2 pb-2 pt-4 md:px-3 lg:px-1 lg:pt-8">
+      <div className="mx-auto w-full max-w-[820px] pl-12 pr-3 pb-2 pt-4 lg:pt-8">
         <DocumentTitle
           value={title}
           onChange={(value) => renameDocument(documentId, value)}
         />
       </div>
 
-      <div className="anvil-editor mx-auto w-full max-w-[820px] flex-1 px-2 pb-24 md:px-3 lg:px-1 lg:pb-32">
+      <div className="anvil-editor mx-auto w-full max-w-[820px] flex-1 pl-12 pr-3 pb-24 lg:pb-32">
         {editor ? (
           <>
             <TiptapBubbleMenu
