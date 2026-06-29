@@ -1,14 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { useTranslations } from "next-intl";
-import {
-  Anvil,
-  FileText,
-  LayoutTemplate,
-  Plus,
-  Search,
-  Settings,
-} from "lucide-react";
+import { FileText, LayoutTemplate, Plus, Search, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -44,7 +38,7 @@ export function AppSidebar() {
   }
 
   async function handleNewDocument() {
-    const doc = await createDocument();
+    const doc = await createDocument(undefined, t("documents.defaultTitle"));
     closeMobile();
     router.push(`/documents/${doc.id}`);
   }
@@ -63,8 +57,23 @@ export function AppSidebar() {
           onClick={closeMobile}
           className="flex items-center gap-2 px-1 py-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
         >
-          <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Anvil className="size-4" />
+          <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-md">
+            <Image
+              src="/favicon-dark.svg"
+              alt=""
+              aria-hidden="true"
+              width={28}
+              height={28}
+              className="size-7 dark:hidden"
+            />
+            <Image
+              src="/favicon-light.svg"
+              alt=""
+              aria-hidden="true"
+              width={28}
+              height={28}
+              className="hidden size-7 dark:block"
+            />
           </span>
           <span className="text-[15px] font-semibold tracking-tight group-data-[collapsible=icon]:hidden">
             {t("app.name")}

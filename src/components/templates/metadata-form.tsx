@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +14,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDocumentStore } from "@/lib/stores/document-store";
-import { getTemplate } from "@/lib/templates/templates";
+import { useTemplatesStore } from "@/lib/stores/templates-store";
+import type { AnvilMetadataValue } from "@/types/document";
+import type { TemplateField } from "@/types/template";
+
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
 
 export function MetadataForm({ documentId }: { documentId: string }) {
   const t = useTranslations();
@@ -22,11 +29,16 @@ export function MetadataForm({ documentId }: { documentId: string }) {
     s.documents.find((d) => d.id === documentId),
   );
   const setMetadataField = useDocumentStore((s) => s.setMetadataField);
+  const setTemplateSettingField = useDocumentStore(
+    (s) => s.setTemplateSettingField,
+  );
+  const template = useTemplatesStore((s) =>
+    doc ? s.getTemplate(doc.templateId) : undefined,
+  );
 
   if (!doc) return null;
-  const template = getTemplate(doc.templateId);
 
-  if (template.fields.length === 0) {
+  if (!template || template.fields.length === 0) {
     return (
       <p className="px-1 py-2 text-sm text-muted-foreground">
         {t("panel.metadataEmpty")}
@@ -34,16 +46,37 @@ export function MetadataForm({ documentId }: { documentId: string }) {
     );
   }
 
+  // Read/write the value from the bucket the field's scope points at.
+  const readValue = (field: TemplateField): AnvilMetadataValue => {
+    const bucket = field.scope === "option" ? doc.templateSettings : doc.metadata;
+    return bucket[field.key];
+  };
+  const writeValue = (field: TemplateField, value: AnvilMetadataValue) => {
+    if (field.scope === "option") {
+      setTemplateSettingField(doc.id, field.key, value);
+    } else {
+      setMetadataField(doc.id, field.key, value);
+    }
+  };
+
+  // Localized label, falling back to the raw label if no message exists.
+  const labelFor = (field: TemplateField) =>
+    tt.has(field.label as never) ? tt(field.label as never) : field.label;
+
   return (
     <div className="space-y-5">
       <p className="text-xs text-muted-foreground">{t("panel.metadataHint")}</p>
 
       {template.fields.map((field) => {
-        const value = doc.metadata[field.key];
-        const label = tt(field.label as never);
-        const placeholder = field.placeholder
-          ? tt(field.placeholder as never)
-          : undefined;
+        const raw = readValue(field);
+        const label = labelFor(field);
+
+        const stringValue =
+          field.type === "date" && raw === "today"
+            ? todayIso()
+            : typeof raw === "string"
+              ? raw
+              : "";
 
         return (
           <div key={field.key} className="space-y-1.5">
@@ -63,9 +96,18 @@ export function MetadataForm({ documentId }: { documentId: string }) {
             {field.type === "text" && (
               <Input
                 id={`meta-${field.key}`}
-                value={typeof value === "string" ? value : ""}
-                placeholder={placeholder}
-                onChange={(e) => setMetadataField(doc.id, field.key, e.target.value)}
+                value={stringValue}
+                placeholder={field.placeholder}
+                onChange={(e) => writeValue(field, e.target.value)}
+              />
+            )}
+
+            {field.type === "textarea" && (
+              <Textarea
+                id={`meta-${field.key}`}
+                value={stringValue}
+                placeholder={field.placeholder}
+                onChange={(e) => writeValue(field, e.target.value)}
               />
             )}
 
@@ -73,15 +115,15 @@ export function MetadataForm({ documentId }: { documentId: string }) {
               <Input
                 id={`meta-${field.key}`}
                 type="date"
-                value={typeof value === "string" ? value : ""}
-                onChange={(e) => setMetadataField(doc.id, field.key, e.target.value)}
+                value={stringValue}
+                onChange={(e) => writeValue(field, e.target.value)}
               />
             )}
 
             {field.type === "select" && (
               <Select
-                value={typeof value === "string" && value ? value : undefined}
-                onValueChange={(v) => setMetadataField(doc.id, field.key, v)}
+                value={typeof raw === "string" && raw ? raw : undefined}
+                onValueChange={(v) => writeValue(field, v)}
               >
                 <SelectTrigger id={`meta-${field.key}`} className="w-full">
                   <SelectValue placeholder={t("common.none")} />
@@ -89,7 +131,9 @@ export function MetadataForm({ documentId }: { documentId: string }) {
                 <SelectContent>
                   {field.options?.map((opt) => (
                     <SelectItem key={opt} value={opt}>
-                      {tt(`options.${opt}` as never)}
+                      {tt.has(`options.${opt}` as never)
+                        ? tt(`options.${opt}` as never)
+                        : opt}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -103,10 +147,8 @@ export function MetadataForm({ documentId }: { documentId: string }) {
                 </Label>
                 <Switch
                   id={`meta-${field.key}`}
-                  checked={value === true}
-                  onCheckedChange={(checked) =>
-                    setMetadataField(doc.id, field.key, checked)
-                  }
+                  checked={raw === true}
+                  onCheckedChange={(checked) => writeValue(field, checked)}
                 />
               </div>
             )}

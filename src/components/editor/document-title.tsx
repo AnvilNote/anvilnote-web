@@ -46,7 +46,7 @@ export function DocumentTitle({
       onKeyDown={(e) => {
         if (e.key === "Enter") e.preventDefault();
       }}
-      className="w-full resize-none overflow-hidden border-0 bg-transparent p-0 font-sans text-4xl font-semibold leading-tight tracking-tight text-foreground outline-none placeholder:text-muted-foreground/50 [field-sizing:content]"
+      className="w-full resize-none overflow-hidden border-0 bg-transparent p-0 font-sans text-2xl font-semibold leading-tight tracking-tight text-foreground outline-none placeholder:text-muted-foreground/50 md:text-3xl lg:text-4xl [field-sizing:content]"
     />
   );
 }

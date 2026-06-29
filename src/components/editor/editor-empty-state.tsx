@@ -22,7 +22,7 @@ export function EditorEmptyState() {
         <Button
           className="gap-1.5"
           onClick={() => {
-            void createDocument().then((doc) => {
+            void createDocument(undefined, t("documents.defaultTitle")).then((doc) => {
             router.push(`/documents/${doc.id}`);
             toast.success(t("toast.documentCreated"));
             });

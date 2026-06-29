@@ -47,8 +47,12 @@ export function AppTopbar() {
         window.open(`${getApiBaseUrl()}${result.pdfUrl}`, "_blank", "noopener,noreferrer");
       }
       toast.success(t("toast.exportReady"));
-    } catch {
-      toast.error(t("toast.renderFailed"));
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? `${t("toast.renderFailed")}: ${error.message}`
+          : t("toast.renderFailed"),
+      );
     }
   }
 
@@ -70,23 +74,23 @@ export function AppTopbar() {
   const isRendering = documentId ? renderingById[documentId] === true : false;
 
   return (
-    <header className="sticky top-0 z-20 flex h-13 shrink-0 items-center gap-2 border-b bg-background/80 px-3 backdrop-blur">
+    <header className="sticky top-0 z-20 flex h-13 shrink-0 items-center gap-1 border-b bg-background/80 px-2 md:gap-1.5 md:px-3 backdrop-blur">
       <SidebarTrigger className="text-muted-foreground" />
-      <Separator orientation="vertical" className="mr-1 hidden h-5 sm:block" />
+      <Separator orientation="vertical" className="mr-1 hidden h-5 md:block" />
 
       <button
         type="button"
         onClick={() => setCommandOpen(true)}
-        className="flex h-8 max-w-md flex-1 items-center gap-2 rounded-lg border bg-muted/40 px-3 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg border bg-muted/40 px-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:max-w-md md:px-3"
       >
         <Search className="size-4" />
         <span className="flex-1 truncate text-left">{t("topbar.search")}</span>
-        <kbd className="pointer-events-none hidden rounded border bg-background px-1.5 font-mono text-[10px] sm:inline">
+        <kbd className="pointer-events-none hidden rounded border bg-background px-1.5 font-mono text-[10px] md:inline">
           ⌘K
         </kbd>
       </button>
 
-      <div className="ml-auto flex items-center gap-1">
+      <div className="ml-auto flex shrink-0 items-center gap-0.5 md:gap-1">
         <ThemeToggle />
         <LocaleSwitcher />
         {activeDoc ? (
@@ -94,11 +98,11 @@ export function AppTopbar() {
             onClick={() => void handleSave()}
             size="sm"
             variant="outline"
-            className="gap-1.5"
+            className="gap-1 px-2 md:gap-1.5 md:px-2.5"
             disabled={isSaving}
           >
             {isSaving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-            <span className="hidden sm:inline">{t("common.save")}</span>
+            <span className="hidden md:inline">{t("common.save")}</span>
           </Button>
         ) : null}
         {activeDoc ? (
@@ -112,9 +116,9 @@ export function AppTopbar() {
             <PanelRight className="size-4" />
           </Button>
         ) : null}
-        <Button onClick={() => void handleExport()} size="sm" className="gap-1.5" disabled={isRendering}>
+        <Button onClick={() => void handleExport()} size="sm" className="gap-1 px-2 md:gap-1.5 md:px-2.5" disabled={isRendering}>
           {isRendering ? <Loader2 className="size-4 animate-spin" /> : <FileDown className="size-4" />}
-          <span className="hidden sm:inline">{t("topbar.export")}</span>
+          <span className="hidden md:inline">{t("topbar.export")}</span>
         </Button>
       </div>
     </header>

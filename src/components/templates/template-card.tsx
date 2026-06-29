@@ -16,6 +16,7 @@ export function TemplateCard({
   onSelect: () => void;
 }) {
   const t = useTranslations("templates");
+  const tr = (key: string) => (t.has(key as never) ? t(key as never) : key);
 
   return (
     <button
@@ -28,7 +29,7 @@ export function TemplateCard({
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <span className="font-medium">{t(template.name as never)}</span>
+        <span className="font-medium">{tr(template.name)}</span>
         {selected ? (
           <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
             <Check className="size-3" />
@@ -36,11 +37,11 @@ export function TemplateCard({
         ) : null}
       </div>
       <p className="text-sm leading-relaxed text-muted-foreground">
-        {t(template.description as never)}
+        {tr(template.description)}
       </p>
       <div className="mt-1 flex items-center gap-2">
         <Badge variant="secondary" className="font-normal">
-          {t(`categories.${template.category}`)}
+          {tr(`categories.${template.category}`)}
         </Badge>
         {selected ? (
           <span className="text-xs text-muted-foreground">{t("inUse")}</span>

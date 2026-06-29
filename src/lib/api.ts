@@ -1,34 +1,42 @@
+import type { JSONContent } from "@tiptap/core";
 import { DEFAULT_TEMPLATE_ID } from "@/lib/templates/templates";
+import {
+  migratedDocIds,
+  normalizeTiptapContent,
+  toWireContent,
+} from "@/lib/tiptap/serialization";
 import type { AnvilDocument, AnvilMetadataValue } from "@/types/document";
 import type { AnvilTemplate } from "@/types/template";
-import type { ExportOptions } from "@/types/export";
+import type { ExportPayload } from "@/types/export";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
 type ApiDocument = {
   id: string;
   title: string;
-  content: unknown[];
+  content: unknown;
   metadata?: Record<string, AnvilMetadataValue>;
+  templateSettings?: Record<string, AnvilMetadataValue>;
   templateId: string | null;
   createdAt: string;
   updatedAt: string;
 };
 
+// Matches the API's template summary (renderer manifest, minus engine/fonts).
 type ApiTemplate = {
-  id: string;
+  slug: string;
   name: string;
   description: string | null;
-  config: {
-    fields?: AnvilTemplate["fields"];
-    category?: AnvilTemplate["category"];
-  } | null;
+  version?: string;
+  category?: string;
+  tags?: string[];
+  fields?: AnvilTemplate["fields"];
 };
 
 type ApiRenderResponse = {
-  jobId: string;
+  id: string;
   documentId: string;
-  status: "COMPLETED" | "FAILED" | "PROCESSING" | "QUEUED";
+  status: "COMPLETED" | "FAILED" | "PROCESSING";
   pdfUrl: string | null;
 };
 
@@ -62,14 +70,33 @@ async function requestJson<T>(pathname: string, init?: RequestInit): Promise<T> 
 }
 
 function fromApiDocument(document: ApiDocument): AnvilDocument {
+  // Stored content is Tiptap JSON. Legacy (BlockNote) content is incompatible —
+  // normalize resets it to an empty doc and flags the id so the editor can warn.
+  const { content, migrated } = normalizeTiptapContent(document.content);
+  if (migrated) {
+    migratedDocIds.add(document.id);
+  }
   return {
     id: document.id,
     title: document.title,
-    blocks: Array.isArray(document.content) ? document.content : [],
+    content,
     templateId: document.templateId ?? DEFAULT_TEMPLATE_ID,
     metadata: document.metadata ?? {},
+    templateSettings: document.templateSettings ?? {},
     createdAt: document.createdAt,
     updatedAt: document.updatedAt,
+  };
+}
+
+function fromApiTemplate(template: ApiTemplate): AnvilTemplate {
+  return {
+    id: template.slug,
+    name: template.name,
+    description: template.description ?? "",
+    version: template.version ?? "",
+    category: template.category ?? "note",
+    tags: template.tags ?? [],
+    fields: template.fields ?? [],
   };
 }
 
@@ -89,16 +116,18 @@ export async function getDocument(id: string) {
 
 export async function createDocument(input: {
   title: string;
-  content: unknown[];
+  content: JSONContent;
   metadata: Record<string, AnvilMetadataValue>;
+  templateSettings: Record<string, AnvilMetadataValue>;
   templateId: string | null;
 }) {
   const response = await requestJson<ApiDocument>("/api/documents", {
     method: "POST",
     body: JSON.stringify({
       title: input.title,
-      content: input.content,
+      content: toWireContent(input.content),
       metadata: input.metadata,
+      templateSettings: input.templateSettings,
       templateId: input.templateId,
     }),
   });
@@ -110,14 +139,21 @@ export async function updateDocument(
   id: string,
   input: Partial<{
     title: string;
-    content: unknown[];
+    content: JSONContent;
     metadata: Record<string, AnvilMetadataValue>;
+    templateSettings: Record<string, AnvilMetadataValue>;
     templateId: string | null;
   }>,
 ) {
   const response = await requestJson<ApiDocument>(`/api/documents/${id}`, {
     method: "PATCH",
-    body: JSON.stringify(input),
+    body: JSON.stringify({
+      ...input,
+      // Wrap the Tiptap doc to satisfy the API's array `content` contract.
+      ...(input.content !== undefined
+        ? { content: toWireContent(input.content) }
+        : {}),
+    }),
   });
 
   return fromApiDocument(response);
@@ -129,22 +165,19 @@ export async function deleteDocument(id: string) {
   });
 }
 
-export async function renderDocument(id: string, exportOptions: ExportOptions) {
+export async function renderDocument(id: string, payload: ExportPayload) {
   return requestJson<ApiRenderResponse>(`/api/documents/${id}/render`, {
     method: "POST",
-    body: JSON.stringify({
-      exportOptions,
-    }),
+    body: JSON.stringify(payload),
   });
 }
 
 export async function listTemplates(): Promise<AnvilTemplate[]> {
   const response = await requestJson<ApiTemplate[]>("/api/templates");
-  return response.map((template) => ({
-    id: template.id,
-    name: template.name,
-    description: template.description ?? "",
-    category: template.config?.category ?? "note",
-    fields: template.config?.fields ?? [],
-  }));
+  return response.map(fromApiTemplate);
+}
+
+export async function getTemplate(slug: string): Promise<AnvilTemplate> {
+  const response = await requestJson<ApiTemplate>(`/api/templates/${slug}`);
+  return fromApiTemplate(response);
 }

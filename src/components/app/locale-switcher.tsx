@@ -39,7 +39,7 @@ export function LocaleSwitcher() {
           aria-label={t("locale.label")}
         >
           <Languages className="size-4" />
-          <span className="hidden sm:inline">{t(`locale.${locale}` as never)}</span>
+          <span className="hidden md:inline">{t(`locale.${locale}` as never)}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">

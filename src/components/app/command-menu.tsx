@@ -11,6 +11,8 @@ import {
   Languages,
   Plus,
   Settings,
+  Sigma,
+  SquareSigma,
 } from "lucide-react";
 import {
   Command,
@@ -26,6 +28,7 @@ import { usePathname, useRouter } from "@/lib/i18n/navigation";
 import { useUiStore } from "@/lib/stores/ui-store";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useSettingsStore } from "@/lib/stores/settings-store";
+import { useEditorBridge } from "@/lib/stores/editor-bridge";
 import { getApiBaseUrl } from "@/lib/api";
 import { locales } from "@/lib/i18n/routing";
 
@@ -43,6 +46,7 @@ export function CommandMenu() {
   const renderDocument = useDocumentStore((s) => s.renderDocument);
   const documents = useDocumentStore((s) => s.documents);
   const settings = useSettingsStore();
+  const requestMath = useEditorBridge((s) => s.requestMath);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -75,11 +79,19 @@ export function CommandMenu() {
         includeMetadata: settings.exportIncludeMetadata,
       });
       if (result.pdfUrl) {
-        window.open(`${getApiBaseUrl()}${result.pdfUrl}`, "_blank", "noopener,noreferrer");
+        window.open(
+          `${getApiBaseUrl()}${result.pdfUrl}`,
+          "_blank",
+          "noopener,noreferrer",
+        );
       }
       toast.success(t("toast.exportReady"));
-    } catch {
-      toast.error(t("toast.renderFailed"));
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? `${t("toast.renderFailed")}: ${error.message}`
+          : t("toast.renderFailed"),
+      );
     }
   }
 
@@ -99,7 +111,7 @@ export function CommandMenu() {
             <CommandItem
               onSelect={() =>
                 run(() => {
-                  void createDocument().then((doc) => {
+                  void createDocument(undefined, t("documents.defaultTitle")).then((doc) => {
                     router.push(`/documents/${doc.id}`);
                     toast.success(t("toast.documentCreated"));
                   });
@@ -114,6 +126,24 @@ export function CommandMenu() {
               {t("command.export")}
             </CommandItem>
           </CommandGroup>
+
+          {requestMath ? (
+            <>
+              <CommandSeparator />
+              <CommandGroup heading={t("command.groups.editor")}>
+                <CommandItem
+                  onSelect={() => run(() => requestMath("inline"))}
+                >
+                  <Sigma className="size-4" />
+                  {t("command.insertInlineMath")}
+                </CommandItem>
+                <CommandItem onSelect={() => run(() => requestMath("block"))}>
+                  <SquareSigma className="size-4" />
+                  {t("command.insertBlockMath")}
+                </CommandItem>
+              </CommandGroup>
+            </>
+          ) : null}
 
           <CommandSeparator />
 

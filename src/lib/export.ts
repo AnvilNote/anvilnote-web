@@ -1,6 +1,8 @@
 import type { AnvilDocument } from "@/types/document";
 import type { ExportOptions, ExportPayload } from "@/types/export";
 
+// The renderer-bound payload. Content stays as Tiptap JSON and math stays as
+// LaTeX; the future anvilnote-renderer converts LaTeX → Typst on its side.
 export function buildExportPayload(
   doc: AnvilDocument,
   options: ExportOptions,
@@ -10,7 +12,10 @@ export function buildExportPayload(
     title: doc.title,
     templateId: doc.templateId,
     metadata: options.includeMetadata ? doc.metadata : {},
-    blocks: doc.blocks,
+    templateSettings: doc.templateSettings,
+    content: doc.content,
+    sourceFormat: "tiptap-json",
+    mathFormat: "latex",
     exportOptions: options,
   };
 }

@@ -1,21 +1,32 @@
-export type TemplateFieldType = "text" | "date" | "select" | "boolean";
+export type TemplateFieldType =
+  | "text"
+  | "textarea"
+  | "date"
+  | "boolean"
+  | "select";
+
+export type TemplateFieldScope = "metadata" | "option";
 
 export type TemplateField = {
   key: string;
   label: string;
   type: TemplateFieldType;
-  required: boolean;
+  // Which bucket the value belongs to: document metadata (kept across
+  // templates) or template options (bound to the current template).
+  scope: TemplateFieldScope;
+  required?: boolean;
+  default?: string | boolean;
   placeholder?: string;
-  defaultValue?: string | boolean | null;
   options?: string[];
 };
 
-export type TemplateCategory = "note" | "lecture" | "academic" | "teaching";
-
+// `id` holds the template slug (= renderer folder name = Document.templateId).
 export type AnvilTemplate = {
   id: string;
   name: string;
   description: string;
-  category: TemplateCategory;
+  version: string;
+  category: string;
+  tags: string[];
   fields: TemplateField[];
 };

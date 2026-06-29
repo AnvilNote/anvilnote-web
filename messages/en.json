@@ -40,6 +40,110 @@
       "saved": "Saved",
       "saving": "Saving…",
       "unsaved": "Unsaved"
+    },
+    "oldDocReset": "This note used the old editor and couldn't be migrated automatically — it was reset to a blank page.",
+    "block": {
+      "menu": "Block options",
+      "delete": "Delete {type}",
+      "types": {
+        "paragraph": "paragraph",
+        "heading1": "heading 1",
+        "heading2": "heading 2",
+        "heading3": "heading 3",
+        "bulletList": "bullet list",
+        "orderedList": "numbered list",
+        "blockquote": "quote",
+        "codeBlock": "code block",
+        "image": "image",
+        "table": "table",
+        "blockMath": "block equation",
+        "divider": "divider",
+        "block": "block"
+      },
+      "color": "Text color",
+      "colors": {
+        "default": "Default",
+        "gray": "Gray",
+        "red": "Red",
+        "orange": "Orange",
+        "green": "Green",
+        "blue": "Blue",
+        "purple": "Purple"
+      }
+    },
+    "toolbar": {
+      "paragraph": "Paragraph",
+      "heading1": "Heading 1",
+      "heading2": "Heading 2",
+      "heading3": "Heading 3",
+      "bold": "Bold",
+      "italic": "Italic",
+      "strike": "Strikethrough",
+      "code": "Inline code",
+      "bulletList": "Bullet list",
+      "orderedList": "Numbered list",
+      "taskList": "Task list",
+      "blockquote": "Quote",
+      "codeBlock": "Code block",
+      "link": "Link",
+      "table": "Table",
+      "image": "Image",
+      "inlineMath": "Inline math",
+      "blockMath": "Block math",
+      "undo": "Undo",
+      "redo": "Redo",
+      "linkPrompt": "Enter a URL",
+      "linkApply": "Apply link",
+      "linkRemove": "Remove link",
+      "tableNormal": "Normal table",
+      "tableThreeLine": "Three-line table",
+      "tableAlignLeft": "Align table left",
+      "tableAlignCenter": "Align table center",
+      "tableAlignRight": "Align table right"
+    },
+    "slash": {
+      "text": "Text",
+      "heading1": "Heading 1",
+      "heading2": "Heading 2",
+      "heading3": "Heading 3",
+      "bulletList": "Bullet list",
+      "orderedList": "Numbered list",
+      "taskList": "Task list",
+      "quote": "Quote",
+      "codeBlock": "Code block",
+      "table": "Table",
+      "image": "Image",
+      "inlineMath": "Inline math",
+      "inlineMathHint": "Insert inline LaTeX",
+      "blockMath": "Block math",
+      "blockMathHint": "Insert a display equation"
+    },
+    "image": {
+      "figure": "Figure",
+      "captionPlaceholder": "Enter an image caption",
+      "left": "Align left",
+      "center": "Align center",
+      "right": "Align right"
+    },
+    "table": {
+      "figure": "Table",
+      "captionPlaceholder": "Enter a table caption"
+    },
+    "math": {
+      "editTitle": "Edit equation",
+      "insertInlineTitle": "Insert inline equation",
+      "insertBlockTitle": "Insert display equation",
+      "inlineHint": "Inline math flows within the line of text.",
+      "displayHint": "Display math is centered on its own line.",
+      "source": "LaTeX source",
+      "preview": "Preview",
+      "emptyPreview": "Type LaTeX to see a preview.",
+      "invalid": "Invalid equation — check the LaTeX syntax.",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "codeBlock": {
+      "selectLanguage": "Select language"
     }
   },
   "documents": {
@@ -53,7 +157,8 @@
     "untitled": "Untitled document",
     "deleteTitle": "Delete document",
     "deleteDescription": "This will permanently remove \"{title}\". This cannot be undone.",
-    "templateLabel": "Template"
+    "templateLabel": "Template",
+    "defaultTitle": "Untitled Notes"
   },
   "templates": {
     "title": "Templates",
@@ -65,7 +170,8 @@
       "note": "Note",
       "lecture": "Lecture",
       "academic": "Academic",
-      "teaching": "Teaching"
+      "teaching": "Teaching",
+      "report": "Report"
     },
     "items": {
       "plain-note": {
@@ -87,6 +193,26 @@
       "reading-note": {
         "name": "Reading Note",
         "description": "Notes on a source with author, pages and a verdict."
+      },
+      "bananote": {
+        "name": "Bananote",
+        "description": "A playful note with a splash of color and a banana accent."
+      },
+      "bubble": {
+        "name": "Bubble",
+        "description": "Lecture slides with a course title, subtitle and accent color."
+      },
+      "flow-way": {
+        "name": "Flow Way",
+        "description": "A flowing report with subtitle and a table of contents."
+      },
+      "hetvid": {
+        "name": "Hetvid",
+        "description": "An academic paper with abstract, version and language."
+      },
+      "kunskap": {
+        "name": "Kunskap",
+        "description": "A clean course report with author, course and paper size."
       }
     },
     "fields": {
@@ -105,7 +231,20 @@
       "showSolutions": "Show solutions",
       "source": "Source",
       "pages": "Pages",
-      "recommended": "Recommended"
+      "recommended": "Recommended",
+      "title": "Title",
+      "affiliation": "Affiliation",
+      "version": "Version",
+      "bananaColor": "Banana color",
+      "subtitle": "Subtitle",
+      "year": "Year",
+      "courseName": "Course",
+      "mainColor": "Accent color",
+      "toc": "Table of contents",
+      "tocDepth": "Contents depth",
+      "paperSize": "Paper size",
+      "lang": "Language",
+      "colorlinks": "Colored links"
     },
     "placeholders": {
       "course": "e.g. Real Analysis",
@@ -126,7 +265,11 @@
       "seminar": "Seminar",
       "easy": "Easy",
       "medium": "Medium",
-      "hard": "Hard"
+      "hard": "Hard",
+      "a4": "A4",
+      "letter": "Letter",
+      "en": "English",
+      "zh": "中文"
     }
   },
   "panel": {
@@ -134,6 +277,7 @@
     "metadata": "Metadata",
     "template": "Template",
     "export": "Export",
+    "preview": "Preview",
     "outlineEmpty": "Headings will appear here as you write.",
     "outlineDocument": "Document",
     "metadataEmpty": "This template has no metadata fields.",
@@ -196,6 +340,7 @@
     "empty": "No results found.",
     "groups": {
       "actions": "Actions",
+      "editor": "Editor",
       "navigation": "Navigation",
       "language": "Language"
     },
@@ -204,7 +349,21 @@
     "goTemplates": "Go to templates",
     "goSettings": "Go to settings",
     "export": "Export current document",
+    "insertInlineMath": "Insert inline math",
+    "insertBlockMath": "Insert block math",
     "switchLocale": "Switch language to {locale}"
+  },
+  "preview": {
+    "notConnected": "Typst preview is not connected yet.",
+    "mockPage": "Page preview",
+    "pipelineTitle": "Planned preview pipeline",
+    "pipeline": {
+      "tiptap": "Tiptap JSON",
+      "ast": "AnvilNote AST",
+      "typstMath": "LaTeX math → Typst math (renderer)",
+      "typstProject": "Generated Typst project",
+      "svg": "Typst compiles to SVG pages"
+    }
   },
   "locale": {
     "label": "Language",
@@ -213,6 +372,7 @@
   },
   "toast": {
     "documentCreated": "Document created",
+    "documentCreatedFromTemplate": "Created a document from {name}",
     "documentDeleted": "Document deleted",
     "documentRenamed": "Document renamed",
     "documentSaved": "Document saved",

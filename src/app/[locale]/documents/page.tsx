@@ -6,7 +6,7 @@ import { FileText, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useRouter } from "@/lib/i18n/navigation";
 import { useDocumentStore } from "@/lib/stores/document-store";
-import { getTemplate } from "@/lib/templates/templates";
+import { useTemplatesStore } from "@/lib/stores/templates-store";
 import { DocumentActions } from "@/components/app/document-actions";
 
 export default function DocumentsPage() {
@@ -18,9 +18,10 @@ export default function DocumentsPage() {
   const documents = useDocumentStore((s) => s.documents);
   const hydrated = useDocumentStore((s) => s.hydrated);
   const createDocument = useDocumentStore((s) => s.createDocument);
+  const getTemplate = useTemplatesStore((s) => s.getTemplate);
 
   async function handleNew() {
-    const doc = await createDocument();
+    const doc = await createDocument(undefined, t("documents.defaultTitle"));
     router.push(`/documents/${doc.id}`);
     toast.success(t("toast.documentCreated"));
   }
@@ -65,6 +66,11 @@ export default function DocumentsPage() {
         <ul className="mt-4 divide-y rounded-xl border">
           {documents.map((doc) => {
             const template = getTemplate(doc.templateId);
+            const templateName = template
+              ? tt.has(template.name as never)
+                ? tt(template.name as never)
+                : template.name
+              : doc.templateId;
             return (
               <li
                 key={doc.id}
@@ -79,7 +85,7 @@ export default function DocumentsPage() {
                     {doc.title || t("documents.untitled")}
                   </p>
                   <p className="truncate text-xs text-muted-foreground">
-                    {tt(template.name as never)} ·{" "}
+                    {templateName} ·{" "}
                     {t("documents.lastEdited", {
                       date: format.dateTime(new Date(doc.updatedAt), {
                         dateStyle: "medium",

@@ -3,8 +3,8 @@
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { TemplateCard } from "@/components/templates/template-card";
-import { TEMPLATES } from "@/lib/templates/templates";
 import { useDocumentStore } from "@/lib/stores/document-store";
+import { useTemplatesStore } from "@/lib/stores/templates-store";
 
 export function TemplateSelector({ documentId }: { documentId: string }) {
   const t = useTranslations();
@@ -13,6 +13,8 @@ export function TemplateSelector({ documentId }: { documentId: string }) {
     s.documents.find((d) => d.id === documentId),
   );
   const setTemplate = useDocumentStore((s) => s.setTemplate);
+  const templates = useTemplatesStore((s) => s.templates);
+  const error = useTemplatesStore((s) => s.error);
 
   if (!doc) return null;
 
@@ -22,14 +24,20 @@ export function TemplateSelector({ documentId }: { documentId: string }) {
     toast.success(t("toast.templateSwitched", { name }));
   }
 
+  if (error) {
+    return <p className="px-1 py-2 text-sm text-destructive">{error}</p>;
+  }
+
+  const nameOf = (name: string) => (tt.has(name as never) ? tt(name as never) : name);
+
   return (
     <div className="grid gap-3">
-      {TEMPLATES.map((template) => (
+      {templates.map((template) => (
         <TemplateCard
           key={template.id}
           template={template}
           selected={template.id === doc.templateId}
-          onSelect={() => choose(template.id, tt(template.name as never))}
+          onSelect={() => choose(template.id, nameOf(template.name))}
         />
       ))}
     </div>

@@ -7,6 +7,7 @@ import { getMessages } from "next-intl/server";
 import { routing } from "@/lib/i18n/routing";
 import { StoreHydrator } from "@/components/app/store-hydrator";
 import { AppShell } from "@/components/app/app-shell";
+import { ThemeFavicon } from "@/components/app/theme-favicon";
 import { ThemeProvider } from "@/components/app/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -48,7 +49,7 @@ export default async function LocaleLayout({
         <script
           // Apply the persisted theme before first paint to avoid a flash.
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme')||'system';var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);var c=document.documentElement.classList;if(d){c.add('dark')}else{c.remove('dark')}document.documentElement.style.colorScheme=d?'dark':'light'}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('theme')||'system';var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);var c=document.documentElement.classList;var h=d?'/favicon-light.svg':'/favicon-dark.svg';var q=function(r){var l=document.querySelector("link[rel='"+r+"']");if(!l){l=document.createElement('link');l.rel=r;document.head.appendChild(l)}l.href=h;l.type='image/svg+xml'};if(d){c.add('dark')}else{c.remove('dark')}document.documentElement.style.colorScheme=d?'dark':'light';q('icon');q('shortcut icon')}catch(e){}})();`,
           }}
         />
       </head>
@@ -63,12 +64,14 @@ export default async function LocaleLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <ThemeFavicon />
             <StoreHydrator>
               <AppShell>{children}</AppShell>
             </StoreHydrator>
             <Toaster
               position="top-right"
               expand
+              closeButton
               duration={3000}
               gap={12}
               offset={{ top: "64px", right: "16px" }}

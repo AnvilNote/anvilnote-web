@@ -16,9 +16,9 @@ import {
 } from "@/components/ui/select";
 import { ExportPayloadPreview } from "@/components/export/export-payload-preview";
 import { useDocumentStore } from "@/lib/stores/document-store";
+import { useTemplatesStore } from "@/lib/stores/templates-store";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import { getApiBaseUrl } from "@/lib/api";
-import { getTemplate } from "@/lib/templates/templates";
 import { buildExportPayload } from "@/lib/export";
 import type {
   ExportFontPreset,
@@ -39,6 +39,9 @@ export function ExportPanel({ documentId }: { documentId: string }) {
   );
   const settings = useSettingsStore();
   const renderDocument = useDocumentStore((s) => s.renderDocument);
+  const template = useTemplatesStore((s) =>
+    doc ? s.getTemplate(doc.templateId) : undefined,
+  );
 
   const [pageSize, setPageSize] = useState<ExportPageSize>(settings.exportPageSize);
   const [fontPreset, setFontPreset] = useState<ExportFontPreset>(
@@ -51,17 +54,20 @@ export function ExportPanel({ documentId }: { documentId: string }) {
   const [payload, setPayload] = useState<ExportPayload | null>(null);
 
   if (!doc) return null;
-  const template = getTemplate(doc.templateId);
+
+  const templateName = template
+    ? tt.has(template.name as never)
+      ? tt(template.name as never)
+      : template.name
+    : doc.templateId;
 
   async function handleExport() {
     if (!doc) return;
     setLoading(true);
-    const built = buildExportPayload(doc, {
-      pageSize,
-      fontPreset,
-      includeMetadata,
-    });
-    setPayload(built);
+    // Reveal the renderer payload (Tiptap JSON + LaTeX math) and render to PDF.
+    setPayload(
+      buildExportPayload(doc, { pageSize, fontPreset, includeMetadata }),
+    );
     try {
       const result = await renderDocument(doc.id, {
         pageSize,
@@ -69,11 +75,19 @@ export function ExportPanel({ documentId }: { documentId: string }) {
         includeMetadata,
       });
       if (result.pdfUrl) {
-        window.open(`${getApiBaseUrl()}${result.pdfUrl}`, "_blank", "noopener,noreferrer");
+        window.open(
+          `${getApiBaseUrl()}${result.pdfUrl}`,
+          "_blank",
+          "noopener,noreferrer",
+        );
       }
       toast.success(t("toast.exportReady"));
-    } catch {
-      toast.error(t("toast.renderFailed"));
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? `${t("toast.renderFailed")}: ${error.message}`
+          : t("toast.renderFailed"),
+      );
     } finally {
       setLoading(false);
     }
@@ -86,7 +100,7 @@ export function ExportPanel({ documentId }: { documentId: string }) {
       <div className="space-y-1.5">
         <Label className="text-sm">{te("template")}</Label>
         <div className="rounded-lg border bg-muted/30 px-3 py-2 text-sm">
-          {tt(template.name as never)}
+          {templateName}
         </div>
       </div>
 
@@ -139,7 +153,11 @@ export function ExportPanel({ documentId }: { documentId: string }) {
         />
       </div>
 
-      <Button onClick={() => void handleExport()} disabled={loading} className="w-full gap-1.5">
+      <Button
+        onClick={() => void handleExport()}
+        disabled={loading}
+        className="w-full gap-1.5"
+      >
         {loading ? (
           <>
             <Loader2 className="size-4 animate-spin" />

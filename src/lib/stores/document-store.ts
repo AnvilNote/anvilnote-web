@@ -1,8 +1,11 @@
 "use client";
 
 import { create } from "zustand";
+import type { JSONContent } from "@tiptap/core";
 import type { AnvilDocument, AnvilMetadataValue } from "@/types/document";
 import type { ExportOptions } from "@/types/export";
+import { defaultTiptapContent } from "@/lib/tiptap/default-content";
+import { buildExportPayload } from "@/lib/export";
 import {
   createDocument as createDocumentRequest,
   deleteDocument as deleteDocumentRequest,
@@ -10,8 +13,13 @@ import {
   renderDocument as renderDocumentRequest,
   updateDocument as updateDocumentRequest,
 } from "@/lib/api";
-import { DEFAULT_TEMPLATE_ID, buildDefaultMetadata } from "@/lib/templates/templates";
+import {
+  DEFAULT_TEMPLATE_ID,
+  seedMetadata,
+  seedTemplateSettings,
+} from "@/lib/templates/templates";
 import { useSettingsStore } from "@/lib/stores/settings-store";
+import { useTemplatesStore } from "@/lib/stores/templates-store";
 
 const saveTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
@@ -29,8 +37,9 @@ type DocumentState = {
   duplicateDocument: (id: string) => Promise<AnvilDocument | undefined>;
   deleteDocument: (id: string) => Promise<void>;
   renameDocument: (id: string, title: string) => void;
-  setBlocks: (id: string, blocks: unknown[]) => void;
+  setContent: (id: string, content: JSONContent) => void;
   setMetadataField: (id: string, key: string, value: AnvilMetadataValue) => void;
+  setTemplateSettingField: (id: string, key: string, value: AnvilMetadataValue) => void;
   setTemplate: (id: string, templateId: string) => void;
   saveDocument: (id: string) => Promise<AnvilDocument | undefined>;
   renderDocument: (id: string, exportOptions: ExportOptions) => Promise<{ pdfUrl: string | null }>;
@@ -106,10 +115,23 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
   },
 
   createDocument: async (templateId = DEFAULT_TEMPLATE_ID, title = "Untitled Note") => {
+    const template = useTemplatesStore.getState().getTemplate(templateId);
+    const metadata = seedMetadata(template);
+    // If the template exposes a `title` metadata field, default it to the
+    // document title so a brand-new doc clears the required-title gate without
+    // forcing the user to type anything. They can still rename it afterwards.
+    if (
+      template?.fields.some(
+        (field) => field.scope === "metadata" && field.key === "title",
+      )
+    ) {
+      metadata.title = title;
+    }
     const document = await createDocumentRequest({
       title,
-      content: [],
-      metadata: buildDefaultMetadata(templateId),
+      content: structuredClone(defaultTiptapContent),
+      metadata,
+      templateSettings: seedTemplateSettings(template),
       templateId,
     });
 
@@ -133,8 +155,9 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
 
     const duplicate = await createDocumentRequest({
       title: source.title || "Untitled Note",
-      content: source.blocks,
+      content: source.content,
       metadata: source.metadata,
+      templateSettings: source.templateSettings,
       templateId: source.templateId,
     });
 
@@ -164,17 +187,34 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
 
   renameDocument: (id, title) => {
     set((state) => ({
-      documents: state.documents.map((document) =>
-        document.id === id ? touch(document, { title }) : document,
-      ),
+      documents: state.documents.map((document) => {
+        if (document.id !== id) {
+          return document;
+        }
+        // One-way sync: the document title mirrors into the `title` metadata
+        // field when the template exposes one. The reverse never happens —
+        // editing the metadata field only touches metadata, not the title.
+        const template = useTemplatesStore
+          .getState()
+          .getTemplate(document.templateId);
+        const hasTitleField = template?.fields.some(
+          (field) => field.scope === "metadata" && field.key === "title",
+        );
+        return touch(
+          document,
+          hasTitleField
+            ? { title, metadata: { ...document.metadata, title } }
+            : { title },
+        );
+      }),
     }));
     scheduleSave(id);
   },
 
-  setBlocks: (id, blocks) => {
+  setContent: (id, content) => {
     set((state) => ({
       documents: state.documents.map((document) =>
-        document.id === id ? touch(document, { blocks }) : document,
+        document.id === id ? touch(document, { content }) : document,
       ),
     }));
     scheduleSave(id);
@@ -191,13 +231,29 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
     scheduleSave(id);
   },
 
+  setTemplateSettingField: (id, key, value) => {
+    set((state) => ({
+      documents: state.documents.map((document) =>
+        document.id === id
+          ? touch(document, {
+              templateSettings: { ...document.templateSettings, [key]: value },
+            })
+          : document,
+      ),
+    }));
+    scheduleSave(id);
+  },
+
   setTemplate: (id, templateId) => {
+    const template = useTemplatesStore.getState().getTemplate(templateId);
     set((state) => ({
       documents: state.documents.map((document) =>
         document.id === id
           ? touch(document, {
               templateId,
-              metadata: buildDefaultMetadata(templateId, document.metadata),
+              // Metadata is kept across templates; only the option bucket is
+              // rebuilt for the new template (same-named values preserved).
+              templateSettings: seedTemplateSettings(template, document.templateSettings),
             })
           : document,
       ),
@@ -221,8 +277,9 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
     try {
       const saved = await updateDocumentRequest(id, {
         title: document.title || "Untitled Note",
-        content: document.blocks,
+        content: document.content,
         metadata: document.metadata,
+        templateSettings: document.templateSettings,
         templateId: document.templateId,
       });
 
@@ -256,7 +313,14 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
 
     try {
       await get().saveDocument(id);
-      const result = await renderDocumentRequest(id, exportOptions);
+      const document = get().documents.find((entry) => entry.id === id);
+      if (!document) {
+        throw new Error("Document not found");
+      }
+      const result = await renderDocumentRequest(
+        id,
+        buildExportPayload(document, exportOptions),
+      );
       return { pdfUrl: result.pdfUrl };
     } finally {
       set((state) => ({
