@@ -1,6 +1,6 @@
 "use client";
 
-import type { ComponentType } from "react";
+import { useState, type ComponentType } from "react";
 import type { Editor } from "@tiptap/core";
 import { useEditorState } from "@tiptap/react";
 import { useTranslations } from "next-intl";
@@ -31,6 +31,12 @@ import {
   Undo2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { TableSizeGrid } from "@/components/editor/table-size-picker";
 import { pickAndInsertImage } from "@/lib/tiptap/image";
 import type {
   MathClickMode,
@@ -72,6 +78,46 @@ function ToolbarButton({
 
 function Divider() {
   return <span className="mx-0.5 h-5 w-px shrink-0 bg-border md:mx-1" />;
+}
+
+// Table button: instead of inserting a fixed size, it opens a hover grid so the
+// user picks the dimensions first. Shares TableSizeGrid with the slash command.
+function TableSizePicker({
+  label,
+  onPick,
+}: {
+  label: string;
+  onPick: (rows: number, cols: number) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          title={label}
+          aria-label={label}
+          className={cn(
+            "inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors md:size-8",
+            "hover:bg-accent hover:text-foreground",
+            open && "bg-accent text-foreground",
+          )}
+        >
+          <TableIcon className="size-4" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-auto p-2">
+        <TableSizeGrid
+          label={label}
+          onPick={(rows, cols) => {
+            onPick(rows, cols);
+            setOpen(false);
+          }}
+        />
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 export function TiptapToolbar({
@@ -208,14 +254,13 @@ export function TiptapToolbar({
         active={s.link}
         onClick={onEditLink}
       />
-      <ToolbarButton
-        icon={TableIcon}
+      <TableSizePicker
         label={t("table")}
-        onClick={() =>
+        onPick={(rows, cols) =>
           editor
             .chain()
             .focus()
-            .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+            .insertTable({ rows, cols, withHeaderRow: true })
             .run()
         }
       />

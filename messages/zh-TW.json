@@ -127,7 +127,8 @@
     },
     "table": {
       "figure": "表",
-      "captionPlaceholder": "輸入表格說明文字"
+      "captionPlaceholder": "輸入表格說明文字",
+      "pickSize": "選擇表格大小"
     },
     "math": {
       "editTitle": "編輯公式",
@@ -244,7 +245,12 @@
       "tocDepth": "目錄層級",
       "paperSize": "紙張大小",
       "lang": "語言",
-      "colorlinks": "彩色連結"
+      "colorlinks": "彩色連結",
+      "primaryLang": "主要語言",
+      "titleFont": "標題字體",
+      "bodyFont": "內文字體",
+      "dateFont": "日期字體",
+      "mathMode": "數學字體"
     },
     "placeholders": {
       "course": "例如：英文課",
@@ -269,7 +275,18 @@
       "a4": "A4",
       "letter": "Letter",
       "en": "英文",
-      "zh": "中文"
+      "zh": "中文",
+      "ja": "日文",
+      "ko": "韓文",
+      "th": "泰文",
+      "taiwan-pearl": "台灣圓體",
+      "source-han": "思源黑體",
+      "song": "教育部標準宋體",
+      "kai": "教育部標準楷書",
+      "playfair": "Playfair Display",
+      "tai-heritage": "Tai Heritage Pro",
+      "default": "預設（New Computer Modern）",
+      "garamond": "Garamond（EB Garamond）"
     }
   },
   "panel": {
