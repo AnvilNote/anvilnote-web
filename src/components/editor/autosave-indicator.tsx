@@ -2,10 +2,13 @@
 
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { useDocumentStore } from "@/lib/stores/document-store";
 
 export type SaveStatus = "saved" | "saving" | "unsaved";
 
-export function AutosaveIndicator({ status }: { status: SaveStatus }) {
+// Presentational indicator driven by an explicit status (used by the landing
+// demo, which has no store-backed document).
+export function AutosaveIndicatorView({ status }: { status: SaveStatus }) {
   const t = useTranslations("editor.autosave");
 
   return (
@@ -28,4 +31,14 @@ export function AutosaveIndicator({ status }: { status: SaveStatus }) {
       <span className="hidden min-w-[3.75rem] md:inline-block">{t(status)}</span>
     </span>
   );
+}
+
+// Subscribes to the save status itself so the per-keystroke status flips
+// (saved → unsaved → saving) re-render ONLY this indicator, not the whole editor
+// component. Re-rendering the editor on every keystroke would run useEditor's
+// onRender (setOptions → view.setProps/updateState), which tears down an open
+// "/" suggestion popup.
+export function AutosaveIndicator({ documentId }: { documentId: string }) {
+  const status = useDocumentStore((s) => s.saveStateById[documentId] ?? "saved");
+  return <AutosaveIndicatorView status={status} />;
 }

@@ -9,6 +9,7 @@ import { StoreHydrator } from "@/components/app/store-hydrator";
 import { AppShell } from "@/components/app/app-shell";
 import { ThemeFavicon } from "@/components/app/theme-favicon";
 import { ThemeProvider } from "@/components/app/theme-provider";
+import { QuillTransition } from "@/components/transition/quill-transition";
 import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -68,6 +69,7 @@ export default async function LocaleLayout({
             <StoreHydrator>
               <AppShell>{children}</AppShell>
             </StoreHydrator>
+            <QuillTransition />
             <Toaster
               position="top-right"
               expand

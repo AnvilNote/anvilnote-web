@@ -1,4 +1,36 @@
 {
+  "tour": {
+    "next": "次へ",
+    "back": "戻る",
+    "skip": "ツアーをスキップ",
+    "done": "完了",
+    "replay": "ツアーをもう一度見る",
+    "step": "{current} / {total}",
+    "tabsProgress": "閲覧済み {visited} / {total}",
+    "createHint": "+ をクリックして最初のドキュメントを作成",
+    "steps": {
+      "sidebar": {
+        "title": "サイドバーを折りたたむ",
+        "body": "このトグルでサイドバーを折りたたんだり広げたりしてスペースを確保できます。"
+      },
+      "newDoc": {
+        "title": "ドキュメントを作成",
+        "body": "「ドキュメント」横の + をクリックして最初のドキュメントを作成します。"
+      },
+      "toolbar": {
+        "title": "書式ツールバー",
+        "body": "ツールバーで文字の書式、見出し、リスト、表、画像、数式を追加できます。"
+      },
+      "slash": {
+        "title": "スラッシュコマンド",
+        "body": "エディタで / を入力すると、見出し・リスト・表・画像・数式などを挿入できます。"
+      },
+      "panel": {
+        "title": "右パネル",
+        "body": "アウトライン・ドキュメント情報・テンプレート・エクスポートを順にクリックして確認しましょう。"
+      }
+    }
+  },
   "app": {
     "name": "AnvilNote",
     "tagline": "アイデアをノートに鍛え上げる。"
@@ -159,11 +191,32 @@
     "deleteTitle": "ドキュメントを削除",
     "deleteDescription": "「{title}」は完全に削除され、元に戻せません。",
     "templateLabel": "テンプレート",
-    "defaultTitle": "無題のノート"
+    "defaultTitle": "無題のノート",
+    "defaultHeading": "講義はここから",
+    "defaultBody": "ここからノートを書き始めましょう。"
+  },
+  "projects": {
+    "title": "プロジェクト",
+    "create": "新規プロジェクト",
+    "defaultName": "無題のプロジェクト",
+    "empty": "プロジェクトはまだありません。",
+    "icon": "アイコン",
+    "iconSearch": "アイコンを検索…",
+    "iconEmpty": "アイコンが見つかりません。",
+    "edit": "プロジェクトを編集",
+    "delete": "プロジェクトを削除",
+    "name": "名前",
+    "namePlaceholder": "プロジェクト名",
+    "tags": "タグ",
+    "tagsPlaceholder": "タグを入力して Enter",
+    "moveTo": "移動先",
+    "unfiled": "未分類",
+    "deleteTitle": "プロジェクトを削除",
+    "deleteDescription": "「{name}」を削除します。中のドキュメントは未分類になります。"
   },
   "templates": {
     "title": "テンプレート",
-    "subtitle": "ドキュメントのレイアウトを選びます。テンプレートを切り替えても既存の内容は変わりません。",
+    "subtitle": "レイアウトを選択。内容はそのまま。",
     "current": "現在のテンプレート",
     "use": "テンプレートを適用",
     "inUse": "使用中",
@@ -294,18 +347,18 @@
     "noPreviewAvailable": "このテンプレートのプレビューはまだありません"
   },
   "panel": {
-    "outline": "アウトライン",
-    "metadata": "ドキュメント情報",
-    "template": "テンプレート",
+    "outline": "目次",
+    "metadata": "情報",
+    "template": "ひな形",
     "export": "書き出し",
     "outlineEmpty": "書き進めると見出しがここに表示されます。",
     "outlineDocument": "ドキュメント",
     "metadataEmpty": "このテンプレートには入力できる項目がありません。",
-    "metadataHint": "項目はテンプレートによって変わります。任意の項目は空欄のままで構いません。"
+    "metadataHint": "テンプレートに応じた項目。任意は空欄可。"
   },
   "export": {
     "title": "書き出し",
-    "subtitle": "書き出す内容をプレビューし、現在のドキュメントをPDFとして出力します。",
+    "subtitle": "現在のドキュメントをPDFに書き出します。",
     "template": "テンプレート",
     "pageSize": "ページサイズ",
     "fontPreset": "フォントプリセット",
@@ -448,6 +501,8 @@
     "documentCreated": "ドキュメントを作成しました",
     "documentCreatedFromTemplate": "{name}からドキュメントを作成しました",
     "documentDeleted": "ドキュメントを削除しました",
+    "documentMoved": "ドキュメントを移動しました",
+    "documentMoveFailed": "ドキュメントの移動に失敗しました",
     "documentRenamed": "ドキュメントの名前を変更しました",
     "documentSaved": "ドキュメントを保存しました",
     "templateSwitched": "{name}に切り替えました",

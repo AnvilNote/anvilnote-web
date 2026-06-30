@@ -4,7 +4,7 @@ import { create } from "zustand";
 import type { JSONContent } from "@tiptap/core";
 import type { AnvilDocument, AnvilMetadataValue } from "@/types/document";
 import type { ExportOptions } from "@/types/export";
-import { defaultTiptapContent } from "@/lib/tiptap/default-content";
+import { buildDefaultContent } from "@/lib/tiptap/default-content";
 import { buildExportPayload } from "@/lib/export";
 import {
   createDocument as createDocumentRequest,
@@ -33,8 +33,15 @@ type DocumentState = {
   renderingById: Record<string, boolean>;
   setActive: (id: string | null) => void;
   hydrate: () => Promise<void>;
-  createDocument: (templateId?: string, title?: string) => Promise<AnvilDocument>;
+  createDocument: (
+    templateId?: string,
+    title?: string,
+    seed?: { heading?: string; body?: string },
+    projectId?: string | null,
+  ) => Promise<AnvilDocument>;
   duplicateDocument: (id: string) => Promise<AnvilDocument | undefined>;
+  setDocumentProject: (id: string, projectId: string | null) => Promise<void>;
+  unfileDocuments: (projectId: string) => void;
   deleteDocument: (id: string) => Promise<void>;
   renameDocument: (id: string, title: string) => void;
   setContent: (id: string, content: JSONContent) => void;
@@ -114,7 +121,12 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
     }
   },
 
-  createDocument: async (templateId = DEFAULT_TEMPLATE_ID, title = "Untitled Note") => {
+  createDocument: async (
+    templateId = DEFAULT_TEMPLATE_ID,
+    title = "Untitled Note",
+    seed,
+    projectId = null,
+  ) => {
     const template = useTemplatesStore.getState().getTemplate(templateId);
     const metadata = seedMetadata(template);
     // If the template exposes a `title` metadata field, default it to the
@@ -129,10 +141,11 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
     }
     const document = await createDocumentRequest({
       title,
-      content: structuredClone(defaultTiptapContent),
+      content: buildDefaultContent(seed?.heading, seed?.body),
       metadata,
       templateSettings: seedTemplateSettings(template),
       templateId,
+      projectId,
     });
 
     set((state) => ({
@@ -147,6 +160,36 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
     return document;
   },
 
+  setDocumentProject: async (id, projectId) => {
+    // Optimistic: reflect locally, then persist. Roll back on failure.
+    const previous = get().documents.find((d) => d.id === id)?.projectId ?? null;
+    set((state) => ({
+      documents: state.documents.map((d) =>
+        d.id === id ? { ...d, projectId } : d,
+      ),
+    }));
+    try {
+      await updateDocumentRequest(id, { projectId });
+    } catch {
+      set((state) => ({
+        documents: state.documents.map((d) =>
+          d.id === id ? { ...d, projectId: previous } : d,
+        ),
+      }));
+      throw new Error("Failed to move document");
+    }
+  },
+
+  // Local-only: the API already SET NULL on the column when the project was
+  // deleted. Mirror that so the sidebar moves these docs to "unfiled".
+  unfileDocuments: (projectId) => {
+    set((state) => ({
+      documents: state.documents.map((d) =>
+        d.projectId === projectId ? { ...d, projectId: null } : d,
+      ),
+    }));
+  },
+
   duplicateDocument: async (id) => {
     const source = get().documents.find((document) => document.id === id);
     if (!source) {
@@ -159,6 +202,7 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
       metadata: source.metadata,
       templateSettings: source.templateSettings,
       templateId: source.templateId,
+      projectId: source.projectId,
     });
 
     set((state) => ({

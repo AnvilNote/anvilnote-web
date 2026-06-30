@@ -6,6 +6,7 @@ import {
   toWireContent,
 } from "@/lib/tiptap/serialization";
 import type { AnvilDocument, AnvilMetadataValue } from "@/types/document";
+import type { AnvilProject } from "@/types/project";
 import type { AnvilTemplate } from "@/types/template";
 import type { ExportPayload } from "@/types/export";
 
@@ -36,6 +37,15 @@ type ApiDocument = {
   metadata?: Record<string, AnvilMetadataValue>;
   templateSettings?: Record<string, AnvilMetadataValue>;
   templateId: string | null;
+  projectId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type ApiProject = {
+  id: string;
+  name: string;
+  icon?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -101,8 +111,19 @@ function fromApiDocument(document: ApiDocument): AnvilDocument {
     templateId: document.templateId ?? DEFAULT_TEMPLATE_ID,
     metadata: document.metadata ?? {},
     templateSettings: document.templateSettings ?? {},
+    projectId: document.projectId ?? null,
     createdAt: document.createdAt,
     updatedAt: document.updatedAt,
+  };
+}
+
+function fromApiProject(project: ApiProject): AnvilProject {
+  return {
+    id: project.id,
+    name: project.name,
+    icon: project.icon ?? null,
+    createdAt: project.createdAt,
+    updatedAt: project.updatedAt,
   };
 }
 
@@ -138,6 +159,7 @@ export async function createDocument(input: {
   metadata: Record<string, AnvilMetadataValue>;
   templateSettings: Record<string, AnvilMetadataValue>;
   templateId: string | null;
+  projectId?: string | null;
 }) {
   const response = await requestJson<ApiDocument>("/api/documents", {
     method: "POST",
@@ -147,6 +169,7 @@ export async function createDocument(input: {
       metadata: input.metadata,
       templateSettings: input.templateSettings,
       templateId: input.templateId,
+      projectId: input.projectId ?? null,
     }),
   });
 
@@ -161,6 +184,7 @@ export async function updateDocument(
     metadata: Record<string, AnvilMetadataValue>;
     templateSettings: Record<string, AnvilMetadataValue>;
     templateId: string | null;
+    projectId: string | null;
   }>,
 ) {
   const response = await requestJson<ApiDocument>(`/api/documents/${id}`, {
@@ -198,4 +222,37 @@ export async function listTemplates(): Promise<AnvilTemplate[]> {
 export async function getTemplate(slug: string): Promise<AnvilTemplate> {
   const response = await requestJson<ApiTemplate>(`/api/templates/${slug}`);
   return fromApiTemplate(response);
+}
+
+export async function listProjects(): Promise<AnvilProject[]> {
+  const response = await requestJson<ApiProject[]>("/api/projects");
+  return response.map(fromApiProject);
+}
+
+export async function createProject(input: {
+  name: string;
+  icon: string | null;
+}): Promise<AnvilProject> {
+  const response = await requestJson<ApiProject>("/api/projects", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return fromApiProject(response);
+}
+
+export async function updateProject(
+  id: string,
+  input: Partial<{ name: string; icon: string | null }>,
+): Promise<AnvilProject> {
+  const response = await requestJson<ApiProject>(`/api/projects/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+  return fromApiProject(response);
+}
+
+export async function deleteProject(id: string) {
+  await requestJson<{ id: string }>(`/api/projects/${id}`, {
+    method: "DELETE",
+  });
 }

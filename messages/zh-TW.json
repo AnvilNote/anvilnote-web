@@ -1,4 +1,36 @@
 {
+  "tour": {
+    "next": "下一步",
+    "back": "上一步",
+    "skip": "略過導覽",
+    "done": "完成",
+    "replay": "重新觀看導覽",
+    "step": "{current} / {total}",
+    "tabsProgress": "已看 {visited} / {total}",
+    "createHint": "點 + 建立你的第一份文件",
+    "steps": {
+      "sidebar": {
+        "title": "收合側邊欄",
+        "body": "用這個按鈕收合或展開側邊欄，騰出空間。"
+      },
+      "newDoc": {
+        "title": "新增文件",
+        "body": "點「文件」旁邊的 + 來建立你的第一份文件。"
+      },
+      "toolbar": {
+        "title": "格式工具列",
+        "body": "用工具列設定文字格式，加入標題、清單、表格、圖片與數學式。"
+      },
+      "slash": {
+        "title": "斜線指令",
+        "body": "在編輯器裡輸入 / 來插入標題、清單、表格、圖片、數學式等等。"
+      },
+      "panel": {
+        "title": "右側面板",
+        "body": "點過大綱、文件資訊、範本、匯出，看看每個功能做什麼。"
+      }
+    }
+  },
   "app": {
     "name": "AnvilNote",
     "tagline": "把想法鍛造成筆記。"
@@ -159,7 +191,28 @@
     "deleteTitle": "刪除文件",
     "deleteDescription": "「{title}」會被永久刪除，且無法復原。",
     "templateLabel": "範本",
-    "defaultTitle": "未命名文件"
+    "defaultTitle": "未命名文件",
+    "defaultHeading": "講義從此開始",
+    "defaultBody": "在這裡開始撰寫筆記。"
+  },
+  "projects": {
+    "title": "專案",
+    "create": "新增專案",
+    "defaultName": "未命名專案",
+    "empty": "尚無專案。",
+    "icon": "圖示",
+    "iconSearch": "搜尋圖示…",
+    "iconEmpty": "找不到圖示。",
+    "edit": "編輯專案",
+    "delete": "刪除專案",
+    "name": "名稱",
+    "namePlaceholder": "專案名稱",
+    "tags": "標籤",
+    "tagsPlaceholder": "輸入標籤後按 Enter",
+    "moveTo": "移動到",
+    "unfiled": "未分類",
+    "deleteTitle": "刪除專案",
+    "deleteDescription": "「{name}」將被刪除，裡面的文件會變成未分類。"
   },
   "templates": {
     "title": "範本",
@@ -295,7 +348,7 @@
   },
   "panel": {
     "outline": "大綱",
-    "metadata": "文件資訊",
+    "metadata": "資訊",
     "template": "範本",
     "export": "匯出",
     "outlineEmpty": "書寫時，標題會顯示在這裡。",
@@ -448,6 +501,8 @@
     "documentCreated": "已建立文件",
     "documentCreatedFromTemplate": "已使用 {name} 範本建立文件",
     "documentDeleted": "已刪除文件",
+    "documentMoved": "已移動文件",
+    "documentMoveFailed": "移動文件失敗",
     "documentRenamed": "已重新命名文件",
     "documentSaved": "已儲存文件",
     "templateSwitched": "已切換至 {name}",

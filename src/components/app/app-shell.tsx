@@ -7,6 +7,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppSidebar } from "@/components/app/app-sidebar";
 import { AppTopbar } from "@/components/app/app-topbar";
 import { CommandMenu } from "@/components/app/command-menu";
+import { TourOverlay } from "@/components/tour/tour-overlay";
+import { TourReplayButton } from "@/components/tour/tour-replay-button";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -26,6 +28,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           </main>
         </SidebarInset>
         <CommandMenu />
+        <TourOverlay />
+        <TourReplayButton />
       </SidebarProvider>
     </TooltipProvider>
   );

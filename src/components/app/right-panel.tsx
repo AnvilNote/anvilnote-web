@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { FileText, Hash } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,6 +17,7 @@ import { TemplateSelector } from "@/components/templates/template-selector";
 import { ExportPanel } from "@/components/export/export-panel";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useUiStore } from "@/lib/stores/ui-store";
+import { useTourStore } from "@/lib/stores/tour-store";
 import { extractOutline, type OutlineItem } from "@/lib/tiptap/serialization";
 import { cn } from "@/lib/utils";
 
@@ -61,32 +63,44 @@ function OutlinePanel({ documentId }: { documentId: string }) {
 
 function RightPanelContent({ documentId }: { documentId: string }) {
   const t = useTranslations("panel");
+  const [tab, setTab] = useState("outline");
+  const markTabVisited = useTourStore((s) => s.markTabVisited);
 
   return (
-    <Tabs defaultValue="outline" className="flex h-full min-h-0 flex-col gap-0">
+    <Tabs
+      value={tab}
+      onValueChange={(value) => {
+        setTab(value);
+        markTabVisited(value);
+      }}
+      className="flex h-full min-h-0 flex-col gap-0"
+    >
       <div className="px-3 pt-3">
-        <TabsList className="grid h-auto w-full grid-cols-4 rounded-[1.7rem] bg-muted p-1">
+        <TabsList
+          data-tour="right-tabs"
+          className="grid h-auto w-full grid-cols-4 rounded-[1.7rem] bg-muted p-1"
+        >
           <TabsTrigger
             value="outline"
-            className="rounded-[1.3rem] px-2 py-1.5 text-[0.95rem] leading-none whitespace-nowrap data-active:bg-background data-active:shadow-sm"
+            className="rounded-[1.3rem] px-2 py-1.5 text-[0.95rem] leading-none truncate data-[state=active]:bg-background data-[state=active]:shadow-sm"
           >
             {t("outline")}
           </TabsTrigger>
           <TabsTrigger
             value="metadata"
-            className="rounded-[1.3rem] px-2 py-1.5 text-[0.95rem] leading-none whitespace-nowrap data-active:bg-background data-active:shadow-sm"
+            className="rounded-[1.3rem] px-2 py-1.5 text-[0.95rem] leading-none truncate data-[state=active]:bg-background data-[state=active]:shadow-sm"
           >
             {t("metadata")}
           </TabsTrigger>
           <TabsTrigger
             value="template"
-            className="rounded-[1.3rem] px-2 py-1.5 text-[0.95rem] leading-none whitespace-nowrap data-active:bg-background data-active:shadow-sm"
+            className="rounded-[1.3rem] px-2 py-1.5 text-[0.95rem] leading-none truncate data-[state=active]:bg-background data-[state=active]:shadow-sm"
           >
             {t("template")}
           </TabsTrigger>
           <TabsTrigger
             value="export"
-            className="rounded-[1.3rem] px-2 py-1.5 text-[0.95rem] leading-none whitespace-nowrap data-active:bg-background data-active:shadow-sm"
+            className="rounded-[1.3rem] px-2 py-1.5 text-[0.95rem] leading-none truncate data-[state=active]:bg-background data-[state=active]:shadow-sm"
           >
             {t("export")}
           </TabsTrigger>

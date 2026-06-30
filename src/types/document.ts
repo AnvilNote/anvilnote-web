@@ -14,6 +14,8 @@ export type AnvilDocument = {
   metadata: Record<string, AnvilMetadataValue>;
   // Template Options: bound to the current template (toc/paperSize…).
   templateSettings: Record<string, AnvilMetadataValue>;
+  // Optional grouping; null means the document is unfiled.
+  projectId: string | null;
   createdAt: string;
   updatedAt: string;
 };

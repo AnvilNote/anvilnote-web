@@ -1,4 +1,36 @@
 {
+  "tour": {
+    "next": "다음",
+    "back": "이전",
+    "skip": "둘러보기 건너뛰기",
+    "done": "완료",
+    "replay": "둘러보기 다시 보기",
+    "step": "{current} / {total}",
+    "tabsProgress": "확인함 {visited} / {total}",
+    "createHint": "+ 를 눌러 첫 문서를 만드세요",
+    "steps": {
+      "sidebar": {
+        "title": "사이드바 접기",
+        "body": "이 버튼으로 사이드바를 접거나 펼쳐 공간을 확보하세요."
+      },
+      "newDoc": {
+        "title": "문서 만들기",
+        "body": "‘문서’ 옆의 + 를 눌러 첫 문서를 만드세요."
+      },
+      "toolbar": {
+        "title": "서식 도구 모음",
+        "body": "도구 모음으로 텍스트 서식을 지정하고 제목, 목록, 표, 이미지, 수식을 추가하세요."
+      },
+      "slash": {
+        "title": "슬래시 명령",
+        "body": "에디터에서 / 를 입력하면 제목, 목록, 표, 이미지, 수식 등을 삽입할 수 있어요."
+      },
+      "panel": {
+        "title": "오른쪽 패널",
+        "body": "개요, 문서 정보, 템플릿, 내보내기를 차례로 눌러 각 기능을 확인하세요."
+      }
+    }
+  },
   "app": {
     "name": "AnvilNote",
     "tagline": "생각을 노트로 벼려내세요."
@@ -159,7 +191,28 @@
     "deleteTitle": "문서 삭제",
     "deleteDescription": "“{title}”이(가) 영구적으로 삭제되며 복구할 수 없습니다.",
     "templateLabel": "템플릿",
-    "defaultTitle": "제목 없는 노트"
+    "defaultTitle": "제목 없는 노트",
+    "defaultHeading": "강의는 여기서 시작됩니다",
+    "defaultBody": "여기에서 노트를 작성하세요."
+  },
+  "projects": {
+    "title": "프로젝트",
+    "create": "새 프로젝트",
+    "defaultName": "제목 없는 프로젝트",
+    "empty": "아직 프로젝트가 없습니다.",
+    "icon": "아이콘",
+    "iconSearch": "아이콘 검색…",
+    "iconEmpty": "아이콘을 찾을 수 없습니다.",
+    "edit": "프로젝트 편집",
+    "delete": "프로젝트 삭제",
+    "name": "이름",
+    "namePlaceholder": "프로젝트 이름",
+    "tags": "태그",
+    "tagsPlaceholder": "태그 입력 후 Enter",
+    "moveTo": "이동",
+    "unfiled": "미분류",
+    "deleteTitle": "프로젝트 삭제",
+    "deleteDescription": "“{name}” 프로젝트를 삭제합니다. 안의 문서는 미분류로 이동합니다."
   },
   "templates": {
     "title": "템플릿",
@@ -295,7 +348,7 @@
   },
   "panel": {
     "outline": "개요",
-    "metadata": "문서 정보",
+    "metadata": "정보",
     "template": "템플릿",
     "export": "내보내기",
     "outlineEmpty": "작성하면 제목이 여기에 표시됩니다.",
@@ -448,6 +501,8 @@
     "documentCreated": "문서를 만들었습니다",
     "documentCreatedFromTemplate": "{name}에서 문서를 만들었습니다",
     "documentDeleted": "문서를 삭제했습니다",
+    "documentMoved": "문서를 이동했습니다",
+    "documentMoveFailed": "문서 이동에 실패했습니다",
     "documentRenamed": "문서 이름을 변경했습니다",
     "documentSaved": "문서를 저장했습니다",
     "templateSwitched": "{name}(으)로 전환했습니다",

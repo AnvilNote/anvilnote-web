@@ -83,7 +83,7 @@ export function AppTopbar() {
 
   return (
     <header className="sticky top-0 z-20 flex h-13 shrink-0 items-center gap-1 border-b bg-background/80 px-2 md:gap-1.5 md:px-3 backdrop-blur">
-      <SidebarTrigger className="text-muted-foreground" />
+      <SidebarTrigger data-tour="sidebar-toggle" className="text-muted-foreground" />
 
       <div className="ml-auto flex shrink-0 items-center gap-0.5 md:gap-1">
         <ThemeToggle />

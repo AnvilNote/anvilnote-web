@@ -1,13 +1,13 @@
 "use client";
 
+import type { MouseEvent } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { FileText, LayoutTemplate, Plus, Search, Settings } from "lucide-react";
+import { FileText, LayoutTemplate, Search, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupAction,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
@@ -17,30 +17,29 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Link, usePathname, useRouter } from "@/lib/i18n/navigation";
-import { useDocumentStore } from "@/lib/stores/document-store";
+import { Link } from "@/lib/i18n/navigation";
 import { useUiStore } from "@/lib/stores/ui-store";
-import { DocumentActions } from "@/components/app/document-actions";
+import { useTransitionStore } from "@/lib/stores/transition-store";
+import { SidebarProjects } from "@/components/app/sidebar-projects";
 
 export function AppSidebar() {
   const t = useTranslations();
-  const router = useRouter();
-  const pathname = usePathname();
   const { setOpenMobile, isMobile } = useSidebar();
 
-  const createDocument = useDocumentStore((s) => s.createDocument);
-  const documents = useDocumentStore((s) => s.documents);
-  const setActive = useDocumentStore((s) => s.setActive);
   const setCommandOpen = useUiStore((s) => s.setCommandOpen);
+  const startTransition = useTransitionStore((s) => s.start);
 
   function closeMobile() {
     if (isMobile) setOpenMobile(false);
   }
 
-  async function handleNewDocument() {
-    const doc = await createDocument(undefined, t("documents.defaultTitle"));
+  // Logo returns to the landing page with the quill transition. In the desktop
+  // app there's no landing to return to, so we cancel and stay put instead.
+  function handleLogoClick(event: MouseEvent) {
+    event.preventDefault();
     closeMobile();
-    router.push(`/documents/${doc.id}`);
+    if (typeof window !== "undefined" && window.anvilnote) return;
+    startTransition("/");
   }
 
   const navItems = [
@@ -53,8 +52,8 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r">
       <SidebarHeader className="gap-3 px-2 pt-3 group-data-[collapsible=icon]:px-0">
         <Link
-          href="/documents"
-          onClick={closeMobile}
+          href="/"
+          onClick={handleLogoClick}
           className="flex items-center gap-2 px-1 py-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
         >
           <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-md">
@@ -101,61 +100,7 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-1 group-data-[collapsible=icon]:px-0">
-        <SidebarGroup>
-          <SidebarGroupLabel>{t("nav.documents")}</SidebarGroupLabel>
-          <SidebarGroupAction
-            aria-label={t("nav.newDocument")}
-            title={t("nav.newDocument")}
-            onClick={() => void handleNewDocument()}
-            className="top-3 right-2 size-7 rounded-lg"
-          >
-            <Plus className="size-4.5" />
-          </SidebarGroupAction>
-          <SidebarGroupContent>
-            <SidebarMenu className="gap-1">
-              {documents.length === 0 ? (
-                <p className="px-2 py-1.5 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-                  {t("documents.empty")}
-                </p>
-              ) : (
-                documents.map((doc) => {
-                  const href = `/documents/${doc.id}`;
-                  const active = pathname === href;
-                  const title = doc.title || t("documents.untitled");
-                  return (
-                    <SidebarMenuItem key={doc.id} className="group/doc">
-                      <SidebarMenuButton
-                        asChild
-                        isActive={active}
-                        tooltip={title}
-                        className="pr-7"
-                      >
-                        <Link
-                          href={href}
-                          onClick={() => {
-                            setActive(doc.id);
-                            closeMobile();
-                          }}
-                        >
-                          <FileText className="size-4 shrink-0" />
-                          <span className="truncate">{title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                      <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-focus-within/doc:opacity-100 group-hover/doc:opacity-100 group-data-[collapsible=icon]:hidden">
-                        <DocumentActions
-                          doc={doc}
-                          onDeleted={() => {
-                            if (active) router.push("/documents");
-                          }}
-                        />
-                      </div>
-                    </SidebarMenuItem>
-                  );
-                })
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <SidebarProjects />
 
         <SidebarGroup>
           <SidebarGroupLabel>{t("app.name")}</SidebarGroupLabel>

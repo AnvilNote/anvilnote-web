@@ -1036,3 +1036,77 @@
     white-space: nowrap;
   }
 }
+
+/* Quill page transition */
+@keyframes quill-overlay-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes quill-swing {
+  0%,
+  100% {
+    transform: rotate(-7deg);
+  }
+  50% {
+    transform: rotate(7deg);
+  }
+}
+
+/* Spans the whole overlay lifetime (must match CLEAR_AT_MS): fade in, hold,
+   then fade out right as the component unmounts. */
+@keyframes quill-overlay-life {
+  0% {
+    opacity: 0;
+  }
+  13% {
+    opacity: 1;
+  }
+  82% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.quill-transition-overlay {
+  animation: quill-overlay-life 1700ms ease both;
+}
+
+@keyframes quill-enter {
+  from {
+    transform: translateX(-10vw);
+  }
+  to {
+    transform: translateX(10vw);
+  }
+}
+
+.quill-enter {
+  animation: quill-enter 1700ms ease-in-out both;
+}
+
+.quill-swing {
+  transform-origin: 50% 60%;
+  animation: quill-swing 1s ease-in-out infinite;
+}
+
+.quill-quote {
+  animation: quill-overlay-fade 600ms ease-out both;
+  animation-delay: 200ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quill-enter {
+    animation: quill-overlay-fade 200ms ease-out both;
+  }
+
+  .quill-swing {
+    animation: none;
+  }
+}

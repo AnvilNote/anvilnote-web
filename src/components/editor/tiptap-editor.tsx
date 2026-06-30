@@ -55,7 +55,6 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
 
   const renameDocument = useDocumentStore((s) => s.renameDocument);
   const setContent = useDocumentStore((s) => s.setContent);
-  const status = useDocumentStore((s) => s.saveStateById[documentId] ?? "saved");
   const title = useDocumentStore(
     (s) => s.documents.find((d) => d.id === documentId)?.title ?? "",
   );
@@ -91,17 +90,33 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
   // Inserting a table from the slash menu: open the size picker first.
   const requestTable = useCallback(() => setTableDialogOpen(true), []);
 
+  // Depend on the resolved label STRINGS, not the `t` function: next-intl
+  // returns a fresh `t` identity every render, so depending on `t` would rebuild
+  // the extension instances each render, reconfigure ProseMirror plugins and
+  // tear down the open "/" Suggestion popup. Strings are stable per locale.
+  const writePlaceholder = t("editor.writePlaceholder");
+  const figureLabel = t("editor.image.figure");
+  const tableLabel = t("editor.table.figure");
+  const figureCaptionPlaceholder = t("editor.image.captionPlaceholder");
+  const tableCaptionPlaceholder = t("editor.table.captionPlaceholder");
   const extensions = useMemo(
     () =>
       buildExtensions({
-        placeholder: t("editor.writePlaceholder"),
-        figureLabel: t("editor.image.figure"),
-        tableLabel: t("editor.table.figure"),
-        figureCaptionPlaceholder: t("editor.image.captionPlaceholder"),
-        tableCaptionPlaceholder: t("editor.table.captionPlaceholder"),
+        placeholder: writePlaceholder,
+        figureLabel,
+        tableLabel,
+        figureCaptionPlaceholder,
+        tableCaptionPlaceholder,
         onMathClick: handleMathClick,
       }),
-    [t, handleMathClick],
+    [
+      writePlaceholder,
+      figureLabel,
+      tableLabel,
+      figureCaptionPlaceholder,
+      tableCaptionPlaceholder,
+      handleMathClick,
+    ],
   );
 
   // Slash items are rebuilt each render (labels follow locale) but read through
@@ -225,15 +240,21 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
     return createSlashCommand(getItems);
   }, []);
 
-  const editor = useEditor({
-    immediatelyRender: false,
-    extensions: [...extensions, slashCommand],
-    content: initialContent,
-    editorProps: {
+  // Stable option references: `useEditor` (deps: []) calls `setOptions` on every
+  // render whose options differ by identity, which reconfigures ProseMirror
+  // plugins and tears down any open Suggestion popup (the "/" menu). Memoizing
+  // these keeps the editor — and the slash menu — alive across re-renders.
+  const allExtensions = useMemo(
+    () => [...extensions, slashCommand],
+    [extensions, slashCommand],
+  );
+
+  const editorProps = useMemo(
+    () => ({
       attributes: { class: "anvil-prose focus:outline-none" },
       // A plain left-click on a link opens it in a new tab. To edit link text,
       // select it (drag) and use the toolbar / bubble-menu link button.
-      handleClick: (_view, _pos, event) => {
+      handleClick: (_view: unknown, _pos: number, event: MouseEvent) => {
         const anchor = (event.target as HTMLElement | null)?.closest?.("a");
         const href = anchor?.getAttribute("href");
         if (href) {
@@ -242,7 +263,15 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         }
         return false;
       },
-    },
+    }),
+    [],
+  );
+
+  const editor = useEditor({
+    immediatelyRender: false,
+    extensions: allExtensions,
+    content: initialContent,
+    editorProps,
     onUpdate: ({ editor: e }) => {
       setContent(documentId, e.getJSON());
     },
@@ -303,7 +332,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
             ) : null}
           </div>
           <div className="flex w-full justify-end lg:w-auto lg:shrink-0">
-            <AutosaveIndicator status={status} />
+            <AutosaveIndicator documentId={documentId} />
           </div>
         </div>
       </div>
@@ -315,7 +344,10 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         />
       </div>
 
-      <div className="anvil-editor mx-auto w-full max-w-[820px] flex-1 pl-12 pr-3 pb-24 lg:pb-32">
+      <div
+        data-tour="editor-area"
+        className="anvil-editor mx-auto w-full max-w-[820px] flex-1 pl-12 pr-3 pb-24 lg:pb-32"
+      >
         {editor ? (
           <>
             <TiptapBubbleMenu

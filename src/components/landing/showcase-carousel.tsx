@@ -38,7 +38,7 @@ export function ShowcaseCarousel({ items }: ShowcaseCarouselProps) {
                 onFocus={() => setIsPaused(true)}
                 onBlur={() => setIsPaused(false)}
               >
-                <div className="relative aspect-[4/5] overflow-hidden rounded-[1.75rem] bg-muted/70">
+                <div className="relative aspect-[4/5] overflow-hidden bg-muted/70">
                   <Image
                     src={item.src}
                     alt={item.alt}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Editor } from "@tiptap/core";
 import type { Node as PMNode } from "@tiptap/pm/model";
 import { DragHandle } from "@tiptap/extension-drag-handle-react";
@@ -71,6 +71,28 @@ export function BlockHandle({ editor }: { editor: Editor }) {
   const [pos, setPos] = useState(-1);
   const [open, setOpen] = useState(false);
 
+  // Keep `onNodeChange` referentially STABLE. `<DragHandle>` re-registers its
+  // ProseMirror plugin whenever this prop's identity changes, and a plugin
+  // re-registration reconfigures the editor state — which resets every other
+  // plugin, tearing down an open "/" suggestion popup. Mouse movement fires
+  // onNodeChange on every hovered block, so an inline arrow here would re-register
+  // (and kill the slash menu) on every mouse move. Read `open` through a ref so
+  // the callback never needs to be recreated.
+  const openRef = useRef(open);
+  useEffect(() => {
+    openRef.current = open;
+  }, [open]);
+  const handleNodeChange = useCallback(
+    (data: { node: PMNode | null; pos: number }) => {
+      // Freeze the target while the menu is open so moving the mouse onto the
+      // menu doesn't retarget delete/color to a different block.
+      if (openRef.current) return;
+      setNode(data.node);
+      setPos(data.pos);
+    },
+    [],
+  );
+
   const isTextBlock = node ? TEXT_BLOCKS.has(node.type.name) : false;
   const blockName = t(`types.${blockTypeKey(node)}` as never);
 
@@ -95,13 +117,7 @@ export function BlockHandle({ editor }: { editor: Editor }) {
     <DragHandle
       editor={editor}
       className="anvil-drag-handle"
-      onNodeChange={(data) => {
-        // Freeze the target while the menu is open so moving the mouse onto the
-        // menu doesn't retarget delete/color to a different block.
-        if (open) return;
-        setNode(data.node);
-        setPos(data.pos);
-      }}
+      onNodeChange={handleNodeChange}
     >
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
