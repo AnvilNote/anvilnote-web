@@ -20,6 +20,7 @@ import { useTemplatesStore } from "@/lib/stores/templates-store";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import { getApiBaseUrl } from "@/lib/api";
 import { buildExportPayload } from "@/lib/export";
+import { deliverPdf } from "@/lib/export-pdf";
 import type {
   ExportFontPreset,
   ExportPageSize,
@@ -75,13 +76,18 @@ export function ExportPanel({ documentId }: { documentId: string }) {
         includeMetadata,
       });
       if (result.pdfUrl) {
-        window.open(
+        const delivered = await deliverPdf(
           `${getApiBaseUrl()}${result.pdfUrl}`,
-          "_blank",
-          "noopener,noreferrer",
+          doc.title,
         );
+        toast.success(
+          delivered.kind === "folder"
+            ? t("toast.exportSavedTo", { path: delivered.path })
+            : t("toast.exportDownloaded", { name: delivered.fileName }),
+        );
+      } else {
+        toast.success(t("toast.exportReady"));
       }
-      toast.success(t("toast.exportReady"));
     } catch (error) {
       toast.error(
         error instanceof Error
