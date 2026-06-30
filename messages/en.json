@@ -347,7 +347,8 @@
       "folderSelected": "Folder set to {folder}",
       "folderBlocked": "The browser can’t access this folder. Choose another location.",
       "folderUnsupported": "Your browser does not support folder picking.",
-      "pickOther": "Choose another folder…"
+      "pickOther": "Choose another folder…",
+      "folderNotSet": "No folder chosen"
     },
     "save": "Save"
   },
@@ -368,6 +369,71 @@
     "insertInlineMath": "Insert inline math",
     "insertBlockMath": "Insert block math",
     "switchLocale": "Switch to {locale}"
+  },
+  "landing": {
+    "hero": {
+      "label": "Local-first writing workspace",
+      "line1": "Write locally,",
+      "line2Before": "",
+      "highlight": "shape",
+      "line2After": " serious notes.",
+      "line3": "",
+      "kicker": "AnvilNote keeps editing, math, code, templates, and export in one workspace so you can focus on structuring long-form writing.",
+      "description": "The live writing area starts below. You can edit the demo directly and try the toolbar, slash commands, equations, and tables; PDF export stays in the full workspace.",
+      "cta": "Open the workspace",
+      "secondaryCta": "Try the editor"
+    },
+    "nav": {
+      "product": "Product",
+      "documents": "Docs",
+      "templates": "Templates",
+      "guide": "Guide"
+    },
+    "valueStrip": {
+      "0": "Files stay on your device",
+      "1": "Use blocks to structure long-form writing without fighting layout",
+      "2": "Preview, apply templates, and export when the draft is ready"
+    },
+    "sections": {
+      "localFirst": {
+        "title": "Local-first by default",
+        "body": "No account is required, and everyday writing is not tied to a cloud service. Documents, drafts, and revisions stay on your machine."
+      },
+      "structuredWriting": {
+        "title": "Built for structured writing",
+        "body": "It is more than a blank page. Headings, paragraphs, lists, math, code, and images can live in the same document while long-form writing keeps a clear structure."
+      },
+      "exportWorkflow": {
+        "title": "One export workflow",
+        "body": "Templates, previews, and export belong to the same workflow. When the note is ready, you do not need to move it into another tool just to finish formatting."
+      }
+    },
+    "showcase": {
+      "title": "Templates that finish the document",
+      "description": "AnvilNote goes beyond the editor so your content can continue into handouts, reports, and polished notes."
+    },
+    "closing": {
+      "title": "A quiet workspace for writing, organizing, and finishing.",
+      "description": "From draft to export, the whole workflow stays in one place. No sign-in and no bouncing between multiple tools.",
+      "cta": "Start writing"
+    },
+    "demo": {
+      "search": "Search",
+      "documents": "Documents",
+      "currentLabel": "AnvilNote Feature Tour",
+      "appName": "AnvilNote",
+      "documentsNav": "Documents",
+      "templates": "Templates",
+      "settings": "Settings",
+      "save": "Save",
+      "export": "Export PDF",
+      "exportDisabled": "PDF export is available in the full workspace",
+      "outline": "Outline",
+      "metadata": "Metadata",
+      "template": "Template",
+      "exportTab": "Export",
+      "starterTitle": "AnvilNote Feature Tour"
+    }
   },
   "locale": {
     "label": "Language",
@@ -391,7 +457,9 @@
     "saveFailed": "Could not save the document.",
     "renderFailed": "Could not render the PDF.",
     "settingsSaved": "Preferences saved",
-    "localeSwitched": "Interface language updated"
+    "localeSwitched": "Interface language updated",
+    "exportSavedTo": "Exported to {path}",
+    "exportDownloaded": "Downloaded {name}"
   },
   "pdfPreview": {
     "previousPage": "Previous page",

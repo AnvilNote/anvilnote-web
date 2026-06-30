@@ -347,7 +347,8 @@
       "folderSelected": "저장 위치를 {folder}(으)로 설정했습니다",
       "folderBlocked": "브라우저가 이 폴더에 접근할 수 없습니다. 다른 위치를 선택하세요.",
       "folderUnsupported": "사용 중인 브라우저는 폴더 선택을 지원하지 않습니다.",
-      "pickOther": "다른 폴더 선택…"
+      "pickOther": "다른 폴더 선택…",
+      "folderNotSet": "폴더가 선택되지 않음"
     },
     "save": "저장"
   },
@@ -368,6 +369,71 @@
     "insertInlineMath": "인라인 수식 삽입",
     "insertBlockMath": "블록 수식 삽입",
     "switchLocale": "{locale}(으)로 전환"
+  },
+  "landing": {
+    "hero": {
+      "label": "로컬 우선 글쓰기 워크스페이스",
+      "line1": "로컬에서 쓰고,",
+      "line2Before": "",
+      "highlight": "제대로 된",
+      "line2After": " 노트.",
+      "line3": "",
+      "kicker": "AnvilNote는 편집·수식·코드·템플릿·내보내기를 한 워크스페이스에 모아 긴 글의 구조에 집중할 수 있게 합니다.",
+      "description": "아래에 라이브 편집 영역이 있습니다. 데모를 직접 편집하며 툴바·슬래시 명령·수식·표를 사용해 보세요. PDF 내보내기는 정식 워크스페이스에서 제공됩니다.",
+      "cta": "워크스페이스 열기",
+      "secondaryCta": "에디터 사용해 보기"
+    },
+    "nav": {
+      "product": "제품",
+      "documents": "문서",
+      "templates": "템플릿",
+      "guide": "가이드"
+    },
+    "valueStrip": {
+      "0": "파일은 기기에 보관됩니다",
+      "1": "블록으로 레이아웃 걱정 없이 긴 글을 구성",
+      "2": "미리보기·템플릿 적용·내보내기는 초안이 완성된 후에"
+    },
+    "sections": {
+      "localFirst": {
+        "title": "기본적으로 로컬 우선",
+        "body": "계정이 필요 없으며, 일상적인 글쓰기는 클라우드 서비스에 묶이지 않습니다. 문서·초안·수정 내역이 모두 내 기기에 남습니다."
+      },
+      "structuredWriting": {
+        "title": "구조적 글쓰기를 위해",
+        "body": "단순한 빈 페이지가 아닙니다. 제목·단락·목록·수식·코드·이미지를 같은 문서에 담으면서도 긴 글의 구조를 명확하게 유지합니다."
+      },
+      "exportWorkflow": {
+        "title": "하나의 내보내기 워크플로",
+        "body": "템플릿·미리보기·내보내기가 같은 워크플로에 속합니다. 노트가 준비되면 서식을 마무리하려고 다른 도구로 옮길 필요가 없습니다."
+      }
+    },
+    "showcase": {
+      "title": "문서를 완성하는 템플릿",
+      "description": "AnvilNote는 에디터를 넘어 유인물·보고서·다듬어진 노트로 내용을 이어갈 수 있습니다."
+    },
+    "closing": {
+      "title": "쓰고, 정리하고, 마무리하는 조용한 워크스페이스.",
+      "description": "초안부터 내보내기까지 전체 워크플로가 한곳에. 로그인 없이, 여러 도구를 오갈 필요 없이.",
+      "cta": "글쓰기 시작"
+    },
+    "demo": {
+      "search": "검색",
+      "documents": "문서",
+      "currentLabel": "AnvilNote 기능 둘러보기",
+      "appName": "AnvilNote",
+      "documentsNav": "문서",
+      "templates": "템플릿",
+      "settings": "설정",
+      "save": "저장",
+      "export": "PDF 내보내기",
+      "exportDisabled": "PDF 내보내기는 정식 워크스페이스에서 사용할 수 있습니다",
+      "outline": "개요",
+      "metadata": "메타데이터",
+      "template": "템플릿",
+      "exportTab": "내보내기",
+      "starterTitle": "AnvilNote 기능 둘러보기"
+    }
   },
   "locale": {
     "label": "언어",
@@ -391,7 +457,9 @@
     "saveFailed": "문서를 저장할 수 없습니다.",
     "renderFailed": "PDF를 렌더링할 수 없습니다.",
     "settingsSaved": "환경설정을 저장했습니다",
-    "localeSwitched": "표시 언어를 업데이트했습니다"
+    "localeSwitched": "표시 언어를 업데이트했습니다",
+    "exportSavedTo": "{path}에 내보냈습니다",
+    "exportDownloaded": "{name}을(를) 다운로드했습니다"
   },
   "pdfPreview": {
     "previousPage": "이전 페이지",

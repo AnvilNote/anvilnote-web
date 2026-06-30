@@ -347,7 +347,8 @@
       "folderSelected": "儲存位置已設為 {folder}",
       "folderBlocked": "瀏覽器無法存取這個資料夾，請選擇其他位置。",
       "folderUnsupported": "你的瀏覽器不支援選擇資料夾。",
-      "pickOther": "選擇其他資料夾…"
+      "pickOther": "選擇其他資料夾…",
+      "folderNotSet": "尚未選擇資料夾"
     },
     "save": "儲存"
   },
@@ -368,6 +369,71 @@
     "insertInlineMath": "插入行內公式",
     "insertBlockMath": "插入區塊公式",
     "switchLocale": "切換為 {locale}"
+  },
+  "landing": {
+    "hero": {
+      "label": "本機優先寫作工作區",
+      "line1": "用 AnvilNote，",
+      "line2Before": "",
+      "highlight": "把思路",
+      "line2After": "寫成完整筆記。",
+      "line3": "",
+      "kicker": "編輯、公式、程式碼、範本與輸出，都在同一個工作區。",
+      "description": "你可以在下面直接試用編輯器，包含工具列、斜線指令、公式與表格。PDF 匯出請到正式工作區使用。",
+      "cta": "進入工作區",
+      "secondaryCta": "試用編輯器"
+    },
+    "nav": {
+      "product": "產品",
+      "documents": "文件",
+      "templates": "範本",
+      "guide": "說明"
+    },
+    "valueStrip": {
+      "0": "資料留在你的裝置裡",
+      "1": "用區塊整理長內容，不用和版面拉扯",
+      "2": "寫完後即可預覽、套用範本並輸出"
+    },
+    "sections": {
+      "localFirst": {
+        "title": "本機優先，預設如此",
+        "body": "不用註冊，也不把日常寫作綁在雲端服務上。文件、草稿與整理過程都留在你的電腦裡。"
+      },
+      "structuredWriting": {
+        "title": "為長內容而設計",
+        "body": "不只是一張空白頁。標題、段落、清單、數學公式、程式碼與圖片都能放在同一份文件裡，長內容也能維持清楚結構。"
+      },
+      "exportWorkflow": {
+        "title": "同一條輸出工作流",
+        "body": "範本、預覽與輸出都在同一條工作流裡。寫完後不必再搬到其他工具重新整理。"
+      }
+    },
+    "showcase": {
+      "title": "讓文件真正完成的範本",
+      "description": "AnvilNote 不只提供編輯器，也讓內容能繼續變成講義、報告或整理好的筆記。"
+    },
+    "closing": {
+      "title": "寫作、整理、輸出，一次完成。",
+      "description": "AnvilNote 讓你從草稿一路做到 PDF，不用登入，也不用換工具。",
+      "cta": "開始寫作"
+    },
+    "demo": {
+      "search": "搜尋",
+      "documents": "文件",
+      "currentLabel": "AnvilNote 功能示範",
+      "appName": "AnvilNote",
+      "documentsNav": "文件",
+      "templates": "範本",
+      "settings": "設定",
+      "save": "儲存",
+      "export": "匯出 PDF",
+      "exportDisabled": "PDF 匯出可在正式工作區使用",
+      "outline": "大綱",
+      "metadata": "文件資訊",
+      "template": "範本",
+      "exportTab": "匯出",
+      "starterTitle": "AnvilNote 功能示範"
+    }
   },
   "locale": {
     "label": "語言",
@@ -391,7 +457,9 @@
     "saveFailed": "無法儲存文件。",
     "renderFailed": "無法轉換 PDF。",
     "settingsSaved": "已儲存偏好設定",
-    "localeSwitched": "介面語言已更新"
+    "localeSwitched": "介面語言已更新",
+    "exportSavedTo": "已匯出至 {path}",
+    "exportDownloaded": "已下載 {name}"
   },
   "pdfPreview": {
     "previousPage": "上一頁",

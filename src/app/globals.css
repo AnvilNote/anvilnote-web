@@ -134,6 +134,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
@@ -258,6 +259,275 @@
   width: 100%;
   height: auto;
   border-radius: 0.25rem;
+}
+
+/* ---------------------------------------------------------------------------
+ * Landing page demo motion — restrained, editorial, and content-first.
+ * ------------------------------------------------------------------------- */
+.landing-demo::after {
+  content: "";
+  position: absolute;
+  inset: auto 1.5rem 1.5rem auto;
+  width: 8rem;
+  height: 8rem;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, color-mix(in oklch, var(--foreground) 8%, transparent) 0%, transparent 68%);
+  pointer-events: none;
+}
+
+.landing-demo-block {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: landing-fade-up 14s ease-in-out infinite;
+}
+
+.landing-demo-block-1 {
+  animation-delay: 0.3s;
+}
+
+.landing-demo-block-2 {
+  animation-delay: 1.8s;
+}
+
+.landing-demo-block-3 {
+  animation-delay: 3.6s;
+}
+
+.landing-demo-block-4 {
+  animation-delay: 5.6s;
+}
+
+.landing-demo-block-5 {
+  animation-delay: 7.4s;
+}
+
+.landing-demo-cursor {
+  animation: landing-cursor 1.1s steps(1, end) infinite;
+}
+
+.landing-demo-editor {
+  animation: landing-editor-drift 14s ease-in-out infinite;
+}
+
+.landing-demo-line {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: landing-line-reveal 14s ease-in-out infinite;
+}
+
+.landing-demo-line-2 {
+  animation-delay: 2.2s;
+}
+
+.landing-demo-line-3 {
+  animation-delay: 4.6s;
+}
+
+.landing-demo-panel-tab {
+  animation: landing-panel-shift 14s ease-in-out infinite;
+}
+
+.landing-demo-panel-item {
+  opacity: 0.72;
+  animation: landing-outline-pulse 14s ease-in-out infinite;
+}
+
+.landing-demo-panel-item:nth-child(2) {
+  animation-delay: 2.2s;
+}
+
+.landing-demo-panel-item:nth-child(3) {
+  animation-delay: 4.2s;
+}
+
+.landing-demo-panel-item:nth-child(4) {
+  animation-delay: 6.2s;
+}
+
+.landing-demo .anvil-image__caption {
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.25rem;
+  flex-wrap: nowrap !important;
+  margin-inline: auto;
+}
+
+.landing-demo .anvil-image__caption-label {
+  flex: 0 0 auto;
+}
+
+.landing-demo .anvil-caption-input {
+  width: 120px !important;
+  max-width: 100%;
+  min-width: 0;
+  flex: 0 1 auto !important;
+}
+
+.landing-demo .anvil-table__caption {
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.35rem;
+  flex-wrap: nowrap !important;
+  margin-inline: auto;
+}
+
+.landing-demo-toolbar [title],
+.landing-demo-toolbar button {
+  transform: scale(0.95);
+  transform-origin: center;
+}
+
+.landing-demo .anvil-table__caption-label {
+  flex: 0 0 auto;
+}
+
+@keyframes landing-fade-up {
+
+  0%,
+  8% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  14%,
+  72% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  88%,
+  100% {
+    opacity: 0.96;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landing-cursor {
+
+  0%,
+  49% {
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes landing-line-reveal {
+
+  0%,
+  16% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  22%,
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landing-editor-drift {
+
+  0%,
+  15% {
+    transform: translateY(0);
+  }
+
+  28%,
+  48% {
+    transform: translateY(-6px);
+  }
+
+  62%,
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes landing-panel-shift {
+
+  0%,
+  58%,
+  100% {
+    color: var(--muted-foreground);
+  }
+
+  64%,
+  82% {
+    color: var(--foreground);
+  }
+}
+
+@keyframes landing-outline-pulse {
+
+  0%,
+  100% {
+    opacity: 0.56;
+    transform: translateX(0);
+  }
+
+  20%,
+  34% {
+    opacity: 0.92;
+    transform: translateX(2px);
+  }
+
+  42%,
+  100% {
+    opacity: 0.56;
+    transform: translateX(0);
+  }
+}
+
+@keyframes landing-marquee {
+
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.landing-marquee {
+  animation: landing-marquee 26s linear infinite;
+}
+
+.landing-marquee-track {
+  animation: landing-marquee 22s linear infinite;
+  will-change: transform;
+}
+
+.landing-marquee-group {
+  min-width: max-content;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .landing-marquee,
+  .landing-marquee-track,
+  .landing-demo-block,
+  .landing-demo-cursor,
+  .landing-demo-editor,
+  .landing-demo-line,
+  .landing-demo-panel-tab,
+  .landing-demo-panel-item {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .anvil-image--selected .anvil-image__frame {
@@ -601,7 +871,7 @@
   background: transparent;
 }
 
-.ProseMirror table[data-variant="three-line"] tr:first-child > * {
+.ProseMirror table[data-variant="three-line"] tr:first-child>* {
   border-bottom: 1px solid var(--foreground);
 }
 

@@ -12,6 +12,7 @@ import { useUiStore } from "@/lib/stores/ui-store";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import { getApiBaseUrl } from "@/lib/api";
+import { deliverPdf } from "@/lib/export-pdf";
 
 export function AppTopbar() {
   const t = useTranslations();
@@ -42,9 +43,18 @@ export function AppTopbar() {
       });
 
       if (result.pdfUrl) {
-        window.open(`${getApiBaseUrl()}${result.pdfUrl}`, "_blank", "noopener,noreferrer");
+        const delivered = await deliverPdf(
+          `${getApiBaseUrl()}${result.pdfUrl}`,
+          activeDoc.title,
+        );
+        toast.success(
+          delivered.kind === "folder"
+            ? t("toast.exportSavedTo", { path: delivered.path })
+            : t("toast.exportDownloaded", { name: delivered.fileName }),
+        );
+      } else {
+        toast.success(t("toast.exportReady"));
       }
-      toast.success(t("toast.exportReady"));
     } catch (error) {
       toast.error(
         error instanceof Error
