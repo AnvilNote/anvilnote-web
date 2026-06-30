@@ -65,11 +65,31 @@ function RightPanelContent({ documentId }: { documentId: string }) {
   return (
     <Tabs defaultValue="outline" className="flex h-full min-h-0 flex-col gap-0">
       <div className="px-3 pt-3">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="outline">{t("outline")}</TabsTrigger>
-          <TabsTrigger value="metadata">{t("metadata")}</TabsTrigger>
-          <TabsTrigger value="template">{t("template")}</TabsTrigger>
-          <TabsTrigger value="export">{t("export")}</TabsTrigger>
+        <TabsList className="grid h-auto w-full grid-cols-4 rounded-[1.7rem] bg-muted p-1">
+          <TabsTrigger
+            value="outline"
+            className="rounded-[1.3rem] px-2 py-1.5 text-[0.95rem] leading-none whitespace-nowrap data-active:bg-background data-active:shadow-sm"
+          >
+            {t("outline")}
+          </TabsTrigger>
+          <TabsTrigger
+            value="metadata"
+            className="rounded-[1.3rem] px-2 py-1.5 text-[0.95rem] leading-none whitespace-nowrap data-active:bg-background data-active:shadow-sm"
+          >
+            {t("metadata")}
+          </TabsTrigger>
+          <TabsTrigger
+            value="template"
+            className="rounded-[1.3rem] px-2 py-1.5 text-[0.95rem] leading-none whitespace-nowrap data-active:bg-background data-active:shadow-sm"
+          >
+            {t("template")}
+          </TabsTrigger>
+          <TabsTrigger
+            value="export"
+            className="rounded-[1.3rem] px-2 py-1.5 text-[0.95rem] leading-none whitespace-nowrap data-active:bg-background data-active:shadow-sm"
+          >
+            {t("export")}
+          </TabsTrigger>
         </TabsList>
       </div>
       <ScrollArea className="min-h-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:!block">

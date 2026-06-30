@@ -30,6 +30,7 @@ import { useDocumentStore } from "@/lib/stores/document-store";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import { useEditorBridge } from "@/lib/stores/editor-bridge";
 import { getApiBaseUrl } from "@/lib/api";
+import { deliverPdf } from "@/lib/export-pdf";
 import { locales } from "@/lib/i18n/routing";
 
 export function CommandMenu() {
@@ -80,13 +81,18 @@ export function CommandMenu() {
         includeMetadata: settings.exportIncludeMetadata,
       });
       if (result.pdfUrl) {
-        window.open(
+        const delivered = await deliverPdf(
           `${getApiBaseUrl()}${result.pdfUrl}`,
-          "_blank",
-          "noopener,noreferrer",
+          doc.title,
         );
+        toast.success(
+          delivered.kind === "folder"
+            ? t("toast.exportSavedTo", { path: delivered.path })
+            : t("toast.exportDownloaded", { name: delivered.fileName }),
+        );
+      } else {
+        toast.success(t("toast.exportReady"));
       }
-      toast.success(t("toast.exportReady"));
     } catch (error) {
       toast.error(
         error instanceof Error

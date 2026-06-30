@@ -1,26 +1,21 @@
 "use client";
 
+import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { FolderOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useMounted } from "@/hooks/use-mounted";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  getExportDirName,
+  pickExportDir,
+  supportsFileSystemAccess,
+} from "@/lib/export-target";
 
-// Common user folders. Chrome blocks these in `showDirectoryPicker` ("folder
-// contains system files"), so we offer them as direct choices — no browser
-// dialog — and reserve the native picker for arbitrary folders.
-const COMMON_FOLDERS = ["Downloads", "Desktop", "Documents"];
-const PICK_OTHER = "__pick_other__";
-
-type DirectoryPickerWindow = Window & {
-  showDirectoryPicker?: () => Promise<{ name: string }>;
-};
-
+// Lets the user pick a folder to export into. We keep the folder's directory
+// handle (in IndexedDB) so exports can create an "AnvilNote" subfolder inside it
+// and write the PDF there. `value` is the folder's display name, mirrored into
+// settings so the choice is visible elsewhere.
 export function FolderPicker({
   value,
   onChange,
@@ -29,51 +24,59 @@ export function FolderPicker({
   onChange: (next: string) => void;
 }) {
   const t = useTranslations("settings.export");
+  const mounted = useMounted();
+  // Optimistic before mount (avoids an SSR/hydration flash); real value after.
+  const supported = !mounted || supportsFileSystemAccess();
 
-  // Show the current value as its own item when it isn't one of the presets
-  // (e.g. a folder chosen via the native picker).
-  const isCustom = value !== "" && !COMMON_FOLDERS.includes(value);
+  useEffect(() => {
+    // Re-sync the label from the persisted handle (it's the source of truth).
+    void getExportDirName().then((name) => {
+      if (name && name !== value) onChange(name);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  async function pickNative() {
-    const picker = (window as DirectoryPickerWindow).showDirectoryPicker;
-    if (!picker) {
-      toast.error(t("folderUnsupported"));
-      return;
-    }
+  async function pick() {
     try {
-      const handle = await picker();
-      onChange(handle.name);
-      toast.success(t("folderSelected", { folder: handle.name }));
+      const name = await pickExportDir();
+      onChange(name);
+      toast.success(t("folderSelected", { folder: name }));
     } catch (error) {
       if ((error as DOMException)?.name === "AbortError") return;
+      if ((error as Error)?.message === "unsupported") {
+        toast.error(t("folderUnsupported"));
+        return;
+      }
       toast.error(t("folderBlocked"));
     }
   }
 
-  function onValueChange(next: string) {
-    if (next === PICK_OTHER) {
-      void pickNative();
-      return;
-    }
-    onChange(next);
-    toast.success(t("folderSelected", { folder: next }));
+  if (!supported) {
+    return (
+      <span className="text-sm text-muted-foreground">
+        {t("folderUnsupported")}
+      </span>
+    );
   }
 
   return (
-    <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger className="w-48">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {COMMON_FOLDERS.map((folder) => (
-          <SelectItem key={folder} value={folder}>
-            {folder}
-          </SelectItem>
-        ))}
-        {isCustom ? <SelectItem value={value}>{value}</SelectItem> : null}
-        <SelectSeparator />
-        <SelectItem value={PICK_OTHER}>{t("pickOther")}</SelectItem>
-      </SelectContent>
-    </Select>
+    <div className="flex items-center gap-2">
+      <span
+        className="max-w-[10rem] truncate text-sm text-muted-foreground"
+        title={value}
+      >
+        {value || t("folderNotSet")}
+      </span>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="gap-1.5"
+        onClick={() => void pick()}
+      >
+        <FolderOpen className="size-4" />
+        {t("chooseFolder")}
+      </Button>
+    </div>
   );
 }

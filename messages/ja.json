@@ -347,7 +347,8 @@
       "folderSelected": "保存先を{folder}に設定しました",
       "folderBlocked": "ブラウザがこのフォルダにアクセスできません。別の場所を選んでください。",
       "folderUnsupported": "お使いのブラウザはフォルダ選択に対応していません。",
-      "pickOther": "別のフォルダを選択…"
+      "pickOther": "別のフォルダを選択…",
+      "folderNotSet": "フォルダ未選択"
     },
     "save": "保存"
   },
@@ -368,6 +369,71 @@
     "insertInlineMath": "インライン数式を挿入",
     "insertBlockMath": "ブロック数式を挿入",
     "switchLocale": "{locale}に切り替え"
+  },
+  "landing": {
+    "hero": {
+      "label": "ローカルファースト執筆ワークスペース",
+      "line1": "ローカルで書き、",
+      "line2Before": "本格的な",
+      "highlight": "ノート",
+      "line2After": "を作る。",
+      "line3": "",
+      "kicker": "AnvilNote は編集・数式・コード・テンプレート・書き出しを一つのワークスペースにまとめ、長文の構成に集中できます。",
+      "description": "下にライブ編集エリアがあります。デモを直接編集して、ツールバー・スラッシュコマンド・数式・表を試せます。PDF 書き出しは正式なワークスペースで利用できます。",
+      "cta": "ワークスペースを開く",
+      "secondaryCta": "エディタを試す"
+    },
+    "nav": {
+      "product": "製品",
+      "documents": "ドキュメント",
+      "templates": "テンプレート",
+      "guide": "ガイド"
+    },
+    "valueStrip": {
+      "0": "ファイルはデバイス内に保存",
+      "1": "ブロックでレイアウトに悩まず長文を構成",
+      "2": "プレビュー・テンプレート適用・書き出しを下書き完成後に"
+    },
+    "sections": {
+      "localFirst": {
+        "title": "既定でローカルファースト",
+        "body": "アカウントは不要で、日々の執筆はクラウドサービスに縛られません。ドキュメント・下書き・履歴はすべて自分のマシンに残ります。"
+      },
+      "structuredWriting": {
+        "title": "構造的な執筆のために",
+        "body": "ただの白紙ではありません。見出し・段落・リスト・数式・コード・画像を同じドキュメントに置きつつ、長文の構造を明確に保てます。"
+      },
+      "exportWorkflow": {
+        "title": "一つの書き出しワークフロー",
+        "body": "テンプレート・プレビュー・書き出しは同じワークフローに属します。ノートが整ったら、書式を仕上げるために別のツールへ移す必要はありません。"
+      }
+    },
+    "showcase": {
+      "title": "ドキュメントを仕上げるテンプレート",
+      "description": "AnvilNote はエディタにとどまらず、配布資料・レポート・洗練されたノートへと内容を続けられます。"
+    },
+    "closing": {
+      "title": "書き、整理し、仕上げるための静かなワークスペース。",
+      "description": "下書きから書き出しまで、ワークフロー全体が一か所に。サインイン不要で、複数のツールを行き来する必要もありません。",
+      "cta": "書き始める"
+    },
+    "demo": {
+      "search": "検索",
+      "documents": "ドキュメント",
+      "currentLabel": "AnvilNote 機能ツアー",
+      "appName": "AnvilNote",
+      "documentsNav": "ドキュメント",
+      "templates": "テンプレート",
+      "settings": "設定",
+      "save": "保存",
+      "export": "PDFを書き出す",
+      "exportDisabled": "PDF 書き出しは正式なワークスペースで利用できます",
+      "outline": "アウトライン",
+      "metadata": "メタデータ",
+      "template": "テンプレート",
+      "exportTab": "書き出し",
+      "starterTitle": "AnvilNote 機能ツアー"
+    }
   },
   "locale": {
     "label": "言語",
@@ -391,7 +457,9 @@
     "saveFailed": "ドキュメントを保存できませんでした。",
     "renderFailed": "PDFを生成できませんでした。",
     "settingsSaved": "設定を保存しました",
-    "localeSwitched": "表示言語を更新しました"
+    "localeSwitched": "表示言語を更新しました",
+    "exportSavedTo": "{path} に書き出しました",
+    "exportDownloaded": "{name} をダウンロードしました"
   },
   "pdfPreview": {
     "previousPage": "前のページ",
