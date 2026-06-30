@@ -3,12 +3,15 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { MoreHorizontal, Pencil, Trash2, Copy } from "lucide-react";
+import { Check, Copy, FolderInput, Inbox, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -23,6 +26,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDocumentStore } from "@/lib/stores/document-store";
+import { useProjectStore } from "@/lib/stores/project-store";
+import { LucideIcon } from "@/lib/lucide-icon";
 import type { AnvilDocument } from "@/types/document";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +44,17 @@ export function DocumentActions({
   const renameDocument = useDocumentStore((s) => s.renameDocument);
   const deleteDocument = useDocumentStore((s) => s.deleteDocument);
   const duplicateDocument = useDocumentStore((s) => s.duplicateDocument);
+  const setDocumentProject = useDocumentStore((s) => s.setDocumentProject);
+  const projects = useProjectStore((s) => s.projects);
+
+  async function moveTo(projectId: string | null) {
+    try {
+      await setDocumentProject(doc.id, projectId);
+      toast.success(t("toast.documentMoved"));
+    } catch {
+      toast.error(t("toast.documentMoveFailed"));
+    }
+  }
 
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -84,6 +100,41 @@ export function DocumentActions({
             <Copy className="size-4" />
             {t("common.duplicate")}
           </DropdownMenuItem>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <FolderInput className="size-4" />
+              {t("projects.moveTo")}
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent className="max-h-72 overflow-y-auto">
+              <DropdownMenuItem
+                disabled={doc.projectId === null}
+                onSelect={() => void moveTo(null)}
+              >
+                <Inbox className="size-4 shrink-0 text-muted-foreground" />
+                <span className="truncate">{t("projects.unfiled")}</span>
+                {doc.projectId === null ? (
+                  <Check className="ml-auto size-4 shrink-0" />
+                ) : null}
+              </DropdownMenuItem>
+              {projects.length > 0 ? <DropdownMenuSeparator /> : null}
+              {projects.map((project) => (
+                <DropdownMenuItem
+                  key={project.id}
+                  disabled={doc.projectId === project.id}
+                  onSelect={() => void moveTo(project.id)}
+                >
+                  <LucideIcon
+                    iconName={project.icon}
+                    className="size-4 shrink-0 text-muted-foreground"
+                  />
+                  <span className="truncate">{project.name}</span>
+                  {doc.projectId === project.id ? (
+                    <Check className="ml-auto size-4 shrink-0" />
+                  ) : null}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"

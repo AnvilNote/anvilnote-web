@@ -22,7 +22,10 @@ export default function TemplatesPage() {
   const tr = (key: string) => (tt.has(key as never) ? tt(key as never) : key);
 
   async function startFromTemplate(id: string, name: string) {
-    const doc = await createDocument(id, t("documents.defaultTitle"));
+    const doc = await createDocument(id, t("documents.defaultTitle"), {
+      heading: t("documents.defaultHeading"),
+      body: t("documents.defaultBody"),
+    });
     router.push(`/documents/${doc.id}`);
     toast.success(t("toast.documentCreatedFromTemplate", { name }));
   }

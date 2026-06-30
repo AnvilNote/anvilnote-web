@@ -21,7 +21,10 @@ export default function DocumentsPage() {
   const getTemplate = useTemplatesStore((s) => s.getTemplate);
 
   async function handleNew() {
-    const doc = await createDocument(undefined, t("documents.defaultTitle"));
+    const doc = await createDocument(undefined, t("documents.defaultTitle"), {
+      heading: t("documents.defaultHeading"),
+      body: t("documents.defaultBody"),
+    });
     router.push(`/documents/${doc.id}`);
     toast.success(t("toast.documentCreated"));
   }

@@ -1,4 +1,36 @@
 {
+  "tour": {
+    "next": "Next",
+    "back": "Back",
+    "skip": "Skip tour",
+    "done": "Done",
+    "replay": "Replay the tour",
+    "step": "{current} / {total}",
+    "tabsProgress": "Viewed {visited} / {total}",
+    "createHint": "Click + to create your first document",
+    "steps": {
+      "sidebar": {
+        "title": "Collapse the sidebar",
+        "body": "Use this toggle to collapse or expand the sidebar and free up space."
+      },
+      "newDoc": {
+        "title": "Create a document",
+        "body": "Click the + next to Documents to create your first document."
+      },
+      "toolbar": {
+        "title": "Formatting toolbar",
+        "body": "Use the toolbar to format text and add headings, lists, tables, images and math."
+      },
+      "slash": {
+        "title": "Slash commands",
+        "body": "In the editor, type / to insert headings, lists, tables, images, math and more."
+      },
+      "panel": {
+        "title": "The right panel",
+        "body": "Click through Outline, Document info, Template and Export to see what each one does."
+      }
+    }
+  },
   "app": {
     "name": "AnvilNote",
     "tagline": "Forge your ideas into notes."
@@ -159,7 +191,28 @@
     "deleteTitle": "Delete document",
     "deleteDescription": "“{title}” will be permanently deleted and cannot be recovered.",
     "templateLabel": "Template",
-    "defaultTitle": "Untitled Notes"
+    "defaultTitle": "Untitled Notes",
+    "defaultHeading": "Your lecture starts here",
+    "defaultBody": "Start writing your note here."
+  },
+  "projects": {
+    "title": "Projects",
+    "create": "New project",
+    "defaultName": "Untitled project",
+    "empty": "No projects yet.",
+    "icon": "Icon",
+    "iconSearch": "Search icons…",
+    "iconEmpty": "No icons found.",
+    "edit": "Edit project",
+    "delete": "Delete project",
+    "name": "Name",
+    "namePlaceholder": "Project name",
+    "tags": "Tags",
+    "tagsPlaceholder": "Add a tag, press Enter",
+    "moveTo": "Move to",
+    "unfiled": "Unfiled",
+    "deleteTitle": "Delete project",
+    "deleteDescription": "“{name}” will be deleted. Its documents become unfiled."
   },
   "templates": {
     "title": "Templates",
@@ -295,7 +348,7 @@
   },
   "panel": {
     "outline": "Outline",
-    "metadata": "Document info",
+    "metadata": "Info",
     "template": "Template",
     "export": "Export",
     "outlineEmpty": "Headings will appear here as you write.",
@@ -448,6 +501,8 @@
     "documentCreated": "Document created",
     "documentCreatedFromTemplate": "Created a document from {name}",
     "documentDeleted": "Document deleted",
+    "documentMoved": "Document moved",
+    "documentMoveFailed": "Couldn’t move document",
     "documentRenamed": "Document renamed",
     "documentSaved": "Document saved",
     "templateSwitched": "Switched to {name}",

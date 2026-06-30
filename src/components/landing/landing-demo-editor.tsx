@@ -46,7 +46,7 @@ import {
   type SlashItem,
 } from "@/components/editor/slash-command-menu";
 import { Button } from "@/components/ui/button";
-import { AutosaveIndicator, type SaveStatus } from "@/components/editor/autosave-indicator";
+import { AutosaveIndicatorView, type SaveStatus } from "@/components/editor/autosave-indicator";
 import { buildExtensions, type MathClickMode } from "@/lib/tiptap/extensions";
 import { pickAndInsertImage } from "@/lib/tiptap/image";
 import {
@@ -620,7 +620,7 @@ export function LandingDemoEditor({ copy }: { copy: DemoCopy }) {
                 ) : null}
               </div>
               <div className="shrink-0">
-                <AutosaveIndicator status={status} />
+                <AutosaveIndicatorView status={status} />
               </div>
             </div>
           </div>

@@ -8,6 +8,7 @@ import { LandingDemoEditor } from "@/components/landing/landing-demo-editor";
 import { HeroParticles } from "@/components/landing/hero-particles";
 import { ShowcaseCarousel } from "@/components/landing/showcase-carousel";
 import { Button } from "@/components/ui/button";
+import { TransitionLink } from "@/components/transition/transition-link";
 
 type LandingCopy = {
   heroLabel: string;
@@ -147,7 +148,7 @@ export default async function LocaleIndexPage({
             <Link href="#demo">{copy.secondaryCta}</Link>
           </Button>
           <Button asChild size="lg" className="rounded-2xl px-4 text-sm">
-            <Link href="/documents">{copy.cta}</Link>
+            <TransitionLink href="/documents">{copy.cta}</TransitionLink>
           </Button>
         </div>
       </header>
@@ -177,7 +178,7 @@ export default async function LocaleIndexPage({
 
               <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
                 <Button asChild size="lg" className="h-11 rounded-full px-6">
-                  <Link href="/documents">{copy.cta}</Link>
+                  <TransitionLink href="/documents">{copy.cta}</TransitionLink>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="h-11 rounded-full px-6">
                   <Link href="#demo">{copy.secondaryCta}</Link>
@@ -263,7 +264,7 @@ export default async function LocaleIndexPage({
             </div>
 
             <Button asChild size="lg" className="h-11 rounded-full px-6">
-              <Link href="/documents">{copy.closingCta}</Link>
+              <TransitionLink href="/documents">{copy.closingCta}</TransitionLink>
             </Button>
           </div>
         </section>
