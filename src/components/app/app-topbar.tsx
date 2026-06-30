@@ -3,10 +3,9 @@
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";
-import { FileDown, Loader2, PanelRight, Save, Search } from "lucide-react";
+import { FileDown, Loader2, PanelRight, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
 import { LocaleSwitcher } from "@/components/app/locale-switcher";
 import { ThemeToggle } from "@/components/app/theme-toggle";
 import { useUiStore } from "@/lib/stores/ui-store";
@@ -17,7 +16,6 @@ import { getApiBaseUrl } from "@/lib/api";
 export function AppTopbar() {
   const t = useTranslations();
   const params = useParams();
-  const setCommandOpen = useUiStore((s) => s.setCommandOpen);
   const setMobilePanelOpen = useUiStore((s) => s.setMobilePanelOpen);
 
   const documents = useDocumentStore((s) => s.documents);
@@ -76,19 +74,6 @@ export function AppTopbar() {
   return (
     <header className="sticky top-0 z-20 flex h-13 shrink-0 items-center gap-1 border-b bg-background/80 px-2 md:gap-1.5 md:px-3 backdrop-blur">
       <SidebarTrigger className="text-muted-foreground" />
-      <Separator orientation="vertical" className="mr-1 hidden h-5 md:block" />
-
-      <button
-        type="button"
-        onClick={() => setCommandOpen(true)}
-        className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg border bg-muted/40 px-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:max-w-md md:px-3"
-      >
-        <Search className="size-4" />
-        <span className="flex-1 truncate text-left">{t("topbar.search")}</span>
-        <kbd className="pointer-events-none hidden rounded border bg-background px-1.5 font-mono text-[10px] md:inline">
-          ⌘K
-        </kbd>
-      </button>
 
       <div className="ml-auto flex shrink-0 items-center gap-0.5 md:gap-1">
         <ThemeToggle />

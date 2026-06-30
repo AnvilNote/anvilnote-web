@@ -6,6 +6,8 @@ import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TemplatePreviewButton } from "@/components/templates/template-preview-button";
+import { TemplatePreviewThumbnail } from "@/components/templates/template-preview-thumbnail";
 import { useRouter } from "@/lib/i18n/navigation";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useTemplatesStore } from "@/lib/stores/templates-store";
@@ -45,12 +47,27 @@ export default function TemplatesPage() {
                   <CardTitle className="text-base">
                     {tr(template.name)}
                   </CardTitle>
-                  <Badge variant="secondary" className="font-normal">
-                    {tr(`categories.${template.category}`)}
-                  </Badge>
+                  <div className="flex items-center gap-1">
+                    <Badge variant="secondary" className="font-normal">
+                      {tr(`categories.${template.category}`)}
+                    </Badge>
+                    <TemplatePreviewButton
+                      template={template}
+                      displayName={tr(template.name)}
+                      description={tr(template.description)}
+                      onUseTemplate={(id) =>
+                        void startFromTemplate(id, tr(template.name))
+                      }
+                    />
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="flex flex-1 flex-col gap-4">
+                <TemplatePreviewThumbnail
+                  template={template}
+                  displayName={tr(template.name)}
+                  className="aspect-[16/10]"
+                />
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   {tr(template.description)}
                 </p>

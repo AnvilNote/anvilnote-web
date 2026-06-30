@@ -45,6 +45,7 @@ export function CommandMenu() {
   const createDocument = useDocumentStore((s) => s.createDocument);
   const renderDocument = useDocumentStore((s) => s.renderDocument);
   const documents = useDocumentStore((s) => s.documents);
+  const setActiveDocument = useDocumentStore((s) => s.setActive);
   const settings = useSettingsStore();
   const requestMath = useEditorBridge((s) => s.requestMath);
 
@@ -106,6 +107,33 @@ export function CommandMenu() {
         <CommandInput placeholder={t("command.placeholder")} />
         <CommandList>
           <CommandEmpty>{t("command.empty")}</CommandEmpty>
+
+          {documents.length > 0 ? (
+            <>
+              <CommandGroup heading={t("nav.documents")}>
+                {documents.map((doc) => {
+                  const title = doc.title || t("documents.untitled");
+                  return (
+                    <CommandItem
+                      key={doc.id}
+                      // cmdk fuzzy-matches the typed query against this value.
+                      value={`${title} ${doc.id}`}
+                      onSelect={() =>
+                        run(() => {
+                          setActiveDocument(doc.id);
+                          router.push(`/documents/${doc.id}`);
+                        })
+                      }
+                    >
+                      <FileText className="size-4" />
+                      <span className="truncate">{title}</span>
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+              <CommandSeparator />
+            </>
+          ) : null}
 
           <CommandGroup heading={t("command.groups.actions")}>
             <CommandItem

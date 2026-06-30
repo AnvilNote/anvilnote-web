@@ -1,6 +1,7 @@
 import { defineRouting } from "next-intl/routing";
 
-export const locales = ["en", "zh-TW"] as const;
+// Display + routing order. Default locale stays English regardless of order.
+export const locales = ["zh-TW", "en", "ja", "ko", "th", "ru"] as const;
 export type AppLocale = (typeof locales)[number];
 
 export const routing = defineRouting({

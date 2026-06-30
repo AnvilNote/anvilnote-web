@@ -1,0 +1,412 @@
+{
+  "app": {
+    "name": "AnvilNote",
+    "tagline": "Выкуйте идеи в заметки."
+  },
+  "nav": {
+    "newDocument": "Новый документ",
+    "search": "Поиск",
+    "documents": "Документы",
+    "templates": "Шаблоны",
+    "recent": "Недавние",
+    "settings": "Настройки"
+  },
+  "topbar": {
+    "search": "Поиск или ввод команды",
+    "export": "Экспорт в PDF",
+    "togglePanel": "Показать или скрыть панель",
+    "openMenu": "Открыть меню"
+  },
+  "common": {
+    "open": "Открыть",
+    "rename": "Переименовать",
+    "duplicate": "Дублировать",
+    "delete": "Удалить",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "close": "Закрыть",
+    "none": "Нет",
+    "optional": "Необязательно",
+    "required": "Обязательно"
+  },
+  "editor": {
+    "untitled": "Документ без названия",
+    "titlePlaceholder": "Документ без названия",
+    "writePlaceholder": "Начните вводить или нажмите «/», чтобы открыть меню команд",
+    "emptyTitle": "Нет открытого документа",
+    "emptyDescription": "Выберите документ на боковой панели или создайте новый, чтобы начать редактирование.",
+    "createDocument": "Создать документ",
+    "autosave": {
+      "saved": "Сохранено",
+      "saving": "Сохранение…",
+      "unsaved": "Не сохранено"
+    },
+    "oldDocReset": "Эта заметка создана в старом редакторе и не могла быть перенесена автоматически, поэтому стала пустой страницей.",
+    "block": {
+      "menu": "Настройки блока",
+      "delete": "Удалить: {type}",
+      "types": {
+        "paragraph": "абзац",
+        "heading1": "заголовок 1",
+        "heading2": "заголовок 2",
+        "heading3": "заголовок 3",
+        "bulletList": "маркированный список",
+        "orderedList": "нумерованный список",
+        "blockquote": "цитата",
+        "codeBlock": "блок кода",
+        "image": "изображение",
+        "table": "таблица",
+        "blockMath": "блочная формула",
+        "divider": "разделитель",
+        "block": "блок"
+      },
+      "color": "Цвет текста",
+      "colors": {
+        "default": "По умолчанию",
+        "gray": "Серый",
+        "red": "Красный",
+        "orange": "Оранжевый",
+        "green": "Зелёный",
+        "blue": "Синий",
+        "purple": "Фиолетовый"
+      }
+    },
+    "toolbar": {
+      "paragraph": "Абзац",
+      "heading1": "Заголовок 1",
+      "heading2": "Заголовок 2",
+      "heading3": "Заголовок 3",
+      "bold": "Полужирный",
+      "italic": "Курсив",
+      "strike": "Зачёркнутый",
+      "code": "Строчный код",
+      "bulletList": "Маркированный список",
+      "orderedList": "Нумерованный список",
+      "taskList": "Список задач",
+      "blockquote": "Цитата",
+      "codeBlock": "Блок кода",
+      "link": "Ссылка",
+      "table": "Таблица",
+      "image": "Изображение",
+      "inlineMath": "Строчная формула",
+      "blockMath": "Блочная формула",
+      "undo": "Отменить",
+      "redo": "Повторить",
+      "linkPrompt": "Введите URL",
+      "linkApply": "Применить ссылку",
+      "linkRemove": "Удалить ссылку",
+      "tableNormal": "Обычная таблица",
+      "tableThreeLine": "Таблица из трёх линий",
+      "tableAlignLeft": "Выровнять таблицу по левому краю",
+      "tableAlignCenter": "Выровнять таблицу по центру",
+      "tableAlignRight": "Выровнять таблицу по правому краю"
+    },
+    "slash": {
+      "text": "Текст",
+      "heading1": "Заголовок 1",
+      "heading2": "Заголовок 2",
+      "heading3": "Заголовок 3",
+      "bulletList": "Маркированный список",
+      "orderedList": "Нумерованный список",
+      "taskList": "Список задач",
+      "quote": "Цитата",
+      "codeBlock": "Блок кода",
+      "table": "Таблица",
+      "image": "Изображение",
+      "inlineMath": "Строчная формула",
+      "inlineMathHint": "Вставить формулу LaTeX в строку",
+      "blockMath": "Блочная формула",
+      "blockMathHint": "Вставить отдельную формулу"
+    },
+    "image": {
+      "figure": "Рисунок",
+      "captionPlaceholder": "Введите подпись к изображению",
+      "left": "По левому краю",
+      "center": "По центру",
+      "right": "По правому краю"
+    },
+    "table": {
+      "figure": "Таблица",
+      "captionPlaceholder": "Введите подпись к таблице",
+      "pickSize": "Выберите размер таблицы"
+    },
+    "math": {
+      "editTitle": "Редактировать формулу",
+      "insertInlineTitle": "Вставить строчную формулу",
+      "insertBlockTitle": "Вставить отдельную формулу",
+      "inlineHint": "Строчная формула располагается внутри строки текста.",
+      "displayHint": "Выключная формула располагается на отдельной строке — удобно для длинных формул.",
+      "source": "Содержимое LaTeX",
+      "preview": "Предпросмотр",
+      "emptyPreview": "Введите LaTeX — предпросмотр появится здесь.",
+      "invalid": "Недопустимая формула — проверьте синтаксис LaTeX.",
+      "save": "Сохранить",
+      "cancel": "Отмена"
+    },
+    "codeBlock": {
+      "selectLanguage": "Выберите язык"
+    }
+  },
+  "documents": {
+    "title": "Документы",
+    "subtitle": "Ваши заметки и материалы синхронизируются автоматически.",
+    "empty": "Пока нет документов.",
+    "emptyHint": "Создайте первый документ, чтобы начать.",
+    "newDocument": "Новый документ",
+    "count": "{count, plural, =0 {Нет документов} one {# документ} few {# документа} other {# документов}}",
+    "lastEdited": "Последнее изменение: {date}",
+    "untitled": "Документ без названия",
+    "deleteTitle": "Удалить документ",
+    "deleteDescription": "«{title}» будет удалён безвозвратно.",
+    "templateLabel": "Шаблон",
+    "defaultTitle": "Заметки без названия"
+  },
+  "templates": {
+    "title": "Шаблоны",
+    "subtitle": "Выберите макет документа. Смена шаблона не затронет существующее содержимое.",
+    "current": "Текущий шаблон",
+    "use": "Применить шаблон",
+    "inUse": "Сейчас используется",
+    "categories": {
+      "note": "Заметка",
+      "lecture": "Лекция",
+      "academic": "Научный",
+      "teaching": "Преподавание",
+      "report": "Отчёт"
+    },
+    "items": {
+      "plain-note": {
+        "name": "Plain Note",
+        "description": "Чистая страница без метаданных. Просто пишите."
+      },
+      "lecture-note": {
+        "name": "Lecture Note",
+        "description": "Подходит для конспектов лекций: укажите курс, лектора и дату."
+      },
+      "academic-handout": {
+        "name": "Academic Handout",
+        "description": "Подходит для официальных материалов: укажите автора, учреждение и аннотацию."
+      },
+      "problem-set": {
+        "name": "Problem Set",
+        "description": "Подходит для задачников: задайте срок сдачи и переключатель решений."
+      },
+      "reading-note": {
+        "name": "Reading Note",
+        "description": "Подходит для читательских заметок: запишите автора, страницы и вывод."
+      },
+      "bananote": {
+        "name": "Bananote",
+        "description": "Более яркая заметка с игривым банановым акцентом."
+      },
+      "bubble": {
+        "name": "Bubble",
+        "description": "Подходит для занятий: задайте заголовок, подзаголовок и акцентный цвет."
+      },
+      "flow-way": {
+        "name": "Flow Way",
+        "description": "Подходит для обычных отчётов: добавьте подзаголовок и оглавление."
+      },
+      "hetvid": {
+        "name": "Hetvid",
+        "description": "Подходит для научных статей: задайте аннотацию, версию и язык."
+      },
+      "kunskap": {
+        "name": "Kunskap",
+        "description": "Подходит для учебных отчётов: укажите автора, курс и размер бумаги."
+      }
+    },
+    "fields": {
+      "course": "Курс",
+      "lecturer": "Лектор",
+      "date": "Дата",
+      "topic": "Тема",
+      "author": "Автор",
+      "institution": "Учреждение",
+      "level": "Уровень",
+      "abstract": "Аннотация",
+      "draft": "Отметить как черновик",
+      "instructor": "Преподаватель",
+      "dueDate": "Срок сдачи",
+      "difficulty": "Сложность",
+      "showSolutions": "Показать решения",
+      "source": "Источник",
+      "pages": "Страницы",
+      "recommended": "Рекомендовано",
+      "title": "Название",
+      "affiliation": "Аффилиация",
+      "version": "Версия",
+      "bananaColor": "Цвет банана",
+      "subtitle": "Подзаголовок",
+      "year": "Год",
+      "courseName": "Курс",
+      "mainColor": "Акцентный цвет",
+      "toc": "Оглавление",
+      "tocDepth": "Глубина оглавления",
+      "paperSize": "Размер бумаги",
+      "lang": "Язык",
+      "colorlinks": "Цветные ссылки",
+      "primaryLang": "Основной язык",
+      "titleFont": "Шрифт заголовка",
+      "bodyFont": "Шрифт текста",
+      "dateFont": "Шрифт даты",
+      "mathMode": "Шрифт формул"
+    },
+    "placeholders": {
+      "course": "напр. Действительный анализ",
+      "lecturer": "напр. д-р Линь",
+      "date": "",
+      "topic": "напр. Компактность",
+      "author": "напр. Anthony Sung",
+      "institution": "напр. Национальный университет Тайваня",
+      "abstract": "Введите краткое резюме",
+      "instructor": "напр. проф. Чэнь",
+      "dueDate": "",
+      "source": "напр. Rudin, Principles of Mathematical Analysis",
+      "pages": "напр. 12–34"
+    },
+    "options": {
+      "undergraduate": "Бакалавриат",
+      "graduate": "Магистратура",
+      "seminar": "Семинар",
+      "easy": "Лёгкая",
+      "medium": "Средняя",
+      "hard": "Сложная",
+      "a4": "A4",
+      "letter": "Letter",
+      "en": "Английский",
+      "zh": "Китайский",
+      "ja": "Японский",
+      "ko": "Корейский",
+      "th": "Тайский",
+      "taiwan-pearl": "TaiwanPearl (округлый)",
+      "source-han": "Source Han Sans",
+      "song": "MOE Song",
+      "kai": "MOE Kai",
+      "playfair": "Playfair Display",
+      "tai-heritage": "Tai Heritage Pro",
+      "default": "По умолчанию (New Computer Modern)",
+      "garamond": "Garamond (EB Garamond)"
+    },
+    "previewTemplate": "Посмотреть шаблон",
+    "templatePreview": "Предпросмотр",
+    "useThisTemplate": "Применить этот шаблон",
+    "noPreviewAvailable": "Для этого шаблона пока нет предпросмотра"
+  },
+  "panel": {
+    "outline": "Структура",
+    "metadata": "Сведения о документе",
+    "template": "Шаблон",
+    "export": "Экспорт",
+    "outlineEmpty": "Заголовки появятся здесь по мере написания.",
+    "outlineDocument": "Документ",
+    "metadataEmpty": "В этом шаблоне нет полей для заполнения.",
+    "metadataHint": "Поля зависят от шаблона; необязательные можно оставить пустыми."
+  },
+  "export": {
+    "title": "Экспорт",
+    "subtitle": "Просмотрите содержимое экспорта и выведите текущий документ в PDF.",
+    "template": "Шаблон",
+    "pageSize": "Размер страницы",
+    "fontPreset": "Набор шрифтов",
+    "includeMetadata": "Включить сведения о документе",
+    "fonts": {
+      "sans": "Без засечек",
+      "serif": "С засечками",
+      "mono": "Моноширинный"
+    },
+    "button": "Экспорт в PDF",
+    "exporting": "Экспорт…",
+    "payloadTitle": "Данные экспорта",
+    "payloadHint": "Это данные, отправляемые при экспорте."
+  },
+  "settings": {
+    "title": "Настройки",
+    "subtitle": "Эти настройки хранятся только на этом устройстве.",
+    "appearance": {
+      "title": "Внешний вид",
+      "description": "Настройте внешний вид AnvilNote.",
+      "theme": "Тема",
+      "themeHint": "Выберите светлый или тёмный режим.",
+      "themeLight": "Светлая",
+      "themeDark": "Тёмная"
+    },
+    "language": {
+      "title": "Язык",
+      "description": "Выберите язык интерфейса.",
+      "label": "Язык интерфейса"
+    },
+    "export": {
+      "title": "Параметры экспорта по умолчанию",
+      "description": "Значения по умолчанию для экспорта документа.",
+      "pageSize": "Размер страницы по умолчанию",
+      "fontPreset": "Набор шрифтов по умолчанию",
+      "storageLocation": "Папка сохранения",
+      "storageLocationHint": "Куда сохраняются экспортированные PDF.",
+      "chooseFolder": "Выбрать папку",
+      "folderSelected": "Папка сохранения: {folder}",
+      "folderBlocked": "Браузер не может получить доступ к этой папке. Выберите другое расположение.",
+      "folderUnsupported": "Ваш браузер не поддерживает выбор папки.",
+      "pickOther": "Выбрать другую папку…"
+    },
+    "save": "Сохранить"
+  },
+  "command": {
+    "placeholder": "Поиск или ввод команды…",
+    "empty": "Нет подходящих результатов.",
+    "groups": {
+      "actions": "Действия",
+      "editor": "Редактор",
+      "navigation": "Навигация",
+      "language": "Язык"
+    },
+    "newDocument": "Создать новый документ",
+    "goDocuments": "Перейти к документам",
+    "goTemplates": "Перейти к шаблонам",
+    "goSettings": "Перейти к настройкам",
+    "export": "Экспортировать текущий документ в PDF",
+    "insertInlineMath": "Вставить строчную формулу",
+    "insertBlockMath": "Вставить блочную формулу",
+    "switchLocale": "Переключить на {locale}"
+  },
+  "locale": {
+    "label": "Язык",
+    "en": "English",
+    "zh-TW": "繁體中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "th": "ไทย",
+    "ru": "Русский"
+  },
+  "toast": {
+    "documentCreated": "Документ создан",
+    "documentCreatedFromTemplate": "Документ создан из {name}",
+    "documentDeleted": "Документ удалён",
+    "documentRenamed": "Документ переименован",
+    "documentSaved": "Документ сохранён",
+    "templateSwitched": "Переключено на {name}",
+    "exportMocked": "Рендерер ещё не подключён — это имитация экспорта.",
+    "exportReady": "PDF экспортирован.",
+    "noDocument": "Сначала откройте документ.",
+    "saveFailed": "Не удалось сохранить документ.",
+    "renderFailed": "Не удалось отрендерить PDF.",
+    "settingsSaved": "Настройки сохранены",
+    "localeSwitched": "Язык интерфейса обновлён"
+  },
+  "pdfPreview": {
+    "previousPage": "Предыдущая страница",
+    "nextPage": "Следующая страница",
+    "page": "Страница",
+    "of": "из",
+    "zoomIn": "Увеличить",
+    "zoomOut": "Уменьшить",
+    "resetZoom": "Сбросить масштаб",
+    "downloadPdf": "Скачать PDF",
+    "openPdf": "Открыть PDF",
+    "loadingPreview": "Загрузка предпросмотра…",
+    "failedToLoadPreview": "Не удалось загрузить предпросмотр",
+    "pdfPreviewUnavailable": "Предпросмотр PDF сейчас недоступен",
+    "previewFileMissing": "Файл предпросмотра не найден",
+    "pageIndicator": "Страница {current} из {total}"
+  }
+}

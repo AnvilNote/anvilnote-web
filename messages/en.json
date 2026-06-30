@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "AnvilNote",
-    "tagline": "Forge beautiful notes."
+    "tagline": "Forge your ideas into notes."
   },
   "nav": {
     "newDocument": "New document",
@@ -12,9 +12,9 @@
     "settings": "Settings"
   },
   "topbar": {
-    "search": "Search or run a command",
+    "search": "Search or type a command",
     "export": "Export PDF",
-    "togglePanel": "Toggle panel",
+    "togglePanel": "Show or hide the panel",
     "openMenu": "Open menu"
   },
   "common": {
@@ -30,20 +30,20 @@
     "required": "Required"
   },
   "editor": {
-    "untitled": "Untitled Lecture",
+    "untitled": "Untitled document",
     "titlePlaceholder": "Untitled document",
-    "writePlaceholder": "Start writing, or press \"/\" for commands",
-    "emptyTitle": "Nothing here yet",
-    "emptyDescription": "Select a document from the sidebar or create a new one to begin writing.",
+    "writePlaceholder": "Start typing, or press \"/\" to open the command menu",
+    "emptyTitle": "No document open",
+    "emptyDescription": "Select a document from the sidebar, or create a new one to start editing.",
     "createDocument": "Create document",
     "autosave": {
       "saved": "Saved",
       "saving": "Saving…",
       "unsaved": "Unsaved"
     },
-    "oldDocReset": "This note used the old editor and couldn't be migrated automatically — it was reset to a blank page.",
+    "oldDocReset": "This note was created in the old editor and couldn’t be migrated automatically, so it’s now a blank page.",
     "block": {
-      "menu": "Block options",
+      "menu": "Block settings",
       "delete": "Delete {type}",
       "types": {
         "paragraph": "paragraph",
@@ -114,9 +114,9 @@
       "table": "Table",
       "image": "Image",
       "inlineMath": "Inline math",
-      "inlineMathHint": "Insert inline LaTeX",
+      "inlineMathHint": "Insert a LaTeX formula inline",
       "blockMath": "Block math",
-      "blockMathHint": "Insert a display equation"
+      "blockMathHint": "Insert a standalone formula"
     },
     "image": {
       "figure": "Figure",
@@ -133,12 +133,12 @@
     "math": {
       "editTitle": "Edit equation",
       "insertInlineTitle": "Insert inline equation",
-      "insertBlockTitle": "Insert display equation",
+      "insertBlockTitle": "Insert standalone equation",
       "inlineHint": "Inline math flows within the line of text.",
-      "displayHint": "Display math is centered on its own line.",
-      "source": "LaTeX source",
+      "displayHint": "Display math appears on its own line — good for longer formulas.",
+      "source": "LaTeX content",
       "preview": "Preview",
-      "emptyPreview": "Type LaTeX to see a preview.",
+      "emptyPreview": "Once you type LaTeX, the preview appears here.",
       "invalid": "Invalid equation — check the LaTeX syntax.",
       "save": "Save",
       "cancel": "Cancel"
@@ -149,24 +149,24 @@
   },
   "documents": {
     "title": "Documents",
-    "subtitle": "All of your notes and handouts, synced through the API.",
+    "subtitle": "Your notes and handouts sync automatically.",
     "empty": "No documents yet.",
     "emptyHint": "Create your first document to get started.",
     "newDocument": "New document",
     "count": "{count, plural, =0 {No documents} =1 {1 document} other {# documents}}",
-    "lastEdited": "Edited {date}",
+    "lastEdited": "Last edited: {date}",
     "untitled": "Untitled document",
     "deleteTitle": "Delete document",
-    "deleteDescription": "This will permanently remove \"{title}\". This cannot be undone.",
+    "deleteDescription": "“{title}” will be permanently deleted and cannot be recovered.",
     "templateLabel": "Template",
     "defaultTitle": "Untitled Notes"
   },
   "templates": {
     "title": "Templates",
-    "subtitle": "Choose a starting structure. Switching keeps your content.",
+    "subtitle": "Choose a layout for your document. Switching templates won’t affect existing content.",
     "current": "Current template",
-    "use": "Use template",
-    "inUse": "In use",
+    "use": "Apply template",
+    "inUse": "Currently in use",
     "categories": {
       "note": "Note",
       "lecture": "Lecture",
@@ -181,39 +181,39 @@
       },
       "lecture-note": {
         "name": "Lecture Note",
-        "description": "Capture a lecture with course, lecturer and date."
+        "description": "Good for organizing course content; add the course, lecturer, and date."
       },
       "academic-handout": {
         "name": "Academic Handout",
-        "description": "A formal handout with author, institution and abstract."
+        "description": "Good for formal handouts; add the author, institution, and abstract."
       },
       "problem-set": {
         "name": "Problem Set",
-        "description": "Structured problems with due date and solution toggle."
+        "description": "Good for problem sets; set a due date and toggle solutions."
       },
       "reading-note": {
         "name": "Reading Note",
-        "description": "Notes on a source with author, pages and a verdict."
+        "description": "Good for reading notes; record the author, pages, and a verdict."
       },
       "bananote": {
         "name": "Bananote",
-        "description": "A playful note with a splash of color and a banana accent."
+        "description": "A more colorful note with a playful banana accent."
       },
       "bubble": {
         "name": "Bubble",
-        "description": "Lecture slides with a course title, subtitle and accent color."
+        "description": "Good for class presentations; set a title, subtitle, and accent color."
       },
       "flow-way": {
         "name": "Flow Way",
-        "description": "A flowing report with subtitle and a table of contents."
+        "description": "Good for general reports; add a subtitle and table of contents."
       },
       "hetvid": {
         "name": "Hetvid",
-        "description": "An academic paper with abstract, version and language."
+        "description": "Good for academic papers; set the abstract, version, and language."
       },
       "kunskap": {
         "name": "Kunskap",
-        "description": "A clean course report with author, course and paper size."
+        "description": "Good for course reports; add the author, course, and paper size."
       }
     },
     "fields": {
@@ -259,7 +259,7 @@
       "topic": "e.g. Compactness",
       "author": "e.g. Anthony Sung",
       "institution": "e.g. National Taiwan University",
-      "abstract": "A short summary",
+      "abstract": "Enter a short summary",
       "instructor": "e.g. Prof. Chen",
       "dueDate": "",
       "source": "e.g. Rudin, Principles of Mathematical Analysis",
@@ -287,74 +287,73 @@
       "tai-heritage": "Tai Heritage Pro",
       "default": "Default (New Computer Modern)",
       "garamond": "Garamond (EB Garamond)"
-    }
+    },
+    "previewTemplate": "View template",
+    "templatePreview": "Preview",
+    "useThisTemplate": "Apply this template",
+    "noPreviewAvailable": "No preview for this template yet"
   },
   "panel": {
     "outline": "Outline",
-    "metadata": "Metadata",
+    "metadata": "Document info",
     "template": "Template",
     "export": "Export",
-    "preview": "Preview",
     "outlineEmpty": "Headings will appear here as you write.",
     "outlineDocument": "Document",
-    "metadataEmpty": "This template has no metadata fields.",
-    "metadataHint": "Fields come from the selected template. Optional fields can stay empty."
+    "metadataEmpty": "This template has no fields to fill in.",
+    "metadataHint": "These fields come from the template; optional ones can be left blank."
   },
   "export": {
     "title": "Export",
-    "subtitle": "Preview the export payload and render the current document to PDF.",
+    "subtitle": "Preview the export and output the current document as a PDF.",
     "template": "Template",
     "pageSize": "Page size",
     "fontPreset": "Font preset",
-    "includeMetadata": "Include metadata",
+    "includeMetadata": "Include document info",
     "fonts": {
       "sans": "Sans",
       "serif": "Serif",
       "mono": "Mono"
     },
     "button": "Export PDF",
-    "exporting": "Preparing export…",
-    "payloadTitle": "Export payload",
-    "payloadHint": "This is the JSON that will be sent to the renderer."
+    "exporting": "Exporting…",
+    "payloadTitle": "Export data",
+    "payloadHint": "This is the data sent when you export."
   },
   "settings": {
     "title": "Settings",
-    "subtitle": "Preferences are stored locally on this device.",
+    "subtitle": "These settings are stored only on this device.",
     "appearance": {
       "title": "Appearance",
-      "description": "AnvilNote uses a single, focused visual mode.",
+      "description": "Adjust how AnvilNote looks.",
       "theme": "Theme",
-      "themeHint": "Switch between light and dark, or follow the system.",
+      "themeHint": "Choose light or dark mode.",
       "themeLight": "Light",
-      "themeDark": "Dark",
-      "themeSystem": "System",
-      "mode": "Design mode",
-      "monochrome": "Monochrome"
+      "themeDark": "Dark"
     },
     "language": {
       "title": "Language",
       "description": "Choose the interface language.",
       "label": "Interface language"
     },
-    "editor": {
-      "title": "Editor",
-      "description": "Tune the writing experience.",
-      "autosave": "Autosave",
-      "autosaveHint": "Automatically save changes while you write.",
-      "spellcheck": "Spell check",
-      "spellcheckHint": "Underline possible spelling mistakes."
-    },
     "export": {
       "title": "Export defaults",
-      "description": "Defaults applied when exporting a document.",
+      "description": "Set the defaults used when exporting a document.",
       "pageSize": "Default page size",
       "fontPreset": "Default font preset",
-      "includeMetadata": "Include metadata by default"
-    }
+      "storageLocation": "Save location",
+      "storageLocationHint": "Where exported PDFs are saved.",
+      "chooseFolder": "Choose folder",
+      "folderSelected": "Folder set to {folder}",
+      "folderBlocked": "The browser can’t access this folder. Choose another location.",
+      "folderUnsupported": "Your browser does not support folder picking.",
+      "pickOther": "Choose another folder…"
+    },
+    "save": "Save"
   },
   "command": {
-    "placeholder": "Type a command or search…",
-    "empty": "No results found.",
+    "placeholder": "Search or type a command…",
+    "empty": "No matching results.",
     "groups": {
       "actions": "Actions",
       "editor": "Editor",
@@ -365,27 +364,19 @@
     "goDocuments": "Go to documents",
     "goTemplates": "Go to templates",
     "goSettings": "Go to settings",
-    "export": "Export current document",
+    "export": "Export current document as PDF",
     "insertInlineMath": "Insert inline math",
     "insertBlockMath": "Insert block math",
-    "switchLocale": "Switch language to {locale}"
-  },
-  "preview": {
-    "notConnected": "Typst preview is not connected yet.",
-    "mockPage": "Page preview",
-    "pipelineTitle": "Planned preview pipeline",
-    "pipeline": {
-      "tiptap": "Tiptap JSON",
-      "ast": "AnvilNote AST",
-      "typstMath": "LaTeX math → Typst math (renderer)",
-      "typstProject": "Generated Typst project",
-      "svg": "Typst compiles to SVG pages"
-    }
+    "switchLocale": "Switch to {locale}"
   },
   "locale": {
     "label": "Language",
     "en": "English",
-    "zh-TW": "繁體中文"
+    "zh-TW": "繁體中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "th": "ไทย",
+    "ru": "Русский"
   },
   "toast": {
     "documentCreated": "Document created",
@@ -394,12 +385,28 @@
     "documentRenamed": "Document renamed",
     "documentSaved": "Document saved",
     "templateSwitched": "Switched to {name}",
-    "exportMocked": "Export is mocked — the renderer is not connected yet.",
-    "exportReady": "PDF export is ready.",
+    "exportMocked": "No renderer is connected yet — this is a mock export.",
+    "exportReady": "PDF exported.",
     "noDocument": "Open a document first.",
     "saveFailed": "Could not save the document.",
     "renderFailed": "Could not render the PDF.",
     "settingsSaved": "Preferences saved",
-    "localeSwitched": "Language updated"
+    "localeSwitched": "Interface language updated"
+  },
+  "pdfPreview": {
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "page": "Page",
+    "of": "of",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "resetZoom": "Reset zoom",
+    "downloadPdf": "Download PDF",
+    "openPdf": "Open PDF",
+    "loadingPreview": "Loading preview…",
+    "failedToLoadPreview": "Preview failed to load",
+    "pdfPreviewUnavailable": "PDF preview is unavailable right now",
+    "previewFileMissing": "Preview file not found",
+    "pageIndicator": "Page {current} of {total}"
   }
 }

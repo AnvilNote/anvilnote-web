@@ -51,7 +51,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r">
-      <SidebarHeader className="gap-3 px-2 pt-3">
+      <SidebarHeader className="gap-3 px-2 pt-3 group-data-[collapsible=icon]:px-0">
         <Link
           href="/documents"
           onClick={closeMobile}
@@ -80,7 +80,7 @@ export function AppSidebar() {
           </span>
         </Link>
 
-        <SidebarMenu className="gap-1.5">
+        <SidebarMenu className="gap-1.5 group-data-[collapsible=icon]:px-2">
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip={t("nav.search")}
@@ -100,7 +100,7 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="px-1">
+      <SidebarContent className="px-1 group-data-[collapsible=icon]:px-0">
         <SidebarGroup>
           <SidebarGroupLabel>{t("nav.documents")}</SidebarGroupLabel>
           <SidebarGroupAction

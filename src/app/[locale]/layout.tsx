@@ -49,7 +49,7 @@ export default async function LocaleLayout({
         <script
           // Apply the persisted theme before first paint to avoid a flash.
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme')||'system';var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);var c=document.documentElement.classList;var h=d?'/favicon-light.svg':'/favicon-dark.svg';var q=function(r){var l=document.querySelector("link[rel='"+r+"']");if(!l){l=document.createElement('link');l.rel=r;document.head.appendChild(l)}l.href=h;l.type='image/svg+xml'};if(d){c.add('dark')}else{c.remove('dark')}document.documentElement.style.colorScheme=d?'dark':'light';q('icon');q('shortcut icon')}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('theme');var d=t==='dark';var c=document.documentElement.classList;var h=d?'/favicon-light.svg':'/favicon-dark.svg';var q=function(r){var l=document.querySelector("link[rel='"+r+"']");if(!l){l=document.createElement('link');l.rel=r;document.head.appendChild(l)}l.href=h;l.type='image/svg+xml'};if(d){c.add('dark')}else{c.remove('dark')}document.documentElement.style.colorScheme=d?'dark':'light';q('icon');q('shortcut icon')}catch(e){}})();`,
           }}
         />
       </head>
@@ -60,8 +60,8 @@ export default async function LocaleLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
-            enableSystem
+            defaultTheme="light"
+            enableSystem={false}
             disableTransitionOnChange
           >
             <ThemeFavicon />

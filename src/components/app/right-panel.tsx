@@ -14,7 +14,6 @@ import {
 import { MetadataForm } from "@/components/templates/metadata-form";
 import { TemplateSelector } from "@/components/templates/template-selector";
 import { ExportPanel } from "@/components/export/export-panel";
-import { PreviewPanel } from "@/components/export/preview-panel";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useUiStore } from "@/lib/stores/ui-store";
 import { extractOutline, type OutlineItem } from "@/lib/tiptap/serialization";
@@ -66,12 +65,11 @@ function RightPanelContent({ documentId }: { documentId: string }) {
   return (
     <Tabs defaultValue="outline" className="flex h-full min-h-0 flex-col gap-0">
       <div className="px-3 pt-3">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="outline">{t("outline")}</TabsTrigger>
           <TabsTrigger value="metadata">{t("metadata")}</TabsTrigger>
           <TabsTrigger value="template">{t("template")}</TabsTrigger>
           <TabsTrigger value="export">{t("export")}</TabsTrigger>
-          <TabsTrigger value="preview">{t("preview")}</TabsTrigger>
         </TabsList>
       </div>
       <ScrollArea className="min-h-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:!block">
@@ -87,9 +85,6 @@ function RightPanelContent({ documentId }: { documentId: string }) {
           </TabsContent>
           <TabsContent value="export" className="mt-0">
             <ExportPanel documentId={documentId} />
-          </TabsContent>
-          <TabsContent value="preview" className="mt-0">
-            <PreviewPanel documentId={documentId} />
           </TabsContent>
         </div>
       </ScrollArea>
