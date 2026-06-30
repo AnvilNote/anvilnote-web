@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "AnvilNote",
-    "tagline": "鍛造優雅筆記。"
+    "tagline": "把想法鍛造成筆記。"
   },
   "nav": {
     "newDocument": "新增文件",
@@ -12,9 +12,9 @@
     "settings": "設定"
   },
   "topbar": {
-    "search": "搜尋或執行指令",
+    "search": "搜尋或輸入指令",
     "export": "匯出 PDF",
-    "togglePanel": "切換面板",
+    "togglePanel": "顯示／隱藏側欄",
     "openMenu": "開啟選單"
   },
   "common": {
@@ -30,21 +30,21 @@
     "required": "必填"
   },
   "editor": {
-    "untitled": "未命名講義",
+    "untitled": "未命名文件",
     "titlePlaceholder": "未命名文件",
-    "writePlaceholder": "開始書寫，或按「/」叫出指令",
-    "emptyTitle": "這裡還是空的",
-    "emptyDescription": "從側邊欄選擇文件，或建立新文件以開始書寫。",
+    "writePlaceholder": "開始輸入，或按「/」開啟指令選單",
+    "emptyTitle": "尚未開啟文件",
+    "emptyDescription": "從側邊欄選擇文件，或建立新文件開始編輯。",
     "createDocument": "建立文件",
     "autosave": {
       "saved": "已儲存",
       "saving": "儲存中…",
       "unsaved": "未儲存"
     },
-    "oldDocReset": "這份筆記使用舊版編輯器，無法自動轉換——已重設為空白頁面。",
+    "oldDocReset": "這份筆記是由舊版編輯器建立，無法自動轉換，已改為空白頁。",
     "block": {
-      "menu": "區塊選項",
-      "delete": "刪除{type}",
+      "menu": "區塊設定",
+      "delete": "刪除 {type}",
       "types": {
         "paragraph": "段落",
         "heading1": "標題 1",
@@ -114,31 +114,31 @@
       "table": "表格",
       "image": "圖片",
       "inlineMath": "行內公式",
-      "inlineMathHint": "插入行內 LaTeX",
+      "inlineMathHint": "在文字中插入 LaTeX 公式",
       "blockMath": "區塊公式",
-      "blockMathHint": "插入置中公式"
+      "blockMathHint": "插入獨立顯示的公式"
     },
     "image": {
       "figure": "圖",
-      "captionPlaceholder": "輸入圖片說明文字",
+      "captionPlaceholder": "輸入圖片說明",
       "left": "靠左對齊",
       "center": "置中對齊",
       "right": "靠右對齊"
     },
     "table": {
       "figure": "表",
-      "captionPlaceholder": "輸入表格說明文字",
+      "captionPlaceholder": "輸入表格說明",
       "pickSize": "選擇表格大小"
     },
     "math": {
       "editTitle": "編輯公式",
       "insertInlineTitle": "插入行內公式",
-      "insertBlockTitle": "插入置中公式",
+      "insertBlockTitle": "插入獨立公式",
       "inlineHint": "行內公式會跟著文字排列在同一行。",
-      "displayHint": "置中公式會獨立置中顯示於單獨一行。",
-      "source": "LaTeX 原始碼",
+      "displayHint": "獨立公式會顯示在單獨一行，適合較長的公式。",
+      "source": "LaTeX 內容",
       "preview": "預覽",
-      "emptyPreview": "輸入 LaTeX 即可預覽。",
+      "emptyPreview": "輸入 LaTeX 後會在這裡預覽。",
       "invalid": "公式無效——請檢查 LaTeX 語法。",
       "save": "儲存",
       "cancel": "取消"
@@ -149,24 +149,24 @@
   },
   "documents": {
     "title": "文件",
-    "subtitle": "你所有的筆記與講義，都會透過 API 同步。",
+    "subtitle": "你的筆記與講義會自動同步。",
     "empty": "尚無文件。",
-    "emptyHint": "建立你的第一份文件以開始。",
+    "emptyHint": "建立第一份文件開始使用。",
     "newDocument": "新增文件",
     "count": "{count, plural, =0 {沒有文件} other {# 份文件}}",
-    "lastEdited": "編輯於 {date}",
+    "lastEdited": "最後編輯：{date}",
     "untitled": "未命名文件",
     "deleteTitle": "刪除文件",
-    "deleteDescription": "這將永久移除「{title}」，且無法復原。",
+    "deleteDescription": "「{title}」會被永久刪除，且無法復原。",
     "templateLabel": "範本",
     "defaultTitle": "未命名文件"
   },
   "templates": {
     "title": "範本",
-    "subtitle": "選擇起始結構。切換範本不會影響內容。",
+    "subtitle": "選擇文件的版型。切換範本不會影響既有內容。",
     "current": "目前範本",
-    "use": "使用範本",
-    "inUse": "使用中",
+    "use": "套用範本",
+    "inUse": "目前使用中",
     "categories": {
       "note": "筆記",
       "lecture": "講義",
@@ -176,54 +176,54 @@
     },
     "items": {
       "plain-note": {
-        "name": "純文件",
-        "description": "乾淨的頁面，沒有任何欄位，專心書寫。"
+        "name": "Plain Note",
+        "description": "空白頁面，不預設任何欄位。"
       },
       "lecture-note": {
         "name": "課堂講義",
-        "description": "以課程、講者與日期記錄一堂課。"
+        "description": "適合整理課程內容，可填寫課程、授課者與日期。"
       },
       "academic-handout": {
         "name": "學術講義",
-        "description": "正式講義，含作者、機構與摘要。"
+        "description": "適合正式講義，可填寫作者、機構與摘要。"
       },
       "problem-set": {
         "name": "習題集",
-        "description": "結構化題目，含繳交日期與解答開關。"
+        "description": "適合製作習題，可設定繳交日期與是否顯示解答。"
       },
       "reading-note": {
         "name": "閱讀筆記",
-        "description": "針對來源的筆記，含作者、頁數與評價。"
+        "description": "適合整理閱讀內容，可記錄作者、頁數與評價。"
       },
       "bananote": {
         "name": "Bananote",
-        "description": "活潑的筆記，帶點色彩與香蕉點綴。"
+        "description": "色彩較活潑，搭配香蕉風格點綴。"
       },
       "bubble": {
         "name": "Bubble",
-        "description": "課堂投影片，含課程標題、副標與強調色。"
+        "description": "適合課堂展示，可設定標題、副標題與強調色。"
       },
       "flow-way": {
         "name": "Flow Way",
-        "description": "流暢的報告，含副標題與目錄。"
+        "description": "適合一般報告，可加入副標題與目錄。"
       },
       "hetvid": {
         "name": "Hetvid",
-        "description": "學術論文，含摘要、版本與語言。"
+        "description": "適合學術論文，可設定摘要、版本與語言。"
       },
       "kunskap": {
         "name": "Kunskap",
-        "description": "乾淨的課程報告，含作者、課程與紙張大小。"
+        "description": "適合課程報告，可填寫作者、課程與紙張大小。"
       }
     },
     "fields": {
       "course": "課程",
-      "lecturer": "講者",
+      "lecturer": "授課者",
       "date": "日期",
       "topic": "主題",
       "author": "作者",
       "institution": "機構",
-      "level": "層級",
+      "level": "課程層級",
       "abstract": "摘要",
       "draft": "標記為草稿",
       "instructor": "授課教師",
@@ -234,15 +234,15 @@
       "pages": "頁數",
       "recommended": "推薦",
       "title": "標題",
-      "affiliation": "單位",
+      "affiliation": "所屬單位",
       "version": "版本",
       "bananaColor": "香蕉色",
       "subtitle": "副標題",
       "year": "年份",
       "courseName": "課程",
-      "mainColor": "強調色",
+      "mainColor": "主色",
       "toc": "目錄",
-      "tocDepth": "目錄層級",
+      "tocDepth": "目錄深度",
       "paperSize": "紙張大小",
       "lang": "語言",
       "colorlinks": "彩色連結",
@@ -250,7 +250,7 @@
       "titleFont": "標題字體",
       "bodyFont": "內文字體",
       "dateFont": "日期字體",
-      "mathMode": "數學字體"
+      "mathMode": "公式字體"
     },
     "placeholders": {
       "course": "例如：英文課",
@@ -259,7 +259,7 @@
       "topic": "例如：分詞構句",
       "author": "例如：王大明",
       "institution": "例如：國立臺灣大學",
-      "abstract": "簡短摘要",
+      "abstract": "請輸入簡短摘要",
       "instructor": "例如：陳教授",
       "dueDate": "",
       "source": "例如：英文課本",
@@ -287,76 +287,75 @@
       "tai-heritage": "Tai Heritage Pro",
       "default": "預設（New Computer Modern）",
       "garamond": "Garamond（EB Garamond）"
-    }
+    },
+    "previewTemplate": "查看範本",
+    "templatePreview": "預覽",
+    "useThisTemplate": "套用這個範本",
+    "noPreviewAvailable": "此範本尚無預覽"
   },
   "panel": {
     "outline": "大綱",
-    "metadata": "欄位",
+    "metadata": "文件資訊",
     "template": "範本",
     "export": "匯出",
-    "preview": "預覽",
     "outlineEmpty": "書寫時，標題會顯示在這裡。",
     "outlineDocument": "文件",
-    "metadataEmpty": "此範本沒有任何欄位。",
-    "metadataHint": "欄位來自所選範本，選填欄位可留空。"
+    "metadataEmpty": "此範本沒有可填寫的欄位。",
+    "metadataHint": "這些欄位會依範本變更，選填欄位可留空。"
   },
   "export": {
     "title": "匯出",
-    "subtitle": "預覽匯出內容，並將目前文件轉換為 PDF。",
+    "subtitle": "預覽匯出內容，並將目前文件輸出成 PDF。",
     "template": "範本",
     "pageSize": "頁面尺寸",
     "fontPreset": "字體預設",
-    "includeMetadata": "包含欄位資料",
+    "includeMetadata": "包含文件資訊",
     "fonts": {
       "sans": "無襯線",
       "serif": "襯線",
       "mono": "等寬"
     },
     "button": "匯出 PDF",
-    "exporting": "正在準備匯出…",
-    "payloadTitle": "匯出內容",
-    "payloadHint": "這是將傳送至轉換服務的 JSON。"
+    "exporting": "正在匯出…",
+    "payloadTitle": "匯出資料",
+    "payloadHint": "這是匯出時會送出的資料。"
   },
   "settings": {
     "title": "設定",
-    "subtitle": "偏好設定儲存於此裝置本機。",
+    "subtitle": "這些設定只會儲存在這台裝置上。",
     "appearance": {
       "title": "外觀",
-      "description": "AnvilNote 採用單一、專注的視覺風格。",
+      "description": "調整 AnvilNote 的顯示方式。",
       "theme": "主題",
-      "themeHint": "在淺色與深色之間切換，或跟隨系統設定。",
+      "themeHint": "選擇淺色或深色模式。",
       "themeLight": "淺色",
-      "themeDark": "深色",
-      "themeSystem": "系統",
-      "mode": "設計模式",
-      "monochrome": "黑白單色"
+      "themeDark": "深色"
     },
     "language": {
       "title": "語言",
       "description": "選擇介面語言。",
       "label": "介面語言"
     },
-    "editor": {
-      "title": "編輯器",
-      "description": "調整書寫體驗。",
-      "autosave": "自動儲存",
-      "autosaveHint": "書寫時自動儲存變更。",
-      "spellcheck": "拼字檢查",
-      "spellcheckHint": "在可能的拼字錯誤下方標示底線。"
-    },
     "export": {
       "title": "匯出預設值",
-      "description": "匯出文件時套用的預設值。",
+      "description": "設定匯出文件時預設使用的選項。",
       "pageSize": "預設頁面尺寸",
       "fontPreset": "預設字體",
-      "includeMetadata": "預設包含欄位資料"
-    }
+      "storageLocation": "儲存位置",
+      "storageLocationHint": "PDF 匯出後儲存的位置。",
+      "chooseFolder": "選擇資料夾",
+      "folderSelected": "儲存位置已設為 {folder}",
+      "folderBlocked": "瀏覽器無法存取這個資料夾，請選擇其他位置。",
+      "folderUnsupported": "你的瀏覽器不支援選擇資料夾。",
+      "pickOther": "選擇其他資料夾…"
+    },
+    "save": "儲存"
   },
   "command": {
-    "placeholder": "輸入指令或搜尋…",
-    "empty": "找不到結果。",
+    "placeholder": "搜尋或輸入指令…",
+    "empty": "沒有符合的結果。",
     "groups": {
-      "actions": "動作",
+      "actions": "操作",
       "editor": "編輯器",
       "navigation": "導覽",
       "language": "語言"
@@ -365,41 +364,49 @@
     "goDocuments": "前往文件",
     "goTemplates": "前往範本",
     "goSettings": "前往設定",
-    "export": "匯出目前文件",
+    "export": "匯出目前文件為 PDF",
     "insertInlineMath": "插入行內公式",
     "insertBlockMath": "插入區塊公式",
-    "switchLocale": "切換語言為 {locale}"
-  },
-  "preview": {
-    "notConnected": "Typst 預覽尚未連接。",
-    "mockPage": "頁面預覽",
-    "pipelineTitle": "預計的預覽流程",
-    "pipeline": {
-      "tiptap": "Tiptap JSON",
-      "ast": "AnvilNote AST",
-      "typstMath": "LaTeX 數學 → Typst 數學（轉換服務）",
-      "typstProject": "產生 Typst 專案",
-      "svg": "Typst 編譯為 SVG 頁面"
-    }
+    "switchLocale": "切換為 {locale}"
   },
   "locale": {
     "label": "語言",
     "en": "English",
-    "zh-TW": "繁體中文"
+    "zh-TW": "繁體中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "th": "ไทย",
+    "ru": "Русский"
   },
   "toast": {
     "documentCreated": "已建立文件",
-    "documentCreatedFromTemplate": "已使用 {name} 範本成功建立文件",
+    "documentCreatedFromTemplate": "已使用 {name} 範本建立文件",
     "documentDeleted": "已刪除文件",
     "documentRenamed": "已重新命名文件",
     "documentSaved": "已儲存文件",
     "templateSwitched": "已切換至 {name}",
-    "exportMocked": "匯出為模擬狀態——轉換服務尚未連接。",
-    "exportReady": "PDF 已產生。",
+    "exportMocked": "目前尚未連接轉換服務，這只是模擬匯出。",
+    "exportReady": "PDF 已匯出。",
     "noDocument": "請先開啟一份文件。",
     "saveFailed": "無法儲存文件。",
     "renderFailed": "無法轉換 PDF。",
     "settingsSaved": "已儲存偏好設定",
-    "localeSwitched": "已更新語言"
+    "localeSwitched": "介面語言已更新"
+  },
+  "pdfPreview": {
+    "previousPage": "上一頁",
+    "nextPage": "下一頁",
+    "page": "第",
+    "of": "頁，共",
+    "zoomIn": "放大",
+    "zoomOut": "縮小",
+    "resetZoom": "重設縮放",
+    "downloadPdf": "下載 PDF",
+    "openPdf": "開啟 PDF",
+    "loadingPreview": "正在載入預覽…",
+    "failedToLoadPreview": "預覽載入失敗",
+    "pdfPreviewUnavailable": "目前無法預覽 PDF",
+    "previewFileMissing": "找不到預覽檔",
+    "pageIndicator": "第 {current} 頁，共 {total} 頁"
   }
 }

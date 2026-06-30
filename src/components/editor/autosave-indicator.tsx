@@ -23,7 +23,9 @@ export function AutosaveIndicator({ status }: { status: SaveStatus }) {
           status === "unsaved" && "bg-foreground/25",
         )}
       />
-      <span className="hidden md:inline">{t(status)}</span>
+      {/* Fixed-width label so swapping states (儲存中… → 已儲存) never changes
+          the indicator size and jolts the header layout. */}
+      <span className="hidden min-w-[3.75rem] md:inline-block">{t(status)}</span>
     </span>
   );
 }

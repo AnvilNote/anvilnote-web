@@ -166,7 +166,7 @@ export function TiptapToolbar({
   }
 
   return (
-    <div className="flex items-center gap-0.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden lg:flex-wrap lg:overflow-visible lg:pb-0">
+    <div className="flex items-center gap-0.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden lg:flex-wrap lg:justify-between lg:gap-0.5 lg:overflow-visible lg:pb-0">
       <ToolbarButton
         icon={Pilcrow}
         label={t("paragraph")}

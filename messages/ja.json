@@ -1,0 +1,412 @@
+{
+  "app": {
+    "name": "AnvilNote",
+    "tagline": "アイデアをノートに鍛え上げる。"
+  },
+  "nav": {
+    "newDocument": "新規ドキュメント",
+    "search": "検索",
+    "documents": "ドキュメント",
+    "templates": "テンプレート",
+    "recent": "最近",
+    "settings": "設定"
+  },
+  "topbar": {
+    "search": "検索またはコマンドを入力",
+    "export": "PDFを書き出す",
+    "togglePanel": "パネルの表示／非表示",
+    "openMenu": "メニューを開く"
+  },
+  "common": {
+    "open": "開く",
+    "rename": "名前を変更",
+    "duplicate": "複製",
+    "delete": "削除",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "close": "閉じる",
+    "none": "なし",
+    "optional": "任意",
+    "required": "必須"
+  },
+  "editor": {
+    "untitled": "無題のドキュメント",
+    "titlePlaceholder": "無題のドキュメント",
+    "writePlaceholder": "入力を始めるか、「/」でコマンドメニューを開きます",
+    "emptyTitle": "開いているドキュメントがありません",
+    "emptyDescription": "サイドバーからドキュメントを選ぶか、新規作成して編集を始めましょう。",
+    "createDocument": "ドキュメントを作成",
+    "autosave": {
+      "saved": "保存済み",
+      "saving": "保存中…",
+      "unsaved": "未保存"
+    },
+    "oldDocReset": "このノートは旧エディタで作成され、自動移行できなかったため、空白ページになりました。",
+    "block": {
+      "menu": "ブロック設定",
+      "delete": "{type}を削除",
+      "types": {
+        "paragraph": "段落",
+        "heading1": "見出し1",
+        "heading2": "見出し2",
+        "heading3": "見出し3",
+        "bulletList": "箇条書き",
+        "orderedList": "番号付きリスト",
+        "blockquote": "引用",
+        "codeBlock": "コードブロック",
+        "image": "画像",
+        "table": "表",
+        "blockMath": "ブロック数式",
+        "divider": "区切り線",
+        "block": "ブロック"
+      },
+      "color": "文字色",
+      "colors": {
+        "default": "デフォルト",
+        "gray": "グレー",
+        "red": "レッド",
+        "orange": "オレンジ",
+        "green": "グリーン",
+        "blue": "ブルー",
+        "purple": "パープル"
+      }
+    },
+    "toolbar": {
+      "paragraph": "段落",
+      "heading1": "見出し1",
+      "heading2": "見出し2",
+      "heading3": "見出し3",
+      "bold": "太字",
+      "italic": "斜体",
+      "strike": "取り消し線",
+      "code": "インラインコード",
+      "bulletList": "箇条書き",
+      "orderedList": "番号付きリスト",
+      "taskList": "タスクリスト",
+      "blockquote": "引用",
+      "codeBlock": "コードブロック",
+      "link": "リンク",
+      "table": "表",
+      "image": "画像",
+      "inlineMath": "インライン数式",
+      "blockMath": "ブロック数式",
+      "undo": "元に戻す",
+      "redo": "やり直す",
+      "linkPrompt": "URLを入力",
+      "linkApply": "リンクを適用",
+      "linkRemove": "リンクを削除",
+      "tableNormal": "通常の表",
+      "tableThreeLine": "三線表",
+      "tableAlignLeft": "表を左揃え",
+      "tableAlignCenter": "表を中央揃え",
+      "tableAlignRight": "表を右揃え"
+    },
+    "slash": {
+      "text": "テキスト",
+      "heading1": "見出し1",
+      "heading2": "見出し2",
+      "heading3": "見出し3",
+      "bulletList": "箇条書き",
+      "orderedList": "番号付きリスト",
+      "taskList": "タスクリスト",
+      "quote": "引用",
+      "codeBlock": "コードブロック",
+      "table": "表",
+      "image": "画像",
+      "inlineMath": "インライン数式",
+      "inlineMathHint": "文中にLaTeX数式を挿入",
+      "blockMath": "ブロック数式",
+      "blockMathHint": "独立した数式を挿入"
+    },
+    "image": {
+      "figure": "図",
+      "captionPlaceholder": "画像の説明を入力",
+      "left": "左揃え",
+      "center": "中央揃え",
+      "right": "右揃え"
+    },
+    "table": {
+      "figure": "表",
+      "captionPlaceholder": "表の説明を入力",
+      "pickSize": "表のサイズを選択"
+    },
+    "math": {
+      "editTitle": "数式を編集",
+      "insertInlineTitle": "インライン数式を挿入",
+      "insertBlockTitle": "独立した数式を挿入",
+      "inlineHint": "インライン数式は文章の行内に流れます。",
+      "displayHint": "ディスプレイ数式は独立した行に表示され、長い数式に適しています。",
+      "source": "LaTeXの内容",
+      "preview": "プレビュー",
+      "emptyPreview": "LaTeXを入力すると、ここにプレビューが表示されます。",
+      "invalid": "無効な数式です — LaTeXの構文を確認してください。",
+      "save": "保存",
+      "cancel": "キャンセル"
+    },
+    "codeBlock": {
+      "selectLanguage": "言語を選択"
+    }
+  },
+  "documents": {
+    "title": "ドキュメント",
+    "subtitle": "ノートと配布資料は自動で同期されます。",
+    "empty": "まだドキュメントがありません。",
+    "emptyHint": "最初のドキュメントを作成して始めましょう。",
+    "newDocument": "新規ドキュメント",
+    "count": "{count, plural, =0 {ドキュメントなし} other {#件のドキュメント}}",
+    "lastEdited": "最終編集：{date}",
+    "untitled": "無題のドキュメント",
+    "deleteTitle": "ドキュメントを削除",
+    "deleteDescription": "「{title}」は完全に削除され、元に戻せません。",
+    "templateLabel": "テンプレート",
+    "defaultTitle": "無題のノート"
+  },
+  "templates": {
+    "title": "テンプレート",
+    "subtitle": "ドキュメントのレイアウトを選びます。テンプレートを切り替えても既存の内容は変わりません。",
+    "current": "現在のテンプレート",
+    "use": "テンプレートを適用",
+    "inUse": "使用中",
+    "categories": {
+      "note": "ノート",
+      "lecture": "講義",
+      "academic": "学術",
+      "teaching": "授業",
+      "report": "レポート"
+    },
+    "items": {
+      "plain-note": {
+        "name": "Plain Note",
+        "description": "メタデータのないシンプルなページ。ただ書くだけ。"
+      },
+      "lecture-note": {
+        "name": "Lecture Note",
+        "description": "講義内容の整理に。コース・講師・日付を記入できます。"
+      },
+      "academic-handout": {
+        "name": "Academic Handout",
+        "description": "正式な配布資料に。著者・所属・要旨を記入できます。"
+      },
+      "problem-set": {
+        "name": "Problem Set",
+        "description": "問題集の作成に。提出期限の設定と解答の表示切替ができます。"
+      },
+      "reading-note": {
+        "name": "Reading Note",
+        "description": "読書メモの整理に。著者・ページ・評価を記録できます。"
+      },
+      "bananote": {
+        "name": "Bananote",
+        "description": "色づかいが明るく、バナナの遊び心を添えたノート。"
+      },
+      "bubble": {
+        "name": "Bubble",
+        "description": "授業での発表に。タイトル・サブタイトル・アクセントカラーを設定できます。"
+      },
+      "flow-way": {
+        "name": "Flow Way",
+        "description": "一般的なレポートに。サブタイトルと目次を加えられます。"
+      },
+      "hetvid": {
+        "name": "Hetvid",
+        "description": "学術論文に。要旨・バージョン・言語を設定できます。"
+      },
+      "kunskap": {
+        "name": "Kunskap",
+        "description": "コースレポートに。著者・コース・用紙サイズを記入できます。"
+      }
+    },
+    "fields": {
+      "course": "コース",
+      "lecturer": "講師",
+      "date": "日付",
+      "topic": "トピック",
+      "author": "著者",
+      "institution": "所属機関",
+      "level": "レベル",
+      "abstract": "要旨",
+      "draft": "下書きとして設定",
+      "instructor": "担当講師",
+      "dueDate": "提出期限",
+      "difficulty": "難易度",
+      "showSolutions": "解答を表示",
+      "source": "出典",
+      "pages": "ページ",
+      "recommended": "推奨",
+      "title": "タイトル",
+      "affiliation": "所属",
+      "version": "バージョン",
+      "bananaColor": "バナナの色",
+      "subtitle": "サブタイトル",
+      "year": "年",
+      "courseName": "コース",
+      "mainColor": "アクセントカラー",
+      "toc": "目次",
+      "tocDepth": "目次の深さ",
+      "paperSize": "用紙サイズ",
+      "lang": "言語",
+      "colorlinks": "色付きリンク",
+      "primaryLang": "主要言語",
+      "titleFont": "タイトルフォント",
+      "bodyFont": "本文フォント",
+      "dateFont": "日付フォント",
+      "mathMode": "数式フォント"
+    },
+    "placeholders": {
+      "course": "例：実解析",
+      "lecturer": "例：林博士",
+      "date": "",
+      "topic": "例：コンパクト性",
+      "author": "例：Anthony Sung",
+      "institution": "例：国立台湾大学",
+      "abstract": "短い概要を入力",
+      "instructor": "例：陳教授",
+      "dueDate": "",
+      "source": "例：Rudin『数学解析の原理』",
+      "pages": "例：12–34"
+    },
+    "options": {
+      "undergraduate": "学部",
+      "graduate": "大学院",
+      "seminar": "ゼミ",
+      "easy": "易しい",
+      "medium": "普通",
+      "hard": "難しい",
+      "a4": "A4",
+      "letter": "レター",
+      "en": "英語",
+      "zh": "中国語",
+      "ja": "日本語",
+      "ko": "韓国語",
+      "th": "タイ語",
+      "taiwan-pearl": "TaiwanPearl（丸ゴシック）",
+      "source-han": "源ノ角ゴシック",
+      "song": "MOE 明朝",
+      "kai": "MOE 楷書",
+      "playfair": "Playfair Display",
+      "tai-heritage": "Tai Heritage Pro",
+      "default": "デフォルト（New Computer Modern）",
+      "garamond": "Garamond（EB Garamond）"
+    },
+    "previewTemplate": "テンプレートを見る",
+    "templatePreview": "プレビュー",
+    "useThisTemplate": "このテンプレートを適用",
+    "noPreviewAvailable": "このテンプレートのプレビューはまだありません"
+  },
+  "panel": {
+    "outline": "アウトライン",
+    "metadata": "ドキュメント情報",
+    "template": "テンプレート",
+    "export": "書き出し",
+    "outlineEmpty": "書き進めると見出しがここに表示されます。",
+    "outlineDocument": "ドキュメント",
+    "metadataEmpty": "このテンプレートには入力できる項目がありません。",
+    "metadataHint": "項目はテンプレートによって変わります。任意の項目は空欄のままで構いません。"
+  },
+  "export": {
+    "title": "書き出し",
+    "subtitle": "書き出す内容をプレビューし、現在のドキュメントをPDFとして出力します。",
+    "template": "テンプレート",
+    "pageSize": "ページサイズ",
+    "fontPreset": "フォントプリセット",
+    "includeMetadata": "ドキュメント情報を含める",
+    "fonts": {
+      "sans": "ゴシック",
+      "serif": "明朝",
+      "mono": "等幅"
+    },
+    "button": "PDFを書き出す",
+    "exporting": "書き出し中…",
+    "payloadTitle": "エクスポートデータ",
+    "payloadHint": "これはエクスポート時に送信されるデータです。"
+  },
+  "settings": {
+    "title": "設定",
+    "subtitle": "これらの設定はこのデバイスにのみ保存されます。",
+    "appearance": {
+      "title": "外観",
+      "description": "AnvilNoteの見た目を調整します。",
+      "theme": "テーマ",
+      "themeHint": "ライトモードかダークモードを選びます。",
+      "themeLight": "ライト",
+      "themeDark": "ダーク"
+    },
+    "language": {
+      "title": "言語",
+      "description": "インターフェースの言語を選択します。",
+      "label": "インターフェース言語"
+    },
+    "export": {
+      "title": "書き出しのデフォルト",
+      "description": "ドキュメントを書き出すときに既定で使う設定。",
+      "pageSize": "デフォルトのページサイズ",
+      "fontPreset": "デフォルトのフォントプリセット",
+      "storageLocation": "保存先",
+      "storageLocationHint": "書き出したPDFの保存先。",
+      "chooseFolder": "フォルダを選択",
+      "folderSelected": "保存先を{folder}に設定しました",
+      "folderBlocked": "ブラウザがこのフォルダにアクセスできません。別の場所を選んでください。",
+      "folderUnsupported": "お使いのブラウザはフォルダ選択に対応していません。",
+      "pickOther": "別のフォルダを選択…"
+    },
+    "save": "保存"
+  },
+  "command": {
+    "placeholder": "検索またはコマンドを入力…",
+    "empty": "一致する結果がありません。",
+    "groups": {
+      "actions": "アクション",
+      "editor": "エディタ",
+      "navigation": "ナビゲーション",
+      "language": "言語"
+    },
+    "newDocument": "新規ドキュメントを作成",
+    "goDocuments": "ドキュメントへ移動",
+    "goTemplates": "テンプレートへ移動",
+    "goSettings": "設定へ移動",
+    "export": "現在のドキュメントをPDFで書き出す",
+    "insertInlineMath": "インライン数式を挿入",
+    "insertBlockMath": "ブロック数式を挿入",
+    "switchLocale": "{locale}に切り替え"
+  },
+  "locale": {
+    "label": "言語",
+    "en": "English",
+    "zh-TW": "繁體中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "th": "ไทย",
+    "ru": "Русский"
+  },
+  "toast": {
+    "documentCreated": "ドキュメントを作成しました",
+    "documentCreatedFromTemplate": "{name}からドキュメントを作成しました",
+    "documentDeleted": "ドキュメントを削除しました",
+    "documentRenamed": "ドキュメントの名前を変更しました",
+    "documentSaved": "ドキュメントを保存しました",
+    "templateSwitched": "{name}に切り替えました",
+    "exportMocked": "レンダラーがまだ接続されていません — これはモックのエクスポートです。",
+    "exportReady": "PDFを書き出しました。",
+    "noDocument": "先にドキュメントを開いてください。",
+    "saveFailed": "ドキュメントを保存できませんでした。",
+    "renderFailed": "PDFを生成できませんでした。",
+    "settingsSaved": "設定を保存しました",
+    "localeSwitched": "表示言語を更新しました"
+  },
+  "pdfPreview": {
+    "previousPage": "前のページ",
+    "nextPage": "次のページ",
+    "page": "ページ",
+    "of": "/",
+    "zoomIn": "拡大",
+    "zoomOut": "縮小",
+    "resetZoom": "ズームをリセット",
+    "downloadPdf": "PDFをダウンロード",
+    "openPdf": "PDFを開く",
+    "loadingPreview": "プレビューを読み込み中…",
+    "failedToLoadPreview": "プレビューの読み込みに失敗しました",
+    "pdfPreviewUnavailable": "現在PDFをプレビューできません",
+    "previewFileMissing": "プレビューファイルが見つかりません",
+    "pageIndicator": "{total}ページ中{current}ページ"
+  }
+}

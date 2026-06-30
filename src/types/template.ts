@@ -20,6 +20,15 @@ export type TemplateField = {
   options?: string[];
 };
 
+// Static preview assets live under public/template-previews/{id}/ and are
+// generated offline by scripts/generate-template-previews.mjs.
+export type TemplatePreview = {
+  pdfUrl: string;
+  thumbnailUrl: string;
+  manifestUrl?: string;
+  pageCount?: number;
+};
+
 // `id` holds the template slug (= renderer folder name = Document.templateId).
 export type AnvilTemplate = {
   id: string;
@@ -29,4 +38,6 @@ export type AnvilTemplate = {
   category: string;
   tags: string[];
   fields: TemplateField[];
+  // Optional: when omitted the preview is derived from `id` by convention.
+  preview?: TemplatePreview;
 };

@@ -1,0 +1,412 @@
+{
+  "app": {
+    "name": "AnvilNote",
+    "tagline": "หลอมความคิดให้เป็นโน้ต"
+  },
+  "nav": {
+    "newDocument": "เอกสารใหม่",
+    "search": "ค้นหา",
+    "documents": "เอกสาร",
+    "templates": "เทมเพลต",
+    "recent": "ล่าสุด",
+    "settings": "การตั้งค่า"
+  },
+  "topbar": {
+    "search": "ค้นหาหรือพิมพ์คำสั่ง",
+    "export": "ส่งออก PDF",
+    "togglePanel": "แสดง/ซ่อนแผง",
+    "openMenu": "เปิดเมนู"
+  },
+  "common": {
+    "open": "เปิด",
+    "rename": "เปลี่ยนชื่อ",
+    "duplicate": "ทำสำเนา",
+    "delete": "ลบ",
+    "cancel": "ยกเลิก",
+    "save": "บันทึก",
+    "close": "ปิด",
+    "none": "ไม่มี",
+    "optional": "ไม่บังคับ",
+    "required": "จำเป็น"
+  },
+  "editor": {
+    "untitled": "เอกสารไม่มีชื่อ",
+    "titlePlaceholder": "เอกสารไม่มีชื่อ",
+    "writePlaceholder": "เริ่มพิมพ์ หรือกด “/” เพื่อเปิดเมนูคำสั่ง",
+    "emptyTitle": "ยังไม่ได้เปิดเอกสาร",
+    "emptyDescription": "เลือกเอกสารจากแถบด้านข้าง หรือสร้างใหม่เพื่อเริ่มแก้ไข",
+    "createDocument": "สร้างเอกสาร",
+    "autosave": {
+      "saved": "บันทึกแล้ว",
+      "saving": "กำลังบันทึก…",
+      "unsaved": "ยังไม่บันทึก"
+    },
+    "oldDocReset": "โน้ตนี้สร้างด้วยเอดิเตอร์รุ่นเก่าและย้ายข้อมูลอัตโนมัติไม่ได้ จึงกลายเป็นหน้าว่าง",
+    "block": {
+      "menu": "ตั้งค่าบล็อก",
+      "delete": "ลบ{type}",
+      "types": {
+        "paragraph": "ย่อหน้า",
+        "heading1": "หัวข้อ 1",
+        "heading2": "หัวข้อ 2",
+        "heading3": "หัวข้อ 3",
+        "bulletList": "รายการสัญลักษณ์",
+        "orderedList": "รายการลำดับเลข",
+        "blockquote": "คำพูดอ้างอิง",
+        "codeBlock": "บล็อกโค้ด",
+        "image": "รูปภาพ",
+        "table": "ตาราง",
+        "blockMath": "สมการแบบบล็อก",
+        "divider": "เส้นแบ่ง",
+        "block": "บล็อก"
+      },
+      "color": "สีข้อความ",
+      "colors": {
+        "default": "ค่าเริ่มต้น",
+        "gray": "เทา",
+        "red": "แดง",
+        "orange": "ส้ม",
+        "green": "เขียว",
+        "blue": "น้ำเงิน",
+        "purple": "ม่วง"
+      }
+    },
+    "toolbar": {
+      "paragraph": "ย่อหน้า",
+      "heading1": "หัวข้อ 1",
+      "heading2": "หัวข้อ 2",
+      "heading3": "หัวข้อ 3",
+      "bold": "ตัวหนา",
+      "italic": "ตัวเอียง",
+      "strike": "ขีดฆ่า",
+      "code": "โค้ดในบรรทัด",
+      "bulletList": "รายการสัญลักษณ์",
+      "orderedList": "รายการลำดับเลข",
+      "taskList": "รายการงาน",
+      "blockquote": "คำพูดอ้างอิง",
+      "codeBlock": "บล็อกโค้ด",
+      "link": "ลิงก์",
+      "table": "ตาราง",
+      "image": "รูปภาพ",
+      "inlineMath": "สมการในบรรทัด",
+      "blockMath": "สมการแบบบล็อก",
+      "undo": "เลิกทำ",
+      "redo": "ทำซ้ำ",
+      "linkPrompt": "ป้อน URL",
+      "linkApply": "ใช้ลิงก์",
+      "linkRemove": "ลบลิงก์",
+      "tableNormal": "ตารางปกติ",
+      "tableThreeLine": "ตารางสามเส้น",
+      "tableAlignLeft": "จัดตารางชิดซ้าย",
+      "tableAlignCenter": "จัดตารางกึ่งกลาง",
+      "tableAlignRight": "จัดตารางชิดขวา"
+    },
+    "slash": {
+      "text": "ข้อความ",
+      "heading1": "หัวข้อ 1",
+      "heading2": "หัวข้อ 2",
+      "heading3": "หัวข้อ 3",
+      "bulletList": "รายการสัญลักษณ์",
+      "orderedList": "รายการลำดับเลข",
+      "taskList": "รายการงาน",
+      "quote": "คำพูดอ้างอิง",
+      "codeBlock": "บล็อกโค้ด",
+      "table": "ตาราง",
+      "image": "รูปภาพ",
+      "inlineMath": "สมการในบรรทัด",
+      "inlineMathHint": "แทรกสูตร LaTeX ในบรรทัด",
+      "blockMath": "สมการแบบบล็อก",
+      "blockMathHint": "แทรกสูตรแบบแยกบรรทัด"
+    },
+    "image": {
+      "figure": "ภาพ",
+      "captionPlaceholder": "ใส่คำบรรยายรูปภาพ",
+      "left": "จัดชิดซ้าย",
+      "center": "จัดกึ่งกลาง",
+      "right": "จัดชิดขวา"
+    },
+    "table": {
+      "figure": "ตาราง",
+      "captionPlaceholder": "ใส่คำบรรยายตาราง",
+      "pickSize": "เลือกขนาดตาราง"
+    },
+    "math": {
+      "editTitle": "แก้ไขสมการ",
+      "insertInlineTitle": "แทรกสมการในบรรทัด",
+      "insertBlockTitle": "แทรกสูตรแบบแยกบรรทัด",
+      "inlineHint": "สมการในบรรทัดจะไหลไปกับบรรทัดข้อความ",
+      "displayHint": "สมการแบบแสดงผลจะอยู่บนบรรทัดของตัวเอง เหมาะกับสมการที่ยาว",
+      "source": "เนื้อหา LaTeX",
+      "preview": "ตัวอย่าง",
+      "emptyPreview": "เมื่อพิมพ์ LaTeX ตัวอย่างจะแสดงที่นี่",
+      "invalid": "สมการไม่ถูกต้อง — ตรวจสอบไวยากรณ์ LaTeX",
+      "save": "บันทึก",
+      "cancel": "ยกเลิก"
+    },
+    "codeBlock": {
+      "selectLanguage": "เลือกภาษา"
+    }
+  },
+  "documents": {
+    "title": "เอกสาร",
+    "subtitle": "โน้ตและเอกสารประกอบของคุณจะซิงค์โดยอัตโนมัติ",
+    "empty": "ยังไม่มีเอกสาร",
+    "emptyHint": "สร้างเอกสารแรกเพื่อเริ่มใช้งาน",
+    "newDocument": "เอกสารใหม่",
+    "count": "{count, plural, =0 {ไม่มีเอกสาร} other {# เอกสาร}}",
+    "lastEdited": "แก้ไขล่าสุด: {date}",
+    "untitled": "เอกสารไม่มีชื่อ",
+    "deleteTitle": "ลบเอกสาร",
+    "deleteDescription": "“{title}” จะถูกลบถาวรและกู้คืนไม่ได้",
+    "templateLabel": "เทมเพลต",
+    "defaultTitle": "โน้ตไม่มีชื่อ"
+  },
+  "templates": {
+    "title": "เทมเพลต",
+    "subtitle": "เลือกเลย์เอาต์ของเอกสาร การสลับเทมเพลตจะไม่กระทบเนื้อหาเดิม",
+    "current": "เทมเพลตปัจจุบัน",
+    "use": "ใช้เทมเพลต",
+    "inUse": "กำลังใช้งานอยู่",
+    "categories": {
+      "note": "โน้ต",
+      "lecture": "การบรรยาย",
+      "academic": "วิชาการ",
+      "teaching": "การสอน",
+      "report": "รายงาน"
+    },
+    "items": {
+      "plain-note": {
+        "name": "Plain Note",
+        "description": "หน้าสะอาดตาไม่มีข้อมูลกำกับ แค่เขียน"
+      },
+      "lecture-note": {
+        "name": "Lecture Note",
+        "description": "เหมาะกับการจัดระเบียบเนื้อหาบรรยาย กรอกรายวิชา ผู้สอน และวันที่ได้"
+      },
+      "academic-handout": {
+        "name": "Academic Handout",
+        "description": "เหมาะกับเอกสารประกอบที่เป็นทางการ กรอกผู้เขียน สถาบัน และบทคัดย่อได้"
+      },
+      "problem-set": {
+        "name": "Problem Set",
+        "description": "เหมาะกับการสร้างชุดโจทย์ ตั้งกำหนดส่งและเปิด/ปิดการแสดงเฉลยได้"
+      },
+      "reading-note": {
+        "name": "Reading Note",
+        "description": "เหมาะกับการจัดระเบียบบันทึกการอ่าน บันทึกผู้เขียน หน้า และข้อสรุปได้"
+      },
+      "bananote": {
+        "name": "Bananote",
+        "description": "โน้ตสีสันสดใส แต่งแต้มด้วยลูกเล่นกล้วยสนุก ๆ"
+      },
+      "bubble": {
+        "name": "Bubble",
+        "description": "เหมาะกับการนำเสนอในชั้นเรียน ตั้งชื่อเรื่อง หัวข้อย่อย และสีเน้นได้"
+      },
+      "flow-way": {
+        "name": "Flow Way",
+        "description": "เหมาะกับรายงานทั่วไป เพิ่มหัวข้อย่อยและสารบัญได้"
+      },
+      "hetvid": {
+        "name": "Hetvid",
+        "description": "เหมาะกับบทความวิชาการ ตั้งบทคัดย่อ เวอร์ชัน และภาษาได้"
+      },
+      "kunskap": {
+        "name": "Kunskap",
+        "description": "เหมาะกับรายงานรายวิชา กรอกผู้เขียน รายวิชา และขนาดกระดาษได้"
+      }
+    },
+    "fields": {
+      "course": "รายวิชา",
+      "lecturer": "ผู้บรรยาย",
+      "date": "วันที่",
+      "topic": "หัวข้อ",
+      "author": "ผู้เขียน",
+      "institution": "สถาบัน",
+      "level": "ระดับ",
+      "abstract": "บทคัดย่อ",
+      "draft": "ทำเครื่องหมายเป็นฉบับร่าง",
+      "instructor": "ผู้สอน",
+      "dueDate": "กำหนดส่ง",
+      "difficulty": "ระดับความยาก",
+      "showSolutions": "แสดงเฉลย",
+      "source": "แหล่งอ้างอิง",
+      "pages": "หน้า",
+      "recommended": "แนะนำ",
+      "title": "ชื่อเรื่อง",
+      "affiliation": "สังกัด",
+      "version": "เวอร์ชัน",
+      "bananaColor": "สีกล้วย",
+      "subtitle": "หัวข้อย่อย",
+      "year": "ปี",
+      "courseName": "รายวิชา",
+      "mainColor": "สีเน้น",
+      "toc": "สารบัญ",
+      "tocDepth": "ความลึกของสารบัญ",
+      "paperSize": "ขนาดกระดาษ",
+      "lang": "ภาษา",
+      "colorlinks": "ลิงก์มีสี",
+      "primaryLang": "ภาษาหลัก",
+      "titleFont": "ฟอนต์ชื่อเรื่อง",
+      "bodyFont": "ฟอนต์เนื้อหา",
+      "dateFont": "ฟอนต์วันที่",
+      "mathMode": "ฟอนต์สมการ"
+    },
+    "placeholders": {
+      "course": "เช่น การวิเคราะห์เชิงจริง",
+      "lecturer": "เช่น ดร.หลิน",
+      "date": "",
+      "topic": "เช่น ความกระชับ",
+      "author": "เช่น Anthony Sung",
+      "institution": "เช่น มหาวิทยาลัยแห่งชาติไต้หวัน",
+      "abstract": "กรอกบทสรุปสั้น ๆ",
+      "instructor": "เช่น ศ.เฉิน",
+      "dueDate": "",
+      "source": "เช่น Rudin, Principles of Mathematical Analysis",
+      "pages": "เช่น 12–34"
+    },
+    "options": {
+      "undergraduate": "ปริญญาตรี",
+      "graduate": "บัณฑิตศึกษา",
+      "seminar": "สัมมนา",
+      "easy": "ง่าย",
+      "medium": "ปานกลาง",
+      "hard": "ยาก",
+      "a4": "A4",
+      "letter": "Letter",
+      "en": "อังกฤษ",
+      "zh": "จีน",
+      "ja": "ญี่ปุ่น",
+      "ko": "เกาหลี",
+      "th": "ไทย",
+      "taiwan-pearl": "TaiwanPearl (ตัวมน)",
+      "source-han": "Source Han Sans",
+      "song": "MOE Song",
+      "kai": "MOE Kai",
+      "playfair": "Playfair Display",
+      "tai-heritage": "Tai Heritage Pro",
+      "default": "ค่าเริ่มต้น (New Computer Modern)",
+      "garamond": "Garamond (EB Garamond)"
+    },
+    "previewTemplate": "ดูเทมเพลต",
+    "templatePreview": "ตัวอย่าง",
+    "useThisTemplate": "ใช้เทมเพลตนี้",
+    "noPreviewAvailable": "ยังไม่มีตัวอย่างของเทมเพลตนี้"
+  },
+  "panel": {
+    "outline": "โครงร่าง",
+    "metadata": "ข้อมูลเอกสาร",
+    "template": "เทมเพลต",
+    "export": "ส่งออก",
+    "outlineEmpty": "หัวข้อจะปรากฏที่นี่เมื่อคุณเขียน",
+    "outlineDocument": "เอกสาร",
+    "metadataEmpty": "เทมเพลตนี้ไม่มีช่องให้กรอก",
+    "metadataHint": "ช่องเหล่านี้จะเปลี่ยนไปตามเทมเพลต ช่องที่ไม่บังคับเว้นว่างได้"
+  },
+  "export": {
+    "title": "ส่งออก",
+    "subtitle": "ดูตัวอย่างเนื้อหาที่จะส่งออก แล้วส่งออกเอกสารปัจจุบันเป็น PDF",
+    "template": "เทมเพลต",
+    "pageSize": "ขนาดหน้า",
+    "fontPreset": "ชุดฟอนต์",
+    "includeMetadata": "รวมข้อมูลเอกสาร",
+    "fonts": {
+      "sans": "ไม่มีเชิง",
+      "serif": "มีเชิง",
+      "mono": "ความกว้างคงที่"
+    },
+    "button": "ส่งออก PDF",
+    "exporting": "กำลังส่งออก…",
+    "payloadTitle": "ข้อมูลที่ส่งออก",
+    "payloadHint": "นี่คือข้อมูลที่จะส่งเมื่อส่งออก"
+  },
+  "settings": {
+    "title": "การตั้งค่า",
+    "subtitle": "การตั้งค่าเหล่านี้จะถูกเก็บไว้ในเครื่องนี้เท่านั้น",
+    "appearance": {
+      "title": "ลักษณะที่ปรากฏ",
+      "description": "ปรับวิธีแสดงผลของ AnvilNote",
+      "theme": "ธีม",
+      "themeHint": "เลือกโหมดสว่างหรือมืด",
+      "themeLight": "สว่าง",
+      "themeDark": "มืด"
+    },
+    "language": {
+      "title": "ภาษา",
+      "description": "เลือกภาษาของอินเทอร์เฟซ",
+      "label": "ภาษาอินเทอร์เฟซ"
+    },
+    "export": {
+      "title": "ค่าเริ่มต้นการส่งออก",
+      "description": "ตั้งค่าเริ่มต้นที่ใช้เมื่อส่งออกเอกสาร",
+      "pageSize": "ขนาดหน้าเริ่มต้น",
+      "fontPreset": "ชุดฟอนต์เริ่มต้น",
+      "storageLocation": "ตำแหน่งที่บันทึก",
+      "storageLocationHint": "ตำแหน่งที่บันทึก PDF ที่ส่งออก",
+      "chooseFolder": "เลือกโฟลเดอร์",
+      "folderSelected": "ตั้งตำแหน่งที่บันทึกเป็น {folder} แล้ว",
+      "folderBlocked": "เบราว์เซอร์เข้าถึงโฟลเดอร์นี้ไม่ได้ โปรดเลือกตำแหน่งอื่น",
+      "folderUnsupported": "เบราว์เซอร์ของคุณไม่รองรับการเลือกโฟลเดอร์",
+      "pickOther": "เลือกโฟลเดอร์อื่น…"
+    },
+    "save": "บันทึก"
+  },
+  "command": {
+    "placeholder": "ค้นหาหรือพิมพ์คำสั่ง…",
+    "empty": "ไม่มีผลลัพธ์ที่ตรงกัน",
+    "groups": {
+      "actions": "การกระทำ",
+      "editor": "เอดิเตอร์",
+      "navigation": "การนำทาง",
+      "language": "ภาษา"
+    },
+    "newDocument": "สร้างเอกสารใหม่",
+    "goDocuments": "ไปที่เอกสาร",
+    "goTemplates": "ไปที่เทมเพลต",
+    "goSettings": "ไปที่การตั้งค่า",
+    "export": "ส่งออกเอกสารปัจจุบันเป็น PDF",
+    "insertInlineMath": "แทรกสมการในบรรทัด",
+    "insertBlockMath": "แทรกสมการแบบบล็อก",
+    "switchLocale": "เปลี่ยนเป็น {locale}"
+  },
+  "locale": {
+    "label": "ภาษา",
+    "en": "English",
+    "zh-TW": "繁體中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "th": "ไทย",
+    "ru": "Русский"
+  },
+  "toast": {
+    "documentCreated": "สร้างเอกสารแล้ว",
+    "documentCreatedFromTemplate": "สร้างเอกสารจาก {name} แล้ว",
+    "documentDeleted": "ลบเอกสารแล้ว",
+    "documentRenamed": "เปลี่ยนชื่อเอกสารแล้ว",
+    "documentSaved": "บันทึกเอกสารแล้ว",
+    "templateSwitched": "สลับไปยัง {name} แล้ว",
+    "exportMocked": "ยังไม่ได้เชื่อมต่อตัวเรนเดอร์ — นี่เป็นการส่งออกจำลอง",
+    "exportReady": "ส่งออก PDF แล้ว",
+    "noDocument": "โปรดเปิดเอกสารก่อน",
+    "saveFailed": "ไม่สามารถบันทึกเอกสารได้",
+    "renderFailed": "ไม่สามารถเรนเดอร์ PDF ได้",
+    "settingsSaved": "บันทึกการตั้งค่าแล้ว",
+    "localeSwitched": "อัปเดตภาษาที่แสดงแล้ว"
+  },
+  "pdfPreview": {
+    "previousPage": "หน้าก่อนหน้า",
+    "nextPage": "หน้าถัดไป",
+    "page": "หน้า",
+    "of": "จาก",
+    "zoomIn": "ขยาย",
+    "zoomOut": "ย่อ",
+    "resetZoom": "รีเซ็ตการซูม",
+    "downloadPdf": "ดาวน์โหลด PDF",
+    "openPdf": "เปิด PDF",
+    "loadingPreview": "กำลังโหลดตัวอย่าง…",
+    "failedToLoadPreview": "โหลดตัวอย่างไม่สำเร็จ",
+    "pdfPreviewUnavailable": "ขณะนี้ยังไม่สามารถแสดงตัวอย่าง PDF ได้",
+    "previewFileMissing": "ไม่พบไฟล์ตัวอย่าง",
+    "pageIndicator": "หน้า {current} จาก {total}"
+  }
+}

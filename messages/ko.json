@@ -1,0 +1,412 @@
+{
+  "app": {
+    "name": "AnvilNote",
+    "tagline": "생각을 노트로 벼려내세요."
+  },
+  "nav": {
+    "newDocument": "새 문서",
+    "search": "검색",
+    "documents": "문서",
+    "templates": "템플릿",
+    "recent": "최근",
+    "settings": "설정"
+  },
+  "topbar": {
+    "search": "검색하거나 명령어 입력",
+    "export": "PDF 내보내기",
+    "togglePanel": "패널 표시/숨기기",
+    "openMenu": "메뉴 열기"
+  },
+  "common": {
+    "open": "열기",
+    "rename": "이름 변경",
+    "duplicate": "복제",
+    "delete": "삭제",
+    "cancel": "취소",
+    "save": "저장",
+    "close": "닫기",
+    "none": "없음",
+    "optional": "선택",
+    "required": "필수"
+  },
+  "editor": {
+    "untitled": "제목 없는 문서",
+    "titlePlaceholder": "제목 없는 문서",
+    "writePlaceholder": "입력을 시작하거나 “/”를 눌러 명령 메뉴를 여세요",
+    "emptyTitle": "열린 문서가 없습니다",
+    "emptyDescription": "사이드바에서 문서를 선택하거나 새로 만들어 편집을 시작하세요.",
+    "createDocument": "문서 만들기",
+    "autosave": {
+      "saved": "저장됨",
+      "saving": "저장 중…",
+      "unsaved": "저장 안 됨"
+    },
+    "oldDocReset": "이 노트는 이전 에디터로 만들어져 자동으로 이전할 수 없어 빈 페이지가 되었습니다.",
+    "block": {
+      "menu": "블록 설정",
+      "delete": "{type} 삭제",
+      "types": {
+        "paragraph": "단락",
+        "heading1": "제목 1",
+        "heading2": "제목 2",
+        "heading3": "제목 3",
+        "bulletList": "글머리 기호 목록",
+        "orderedList": "번호 매기기 목록",
+        "blockquote": "인용",
+        "codeBlock": "코드 블록",
+        "image": "이미지",
+        "table": "표",
+        "blockMath": "블록 수식",
+        "divider": "구분선",
+        "block": "블록"
+      },
+      "color": "글자 색",
+      "colors": {
+        "default": "기본",
+        "gray": "회색",
+        "red": "빨강",
+        "orange": "주황",
+        "green": "초록",
+        "blue": "파랑",
+        "purple": "보라"
+      }
+    },
+    "toolbar": {
+      "paragraph": "단락",
+      "heading1": "제목 1",
+      "heading2": "제목 2",
+      "heading3": "제목 3",
+      "bold": "굵게",
+      "italic": "기울임",
+      "strike": "취소선",
+      "code": "인라인 코드",
+      "bulletList": "글머리 기호 목록",
+      "orderedList": "번호 매기기 목록",
+      "taskList": "체크리스트",
+      "blockquote": "인용",
+      "codeBlock": "코드 블록",
+      "link": "링크",
+      "table": "표",
+      "image": "이미지",
+      "inlineMath": "인라인 수식",
+      "blockMath": "블록 수식",
+      "undo": "실행 취소",
+      "redo": "다시 실행",
+      "linkPrompt": "URL을 입력하세요",
+      "linkApply": "링크 적용",
+      "linkRemove": "링크 제거",
+      "tableNormal": "일반 표",
+      "tableThreeLine": "삼선 표",
+      "tableAlignLeft": "표 왼쪽 정렬",
+      "tableAlignCenter": "표 가운데 정렬",
+      "tableAlignRight": "표 오른쪽 정렬"
+    },
+    "slash": {
+      "text": "텍스트",
+      "heading1": "제목 1",
+      "heading2": "제목 2",
+      "heading3": "제목 3",
+      "bulletList": "글머리 기호 목록",
+      "orderedList": "번호 매기기 목록",
+      "taskList": "체크리스트",
+      "quote": "인용",
+      "codeBlock": "코드 블록",
+      "table": "표",
+      "image": "이미지",
+      "inlineMath": "인라인 수식",
+      "inlineMathHint": "본문에 LaTeX 수식 삽입",
+      "blockMath": "블록 수식",
+      "blockMathHint": "독립 수식 삽입"
+    },
+    "image": {
+      "figure": "그림",
+      "captionPlaceholder": "이미지 설명 입력",
+      "left": "왼쪽 정렬",
+      "center": "가운데 정렬",
+      "right": "오른쪽 정렬"
+    },
+    "table": {
+      "figure": "표",
+      "captionPlaceholder": "표 설명 입력",
+      "pickSize": "표 크기 선택"
+    },
+    "math": {
+      "editTitle": "수식 편집",
+      "insertInlineTitle": "인라인 수식 삽입",
+      "insertBlockTitle": "독립 수식 삽입",
+      "inlineHint": "인라인 수식은 텍스트 행 안에 흐릅니다.",
+      "displayHint": "디스플레이 수식은 별도의 행에 표시되어 긴 수식에 적합합니다.",
+      "source": "LaTeX 내용",
+      "preview": "미리보기",
+      "emptyPreview": "LaTeX를 입력하면 여기에 미리보기가 표시됩니다.",
+      "invalid": "잘못된 수식입니다 — LaTeX 구문을 확인하세요.",
+      "save": "저장",
+      "cancel": "취소"
+    },
+    "codeBlock": {
+      "selectLanguage": "언어 선택"
+    }
+  },
+  "documents": {
+    "title": "문서",
+    "subtitle": "노트와 유인물이 자동으로 동기화됩니다.",
+    "empty": "아직 문서가 없습니다.",
+    "emptyHint": "첫 문서를 만들어 시작하세요.",
+    "newDocument": "새 문서",
+    "count": "{count, plural, =0 {문서 없음} other {문서 #개}}",
+    "lastEdited": "마지막 편집: {date}",
+    "untitled": "제목 없는 문서",
+    "deleteTitle": "문서 삭제",
+    "deleteDescription": "“{title}”이(가) 영구적으로 삭제되며 복구할 수 없습니다.",
+    "templateLabel": "템플릿",
+    "defaultTitle": "제목 없는 노트"
+  },
+  "templates": {
+    "title": "템플릿",
+    "subtitle": "문서의 레이아웃을 선택하세요. 템플릿을 바꿔도 기존 내용은 유지됩니다.",
+    "current": "현재 템플릿",
+    "use": "템플릿 적용",
+    "inUse": "사용 중",
+    "categories": {
+      "note": "노트",
+      "lecture": "강의",
+      "academic": "학술",
+      "teaching": "수업",
+      "report": "보고서"
+    },
+    "items": {
+      "plain-note": {
+        "name": "Plain Note",
+        "description": "메타데이터 없는 깔끔한 페이지. 그저 쓰기만 하세요."
+      },
+      "lecture-note": {
+        "name": "Lecture Note",
+        "description": "강의 내용 정리에 적합합니다. 과목, 강사, 날짜를 입력할 수 있습니다."
+      },
+      "academic-handout": {
+        "name": "Academic Handout",
+        "description": "정식 유인물에 적합합니다. 저자, 소속, 초록을 입력할 수 있습니다."
+      },
+      "problem-set": {
+        "name": "Problem Set",
+        "description": "문제집 제작에 적합합니다. 마감일을 설정하고 해답 표시를 전환할 수 있습니다."
+      },
+      "reading-note": {
+        "name": "Reading Note",
+        "description": "독서 노트 정리에 적합합니다. 저자, 페이지, 평가를 기록할 수 있습니다."
+      },
+      "bananote": {
+        "name": "Bananote",
+        "description": "색감이 밝고 바나나 포인트를 더한 발랄한 노트."
+      },
+      "bubble": {
+        "name": "Bubble",
+        "description": "수업 발표에 적합합니다. 제목, 부제, 강조 색상을 설정할 수 있습니다."
+      },
+      "flow-way": {
+        "name": "Flow Way",
+        "description": "일반 보고서에 적합합니다. 부제와 목차를 추가할 수 있습니다."
+      },
+      "hetvid": {
+        "name": "Hetvid",
+        "description": "학술 논문에 적합합니다. 초록, 버전, 언어를 설정할 수 있습니다."
+      },
+      "kunskap": {
+        "name": "Kunskap",
+        "description": "수업 보고서에 적합합니다. 저자, 과목, 용지 크기를 입력할 수 있습니다."
+      }
+    },
+    "fields": {
+      "course": "과목",
+      "lecturer": "강사",
+      "date": "날짜",
+      "topic": "주제",
+      "author": "저자",
+      "institution": "소속 기관",
+      "level": "수준",
+      "abstract": "초록",
+      "draft": "초안으로 표시",
+      "instructor": "담당 강사",
+      "dueDate": "마감일",
+      "difficulty": "난이도",
+      "showSolutions": "해답 표시",
+      "source": "출처",
+      "pages": "페이지",
+      "recommended": "추천",
+      "title": "제목",
+      "affiliation": "소속",
+      "version": "버전",
+      "bananaColor": "바나나 색상",
+      "subtitle": "부제",
+      "year": "연도",
+      "courseName": "과목",
+      "mainColor": "강조 색상",
+      "toc": "목차",
+      "tocDepth": "목차 깊이",
+      "paperSize": "용지 크기",
+      "lang": "언어",
+      "colorlinks": "색상 링크",
+      "primaryLang": "주 언어",
+      "titleFont": "제목 글꼴",
+      "bodyFont": "본문 글꼴",
+      "dateFont": "날짜 글꼴",
+      "mathMode": "수식 글꼴"
+    },
+    "placeholders": {
+      "course": "예: 실해석학",
+      "lecturer": "예: 임 박사",
+      "date": "",
+      "topic": "예: 콤팩트성",
+      "author": "예: Anthony Sung",
+      "institution": "예: 국립대만대학교",
+      "abstract": "짧은 요약을 입력하세요",
+      "instructor": "예: 천 교수",
+      "dueDate": "",
+      "source": "예: Rudin, 수학적 해석학의 원리",
+      "pages": "예: 12–34"
+    },
+    "options": {
+      "undergraduate": "학부",
+      "graduate": "대학원",
+      "seminar": "세미나",
+      "easy": "쉬움",
+      "medium": "보통",
+      "hard": "어려움",
+      "a4": "A4",
+      "letter": "레터",
+      "en": "영어",
+      "zh": "중국어",
+      "ja": "일본어",
+      "ko": "한국어",
+      "th": "태국어",
+      "taiwan-pearl": "TaiwanPearl (둥근체)",
+      "source-han": "본고딕",
+      "song": "MOE 명조",
+      "kai": "MOE 해서",
+      "playfair": "Playfair Display",
+      "tai-heritage": "Tai Heritage Pro",
+      "default": "기본 (New Computer Modern)",
+      "garamond": "Garamond (EB Garamond)"
+    },
+    "previewTemplate": "템플릿 보기",
+    "templatePreview": "미리보기",
+    "useThisTemplate": "이 템플릿 적용",
+    "noPreviewAvailable": "이 템플릿의 미리보기가 아직 없습니다"
+  },
+  "panel": {
+    "outline": "개요",
+    "metadata": "문서 정보",
+    "template": "템플릿",
+    "export": "내보내기",
+    "outlineEmpty": "작성하면 제목이 여기에 표시됩니다.",
+    "outlineDocument": "문서",
+    "metadataEmpty": "이 템플릿에는 입력할 항목이 없습니다.",
+    "metadataHint": "항목은 템플릿에 따라 달라집니다. 선택 항목은 비워 둘 수 있습니다."
+  },
+  "export": {
+    "title": "내보내기",
+    "subtitle": "내보낼 내용을 미리 보고 현재 문서를 PDF로 출력합니다.",
+    "template": "템플릿",
+    "pageSize": "페이지 크기",
+    "fontPreset": "글꼴 프리셋",
+    "includeMetadata": "문서 정보 포함",
+    "fonts": {
+      "sans": "고딕",
+      "serif": "명조",
+      "mono": "고정폭"
+    },
+    "button": "PDF 내보내기",
+    "exporting": "내보내는 중…",
+    "payloadTitle": "내보내기 데이터",
+    "payloadHint": "이것은 내보낼 때 전송되는 데이터입니다."
+  },
+  "settings": {
+    "title": "설정",
+    "subtitle": "이 설정은 이 기기에만 저장됩니다.",
+    "appearance": {
+      "title": "외관",
+      "description": "AnvilNote의 표시 방식을 조정합니다.",
+      "theme": "테마",
+      "themeHint": "밝게 또는 어둡게 모드를 선택하세요.",
+      "themeLight": "밝게",
+      "themeDark": "어둡게"
+    },
+    "language": {
+      "title": "언어",
+      "description": "인터페이스 언어를 선택합니다.",
+      "label": "인터페이스 언어"
+    },
+    "export": {
+      "title": "내보내기 기본값",
+      "description": "문서를 내보낼 때 기본으로 사용할 설정.",
+      "pageSize": "기본 페이지 크기",
+      "fontPreset": "기본 글꼴 프리셋",
+      "storageLocation": "저장 위치",
+      "storageLocationHint": "내보낸 PDF가 저장되는 위치.",
+      "chooseFolder": "폴더 선택",
+      "folderSelected": "저장 위치를 {folder}(으)로 설정했습니다",
+      "folderBlocked": "브라우저가 이 폴더에 접근할 수 없습니다. 다른 위치를 선택하세요.",
+      "folderUnsupported": "사용 중인 브라우저는 폴더 선택을 지원하지 않습니다.",
+      "pickOther": "다른 폴더 선택…"
+    },
+    "save": "저장"
+  },
+  "command": {
+    "placeholder": "검색하거나 명령어 입력…",
+    "empty": "일치하는 결과가 없습니다.",
+    "groups": {
+      "actions": "작업",
+      "editor": "에디터",
+      "navigation": "탐색",
+      "language": "언어"
+    },
+    "newDocument": "새 문서 만들기",
+    "goDocuments": "문서로 이동",
+    "goTemplates": "템플릿으로 이동",
+    "goSettings": "설정으로 이동",
+    "export": "현재 문서를 PDF로 내보내기",
+    "insertInlineMath": "인라인 수식 삽입",
+    "insertBlockMath": "블록 수식 삽입",
+    "switchLocale": "{locale}(으)로 전환"
+  },
+  "locale": {
+    "label": "언어",
+    "en": "English",
+    "zh-TW": "繁體中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "th": "ไทย",
+    "ru": "Русский"
+  },
+  "toast": {
+    "documentCreated": "문서를 만들었습니다",
+    "documentCreatedFromTemplate": "{name}에서 문서를 만들었습니다",
+    "documentDeleted": "문서를 삭제했습니다",
+    "documentRenamed": "문서 이름을 변경했습니다",
+    "documentSaved": "문서를 저장했습니다",
+    "templateSwitched": "{name}(으)로 전환했습니다",
+    "exportMocked": "렌더러가 아직 연결되지 않았습니다 — 모의 내보내기입니다.",
+    "exportReady": "PDF를 내보냈습니다.",
+    "noDocument": "먼저 문서를 여세요.",
+    "saveFailed": "문서를 저장할 수 없습니다.",
+    "renderFailed": "PDF를 렌더링할 수 없습니다.",
+    "settingsSaved": "환경설정을 저장했습니다",
+    "localeSwitched": "표시 언어를 업데이트했습니다"
+  },
+  "pdfPreview": {
+    "previousPage": "이전 페이지",
+    "nextPage": "다음 페이지",
+    "page": "페이지",
+    "of": "/",
+    "zoomIn": "확대",
+    "zoomOut": "축소",
+    "resetZoom": "확대/축소 초기화",
+    "downloadPdf": "PDF 다운로드",
+    "openPdf": "PDF 열기",
+    "loadingPreview": "미리보기 불러오는 중…",
+    "failedToLoadPreview": "미리보기를 불러오지 못했습니다",
+    "pdfPreviewUnavailable": "지금은 PDF를 미리볼 수 없습니다",
+    "previewFileMissing": "미리보기 파일을 찾을 수 없습니다",
+    "pageIndicator": "{total}페이지 중 {current}페이지"
+  }
+}

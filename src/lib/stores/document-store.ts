@@ -276,15 +276,22 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
 
     try {
       const saved = await updateDocumentRequest(id, {
-        title: document.title || "Untitled Note",
+        title: document.title,
         content: document.content,
         metadata: document.metadata,
         templateSettings: document.templateSettings,
         templateId: document.templateId,
       });
 
+      // Don't overwrite the local document with the server echo: the user may
+      // have kept typing while the request was in flight, and replacing the
+      // whole object round-trips the title/content back through the store —
+      // which resets an empty title to its fallback and flashes the editor on
+      // every autosave. Only sync the server-owned timestamp.
       set((state) => ({
-        documents: state.documents.map((entry) => (entry.id === id ? saved : entry)),
+        documents: state.documents.map((entry) =>
+          entry.id === id ? { ...entry, updatedAt: saved.updatedAt } : entry,
+        ),
         saveStateById: {
           ...state.saveStateById,
           [id]: "saved",

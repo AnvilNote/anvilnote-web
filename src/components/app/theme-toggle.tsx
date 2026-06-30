@@ -2,55 +2,44 @@
 
 import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
-import { Check, Monitor, Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useMounted } from "@/hooks/use-mounted";
 import { cn } from "@/lib/utils";
 
-const THEMES = [
-  { value: "light", icon: Sun, labelKey: "themeLight" },
-  { value: "dark", icon: Moon, labelKey: "themeDark" },
-  { value: "system", icon: Monitor, labelKey: "themeSystem" },
-] as const;
-
+// Single-tap light/dark toggle with an animated sprite swap: the sun and moon
+// cross-fade while rotating and scaling, so flipping themes feels alive.
 export function ThemeToggle() {
   const t = useTranslations("settings.appearance");
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const mounted = useMounted();
-
-  // Render a stable icon on the server / before hydration.
-  const ActiveIcon = !mounted ? Sun : resolvedTheme === "dark" ? Moon : Sun;
+  const isDark = mounted && resolvedTheme === "dark";
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t("theme")}>
-          <ActiveIcon className="size-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-40">
-        {THEMES.map((item) => (
-          <DropdownMenuItem
-            key={item.value}
-            onSelect={() => setTheme(item.value)}
-          >
-            <item.icon className="size-4" />
-            <span className="flex-1">{t(item.labelKey)}</span>
-            <Check
-              className={cn(
-                "size-4",
-                mounted && theme === item.value ? "opacity-100" : "opacity-0",
-              )}
-            />
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button
+      variant="ghost"
+      size="icon"
+      aria-label={t("theme")}
+      aria-pressed={isDark}
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      className="relative overflow-hidden"
+    >
+      <Sun
+        className={cn(
+          "size-4 transition-all duration-500 ease-out",
+          isDark
+            ? "rotate-90 scale-0 opacity-0"
+            : "rotate-0 scale-100 opacity-100",
+        )}
+      />
+      <Moon
+        className={cn(
+          "absolute size-4 transition-all duration-500 ease-out",
+          isDark
+            ? "rotate-0 scale-100 opacity-100"
+            : "-rotate-90 scale-0 opacity-0",
+        )}
+      />
+    </Button>
   );
 }
