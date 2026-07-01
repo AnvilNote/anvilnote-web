@@ -8,6 +8,9 @@
     "step": "{current} / {total}",
     "tabsProgress": "已看 {visited} / {total}",
     "createHint": "點 + 建立你的第一份文件",
+    "slashHint": "在編輯器任意處輸入 / 開啟選單",
+    "mathInlineHint": "試著輸入 $$x$$ 建立行內數學式",
+    "mathBlockHint": "試著輸入 $$$x$$$ 建立獨立顯示的數學式",
     "steps": {
       "sidebar": {
         "title": "收合側邊欄",
@@ -25,6 +28,14 @@
         "title": "斜線指令",
         "body": "在編輯器裡輸入 / 來插入標題、清單、表格、圖片、數學式等等。"
       },
+      "mathInline": {
+        "title": "行內數學式快捷輸入",
+        "body": "緊接在已有文字後方輸入 $$ 加上公式再加上 $$，不用開對話框就能直接插入行內數學式。"
+      },
+      "mathBlock": {
+        "title": "獨立數學式快捷輸入",
+        "body": "在空白的一行輸入 $$$ 加上公式再加上 $$$，就能插入獨立顯示的數學式。"
+      },
       "panel": {
         "title": "右側面板",
         "body": "點過大綱、文件資訊、範本、匯出，看看每個功能做什麼。"
@@ -39,6 +50,7 @@
     "newDocument": "新增文件",
     "search": "搜尋",
     "documents": "文件",
+    "projects": "專案",
     "templates": "範本",
     "recent": "最近",
     "settings": "設定"
@@ -85,6 +97,7 @@
         "bulletList": "項目符號清單",
         "orderedList": "編號清單",
         "blockquote": "引言",
+        "callout": "callout 方塊",
         "codeBlock": "程式碼區塊",
         "image": "圖片",
         "table": "表格",
@@ -116,6 +129,7 @@
       "orderedList": "編號清單",
       "taskList": "待辦清單",
       "blockquote": "引言",
+      "callout": "Callout",
       "codeBlock": "程式碼區塊",
       "link": "連結",
       "table": "表格",
@@ -142,6 +156,7 @@
       "orderedList": "編號清單",
       "taskList": "待辦清單",
       "quote": "引言",
+      "callout": "Callout",
       "codeBlock": "程式碼區塊",
       "table": "表格",
       "image": "圖片",
@@ -177,6 +192,23 @@
     },
     "codeBlock": {
       "selectLanguage": "選擇語言"
+    },
+    "callout": {
+      "selectKind": "Callout 類型",
+      "kinds": {
+        "note": "筆記",
+        "abstract": "摘要",
+        "info": "資訊",
+        "tip": "提示",
+        "success": "成功",
+        "question": "問題",
+        "warning": "警告",
+        "failure": "失敗",
+        "danger": "危險",
+        "bug": "臭蟲",
+        "example": "範例",
+        "quote": "引言"
+      }
     }
   },
   "documents": {
@@ -197,9 +229,13 @@
   },
   "projects": {
     "title": "專案",
+    "pageTitle": "專案",
+    "pageSubtitle": "集中管理專案相關文件。",
     "create": "新增專案",
     "defaultName": "未命名專案",
     "empty": "尚無專案。",
+    "emptyHint": "建立第一個專案，開始整理文件。",
+    "count": "{count, plural, =0 {沒有專案} other {# 個專案}}",
     "icon": "圖示",
     "iconSearch": "搜尋圖示…",
     "iconEmpty": "找不到圖示。",
@@ -219,6 +255,7 @@
     "subtitle": "選擇文件的版型。切換範本不會影響既有內容。",
     "current": "目前範本",
     "use": "套用範本",
+    "viewSource": "在 Typst Universe 上查看",
     "inUse": "目前使用中",
     "categories": {
       "note": "筆記",
@@ -432,7 +469,6 @@
       "line2After": "寫成完整筆記。",
       "line3": "",
       "kicker": "編輯、公式、程式碼、範本與輸出，都在同一個工作區。",
-      "description": "你可以在下面直接試用編輯器，包含工具列、斜線指令、公式與表格。PDF 匯出請到正式工作區使用。",
       "cta": "進入工作區",
       "secondaryCta": "試用編輯器"
     },
@@ -463,7 +499,7 @@
     },
     "showcase": {
       "title": "讓文件真正完成的範本",
-      "description": "AnvilNote 不只提供編輯器，也讓內容能繼續變成講義、報告或整理好的筆記。"
+      "description": "AnvilNote 內建多種範本，適合做講義、報告和整理筆記。\n部分範本來自 Typst 開源社群，已先整合好，打開就能用。"
     },
     "closing": {
       "title": "寫作、整理、輸出，一次完成。",
@@ -502,9 +538,11 @@
     "documentCreatedFromTemplate": "已使用 {name} 範本建立文件",
     "documentDeleted": "已刪除文件",
     "documentMoved": "已移動文件",
+    "documentMovedTo": "已移動文件至{name}",
     "documentMoveFailed": "移動文件失敗",
     "documentRenamed": "已重新命名文件",
     "documentSaved": "已儲存文件",
+    "projectDeleted": "已刪除專案「{name}」",
     "templateSwitched": "已切換至 {name}",
     "exportMocked": "目前尚未連接轉換服務，這只是模擬匯出。",
     "exportReady": "PDF 已匯出。",

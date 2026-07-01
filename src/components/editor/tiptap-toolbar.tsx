@@ -20,6 +20,7 @@ import {
   Link2,
   List,
   ListOrdered,
+  MessageSquareWarning,
   Pilcrow,
   Quote,
   Redo2,
@@ -38,6 +39,8 @@ import {
 } from "@/components/ui/popover";
 import { TableSizeGrid } from "@/components/editor/table-size-picker";
 import { pickAndInsertImage } from "@/lib/tiptap/image";
+import { insertCallout } from "@/lib/tiptap/callout";
+import { DEFAULT_CALLOUT_KIND } from "@/config/callouts";
 import type {
   MathClickMode,
   TableAlign,
@@ -130,6 +133,7 @@ export function TiptapToolbar({
   onEditLink: () => void;
 }) {
   const t = useTranslations("editor.toolbar");
+  const tCallout = useTranslations("editor.callout");
 
   // Snapshot the marks/nodes relevant to the toolbar so it re-renders on every
   // selection or content change without re-rendering the editor surface.
@@ -147,6 +151,7 @@ export function TiptapToolbar({
       bulletList: e.isActive("bulletList"),
       orderedList: e.isActive("orderedList"),
       blockquote: e.isActive("blockquote"),
+      callout: e.isActive("callout"),
       codeBlock: e.isActive("codeBlock"),
       link: e.isActive("link"),
       inTable: e.isActive("table"),
@@ -241,6 +246,18 @@ export function TiptapToolbar({
         label={t("blockquote")}
         active={s.blockquote}
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
+      />
+      <ToolbarButton
+        icon={MessageSquareWarning}
+        label={t("callout")}
+        active={s.callout}
+        onClick={() =>
+          insertCallout(
+            editor,
+            DEFAULT_CALLOUT_KIND,
+            tCallout(`kinds.${DEFAULT_CALLOUT_KIND}` as never),
+          )
+        }
       />
       <ToolbarButton
         icon={Code2}

@@ -13,6 +13,7 @@ import {
   ImagePlus as ImageIcon,
   List,
   ListOrdered,
+  MessageSquareWarning,
   Quote,
   Sigma,
   SquareSigma,
@@ -43,6 +44,8 @@ import {
   updateInlineMath,
 } from "@/lib/tiptap/math";
 import { pickAndInsertImage } from "@/lib/tiptap/image";
+import { insertCallout } from "@/lib/tiptap/callout";
+import { DEFAULT_CALLOUT_KIND } from "@/config/callouts";
 import { migratedDocIds } from "@/lib/tiptap/serialization";
 import { emptyTiptapContent } from "@/lib/tiptap/default-content";
 import { useDocumentStore } from "@/lib/stores/document-store";
@@ -171,6 +174,19 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         run: run((c) => c.toggleBlockquote().run()),
       },
       {
+        title: tt("callout"),
+        icon: MessageSquareWarning,
+        aliases: ["callout", "admonition", "note", "warning"],
+        run: ({ editor, range }) => {
+          editor.chain().focus().deleteRange(range).run();
+          insertCallout(
+            editor,
+            DEFAULT_CALLOUT_KIND,
+            t(`editor.callout.kinds.${DEFAULT_CALLOUT_KIND}` as never),
+          );
+        },
+      },
+      {
         title: tt("codeBlock"),
         icon: Code2,
         aliases: ["code", "codeblock", "pre", "程式碼"],
@@ -223,7 +239,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         },
       },
     ];
-  }, [tt, requestMath, requestTable]);
+  }, [t, tt, requestMath, requestTable]);
 
   // Keep the slash extension instance stable while letting it read the latest
   // (localized) items at trigger time through a ref updated in an effect.

@@ -82,10 +82,7 @@ export default function SettingsPage() {
                 <Switch
                   checked={mounted ? resolvedTheme === "dark" : false}
                   aria-label={t("settings.appearance.theme")}
-                  onCheckedChange={(checked) => {
-                    setTheme(checked ? "dark" : "light");
-                    saved();
-                  }}
+                  onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
                 />
                 <Moon className="size-4 text-muted-foreground" />
               </div>

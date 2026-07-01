@@ -6,7 +6,14 @@ const STORAGE_KEY = "anvilnote.tour.done";
 
 export const TOUR_TAB_IDS = ["outline", "metadata", "template", "export"] as const;
 
-export type TourStepId = "sidebar" | "newDoc" | "toolbar" | "slash" | "panel";
+export type TourStepId =
+  | "sidebar"
+  | "newDoc"
+  | "toolbar"
+  | "slash"
+  | "mathInline"
+  | "mathBlock"
+  | "panel";
 
 export type TourStep = {
   id: TourStepId;
@@ -20,7 +27,9 @@ export const TOUR_STEPS: TourStep[] = [
   { id: "sidebar", anchor: '[data-tour="sidebar-toggle"]' },
   { id: "newDoc", anchor: '[data-tour="new-doc"]', forced: true },
   { id: "toolbar", anchor: '[data-tour="toolbar"]' },
-  { id: "slash", anchor: '[data-tour="editor-area"]' },
+  { id: "slash", anchor: '[data-tour="editor-area"]', forced: true },
+  { id: "mathInline", anchor: '[data-tour="editor-area"]', forced: true },
+  { id: "mathBlock", anchor: '[data-tour="editor-area"]', forced: true },
   { id: "panel", anchor: '[data-tour="right-tabs"]', forced: true },
 ];
 

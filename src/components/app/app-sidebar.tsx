@@ -3,7 +3,7 @@
 import type { MouseEvent } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { FileText, LayoutTemplate, Search, Settings } from "lucide-react";
+import { FileText, FolderKanban, LayoutTemplate, Search, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -43,6 +43,7 @@ export function AppSidebar() {
   }
 
   const navItems = [
+    { href: "/projects", label: t("nav.projects"), icon: FolderKanban },
     { href: "/documents", label: t("nav.documents"), icon: FileText },
     { href: "/templates", label: t("nav.templates"), icon: LayoutTemplate },
     { href: "/settings", label: t("nav.settings"), icon: Settings },

@@ -2,12 +2,12 @@
 
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { ArrowRight } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TemplatePreviewButton } from "@/components/templates/template-preview-button";
 import { TemplatePreviewThumbnail } from "@/components/templates/template-preview-thumbnail";
+import { UseTemplateButton } from "@/components/templates/use-template-button";
 import { useRouter } from "@/lib/i18n/navigation";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useTemplatesStore } from "@/lib/stores/templates-store";
@@ -87,16 +87,27 @@ export default function TemplatesPage() {
                     ))}
                   </div>
                 ) : null}
-                <Button
-                  variant="outline"
-                  className="mt-auto w-full justify-between"
-                  onClick={() =>
-                    void startFromTemplate(template.id, tr(template.name))
-                  }
-                >
-                  {t("templates.use")}
-                  <ArrowRight className="size-4" />
-                </Button>
+                <div className="mt-auto flex items-center justify-between gap-2">
+                  {template.universeUrl ? (
+                    <a
+                      href={template.universeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      <ExternalLink className="size-3.5 shrink-0" />
+                      <span className="truncate">{t("templates.viewSource")}</span>
+                    </a>
+                  ) : (
+                    <span />
+                  )}
+                  <UseTemplateButton
+                    label={t("templates.use")}
+                    onClick={() =>
+                      void startFromTemplate(template.id, tr(template.name))
+                    }
+                  />
+                </div>
               </CardContent>
             </Card>
           ))}

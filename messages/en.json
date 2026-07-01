@@ -8,6 +8,9 @@
     "step": "{current} / {total}",
     "tabsProgress": "Viewed {visited} / {total}",
     "createHint": "Click + to create your first document",
+    "slashHint": "Type / anywhere in the editor to open the menu",
+    "mathInlineHint": "Try typing $$x$$ to create inline math",
+    "mathBlockHint": "Try typing $$$x$$$ to create standalone display math",
     "steps": {
       "sidebar": {
         "title": "Collapse the sidebar",
@@ -25,6 +28,14 @@
         "title": "Slash commands",
         "body": "In the editor, type / to insert headings, lists, tables, images, math and more."
       },
+      "mathInline": {
+        "title": "Inline math shortcut",
+        "body": "Type $$ followed by a formula and $$ again, right after existing text, to insert inline math without opening a dialog."
+      },
+      "mathBlock": {
+        "title": "Display math shortcut",
+        "body": "On an empty line, type $$$ followed by a formula and $$$ again to insert a standalone display formula."
+      },
       "panel": {
         "title": "The right panel",
         "body": "Click through Outline, Document info, Template and Export to see what each one does."
@@ -39,6 +50,7 @@
     "newDocument": "New document",
     "search": "Search",
     "documents": "Documents",
+    "projects": "Projects",
     "templates": "Templates",
     "recent": "Recent",
     "settings": "Settings"
@@ -85,6 +97,7 @@
         "bulletList": "bullet list",
         "orderedList": "numbered list",
         "blockquote": "quote",
+        "callout": "callout",
         "codeBlock": "code block",
         "image": "image",
         "table": "table",
@@ -116,6 +129,7 @@
       "orderedList": "Numbered list",
       "taskList": "Task list",
       "blockquote": "Quote",
+      "callout": "Callout",
       "codeBlock": "Code block",
       "link": "Link",
       "table": "Table",
@@ -142,6 +156,7 @@
       "orderedList": "Numbered list",
       "taskList": "Task list",
       "quote": "Quote",
+      "callout": "Callout",
       "codeBlock": "Code block",
       "table": "Table",
       "image": "Image",
@@ -177,6 +192,23 @@
     },
     "codeBlock": {
       "selectLanguage": "Select language"
+    },
+    "callout": {
+      "selectKind": "Callout type",
+      "kinds": {
+        "note": "Note",
+        "abstract": "Summary",
+        "info": "Info",
+        "tip": "Tip",
+        "success": "Success",
+        "question": "Question",
+        "warning": "Warning",
+        "failure": "Failure",
+        "danger": "Danger",
+        "bug": "Bug",
+        "example": "Example",
+        "quote": "Quote"
+      }
     }
   },
   "documents": {
@@ -197,9 +229,13 @@
   },
   "projects": {
     "title": "Projects",
+    "pageTitle": "Projects",
+    "pageSubtitle": "Group related documents together.",
     "create": "New project",
     "defaultName": "Untitled project",
     "empty": "No projects yet.",
+    "emptyHint": "Create your first project to start grouping documents.",
+    "count": "{count, plural, =0 {No projects} =1 {1 project} other {# projects}}",
     "icon": "Icon",
     "iconSearch": "Search icons…",
     "iconEmpty": "No icons found.",
@@ -219,6 +255,7 @@
     "subtitle": "Choose a layout for your document. Switching templates won’t affect existing content.",
     "current": "Current template",
     "use": "Apply template",
+    "viewSource": "View on Typst Universe",
     "inUse": "Currently in use",
     "categories": {
       "note": "Note",
@@ -432,7 +469,6 @@
       "line2After": " serious notes.",
       "line3": "",
       "kicker": "AnvilNote keeps editing, math, code, templates, and export in one workspace so you can focus on structuring long-form writing.",
-      "description": "The live writing area starts below. You can edit the demo directly and try the toolbar, slash commands, equations, and tables; PDF export stays in the full workspace.",
       "cta": "Open the workspace",
       "secondaryCta": "Try the editor"
     },
@@ -463,7 +499,7 @@
     },
     "showcase": {
       "title": "Templates that finish the document",
-      "description": "AnvilNote goes beyond the editor so your content can continue into handouts, reports, and polished notes."
+      "description": "AnvilNote goes beyond the editor so your content can continue into handouts, reports, and polished notes.\nMost templates come from open-source packages in the Typst ecosystem, integrated and ready to use."
     },
     "closing": {
       "title": "A quiet workspace for writing, organizing, and finishing.",
@@ -502,9 +538,11 @@
     "documentCreatedFromTemplate": "Created a document from {name}",
     "documentDeleted": "Document deleted",
     "documentMoved": "Document moved",
+    "documentMovedTo": "Document moved to {name}",
     "documentMoveFailed": "Couldn’t move document",
     "documentRenamed": "Document renamed",
     "documentSaved": "Document saved",
+    "projectDeleted": "Project “{name}” deleted",
     "templateSwitched": "Switched to {name}",
     "exportMocked": "No renderer is connected yet — this is a mock export.",
     "exportReady": "PDF exported.",

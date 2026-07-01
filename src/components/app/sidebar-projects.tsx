@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronRight, FileText, MoreHorizontal, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { ChevronRight, FileText, Plus } from "lucide-react";
 import {
   SidebarGroup,
   SidebarGroupAction,
@@ -13,12 +14,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -34,7 +29,9 @@ import { useDocumentStore } from "@/lib/stores/document-store";
 import { useProjectStore } from "@/lib/stores/project-store";
 import { DocumentActions } from "@/components/app/document-actions";
 import { IconPicker } from "@/components/app/icon-picker";
+import { ProjectMenu } from "@/components/app/project-menu";
 import { randomProjectIcon } from "@/lib/lucide-icon";
+import { documentDragProps, useProjectDropTarget } from "@/lib/dnd/document-drag";
 import type { AnvilDocument } from "@/types/document";
 import type { AnvilProject } from "@/types/project";
 import { cn } from "@/lib/utils";
@@ -55,6 +52,7 @@ export function SidebarProjects() {
   const documents = useDocumentStore((s) => s.documents);
   const createDocument = useDocumentStore((s) => s.createDocument);
   const setActive = useDocumentStore((s) => s.setActive);
+  const setDocumentProject = useDocumentStore((s) => s.setDocumentProject);
 
   const projects = useProjectStore((s) => s.projects);
   const createProject = useProjectStore((s) => s.createProject);
@@ -67,6 +65,11 @@ export function SidebarProjects() {
   const [nameDraft, setNameDraft] = useState("");
   // Projects start expanded; ids here are collapsed.
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+
+  // "Unfiled" is a single, non-repeated drop target, so the hook can be
+  // called directly here rather than needing a per-row component.
+  const { isOver: unfiledIsOver, dropHandlers: unfiledDropHandlers } =
+    useProjectDropTarget((documentId) => void moveDocumentToProject(documentId, null));
 
   function toggle(id: string) {
     setCollapsed((prev) => {
@@ -102,6 +105,18 @@ export function SidebarProjects() {
     setRenamingId(null);
   }
 
+  async function moveDocumentToProject(documentId: string, projectId: string | null) {
+    try {
+      await setDocumentProject(documentId, projectId);
+      const name = projectId
+        ? (projects.find((p) => p.id === projectId)?.name ?? "")
+        : t("projects.unfiled");
+      toast.success(t("toast.documentMovedTo", { name }));
+    } catch {
+      toast.error(t("toast.documentMoveFailed"));
+    }
+  }
+
   async function newDocIn(projectId: string | null) {
     const doc = await createDocument(
       undefined,
@@ -126,7 +141,11 @@ export function SidebarProjects() {
       const active = pathname === href;
       const title = doc.title || t("documents.untitled");
       return (
-        <SidebarMenuItem key={doc.id} className="group/doc">
+        <SidebarMenuItem
+          key={doc.id}
+          className="group/doc"
+          {...documentDragProps(doc.id)}
+        >
           <SidebarMenuButton asChild isActive={active} tooltip={title} className="pr-7">
             <Link
               href={href}
@@ -173,88 +192,37 @@ export function SidebarProjects() {
               {t("projects.empty")}
             </p>
           ) : (
-            projects.map((project) => {
-              const isCollapsed = collapsed.has(project.id);
-              const isRenaming = renamingId === project.id;
-              const docs = documents.filter((doc) => doc.projectId === project.id);
-              return (
-                <div key={project.id} className="mb-0.5">
-                  {/* Header row: chevron (collapse) + icon (picker) + name
-                      (click to rename) + new-doc + actions menu. */}
-                  <div className="group/proj flex items-center gap-0.5 rounded-md pr-1 hover:bg-sidebar-accent/50">
-                    <button
-                      type="button"
-                      onClick={() => toggle(project.id)}
-                      aria-expanded={!isCollapsed}
-                      aria-label={project.name}
-                      className="flex size-6 shrink-0 items-center justify-center rounded-md"
-                    >
-                      <ChevronRight
-                        className={cn(
-                          "size-3.5 text-muted-foreground transition-transform",
-                          !isCollapsed && "rotate-90",
-                        )}
-                      />
-                    </button>
-                    <IconPicker
-                      value={project.icon}
-                      onChange={(icon) => void updateProject(project.id, { icon })}
-                      triggerClassName="size-6 rounded-md border-0 bg-transparent text-muted-foreground hover:bg-accent hover:text-foreground"
-                      iconClassName="size-4"
-                    />
-                    {isRenaming ? (
-                      <Input
-                        value={nameDraft}
-                        autoFocus
-                        onChange={(e) => setNameDraft(e.target.value)}
-                        onBlur={commitRename}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            commitRename();
-                          } else if (e.key === "Escape") {
-                            setRenamingId(null);
-                          }
-                        }}
-                        className="h-6 min-w-0 flex-1 rounded border-0 bg-transparent px-1 py-0 text-sm font-medium shadow-none focus-visible:ring-0 dark:bg-transparent"
-                      />
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => startRename(project)}
-                        title={project.name}
-                        className="min-w-0 flex-1 truncate rounded px-1 py-1 text-left text-sm font-medium hover:bg-accent/40"
-                      >
-                        {truncateName(project.name)}
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      aria-label={t("nav.newDocument")}
-                      title={t("nav.newDocument")}
-                      onClick={() => void newDocIn(project.id)}
-                      className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-colors group-hover/proj:opacity-100 hover:bg-accent hover:text-foreground focus-visible:opacity-100"
-                    >
-                      <Plus className="size-4" />
-                    </button>
-                    <ProjectMenu
-                      onDelete={() => setDeleteTarget(project)}
-                      menuLabel={t("common.open")}
-                      deleteLabel={t("projects.delete")}
-                    />
-                  </div>
-
-                  {!isCollapsed ? (
-                    <SidebarMenu className="gap-1 pl-3">{renderDocs(docs)}</SidebarMenu>
-                  ) : null}
-                </div>
-              );
-            })
+            projects.map((project) => (
+              <ProjectRow
+                key={project.id}
+                project={project}
+                docs={documents.filter((doc) => doc.projectId === project.id)}
+                isCollapsed={collapsed.has(project.id)}
+                isRenaming={renamingId === project.id}
+                nameDraft={nameDraft}
+                onToggle={() => toggle(project.id)}
+                onStartRename={() => startRename(project)}
+                onNameDraftChange={setNameDraft}
+                onCommitRename={commitRename}
+                onCancelRename={() => setRenamingId(null)}
+                onIconChange={(icon) => void updateProject(project.id, { icon })}
+                onNewDoc={() => void newDocIn(project.id)}
+                onDelete={() => setDeleteTarget(project)}
+                onDropDocument={(documentId) => void moveDocumentToProject(documentId, project.id)}
+                renderDocs={renderDocs}
+              />
+            ))
           )}
         </SidebarGroupContent>
       </SidebarGroup>
 
-      <SidebarGroup>
+      <SidebarGroup
+        {...unfiledDropHandlers}
+        className={cn(
+          "rounded-md transition-colors",
+          unfiledIsOver && "bg-sidebar-accent ring-2 ring-ring/50",
+        )}
+      >
         <SidebarGroupLabel>{t("projects.unfiled")}</SidebarGroupLabel>
         <SidebarGroupAction
           data-tour="new-doc"
@@ -291,7 +259,12 @@ export function SidebarProjects() {
               variant="destructive"
               className="bg-destructive text-white hover:bg-destructive/90"
               onClick={() => {
-                if (deleteTarget) void deleteProject(deleteTarget.id);
+                if (deleteTarget) {
+                  const name = deleteTarget.name;
+                  void deleteProject(deleteTarget.id).then(() =>
+                    toast.success(t("toast.projectDeleted", { name })),
+                  );
+                }
                 setDeleteTarget(null);
               }}
             >
@@ -304,32 +277,119 @@ export function SidebarProjects() {
   );
 }
 
-function ProjectMenu({
+// Split out from SidebarProjects' render so useProjectDropTarget (a hook) can
+// be called once per row instead of inside a .map() callback.
+function ProjectRow({
+  project,
+  docs,
+  isCollapsed,
+  isRenaming,
+  nameDraft,
+  onToggle,
+  onStartRename,
+  onNameDraftChange,
+  onCommitRename,
+  onCancelRename,
+  onIconChange,
+  onNewDoc,
   onDelete,
-  menuLabel,
-  deleteLabel,
+  onDropDocument,
+  renderDocs,
 }: {
+  project: AnvilProject;
+  docs: AnvilDocument[];
+  isCollapsed: boolean;
+  isRenaming: boolean;
+  nameDraft: string;
+  onToggle: () => void;
+  onStartRename: () => void;
+  onNameDraftChange: (value: string) => void;
+  onCommitRename: () => void;
+  onCancelRename: () => void;
+  onIconChange: (icon: string | null) => void;
+  onNewDoc: () => void;
   onDelete: () => void;
-  menuLabel: string;
-  deleteLabel: string;
+  onDropDocument: (documentId: string) => void;
+  renderDocs: (list: AnvilDocument[]) => React.ReactNode;
 }) {
+  const t = useTranslations();
+  const { isOver, dropHandlers } = useProjectDropTarget(onDropDocument);
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+    <div className="mb-0.5">
+      {/* Header row: chevron (collapse) + icon (picker) + name
+          (click to rename) + new-doc + actions menu. */}
+      <div
+        {...dropHandlers}
+        className={cn(
+          "group/proj flex items-center gap-0.5 rounded-md pr-1 hover:bg-sidebar-accent/50",
+          isOver && "bg-sidebar-accent ring-2 ring-ring/50",
+        )}
+      >
         <button
           type="button"
-          aria-label={menuLabel}
-          className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-colors group-hover/proj:opacity-100 hover:bg-accent hover:text-foreground focus-visible:opacity-100 data-[state=open]:opacity-100"
+          onClick={onToggle}
+          aria-expanded={!isCollapsed}
+          aria-label={project.name}
+          className="flex size-6 shrink-0 items-center justify-center rounded-md"
         >
-          <MoreHorizontal className="size-4" />
+          <ChevronRight
+            className={cn(
+              "size-3.5 text-muted-foreground transition-transform",
+              !isCollapsed && "rotate-90",
+            )}
+          />
         </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-40">
-        <DropdownMenuItem variant="destructive" className="font-medium" onSelect={onDelete}>
-          <Trash2 className="size-4" />
-          {deleteLabel}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        <IconPicker
+          value={project.icon}
+          onChange={onIconChange}
+          triggerClassName="size-6 rounded-md border-0 bg-transparent text-muted-foreground hover:bg-accent hover:text-foreground"
+          iconClassName="size-4"
+        />
+        {isRenaming ? (
+          <Input
+            value={nameDraft}
+            autoFocus
+            onChange={(e) => onNameDraftChange(e.target.value)}
+            onBlur={onCommitRename}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                onCommitRename();
+              } else if (e.key === "Escape") {
+                onCancelRename();
+              }
+            }}
+            className="h-6 min-w-0 flex-1 rounded border-0 bg-transparent px-1 py-0 text-sm font-medium shadow-none focus-visible:ring-0 dark:bg-transparent"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={onStartRename}
+            title={project.name}
+            className="min-w-0 flex-1 truncate rounded px-1 py-1 text-left text-sm font-medium hover:bg-accent/40"
+          >
+            {truncateName(project.name)}
+          </button>
+        )}
+        <button
+          type="button"
+          aria-label={t("nav.newDocument")}
+          title={t("nav.newDocument")}
+          onClick={onNewDoc}
+          className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-colors group-hover/proj:opacity-100 hover:bg-accent hover:text-foreground focus-visible:opacity-100"
+        >
+          <Plus className="size-4" />
+        </button>
+        <ProjectMenu
+          onDelete={onDelete}
+          triggerClassName="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-colors group-hover/proj:opacity-100 hover:bg-accent hover:text-foreground focus-visible:opacity-100 data-[state=open]:opacity-100"
+        />
+      </div>
+
+      {!isCollapsed ? (
+        <SidebarMenu className="gap-1 pl-3">{renderDocs(docs)}</SidebarMenu>
+      ) : null}
+    </div>
   );
 }

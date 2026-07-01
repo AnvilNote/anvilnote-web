@@ -52,6 +52,8 @@ function blockTypeKey(node: PMNode | null): string {
       return "blockquote";
     case "codeBlock":
       return "codeBlock";
+    case "callout":
+      return "callout";
     case "image":
       return "image";
     case "table":

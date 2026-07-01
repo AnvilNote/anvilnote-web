@@ -59,6 +59,7 @@ type ApiTemplate = {
   category?: string;
   tags?: string[];
   fields?: AnvilTemplate["fields"];
+  universeUrl?: string;
 };
 
 type ApiRenderResponse = {
@@ -136,6 +137,7 @@ function fromApiTemplate(template: ApiTemplate): AnvilTemplate {
     category: template.category ?? "note",
     tags: template.tags ?? [],
     fields: template.fields ?? [],
+    universeUrl: template.universeUrl,
   };
 }
 
