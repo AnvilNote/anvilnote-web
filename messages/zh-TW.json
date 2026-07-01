@@ -230,7 +230,8 @@
     "templateLabel": "範本",
     "defaultTitle": "未命名文件",
     "defaultHeading": "講義從此開始",
-    "defaultBody": "在這裡開始撰寫筆記。"
+    "defaultBody": "在這裡開始撰寫筆記。",
+    "exportMarkdown": "匯出為 Markdown"
   },
   "projects": {
     "title": "專案",
@@ -253,7 +254,8 @@
     "moveTo": "移動到",
     "unfiled": "未分類",
     "deleteTitle": "刪除專案",
-    "deleteDescription": "「{name}」將被刪除，裡面的文件會變成未分類。"
+    "deleteDescription": "「{name}」將被刪除，裡面的文件會變成未分類。",
+    "exportZip": "匯出為 zip"
   },
   "templates": {
     "title": "範本",
@@ -309,6 +311,46 @@
       "kunskap": {
         "name": "Kunskap",
         "description": "適合課程報告，可填寫作者、課程與紙張大小。"
+      },
+      "typsidian": {
+        "name": "Typsidian",
+        "description": "適合 Obsidian 風格筆記，可填寫課程名稱並切換淺色/深色配色。"
+      },
+      "obelisk": {
+        "name": "Obelisk",
+        "description": "適合走極簡風格的筆記，內建邊注與定理框，版面依基線網格對齊。"
+      },
+      "metropole-report": {
+        "name": "Metropole Report",
+        "description": "適合附封面的報告，可設定副標題、強調色與紙張大小。"
+      },
+      "elsearticle": {
+        "name": "Elsearticle",
+        "description": "適合投稿期刊論文，可填寫摘要、期刊名稱與欄數。"
+      },
+      "gakusyun-doc": {
+        "name": "Gakusyun Doc",
+        "description": "適合中文報告，可加副標題並開啟封面頁或索引。"
+      },
+      "jastylest-zh": {
+        "name": "Jastylest ZH",
+        "description": "適合中日文論文，可填寫課程名稱與摘要。"
+      },
+      "minicise": {
+        "name": "Minicise",
+        "description": "適合練習題單，可在頁首加上課程、學期與日期。"
+      },
+      "mousse-notes": {
+        "name": "Mousse Notes",
+        "description": "適合書籍式的課堂筆記，內建封面頁與定理環境。"
+      },
+      "folklore": {
+        "name": "Folklore",
+        "description": "適合小說手稿，半信紙尺寸的書籍版面，附序言與章節。"
+      },
+      "rubber-article": {
+        "name": "Rubber Article",
+        "description": "適合經典風格論文，可填寫作者並開啟章節編號。"
       }
     },
     "fields": {
@@ -345,7 +387,19 @@
       "titleFont": "標題字體",
       "bodyFont": "內文字體",
       "dateFont": "日期字體",
-      "mathMode": "公式字體"
+      "mathMode": "公式字體",
+      "colorTheme": "配色主題",
+      "coverPage": "封面頁",
+      "accentColor": "強調色",
+      "journal": "期刊名稱",
+      "numColumns": "欄數",
+      "lineNumbering": "行號",
+      "titlePage": "封面頁",
+      "showIndex": "索引",
+      "semester": "學期",
+      "preface": "序言",
+      "numberChapters": "章節編號",
+      "numberedHeadings": "標題編號"
     },
     "placeholders": {
       "course": "例如：英文課",
@@ -381,7 +435,10 @@
       "playfair": "Playfair Display",
       "tai-heritage": "Tai Heritage Pro",
       "default": "預設（New Computer Modern）",
-      "garamond": "Garamond（EB Garamond）"
+      "garamond": "Garamond（EB Garamond）",
+      "light": "淺色",
+      "dark": "深色",
+      "us-letter": "美式信紙"
     },
     "previewTemplate": "查看範本",
     "templatePreview": "預覽",
@@ -445,7 +502,17 @@
       "pickOther": "選擇其他資料夾…",
       "folderNotSet": "尚未選擇資料夾"
     },
-    "save": "儲存"
+    "save": "儲存",
+    "backup": {
+      "title": "備份",
+      "description": "將文件匯出為 Markdown 以妥善保存。",
+      "allDocuments": "備份全部",
+      "allDocumentsHint": "將全部 {count} 篇文件依專案分類，匯出成一個 Markdown 檔案的 zip。",
+      "button": "立即備份",
+      "import": "匯入",
+      "importHint": "從 .md 檔案或備份 .zip 還原。",
+      "importButton": "選擇檔案…"
+    }
   },
   "command": {
     "placeholder": "搜尋或輸入指令…",
@@ -557,7 +624,10 @@
     "settingsSaved": "已儲存偏好設定",
     "localeSwitched": "介面語言已更新",
     "exportSavedTo": "已匯出至 {path}",
-    "exportDownloaded": "已下載 {name}"
+    "exportDownloaded": "已下載 {name}",
+    "exportFailed": "匯出失敗。",
+    "importSucceeded": "已匯入 {count} 篇文件。",
+    "importFailed": "匯入失敗。"
   },
   "pdfPreview": {
     "previousPage": "上一頁",

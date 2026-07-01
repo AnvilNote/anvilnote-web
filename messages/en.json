@@ -230,7 +230,8 @@
     "templateLabel": "Template",
     "defaultTitle": "Untitled Notes",
     "defaultHeading": "Your lecture starts here",
-    "defaultBody": "Start writing your note here."
+    "defaultBody": "Start writing your note here.",
+    "exportMarkdown": "Export as Markdown"
   },
   "projects": {
     "title": "Projects",
@@ -253,7 +254,8 @@
     "moveTo": "Move to",
     "unfiled": "Unfiled",
     "deleteTitle": "Delete project",
-    "deleteDescription": "“{name}” will be deleted. Its documents become unfiled."
+    "deleteDescription": "“{name}” will be deleted. Its documents become unfiled.",
+    "exportZip": "Export as zip"
   },
   "templates": {
     "title": "Templates",
@@ -309,6 +311,46 @@
       "kunskap": {
         "name": "Kunskap",
         "description": "Good for course reports; add the author, course, and paper size."
+      },
+      "typsidian": {
+        "name": "Typsidian",
+        "description": "Good for Obsidian-style notes; add a course name and switch light/dark colors."
+      },
+      "obelisk": {
+        "name": "Obelisk",
+        "description": "Good for minimalist notes with sidenotes and theorem boxes; a clean baseline-grid layout."
+      },
+      "metropole-report": {
+        "name": "Metropole Report",
+        "description": "Good for reports with a cover page; set a subtitle, accent color, and paper size."
+      },
+      "elsearticle": {
+        "name": "Elsearticle",
+        "description": "Good for journal submissions; add an abstract, journal name, and column count."
+      },
+      "gakusyun-doc": {
+        "name": "Gakusyun Doc",
+        "description": "Good for Chinese-language reports; add a subtitle and turn on a cover page or index."
+      },
+      "jastylest-zh": {
+        "name": "Jastylest ZH",
+        "description": "Good for Chinese/Japanese articles; add a course name and abstract."
+      },
+      "minicise": {
+        "name": "Minicise",
+        "description": "Good for exercise sheets; add a course, semester, and date to the header."
+      },
+      "mousse-notes": {
+        "name": "Mousse Notes",
+        "description": "Good for book-style lecture notes with a title page and theorem environments."
+      },
+      "folklore": {
+        "name": "Folklore",
+        "description": "Good for fiction manuscripts; a half-letter book layout with a preface and chapters."
+      },
+      "rubber-article": {
+        "name": "Rubber Article",
+        "description": "Good for classic-style articles; add authors and turn on numbered headings."
       }
     },
     "fields": {
@@ -345,7 +387,19 @@
       "titleFont": "Title font",
       "bodyFont": "Body font",
       "dateFont": "Date font",
-      "mathMode": "Math font"
+      "mathMode": "Math font",
+      "colorTheme": "Color theme",
+      "coverPage": "Cover page",
+      "accentColor": "Accent color",
+      "journal": "Journal",
+      "numColumns": "Columns",
+      "lineNumbering": "Line numbering",
+      "titlePage": "Cover page",
+      "showIndex": "Index",
+      "semester": "Semester",
+      "preface": "Preface",
+      "numberChapters": "Number chapters",
+      "numberedHeadings": "Numbered headings"
     },
     "placeholders": {
       "course": "e.g. Real Analysis",
@@ -381,7 +435,10 @@
       "playfair": "Playfair Display",
       "tai-heritage": "Tai Heritage Pro",
       "default": "Default (New Computer Modern)",
-      "garamond": "Garamond (EB Garamond)"
+      "garamond": "Garamond (EB Garamond)",
+      "light": "Light",
+      "dark": "Dark",
+      "us-letter": "US Letter"
     },
     "previewTemplate": "View template",
     "templatePreview": "Preview",
@@ -445,7 +502,17 @@
       "pickOther": "Choose another folder…",
       "folderNotSet": "No folder chosen"
     },
-    "save": "Save"
+    "save": "Save",
+    "backup": {
+      "title": "Backup",
+      "description": "Export your documents as Markdown for safekeeping.",
+      "allDocuments": "Back up everything",
+      "allDocumentsHint": "Exports all {count} documents as a zip of Markdown files, organized by project.",
+      "button": "Back up now",
+      "import": "Import",
+      "importHint": "Restore from a .md file or a backup .zip.",
+      "importButton": "Choose file…"
+    }
   },
   "command": {
     "placeholder": "Search or type a command…",
@@ -557,7 +624,10 @@
     "settingsSaved": "Preferences saved",
     "localeSwitched": "Interface language updated",
     "exportSavedTo": "Exported to {path}",
-    "exportDownloaded": "Downloaded {name}"
+    "exportDownloaded": "Downloaded {name}",
+    "exportFailed": "Export failed.",
+    "importSucceeded": "Imported {count, plural, one {# document} other {# documents}}.",
+    "importFailed": "Import failed."
   },
   "pdfPreview": {
     "previousPage": "Previous page",

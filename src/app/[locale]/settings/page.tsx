@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
-import { Moon, Sun } from "lucide-react";
+import { DatabaseBackup, Loader2, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -20,8 +20,12 @@ import {
 } from "@/components/settings/settings-section";
 import { FolderPicker } from "@/components/settings/folder-picker";
 import { LocaleSwitcher } from "@/components/app/locale-switcher";
+import { ImportBackupButton } from "@/components/app/import-backup-button";
 import { useMounted } from "@/hooks/use-mounted";
 import { useSettingsStore } from "@/lib/stores/settings-store";
+import { useDocumentStore } from "@/lib/stores/document-store";
+import { useProjectStore } from "@/lib/stores/project-store";
+import { exportAllBackup } from "@/lib/export/backup";
 import type { ExportFontPreset, ExportPageSize } from "@/types/export";
 
 export default function SettingsPage() {
@@ -29,6 +33,25 @@ export default function SettingsPage() {
   const settings = useSettingsStore();
   const { resolvedTheme, setTheme } = useTheme();
   const mounted = useMounted();
+  const documents = useDocumentStore((s) => s.documents);
+  const projects = useProjectStore((s) => s.projects);
+  const [backingUp, setBackingUp] = useState(false);
+
+  async function backupAll() {
+    setBackingUp(true);
+    try {
+      const result = await exportAllBackup(documents, projects, t("projects.unfiled"));
+      toast.success(
+        result.kind === "folder"
+          ? t("toast.exportSavedTo", { path: result.path })
+          : t("toast.exportDownloaded", { name: result.fileName }),
+      );
+    } catch {
+      toast.error(t("toast.exportFailed"));
+    } finally {
+      setBackingUp(false);
+    }
+  }
 
   // Export defaults are edited as a draft and only persisted when the user
   // hits Save. The store is already rehydrated by StoreHydrator before this
@@ -154,6 +177,35 @@ export default function SettingsPage() {
               {t("settings.save")}
             </Button>
           </div>
+        </SettingsSection>
+
+        <SettingsSection
+          title={t("settings.backup.title")}
+          description={t("settings.backup.description")}
+        >
+          <SettingsRow
+            label={t("settings.backup.allDocuments")}
+            hint={t("settings.backup.allDocumentsHint", { count: documents.length })}
+            control={
+              <Button
+                onClick={() => void backupAll()}
+                disabled={backingUp || documents.length === 0}
+                className="gap-1.5"
+              >
+                {backingUp ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <DatabaseBackup className="size-4" />
+                )}
+                {t("settings.backup.button")}
+              </Button>
+            }
+          />
+          <SettingsRow
+            label={t("settings.backup.import")}
+            hint={t("settings.backup.importHint")}
+            control={<ImportBackupButton label={t("settings.backup.importButton")} />}
+          />
         </SettingsSection>
       </div>
     </div>

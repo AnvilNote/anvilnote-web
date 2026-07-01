@@ -18,7 +18,10 @@ const BUILD_TIME_API_BASE_URL =
 
 declare global {
   interface Window {
-    anvilnote?: { getApiBaseUrl?: () => string | null };
+    anvilnote?: {
+      getApiBaseUrl?: () => string | null;
+      getAppVersion?: () => string | null;
+    };
   }
 }
 

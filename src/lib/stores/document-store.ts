@@ -40,6 +40,14 @@ type DocumentState = {
     projectId?: string | null,
   ) => Promise<AnvilDocument>;
   duplicateDocument: (id: string) => Promise<AnvilDocument | undefined>;
+  importDocument: (input: {
+    title: string;
+    content: JSONContent;
+    metadata: Record<string, AnvilMetadataValue>;
+    templateSettings: Record<string, AnvilMetadataValue>;
+    templateId: string;
+    projectId: string | null;
+  }) => Promise<AnvilDocument>;
   setDocumentProject: (id: string, projectId: string | null) => Promise<void>;
   unfileDocuments: (projectId: string) => void;
   deleteDocument: (id: string) => Promise<void>;
@@ -215,6 +223,21 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
     }));
 
     return duplicate;
+  },
+
+  // Used by the Markdown/zip import feature: creates a document with fully
+  // custom content/metadata (unlike createDocument, which always seeds a
+  // fresh blank document) — mirrors duplicateDocument's create+push pattern.
+  importDocument: async (input) => {
+    const document = await createDocumentRequest(input);
+    set((state) => ({
+      documents: [document, ...state.documents],
+      saveStateById: {
+        ...state.saveStateById,
+        [document.id]: "saved",
+      },
+    }));
+    return document;
   },
 
   deleteDocument: async (id) => {

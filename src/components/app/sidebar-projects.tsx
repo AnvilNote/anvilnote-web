@@ -32,6 +32,7 @@ import { IconPicker } from "@/components/app/icon-picker";
 import { ProjectMenu } from "@/components/app/project-menu";
 import { randomProjectIcon } from "@/lib/lucide-icon";
 import { documentDragProps, useProjectDropTarget } from "@/lib/dnd/document-drag";
+import { exportProjectBackup } from "@/lib/export/backup";
 import type { AnvilDocument } from "@/types/document";
 import type { AnvilProject } from "@/types/project";
 import { cn } from "@/lib/utils";
@@ -128,6 +129,19 @@ export function SidebarProjects() {
     router.push(`/documents/${doc.id}`);
   }
 
+  async function exportProject(docs: AnvilDocument[]) {
+    try {
+      const result = await exportProjectBackup(docs);
+      toast.success(
+        result.kind === "folder"
+          ? t("toast.exportSavedTo", { path: result.path })
+          : t("toast.exportDownloaded", { name: result.fileName }),
+      );
+    } catch {
+      toast.error(t("toast.exportFailed"));
+    }
+  }
+
   function renderDocs(list: AnvilDocument[]) {
     if (list.length === 0) {
       return (
@@ -192,26 +206,30 @@ export function SidebarProjects() {
               {t("projects.empty")}
             </p>
           ) : (
-            projects.map((project) => (
-              <ProjectRow
-                key={project.id}
-                project={project}
-                docs={documents.filter((doc) => doc.projectId === project.id)}
-                isCollapsed={collapsed.has(project.id)}
-                isRenaming={renamingId === project.id}
-                nameDraft={nameDraft}
-                onToggle={() => toggle(project.id)}
-                onStartRename={() => startRename(project)}
-                onNameDraftChange={setNameDraft}
-                onCommitRename={commitRename}
-                onCancelRename={() => setRenamingId(null)}
-                onIconChange={(icon) => void updateProject(project.id, { icon })}
-                onNewDoc={() => void newDocIn(project.id)}
-                onDelete={() => setDeleteTarget(project)}
-                onDropDocument={(documentId) => void moveDocumentToProject(documentId, project.id)}
-                renderDocs={renderDocs}
-              />
-            ))
+            projects.map((project) => {
+              const docs = documents.filter((doc) => doc.projectId === project.id);
+              return (
+                <ProjectRow
+                  key={project.id}
+                  project={project}
+                  docs={docs}
+                  isCollapsed={collapsed.has(project.id)}
+                  isRenaming={renamingId === project.id}
+                  nameDraft={nameDraft}
+                  onToggle={() => toggle(project.id)}
+                  onStartRename={() => startRename(project)}
+                  onNameDraftChange={setNameDraft}
+                  onCommitRename={commitRename}
+                  onCancelRename={() => setRenamingId(null)}
+                  onIconChange={(icon) => void updateProject(project.id, { icon })}
+                  onNewDoc={() => void newDocIn(project.id)}
+                  onDelete={() => setDeleteTarget(project)}
+                  onExport={() => void exportProject(docs)}
+                  onDropDocument={(documentId) => void moveDocumentToProject(documentId, project.id)}
+                  renderDocs={renderDocs}
+                />
+              );
+            })
           )}
         </SidebarGroupContent>
       </SidebarGroup>
@@ -293,6 +311,7 @@ function ProjectRow({
   onIconChange,
   onNewDoc,
   onDelete,
+  onExport,
   onDropDocument,
   renderDocs,
 }: {
@@ -309,6 +328,7 @@ function ProjectRow({
   onIconChange: (icon: string | null) => void;
   onNewDoc: () => void;
   onDelete: () => void;
+  onExport: () => void;
   onDropDocument: (documentId: string) => void;
   renderDocs: (list: AnvilDocument[]) => React.ReactNode;
 }) {
@@ -383,6 +403,8 @@ function ProjectRow({
         </button>
         <ProjectMenu
           onDelete={onDelete}
+          onExport={onExport}
+          exportDisabled={docs.length === 0}
           triggerClassName="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-colors group-hover/proj:opacity-100 hover:bg-accent hover:text-foreground focus-visible:opacity-100 data-[state=open]:opacity-100"
         />
       </div>

@@ -7,6 +7,7 @@ import { FileText, FolderKanban, LayoutTemplate, Search, Settings } from "lucide
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -21,6 +22,7 @@ import { Link } from "@/lib/i18n/navigation";
 import { useUiStore } from "@/lib/stores/ui-store";
 import { useTransitionStore } from "@/lib/stores/transition-store";
 import { SidebarProjects } from "@/components/app/sidebar-projects";
+import { AppVersion } from "@/components/app/app-version";
 
 export function AppSidebar() {
   const t = useTranslations();
@@ -124,6 +126,10 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter>
+        <AppVersion />
+      </SidebarFooter>
 
       <SidebarRail />
     </Sidebar>

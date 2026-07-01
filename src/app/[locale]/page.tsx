@@ -45,12 +45,27 @@ type LandingCopy = {
   };
 };
 
-const showcaseItems = [
-  { src: "/landing/plain-note.png", alt: "Plain Note template preview" },
-  { src: "/landing/flow-way.png", alt: "Flow Way template preview" },
-  { src: "/landing/bubble.png", alt: "Bubble template preview" },
-  { src: "/landing/hetvid.png", alt: "Hetvid template preview" },
+// Curated subset of templates shown in the carousel (not the full roster).
+// Each has a screenshot per locale under public/landing/{locale}/{slug}.png,
+// generated from the same localized sample document used for template
+// previews (see anvilnote-api/scripts/generate-template-previews.mjs).
+const SHOWCASE_SLUGS = [
+  { slug: "plain-note", alt: "Plain Note template preview" },
+  { slug: "flow-way", alt: "Flow Way template preview" },
+  { slug: "bubble", alt: "Bubble template preview" },
+  { slug: "hetvid", alt: "Hetvid template preview" },
+  { slug: "typsidian", alt: "Typsidian template preview" },
+  { slug: "obelisk", alt: "Obelisk template preview" },
+  { slug: "metropole-report", alt: "Metropole Report template preview" },
+  { slug: "elsearticle", alt: "Elsearticle template preview" },
 ];
+
+function showcaseItemsFor(locale: AppLocale) {
+  return SHOWCASE_SLUGS.map(({ slug, alt }) => ({
+    src: `/landing/${locale}/${slug}.png`,
+    alt,
+  }));
+}
 
 const techStack = [
   { name: "Next.js", src: "/tech-logos/nextdotjs.svg", width: 110, height: 22 },
@@ -243,7 +258,7 @@ export default async function LocaleIndexPage({
               </p>
             </div>
 
-            <ShowcaseCarousel items={showcaseItems} />
+            <ShowcaseCarousel items={showcaseItemsFor(locale)} />
           </div>
         </section>
 

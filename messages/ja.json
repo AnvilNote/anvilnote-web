@@ -230,7 +230,8 @@
     "templateLabel": "テンプレート",
     "defaultTitle": "無題のノート",
     "defaultHeading": "講義はここから",
-    "defaultBody": "ここからノートを書き始めましょう。"
+    "defaultBody": "ここからノートを書き始めましょう。",
+    "exportMarkdown": "Markdown としてエクスポート"
   },
   "projects": {
     "title": "プロジェクト",
@@ -253,7 +254,8 @@
     "moveTo": "移動先",
     "unfiled": "未分類",
     "deleteTitle": "プロジェクトを削除",
-    "deleteDescription": "「{name}」を削除します。中のドキュメントは未分類になります。"
+    "deleteDescription": "「{name}」を削除します。中のドキュメントは未分類になります。",
+    "exportZip": "zip としてエクスポート"
   },
   "templates": {
     "title": "テンプレート",
@@ -309,6 +311,46 @@
       "kunskap": {
         "name": "Kunskap",
         "description": "コースレポートに。著者・コース・用紙サイズを記入できます。"
+      },
+      "typsidian": {
+        "name": "Typsidian",
+        "description": "Obsidian 風のノートに。コース名を入力し、ライト/ダークを切り替えられます。"
+      },
+      "obelisk": {
+        "name": "Obelisk",
+        "description": "サイドノートと定理ボックスを備えたミニマルなノートに。ベースライングリッドでレイアウトされます。"
+      },
+      "metropole-report": {
+        "name": "Metropole Report",
+        "description": "表紙付きレポートに。サブタイトル・アクセントカラー・用紙サイズを設定できます。"
+      },
+      "elsearticle": {
+        "name": "Elsearticle",
+        "description": "学術誌への投稿に。要旨・誌名・段組数を設定できます。"
+      },
+      "gakusyun-doc": {
+        "name": "Gakusyun Doc",
+        "description": "中国語のレポートに。副題を追加し、表紙や索引を有効にできます。"
+      },
+      "jastylest-zh": {
+        "name": "Jastylest ZH",
+        "description": "中国語・日本語の論文に。コース名と要旨を記入できます。"
+      },
+      "minicise": {
+        "name": "Minicise",
+        "description": "演習プリントに。ヘッダーにコース・学期・日付を追加できます。"
+      },
+      "mousse-notes": {
+        "name": "Mousse Notes",
+        "description": "書籍形式の講義ノートに。表紙と定理環境を備えています。"
+      },
+      "folklore": {
+        "name": "Folklore",
+        "description": "小説原稿に。ハーフレターサイズの書籍レイアウトで、序文と章立てができます。"
+      },
+      "rubber-article": {
+        "name": "Rubber Article",
+        "description": "クラシックな論文形式に。著者を追加し、見出し番号を有効にできます。"
       }
     },
     "fields": {
@@ -345,7 +387,19 @@
       "titleFont": "タイトルフォント",
       "bodyFont": "本文フォント",
       "dateFont": "日付フォント",
-      "mathMode": "数式フォント"
+      "mathMode": "数式フォント",
+      "colorTheme": "カラーテーマ",
+      "coverPage": "表紙ページ",
+      "accentColor": "アクセントカラー",
+      "journal": "誌名",
+      "numColumns": "段組数",
+      "lineNumbering": "行番号",
+      "titlePage": "表紙ページ",
+      "showIndex": "索引",
+      "semester": "学期",
+      "preface": "序文",
+      "numberChapters": "章番号",
+      "numberedHeadings": "見出し番号"
     },
     "placeholders": {
       "course": "例：実解析",
@@ -381,7 +435,10 @@
       "playfair": "Playfair Display",
       "tai-heritage": "Tai Heritage Pro",
       "default": "デフォルト（New Computer Modern）",
-      "garamond": "Garamond（EB Garamond）"
+      "garamond": "Garamond（EB Garamond）",
+      "light": "ライト",
+      "dark": "ダーク",
+      "us-letter": "レターサイズ"
     },
     "previewTemplate": "テンプレートを見る",
     "templatePreview": "プレビュー",
@@ -445,7 +502,17 @@
       "pickOther": "別のフォルダを選択…",
       "folderNotSet": "フォルダ未選択"
     },
-    "save": "保存"
+    "save": "保存",
+    "backup": {
+      "title": "バックアップ",
+      "description": "文書を Markdown としてエクスポートして保管します。",
+      "allDocuments": "すべてバックアップ",
+      "allDocumentsHint": "全 {count} 件の文書をプロジェクト別に整理し、Markdown ファイルの zip としてエクスポートします。",
+      "button": "今すぐバックアップ",
+      "import": "インポート",
+      "importHint": ".md ファイルまたはバックアップ .zip から復元します。",
+      "importButton": "ファイルを選択…"
+    }
   },
   "command": {
     "placeholder": "検索またはコマンドを入力…",
@@ -557,7 +624,10 @@
     "settingsSaved": "設定を保存しました",
     "localeSwitched": "表示言語を更新しました",
     "exportSavedTo": "{path} に書き出しました",
-    "exportDownloaded": "{name} をダウンロードしました"
+    "exportDownloaded": "{name} をダウンロードしました",
+    "exportFailed": "エクスポートに失敗しました。",
+    "importSucceeded": "{count} 件の文書をインポートしました。",
+    "importFailed": "インポートに失敗しました。"
   },
   "pdfPreview": {
     "previousPage": "前のページ",

@@ -116,12 +116,13 @@ export async function clearExportDir(): Promise<void> {
 export type WriteResult = { ok: true; path: string } | { ok: false };
 
 /**
- * Write the PDF into "<chosen folder>/AnvilNote/<fileName>".
- * `interactive` must be true when called from a user gesture (re-grants
- * permission across sessions). Returns ok:false when no usable target exists so
- * the caller can fall back to a download.
+ * Write a file (PDF, Markdown, zip backup, …) into
+ * "<chosen folder>/AnvilNote/<fileName>". `interactive` must be true when
+ * called from a user gesture (re-grants permission across sessions). Returns
+ * ok:false when no usable target exists so the caller can fall back to a
+ * download.
  */
-export async function writePdfToTarget(
+export async function writeFileToTarget(
   blob: Blob,
   fileName: string,
   interactive: boolean,
@@ -141,4 +142,34 @@ export async function writePdfToTarget(
   await writable.write(blob);
   await writable.close();
   return { ok: true, path: `${dir.name}/${SUBFOLDER}/${fileName}` };
+}
+
+export type DeliverResult =
+  | { kind: "folder"; fileName: string; path: string }
+  | { kind: "download"; fileName: string };
+
+/**
+ * Deliver any exported file: write it into the user's chosen export folder
+ * via `writeFileToTarget` when one is set, otherwise fall back to a normal
+ * browser download. Shared by PDF export and the Markdown/zip backup export.
+ */
+export async function deliverFile(
+  blob: Blob,
+  fileName: string,
+): Promise<DeliverResult> {
+  // Called from a click handler, so permission prompts are allowed.
+  const written = await writeFileToTarget(blob, fileName, true);
+  if (written.ok) {
+    return { kind: "folder", fileName, path: written.path };
+  }
+
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+  return { kind: "download", fileName };
 }
