@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { ArrowRight } from "lucide-react";
 import {
   Dialog,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import type { AnvilTemplate } from "@/types/template";
+import type { AppLocale } from "@/lib/i18n/routing";
 import { getTemplatePreview } from "@/lib/templates/preview";
 import { TemplatePdfViewer } from "@/components/templates/template-pdf-viewer";
 
@@ -31,7 +32,8 @@ export function TemplatePreviewDialog({
   onUseTemplate?: (templateId: string) => void;
 }) {
   const t = useTranslations("templates");
-  const preview = getTemplatePreview(template);
+  const locale = useLocale() as AppLocale;
+  const preview = getTemplatePreview(template, locale);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

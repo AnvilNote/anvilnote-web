@@ -8,6 +8,7 @@ import { Link, useRouter } from "@/lib/i18n/navigation";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useTemplatesStore } from "@/lib/stores/templates-store";
 import { DocumentActions } from "@/components/app/document-actions";
+import { ImportBackupButton } from "@/components/app/import-backup-button";
 
 export default function DocumentsPage() {
   const t = useTranslations();
@@ -44,10 +45,13 @@ export default function DocumentsPage() {
             {t("documents.subtitle")}
           </p>
         </div>
-        <Button onClick={() => void handleNew()} className="gap-1.5">
-          <Plus className="size-4" />
-          <span className="hidden sm:inline">{t("documents.newDocument")}</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <ImportBackupButton />
+          <Button onClick={() => void handleNew()} className="gap-1.5">
+            <Plus className="size-4" />
+            <span className="hidden sm:inline">{t("documents.newDocument")}</span>
+          </Button>
+        </div>
       </div>
 
       <p className="mt-6 text-xs text-muted-foreground">

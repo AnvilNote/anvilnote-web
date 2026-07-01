@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Check, Copy, FolderInput, Inbox, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { Check, Copy, FileDown, FolderInput, Inbox, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useProjectStore } from "@/lib/stores/project-store";
+import { exportDocumentMarkdown } from "@/lib/export/backup";
 import { LucideIcon } from "@/lib/lucide-icon";
 import type { AnvilDocument } from "@/types/document";
 import { cn } from "@/lib/utils";
@@ -76,6 +77,19 @@ export function DocumentActions({
     toast.success(t("toast.documentCreated"));
   }
 
+  async function exportMarkdown() {
+    try {
+      const result = await exportDocumentMarkdown(doc);
+      toast.success(
+        result.kind === "folder"
+          ? t("toast.exportSavedTo", { path: result.path })
+          : t("toast.exportDownloaded", { name: result.fileName }),
+      );
+    } catch {
+      toast.error(t("toast.exportFailed"));
+    }
+  }
+
   return (
     <>
       <DropdownMenu>
@@ -102,6 +116,10 @@ export function DocumentActions({
           <DropdownMenuItem onSelect={() => void duplicate()}>
             <Copy className="size-4" />
             {t("common.duplicate")}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => void exportMarkdown()}>
+            <FileDown className="size-4" />
+            {t("documents.exportMarkdown")}
           </DropdownMenuItem>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>

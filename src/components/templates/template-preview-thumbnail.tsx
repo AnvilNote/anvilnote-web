@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useLocale } from "next-intl";
 import { FileText } from "lucide-react";
 import type { AnvilTemplate } from "@/types/template";
+import type { AppLocale } from "@/lib/i18n/routing";
 import { getTemplatePreview } from "@/lib/templates/preview";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +20,8 @@ export function TemplatePreviewThumbnail({
   displayName: string;
   className?: string;
 }) {
-  const { thumbnailUrl } = getTemplatePreview(template);
+  const locale = useLocale() as AppLocale;
+  const { thumbnailUrl } = getTemplatePreview(template, locale);
   const [failed, setFailed] = useState(false);
 
   return (

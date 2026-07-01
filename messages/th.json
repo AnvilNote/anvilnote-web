@@ -230,7 +230,8 @@
     "templateLabel": "เทมเพลต",
     "defaultTitle": "โน้ตไม่มีชื่อ",
     "defaultHeading": "การบรรยายเริ่มต้นที่นี่",
-    "defaultBody": "เริ่มเขียนโน้ตของคุณที่นี่"
+    "defaultBody": "เริ่มเขียนโน้ตของคุณที่นี่",
+    "exportMarkdown": "ส่งออกเป็น Markdown"
   },
   "projects": {
     "title": "โปรเจกต์",
@@ -253,7 +254,8 @@
     "moveTo": "ย้ายไป",
     "unfiled": "ไม่จัดกลุ่ม",
     "deleteTitle": "ลบโปรเจกต์",
-    "deleteDescription": "“{name}” จะถูกลบ เอกสารภายในจะกลายเป็นยังไม่จัดกลุ่ม"
+    "deleteDescription": "“{name}” จะถูกลบ เอกสารภายในจะกลายเป็นยังไม่จัดกลุ่ม",
+    "exportZip": "ส่งออกเป็น zip"
   },
   "templates": {
     "title": "เทมเพลต",
@@ -309,6 +311,46 @@
       "kunskap": {
         "name": "Kunskap",
         "description": "เหมาะกับรายงานรายวิชา กรอกผู้เขียน รายวิชา และขนาดกระดาษได้"
+      },
+      "typsidian": {
+        "name": "Typsidian",
+        "description": "เหมาะกับโน้ตสไตล์ Obsidian กรอกชื่อวิชาและสลับโหมดสว่าง/มืดได้"
+      },
+      "obelisk": {
+        "name": "Obelisk",
+        "description": "เหมาะกับโน้ตแบบมินิมอล มีกล่องหมายเหตุข้างและกล่องทฤษฎีบท จัดวางตามกริดเส้นฐาน"
+      },
+      "metropole-report": {
+        "name": "Metropole Report",
+        "description": "เหมาะกับรายงานที่มีหน้าปก ตั้งค่าหัวเรื่องรอง สีเน้น และขนาดกระดาษได้"
+      },
+      "elsearticle": {
+        "name": "Elsearticle",
+        "description": "เหมาะกับการส่งบทความวารสารวิชาการ กรอกบทคัดย่อ ชื่อวารสาร และจำนวนคอลัมน์ได้"
+      },
+      "gakusyun-doc": {
+        "name": "Gakusyun Doc",
+        "description": "เหมาะกับรายงานภาษาจีน เพิ่มหัวเรื่องรองและเปิดหน้าปกหรือดัชนีได้"
+      },
+      "jastylest-zh": {
+        "name": "Jastylest ZH",
+        "description": "เหมาะกับบทความภาษาจีน/ญี่ปุ่น กรอกชื่อวิชาและบทคัดย่อได้"
+      },
+      "minicise": {
+        "name": "Minicise",
+        "description": "เหมาะกับใบงานแบบฝึกหัด เพิ่มวิชา ภาคเรียน และวันที่ในหัวกระดาษได้"
+      },
+      "mousse-notes": {
+        "name": "Mousse Notes",
+        "description": "เหมาะกับโน้ตบรรยายแบบหนังสือ มีหน้าปกและกล่องทฤษฎีบทในตัว"
+      },
+      "folklore": {
+        "name": "Folklore",
+        "description": "เหมาะกับต้นฉบับนิยาย จัดหน้าแบบหนังสือขนาดครึ่งเลตเตอร์ พร้อมคำนำและบท"
+      },
+      "rubber-article": {
+        "name": "Rubber Article",
+        "description": "เหมาะกับบทความสไตล์คลาสสิก เพิ่มผู้เขียนและเปิดเลขหัวข้อได้"
       }
     },
     "fields": {
@@ -345,7 +387,19 @@
       "titleFont": "ฟอนต์ชื่อเรื่อง",
       "bodyFont": "ฟอนต์เนื้อหา",
       "dateFont": "ฟอนต์วันที่",
-      "mathMode": "ฟอนต์สมการ"
+      "mathMode": "ฟอนต์สมการ",
+      "colorTheme": "ธีมสี",
+      "coverPage": "หน้าปก",
+      "accentColor": "สีเน้น",
+      "journal": "ชื่อวารสาร",
+      "numColumns": "จำนวนคอลัมน์",
+      "lineNumbering": "เลขบรรทัด",
+      "titlePage": "หน้าปก",
+      "showIndex": "ดัชนี",
+      "semester": "ภาคเรียน",
+      "preface": "คำนำ",
+      "numberChapters": "เลขบท",
+      "numberedHeadings": "เลขหัวข้อ"
     },
     "placeholders": {
       "course": "เช่น การวิเคราะห์เชิงจริง",
@@ -381,7 +435,10 @@
       "playfair": "Playfair Display",
       "tai-heritage": "Tai Heritage Pro",
       "default": "ค่าเริ่มต้น (New Computer Modern)",
-      "garamond": "Garamond (EB Garamond)"
+      "garamond": "Garamond (EB Garamond)",
+      "light": "สว่าง",
+      "dark": "มืด",
+      "us-letter": "US Letter"
     },
     "previewTemplate": "ดูเทมเพลต",
     "templatePreview": "ตัวอย่าง",
@@ -445,7 +502,17 @@
       "pickOther": "เลือกโฟลเดอร์อื่น…",
       "folderNotSet": "ยังไม่ได้เลือกโฟลเดอร์"
     },
-    "save": "บันทึก"
+    "save": "บันทึก",
+    "backup": {
+      "title": "สำรองข้อมูล",
+      "description": "ส่งออกเอกสารเป็น Markdown เพื่อเก็บสำรองไว้",
+      "allDocuments": "สำรองข้อมูลทั้งหมด",
+      "allDocumentsHint": "ส่งออกเอกสารทั้งหมด {count} ฉบับ จัดกลุ่มตามโปรเจกต์ เป็น zip ของไฟล์ Markdown",
+      "button": "สำรองข้อมูลตอนนี้",
+      "import": "นำเข้า",
+      "importHint": "กู้คืนจากไฟล์ .md หรือไฟล์สำรอง .zip",
+      "importButton": "เลือกไฟล์…"
+    }
   },
   "command": {
     "placeholder": "ค้นหาหรือพิมพ์คำสั่ง…",
@@ -557,7 +624,10 @@
     "settingsSaved": "บันทึกการตั้งค่าแล้ว",
     "localeSwitched": "อัปเดตภาษาที่แสดงแล้ว",
     "exportSavedTo": "ส่งออกไปยัง {path} แล้ว",
-    "exportDownloaded": "ดาวน์โหลด {name} แล้ว"
+    "exportDownloaded": "ดาวน์โหลด {name} แล้ว",
+    "exportFailed": "ส่งออกไม่สำเร็จ",
+    "importSucceeded": "นำเข้าเอกสารแล้ว {count} ฉบับ",
+    "importFailed": "นำเข้าไม่สำเร็จ"
   },
   "pdfPreview": {
     "previousPage": "หน้าก่อนหน้า",

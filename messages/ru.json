@@ -230,7 +230,8 @@
     "templateLabel": "Шаблон",
     "defaultTitle": "Заметки без названия",
     "defaultHeading": "Лекция начинается здесь",
-    "defaultBody": "Начните писать заметку здесь."
+    "defaultBody": "Начните писать заметку здесь.",
+    "exportMarkdown": "Экспорт в Markdown"
   },
   "projects": {
     "title": "Проекты",
@@ -253,7 +254,8 @@
     "moveTo": "Переместить",
     "unfiled": "Без проекта",
     "deleteTitle": "Удалить проект",
-    "deleteDescription": "«{name}» будет удалён. Его документы станут без проекта."
+    "deleteDescription": "«{name}» будет удалён. Его документы станут без проекта.",
+    "exportZip": "Экспорт в zip"
   },
   "templates": {
     "title": "Шаблоны",
@@ -309,6 +311,46 @@
       "kunskap": {
         "name": "Kunskap",
         "description": "Подходит для учебных отчётов: укажите автора, курс и размер бумаги."
+      },
+      "typsidian": {
+        "name": "Typsidian",
+        "description": "Подходит для заметок в стиле Obsidian: укажите курс и переключайте светлую/тёмную тему."
+      },
+      "obelisk": {
+        "name": "Obelisk",
+        "description": "Подходит для минималистичных заметок с боковыми примечаниями и блоками теорем; вёрстка по базовой сетке."
+      },
+      "metropole-report": {
+        "name": "Metropole Report",
+        "description": "Подходит для отчётов с обложкой: задайте подзаголовок, акцентный цвет и размер бумаги."
+      },
+      "elsearticle": {
+        "name": "Elsearticle",
+        "description": "Подходит для подачи в журнал: укажите аннотацию, название журнала и число колонок."
+      },
+      "gakusyun-doc": {
+        "name": "Gakusyun Doc",
+        "description": "Подходит для отчётов на китайском: добавьте подзаголовок и включите обложку или указатель."
+      },
+      "jastylest-zh": {
+        "name": "Jastylest ZH",
+        "description": "Подходит для статей на китайском/японском: укажите курс и аннотацию."
+      },
+      "minicise": {
+        "name": "Minicise",
+        "description": "Подходит для листов с упражнениями: добавьте курс, семестр и дату в шапку."
+      },
+      "mousse-notes": {
+        "name": "Mousse Notes",
+        "description": "Подходит для конспектов в виде книги с титульной страницей и блоками теорем."
+      },
+      "folklore": {
+        "name": "Folklore",
+        "description": "Подходит для рукописей художественной прозы: книжный формат half-letter с предисловием и главами."
+      },
+      "rubber-article": {
+        "name": "Rubber Article",
+        "description": "Подходит для статей в классическом стиле: добавьте авторов и включите нумерацию заголовков."
       }
     },
     "fields": {
@@ -345,7 +387,19 @@
       "titleFont": "Шрифт заголовка",
       "bodyFont": "Шрифт текста",
       "dateFont": "Шрифт даты",
-      "mathMode": "Шрифт формул"
+      "mathMode": "Шрифт формул",
+      "colorTheme": "Цветовая тема",
+      "coverPage": "Титульная страница",
+      "accentColor": "Акцентный цвет",
+      "journal": "Журнал",
+      "numColumns": "Число колонок",
+      "lineNumbering": "Нумерация строк",
+      "titlePage": "Титульная страница",
+      "showIndex": "Указатель",
+      "semester": "Семестр",
+      "preface": "Предисловие",
+      "numberChapters": "Нумерация глав",
+      "numberedHeadings": "Нумерация заголовков"
     },
     "placeholders": {
       "course": "напр. Действительный анализ",
@@ -381,7 +435,10 @@
       "playfair": "Playfair Display",
       "tai-heritage": "Tai Heritage Pro",
       "default": "По умолчанию (New Computer Modern)",
-      "garamond": "Garamond (EB Garamond)"
+      "garamond": "Garamond (EB Garamond)",
+      "light": "Светлая",
+      "dark": "Тёмная",
+      "us-letter": "US Letter"
     },
     "previewTemplate": "Посмотреть шаблон",
     "templatePreview": "Предпросмотр",
@@ -445,7 +502,17 @@
       "pickOther": "Выбрать другую папку…",
       "folderNotSet": "Папка не выбрана"
     },
-    "save": "Сохранить"
+    "save": "Сохранить",
+    "backup": {
+      "title": "Резервное копирование",
+      "description": "Экспортируйте документы в Markdown для сохранности.",
+      "allDocuments": "Резервная копия всего",
+      "allDocumentsHint": "Экспортирует все {count} документов, сгруппированных по проектам, в zip-архив файлов Markdown.",
+      "button": "Создать резервную копию",
+      "import": "Импорт",
+      "importHint": "Восстановление из файла .md или резервной копии .zip.",
+      "importButton": "Выбрать файл…"
+    }
   },
   "command": {
     "placeholder": "Поиск или ввод команды…",
@@ -557,7 +624,10 @@
     "settingsSaved": "Настройки сохранены",
     "localeSwitched": "Язык интерфейса обновлён",
     "exportSavedTo": "Экспортировано в {path}",
-    "exportDownloaded": "Загружено: {name}"
+    "exportDownloaded": "Загружено: {name}",
+    "exportFailed": "Не удалось выполнить экспорт.",
+    "importSucceeded": "Импортировано документов: {count}.",
+    "importFailed": "Не удалось выполнить импорт."
   },
   "pdfPreview": {
     "previousPage": "Предыдущая страница",

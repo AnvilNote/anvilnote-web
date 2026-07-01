@@ -21,6 +21,7 @@ import { useTemplatesStore } from "@/lib/stores/templates-store";
 import { DocumentActions } from "@/components/app/document-actions";
 import { IconPicker } from "@/components/app/icon-picker";
 import { ProjectMenu } from "@/components/app/project-menu";
+import { exportProjectBackup } from "@/lib/export/backup";
 import { randomProjectIcon } from "@/lib/lucide-icon";
 import { documentDragProps, useProjectDropTarget } from "@/lib/dnd/document-drag";
 import type { AnvilDocument } from "@/types/document";
@@ -95,6 +96,19 @@ export default function ProjectsPage() {
     router.push(`/documents/${doc.id}`);
   }
 
+  async function handleExportProject(docs: AnvilDocument[]) {
+    try {
+      const result = await exportProjectBackup(docs);
+      toast.success(
+        result.kind === "folder"
+          ? t("toast.exportSavedTo", { path: result.path })
+          : t("toast.exportDownloaded", { name: result.fileName }),
+      );
+    } catch {
+      toast.error(t("toast.exportFailed"));
+    }
+  }
+
   if (!hydratedDocs || !hydratedProjects) {
     return null;
   }
@@ -133,25 +147,29 @@ export default function ProjectsPage() {
         </div>
       ) : (
         <ul className="mt-4 divide-y rounded-xl border">
-          {projects.map((project) => (
-            <ProjectListItem
-              key={project.id}
-              project={project}
-              docs={documents.filter((doc) => doc.projectId === project.id)}
-              isExpanded={expanded.has(project.id)}
-              isRenaming={renamingId === project.id}
-              nameDraft={nameDraft}
-              onToggle={() => toggle(project.id)}
-              onStartRename={() => startRename(project)}
-              onNameDraftChange={setNameDraft}
-              onCommitRename={commitRename}
-              onCancelRename={() => setRenamingId(null)}
-              onIconChange={(icon) => void updateProject(project.id, { icon })}
-              onNewDoc={() => void handleNewDocIn(project.id)}
-              onDelete={() => setDeleteTarget(project)}
-              onDropDocument={(documentId) => void moveDocumentToProject(documentId, project.id)}
-            />
-          ))}
+          {projects.map((project) => {
+            const docs = documents.filter((doc) => doc.projectId === project.id);
+            return (
+              <ProjectListItem
+                key={project.id}
+                project={project}
+                docs={docs}
+                isExpanded={expanded.has(project.id)}
+                isRenaming={renamingId === project.id}
+                nameDraft={nameDraft}
+                onToggle={() => toggle(project.id)}
+                onStartRename={() => startRename(project)}
+                onNameDraftChange={setNameDraft}
+                onCommitRename={commitRename}
+                onCancelRename={() => setRenamingId(null)}
+                onIconChange={(icon) => void updateProject(project.id, { icon })}
+                onNewDoc={() => void handleNewDocIn(project.id)}
+                onDelete={() => setDeleteTarget(project)}
+                onExport={() => void handleExportProject(docs)}
+                onDropDocument={(documentId) => void moveDocumentToProject(documentId, project.id)}
+              />
+            );
+          })}
         </ul>
       )}
 
@@ -210,6 +228,7 @@ function ProjectListItem({
   onIconChange,
   onNewDoc,
   onDelete,
+  onExport,
   onDropDocument,
 }: {
   project: AnvilProject;
@@ -225,6 +244,7 @@ function ProjectListItem({
   onIconChange: (icon: string | null) => void;
   onNewDoc: () => void;
   onDelete: () => void;
+  onExport: () => void;
   onDropDocument: (documentId: string) => void;
 }) {
   const t = useTranslations();
@@ -308,7 +328,11 @@ function ProjectListItem({
           <Plus className="size-4" />
         </button>
 
-        <ProjectMenu onDelete={onDelete} />
+        <ProjectMenu
+          onDelete={onDelete}
+          onExport={onExport}
+          exportDisabled={docs.length === 0}
+        />
       </div>
 
       {isExpanded ? (
