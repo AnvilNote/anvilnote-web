@@ -42,6 +42,11 @@
       }
     }
   },
+  "onboarding": {
+    "chooseTheme": "Выберите цветовую тему",
+    "back": "Назад",
+    "getStarted": "Начать"
+  },
   "app": {
     "name": "AnvilNote",
     "tagline": "Выкуйте идеи в заметки."

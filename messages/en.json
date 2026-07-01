@@ -42,6 +42,11 @@
       }
     }
   },
+  "onboarding": {
+    "chooseTheme": "Choose your color theme",
+    "back": "Back",
+    "getStarted": "Get started"
+  },
   "app": {
     "name": "AnvilNote",
     "tagline": "Forge your ideas into notes."

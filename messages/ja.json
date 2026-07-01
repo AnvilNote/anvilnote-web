@@ -42,6 +42,11 @@
       }
     }
   },
+  "onboarding": {
+    "chooseTheme": "カラーテーマを選択",
+    "back": "戻る",
+    "getStarted": "始める"
+  },
   "app": {
     "name": "AnvilNote",
     "tagline": "アイデアをノートに鍛え上げる。"
