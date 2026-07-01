@@ -18,7 +18,6 @@ type LandingCopy = {
   heroLine2After: string;
   heroLine3: string;
   heroKicker: string;
-  heroDescription: string;
   cta: string;
   secondaryCta: string;
   navLinks?: string[];
@@ -79,7 +78,6 @@ export default async function LocaleIndexPage({
     heroLine2After: t("hero.line2After"),
     heroLine3: t("hero.line3"),
     heroKicker: t("hero.kicker"),
-    heroDescription: t("hero.description"),
     cta: t("hero.cta"),
     secondaryCta: t("hero.secondaryCta"),
     // navLinks: [t("nav.product"), t("nav.templates"), t("nav.guide")],
@@ -172,9 +170,6 @@ export default async function LocaleIndexPage({
               <p className="mx-auto mt-8 max-w-3xl text-lg leading-8 text-foreground/76">
                 {copy.heroKicker}
               </p>
-              <p className="mx-auto mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
-                {copy.heroDescription}
-              </p>
 
               <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
                 <Button asChild size="lg" className="h-11 rounded-full px-6">
@@ -243,7 +238,7 @@ export default async function LocaleIndexPage({
               <p className="text-[0.68rem] font-medium tracking-[0.18em] text-muted-foreground uppercase">
                 {copy.showcaseTitle}
               </p>
-              <p className="mt-5 text-base leading-8 text-muted-foreground sm:text-lg">
+              <p className="mt-5 text-base leading-8 whitespace-pre-line text-muted-foreground sm:text-lg">
                 {copy.showcaseDescription}
               </p>
             </div>

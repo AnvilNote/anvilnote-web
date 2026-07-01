@@ -11,6 +11,7 @@ import Color from "@tiptap/extension-color";
 import { Mathematics } from "@tiptap/extension-mathematics";
 import { AnvilCodeBlock } from "@/lib/tiptap/code-block";
 import { AnvilImage } from "@/lib/tiptap/image";
+import { AnvilCallout } from "@/lib/tiptap/callout";
 
 export type TableVariant = "normal" | "three-line";
 export type TableAlign = "left" | "center" | "right";
@@ -212,6 +213,7 @@ export function buildExtensions({
     TextStyle,
     Color,
     AnvilCodeBlock,
+    AnvilCallout,
     AnvilImage.configure({
       HTMLAttributes: {
         "data-caption-label": figureLabel,

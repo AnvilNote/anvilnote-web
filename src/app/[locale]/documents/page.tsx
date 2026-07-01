@@ -92,6 +92,7 @@ export default function DocumentsPage() {
                     {t("documents.lastEdited", {
                       date: format.dateTime(new Date(doc.updatedAt), {
                         dateStyle: "medium",
+                        timeStyle: "medium",
                       }),
                     })}
                   </p>

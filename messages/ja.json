@@ -8,6 +8,9 @@
     "step": "{current} / {total}",
     "tabsProgress": "閲覧済み {visited} / {total}",
     "createHint": "+ をクリックして最初のドキュメントを作成",
+    "slashHint": "エディタ内のどこでも / を入力するとメニューが開きます",
+    "mathInlineHint": "$$x$$ と入力してインライン数式を試してみましょう",
+    "mathBlockHint": "$$$x$$$ と入力して独立した数式を試してみましょう",
     "steps": {
       "sidebar": {
         "title": "サイドバーを折りたたむ",
@@ -25,6 +28,14 @@
         "title": "スラッシュコマンド",
         "body": "エディタで / を入力すると、見出し・リスト・表・画像・数式などを挿入できます。"
       },
+      "mathInline": {
+        "title": "インライン数式のショートカット",
+        "body": "既存の文字のすぐ後ろに $$ で数式を挟んで入力すると、ダイアログを開かずにインライン数式を挿入できます。"
+      },
+      "mathBlock": {
+        "title": "独立数式のショートカット",
+        "body": "空の行で $$$ で数式を挟んで入力すると、独立した表示用の数式を挿入できます。"
+      },
       "panel": {
         "title": "右パネル",
         "body": "アウトライン・ドキュメント情報・テンプレート・エクスポートを順にクリックして確認しましょう。"
@@ -39,6 +50,7 @@
     "newDocument": "新規ドキュメント",
     "search": "検索",
     "documents": "ドキュメント",
+    "projects": "プロジェクト",
     "templates": "テンプレート",
     "recent": "最近",
     "settings": "設定"
@@ -85,6 +97,7 @@
         "bulletList": "箇条書き",
         "orderedList": "番号付きリスト",
         "blockquote": "引用",
+        "callout": "コールアウト",
         "codeBlock": "コードブロック",
         "image": "画像",
         "table": "表",
@@ -116,6 +129,7 @@
       "orderedList": "番号付きリスト",
       "taskList": "タスクリスト",
       "blockquote": "引用",
+      "callout": "コールアウト",
       "codeBlock": "コードブロック",
       "link": "リンク",
       "table": "表",
@@ -142,6 +156,7 @@
       "orderedList": "番号付きリスト",
       "taskList": "タスクリスト",
       "quote": "引用",
+      "callout": "コールアウト",
       "codeBlock": "コードブロック",
       "table": "表",
       "image": "画像",
@@ -177,6 +192,23 @@
     },
     "codeBlock": {
       "selectLanguage": "言語を選択"
+    },
+    "callout": {
+      "selectKind": "コールアウトの種類",
+      "kinds": {
+        "note": "メモ",
+        "abstract": "要約",
+        "info": "情報",
+        "tip": "ヒント",
+        "success": "成功",
+        "question": "質問",
+        "warning": "警告",
+        "failure": "失敗",
+        "danger": "危険",
+        "bug": "バグ",
+        "example": "例",
+        "quote": "引用"
+      }
     }
   },
   "documents": {
@@ -197,9 +229,13 @@
   },
   "projects": {
     "title": "プロジェクト",
+    "pageTitle": "プロジェクト",
+    "pageSubtitle": "関連するドキュメントをまとめて管理できます。",
     "create": "新規プロジェクト",
     "defaultName": "無題のプロジェクト",
     "empty": "プロジェクトはまだありません。",
+    "emptyHint": "最初のプロジェクトを作成してドキュメントをまとめましょう。",
+    "count": "{count, plural, =0 {プロジェクトなし} other {#件のプロジェクト}}",
     "icon": "アイコン",
     "iconSearch": "アイコンを検索…",
     "iconEmpty": "アイコンが見つかりません。",
@@ -219,6 +255,7 @@
     "subtitle": "レイアウトを選択。内容はそのまま。",
     "current": "現在のテンプレート",
     "use": "テンプレートを適用",
+    "viewSource": "Typst Universe で見る",
     "inUse": "使用中",
     "categories": {
       "note": "ノート",
@@ -432,7 +469,6 @@
       "line2After": "を作る。",
       "line3": "",
       "kicker": "AnvilNote は編集・数式・コード・テンプレート・書き出しを一つのワークスペースにまとめ、長文の構成に集中できます。",
-      "description": "下にライブ編集エリアがあります。デモを直接編集して、ツールバー・スラッシュコマンド・数式・表を試せます。PDF 書き出しは正式なワークスペースで利用できます。",
       "cta": "ワークスペースを開く",
       "secondaryCta": "エディタを試す"
     },
@@ -463,7 +499,7 @@
     },
     "showcase": {
       "title": "ドキュメントを仕上げるテンプレート",
-      "description": "AnvilNote はエディタにとどまらず、配布資料・レポート・洗練されたノートへと内容を続けられます。"
+      "description": "AnvilNote はエディタにとどまらず、配布資料・レポート・洗練されたノートへと内容を続けられます。\nテンプレートの多くは Typst エコシステムのオープンソースパッケージを統合したもので、そのまま使えます。"
     },
     "closing": {
       "title": "書き、整理し、仕上げるための静かなワークスペース。",
@@ -502,9 +538,11 @@
     "documentCreatedFromTemplate": "{name}からドキュメントを作成しました",
     "documentDeleted": "ドキュメントを削除しました",
     "documentMoved": "ドキュメントを移動しました",
+    "documentMovedTo": "ドキュメントを{name}に移動しました",
     "documentMoveFailed": "ドキュメントの移動に失敗しました",
     "documentRenamed": "ドキュメントの名前を変更しました",
     "documentSaved": "ドキュメントを保存しました",
+    "projectDeleted": "プロジェクト「{name}」を削除しました",
     "templateSwitched": "{name}に切り替えました",
     "exportMocked": "レンダラーがまだ接続されていません — これはモックのエクスポートです。",
     "exportReady": "PDFを書き出しました。",

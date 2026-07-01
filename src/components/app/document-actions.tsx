@@ -50,7 +50,10 @@ export function DocumentActions({
   async function moveTo(projectId: string | null) {
     try {
       await setDocumentProject(doc.id, projectId);
-      toast.success(t("toast.documentMoved"));
+      const name = projectId
+        ? (projects.find((p) => p.id === projectId)?.name ?? "")
+        : t("projects.unfiled");
+      toast.success(t("toast.documentMovedTo", { name }));
     } catch {
       toast.error(t("toast.documentMoveFailed"));
     }

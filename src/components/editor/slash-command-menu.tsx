@@ -11,6 +11,7 @@ import { Extension, type Editor, type Range } from "@tiptap/core";
 import Suggestion from "@tiptap/suggestion";
 import { ReactRenderer } from "@tiptap/react";
 import { cn } from "@/lib/utils";
+import { useSlashMenuStore } from "@/lib/stores/slash-menu-store";
 
 export type SlashItem = {
   title: string;
@@ -140,6 +141,7 @@ export function createSlashCommand(getItems: () => SlashItem[]) {
 
             return {
               onStart: (props) => {
+                useSlashMenuStore.getState().markOpened();
                 component = new ReactRenderer(SlashList, {
                   props: {
                     items: props.items,

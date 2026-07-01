@@ -40,4 +40,7 @@ export type AnvilTemplate = {
   fields: TemplateField[];
   // Optional: when omitted the preview is derived from `id` by convention.
   preview?: TemplatePreview;
+  // Typst Universe page for the wrapped @preview package; absent for
+  // self-authored/vendored templates (e.g. plain-note).
+  universeUrl?: string;
 };
