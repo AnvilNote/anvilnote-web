@@ -42,6 +42,11 @@
       }
     }
   },
+  "onboarding": {
+    "chooseTheme": "เลือกธีมสี",
+    "back": "ย้อนกลับ",
+    "getStarted": "เริ่มใช้งาน"
+  },
   "app": {
     "name": "AnvilNote",
     "tagline": "หลอมความคิดให้เป็นโน้ต"

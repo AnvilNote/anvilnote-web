@@ -10,6 +10,7 @@ import { AppShell } from "@/components/app/app-shell";
 import { ThemeFavicon } from "@/components/app/theme-favicon";
 import { ThemeProvider } from "@/components/app/theme-provider";
 import { QuillTransition } from "@/components/transition/quill-transition";
+import { FirstRunOnboarding } from "@/components/onboarding/first-run-onboarding";
 import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -70,6 +71,7 @@ export default async function LocaleLayout({
               <AppShell>{children}</AppShell>
             </StoreHydrator>
             <QuillTransition />
+            <FirstRunOnboarding />
             <Toaster
               position="top-right"
               expand

@@ -42,6 +42,11 @@
       }
     }
   },
+  "onboarding": {
+    "chooseTheme": "색상 테마 선택",
+    "back": "이전",
+    "getStarted": "시작하기"
+  },
   "app": {
     "name": "AnvilNote",
     "tagline": "생각을 노트로 벼려내세요."

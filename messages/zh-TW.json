@@ -42,6 +42,11 @@
       }
     }
   },
+  "onboarding": {
+    "chooseTheme": "選擇主題配色",
+    "back": "上一步",
+    "getStarted": "開始使用"
+  },
   "app": {
     "name": "AnvilNote",
     "tagline": "把想法鍛造成筆記。"
