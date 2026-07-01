@@ -4,6 +4,7 @@ import {
   forwardRef,
   useEffect,
   useImperativeHandle,
+  useRef,
   useState,
   type ComponentType,
 } from "react";
@@ -35,8 +36,15 @@ type SlashListProps = {
 const SlashList = forwardRef<SlashListHandle, SlashListProps>(
   function SlashList({ items, command }, ref) {
     const [selected, setSelected] = useState(0);
+    const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
     useEffect(() => setSelected(0), [items]);
+
+    // Arrow keys move `selected` without any pointer movement, so unlike
+    // hover the browser never scrolls the item into view on its own.
+    useEffect(() => {
+      itemRefs.current[selected]?.scrollIntoView({ block: "nearest" });
+    }, [selected]);
 
     useImperativeHandle(ref, () => ({
       onKeyDown: ({ event }) => {
@@ -65,6 +73,9 @@ const SlashList = forwardRef<SlashListHandle, SlashListProps>(
           return (
             <button
               key={item.title}
+              ref={(el) => {
+                itemRefs.current[index] = el;
+              }}
               type="button"
               onMouseEnter={() => setSelected(index)}
               onClick={() => command(item)}
