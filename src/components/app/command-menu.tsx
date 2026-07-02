@@ -25,9 +25,11 @@ import {
 import { usePathname, useRouter } from "@/lib/i18n/navigation";
 import { useUiStore } from "@/lib/stores/ui-store";
 import { useDocumentStore } from "@/lib/stores/document-store";
+import { useProjectStore } from "@/lib/stores/project-store";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import { getApiBaseUrl } from "@/lib/api";
 import { deliverPdf } from "@/lib/export-pdf";
+import { resolveExportFolder } from "@/lib/export-folder";
 import { getNodeText } from "@/lib/tiptap/serialization";
 import { locales } from "@/lib/i18n/routing";
 
@@ -91,6 +93,7 @@ export function CommandMenu() {
   const renderDocument = useDocumentStore((s) => s.renderDocument);
   const documents = useDocumentStore((s) => s.documents);
   const setActiveDocument = useDocumentStore((s) => s.setActive);
+  const projects = useProjectStore((s) => s.projects);
   const settings = useSettingsStore();
 
   // Track the query so we can show a body snippet for content matches.
@@ -141,6 +144,7 @@ export function CommandMenu() {
         const delivered = await deliverPdf(
           `${getApiBaseUrl()}${result.pdfUrl}`,
           doc.title,
+          resolveExportFolder(doc, projects, t("projects.unfiled")),
         );
         toast.success(
           delivered.kind === "folder"

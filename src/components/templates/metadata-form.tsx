@@ -13,6 +13,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  ColorPicker,
+  ColorPickerSelection,
+  ColorPickerHue,
+  ColorPickerEyeDropper,
+  ColorPickerOutput,
+  ColorPickerFormat,
+} from "@/components/ui/color-picker";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useTemplatesStore } from "@/lib/stores/templates-store";
 import type { AnvilMetadataValue } from "@/types/document";
@@ -68,6 +81,16 @@ export function MetadataForm({ documentId }: { documentId: string }) {
       <p className="text-xs text-muted-foreground">{t("panel.metadataHint")}</p>
 
       {template.fields.map((field) => {
+        if (field.dependsOn) {
+          const dependsField = template.fields.find(
+            (f) => f.key === field.dependsOn?.key,
+          );
+          const dependsValue = dependsField ? readValue(dependsField) : undefined;
+          if (dependsValue !== field.dependsOn.value) {
+            return null;
+          }
+        }
+
         const raw = readValue(field);
         const label = labelFor(field);
 
@@ -151,6 +174,45 @@ export function MetadataForm({ documentId }: { documentId: string }) {
                   onCheckedChange={(checked) => writeValue(field, checked)}
                 />
               </div>
+            )}
+
+            {field.type === "color" && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    id={`meta-${field.key}`}
+                    type="button"
+                    className="flex w-full items-center gap-2 rounded-md border px-3 py-2 text-sm"
+                  >
+                    <span
+                      className="h-4 w-4 shrink-0 rounded-full border"
+                      style={{ backgroundColor: stringValue || "#0000ff" }}
+                    />
+                    <span className="text-muted-foreground">{stringValue || "#0000ff"}</span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64">
+                  <ColorPicker
+                    value={stringValue || "#0000ff"}
+                    onChange={(rgba) => {
+                      const [r, g, b] = rgba as [number, number, number, number];
+                      const hex = `#${[r, g, b]
+                        .map((c) => Math.round(c).toString(16).padStart(2, "0"))
+                        .join("")}`;
+                      writeValue(field, hex);
+                    }}
+                    className="gap-3"
+                  >
+                    <ColorPickerSelection className="h-32" />
+                    <ColorPickerHue />
+                    <div className="flex items-center gap-2">
+                      <ColorPickerEyeDropper />
+                      <ColorPickerOutput />
+                    </div>
+                    <ColorPickerFormat />
+                  </ColorPicker>
+                </PopoverContent>
+              </Popover>
             )}
           </div>
         );

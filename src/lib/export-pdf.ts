@@ -13,9 +13,10 @@ export type { DeliverResult };
 export async function deliverPdf(
   pdfHref: string,
   title: string,
+  subfolder?: string,
 ): Promise<DeliverResult> {
   const response = await fetch(pdfHref);
   const blob = await response.blob();
   const fileName = buildExportFileName(title);
-  return deliverFile(blob, fileName);
+  return deliverFile(blob, fileName, subfolder);
 }

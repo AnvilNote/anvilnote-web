@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { ChevronRight, FileText, Plus } from "lucide-react";
+import { ChevronRight, FileText, MoreHorizontal, Plus } from "lucide-react";
 import {
   SidebarGroup,
   SidebarGroupAction,
@@ -38,6 +38,21 @@ import type { AnvilProject } from "@/types/project";
 import { cn } from "@/lib/utils";
 
 const NAME_MAX = 15;
+const SIDEBAR_PROJECTS_LIMIT = 5;
+const SIDEBAR_UNFILED_LIMIT = 3;
+
+function ShowMoreRow({ href, label }: { href: string; label: string }) {
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton asChild className="text-muted-foreground">
+        <Link href={href}>
+          <MoreHorizontal className="size-4 shrink-0" />
+          <span className="truncate">{label}</span>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
 
 // Truncate to NAME_MAX characters with an ellipsis (no wrapping).
 function truncateName(name: string): string {
@@ -64,8 +79,9 @@ export function SidebarProjects() {
   // Inline name editing.
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [nameDraft, setNameDraft] = useState("");
-  // Projects start expanded; ids here are collapsed.
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  // All projects start collapsed; ids here are the ones the user has
+  // explicitly expanded (empty by default = everything collapsed).
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   // "Unfiled" is a single, non-repeated drop target, so the hook can be
   // called directly here rather than needing a per-row component.
@@ -73,7 +89,7 @@ export function SidebarProjects() {
     useProjectDropTarget((documentId) => void moveDocumentToProject(documentId, null));
 
   function toggle(id: string) {
-    setCollapsed((prev) => {
+    setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -86,7 +102,8 @@ export function SidebarProjects() {
   }
 
   // New project: created instantly (no dialog) with a default name + random
-  // icon. Name and icon are then editable inline.
+  // icon. Name and icon are then editable inline. Stays collapsed by default
+  // like every other project.
   async function handleCreateProject() {
     await createProject(t("projects.defaultName"), randomProjectIcon());
   }
@@ -186,6 +203,8 @@ export function SidebarProjects() {
   }
 
   const unfiled = documents.filter((doc) => doc.projectId == null);
+  const visibleProjects = projects.slice(0, SIDEBAR_PROJECTS_LIMIT);
+  const visibleUnfiled = unfiled.slice(0, SIDEBAR_UNFILED_LIMIT);
 
   return (
     <>
@@ -206,30 +225,37 @@ export function SidebarProjects() {
               {t("projects.empty")}
             </p>
           ) : (
-            projects.map((project) => {
-              const docs = documents.filter((doc) => doc.projectId === project.id);
-              return (
-                <ProjectRow
-                  key={project.id}
-                  project={project}
-                  docs={docs}
-                  isCollapsed={collapsed.has(project.id)}
-                  isRenaming={renamingId === project.id}
-                  nameDraft={nameDraft}
-                  onToggle={() => toggle(project.id)}
-                  onStartRename={() => startRename(project)}
-                  onNameDraftChange={setNameDraft}
-                  onCommitRename={commitRename}
-                  onCancelRename={() => setRenamingId(null)}
-                  onIconChange={(icon) => void updateProject(project.id, { icon })}
-                  onNewDoc={() => void newDocIn(project.id)}
-                  onDelete={() => setDeleteTarget(project)}
-                  onExport={() => void exportProject(docs)}
-                  onDropDocument={(documentId) => void moveDocumentToProject(documentId, project.id)}
-                  renderDocs={renderDocs}
-                />
-              );
-            })
+            <>
+              {visibleProjects.map((project) => {
+                const docs = documents.filter((doc) => doc.projectId === project.id);
+                return (
+                  <ProjectRow
+                    key={project.id}
+                    project={project}
+                    docs={docs}
+                    isCollapsed={!expanded.has(project.id)}
+                    isRenaming={renamingId === project.id}
+                    nameDraft={nameDraft}
+                    onToggle={() => toggle(project.id)}
+                    onStartRename={() => startRename(project)}
+                    onNameDraftChange={setNameDraft}
+                    onCommitRename={commitRename}
+                    onCancelRename={() => setRenamingId(null)}
+                    onIconChange={(icon) => void updateProject(project.id, { icon })}
+                    onNewDoc={() => void newDocIn(project.id)}
+                    onDelete={() => setDeleteTarget(project)}
+                    onExport={() => void exportProject(docs)}
+                    onDropDocument={(documentId) => void moveDocumentToProject(documentId, project.id)}
+                    renderDocs={renderDocs}
+                  />
+                );
+              })}
+              {projects.length > SIDEBAR_PROJECTS_LIMIT ? (
+                <SidebarMenu className="gap-1">
+                  <ShowMoreRow href="/projects" label={t("common.showMore")} />
+                </SidebarMenu>
+              ) : null}
+            </>
           )}
         </SidebarGroupContent>
       </SidebarGroup>
@@ -237,7 +263,7 @@ export function SidebarProjects() {
       <SidebarGroup
         {...unfiledDropHandlers}
         className={cn(
-          "rounded-md transition-colors",
+          "-mt-2 rounded-md pt-0 transition-colors",
           unfiledIsOver && "bg-sidebar-accent ring-2 ring-ring/50",
         )}
       >
@@ -252,7 +278,12 @@ export function SidebarProjects() {
           <Plus className="size-4.5" />
         </SidebarGroupAction>
         <SidebarGroupContent>
-          <SidebarMenu className="gap-1">{renderDocs(unfiled)}</SidebarMenu>
+          <SidebarMenu className="gap-1">
+            {renderDocs(visibleUnfiled)}
+            {unfiled.length > SIDEBAR_UNFILED_LIMIT ? (
+              <ShowMoreRow href="/documents" label={t("common.showMore")} />
+            ) : null}
+          </SidebarMenu>
         </SidebarGroupContent>
       </SidebarGroup>
 

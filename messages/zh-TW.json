@@ -60,7 +60,8 @@
     "projects": "專案",
     "templates": "範本",
     "recent": "最近",
-    "settings": "設定"
+    "settings": "設定",
+    "about": "關於"
   },
   "topbar": {
     "search": "搜尋或輸入指令",
@@ -78,7 +79,12 @@
     "close": "關閉",
     "none": "無",
     "optional": "選填",
-    "required": "必填"
+    "required": "必填",
+    "showMore": "顯示更多",
+    "search": "搜尋",
+    "sortNewest": "由新至舊",
+    "sortOldest": "由舊至新",
+    "noResults": "沒有符合的結果"
   },
   "editor": {
     "untitled": "未命名文件",
@@ -233,7 +239,8 @@
     "defaultTitle": "未命名文件",
     "defaultHeading": "講義從此開始",
     "defaultBody": "在這裡開始撰寫筆記。",
-    "exportMarkdown": "匯出為 Markdown"
+    "exportMarkdown": "匯出為 Markdown",
+    "filterAll": "全部專案"
   },
   "projects": {
     "title": "專案",
@@ -385,6 +392,7 @@
       "paperSize": "紙張大小",
       "lang": "語言",
       "colorlinks": "彩色連結",
+      "linkColor": "連結顏色",
       "primaryLang": "主要語言",
       "titleFont": "標題字體",
       "bodyFont": "內文字體",
@@ -472,7 +480,18 @@
     "button": "匯出 PDF",
     "exporting": "正在匯出…",
     "payloadTitle": "匯出資料",
-    "payloadHint": "這是匯出時會送出的資料。"
+    "payloadHint": "這是匯出時會送出的資料。",
+    "format": "格式",
+    "formats": {
+      "pdf": "PDF",
+      "markdown": "Markdown",
+      "docx": "Word (.docx)"
+    },
+    "buttons": {
+      "pdf": "匯出 PDF",
+      "markdown": "匯出 Markdown",
+      "docx": "匯出 Word"
+    }
   },
   "settings": {
     "title": "設定",
@@ -662,6 +681,29 @@
       "mac": "macOS",
       "windows": "Windows",
       "linux": "Linux"
+    }
+  },
+  "about": {
+    "appName": "AnvilNote",
+    "version": "版本 {version}",
+    "description": "把想法鍛造成筆記。\n離線優先的寫作與筆記工具，內建 Typst 排版與 PDF 匯出。",
+    "tabs": {
+      "about": "關於",
+      "fonts": "字體",
+      "dependencies": "授權"
+    },
+    "fontsTab": {
+      "hint": "AnvilNote 內建的所有字型與其授權方式。",
+      "family": "字型家族",
+      "license": "授權",
+      "source": "來源"
+    },
+    "dependenciesTab": {
+      "hint": "AnvilNote 使用的開源套件與其授權方式。",
+      "name": "套件",
+      "license": "授權",
+      "source": "連結",
+      "projectLink": "專案首頁"
     }
   }
 }

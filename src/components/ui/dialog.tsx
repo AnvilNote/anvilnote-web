@@ -33,6 +33,7 @@ function DialogClose({
 
 function DialogOverlay({
   className,
+  onClick,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
   return (
@@ -42,6 +43,15 @@ function DialogOverlay({
         "fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
+      // Radix mounts the overlay in a Portal, which is outside the DOM tree
+      // but still inside the React tree — so a click here would otherwise
+      // bubble up through whatever component opened the dialog (e.g. a
+      // clickable card) and trigger its onClick as an unwanted side effect
+      // of dismissing the dialog.
+      onClick={(event) => {
+        event.stopPropagation()
+        onClick?.(event)
+      }}
       {...props}
     />
   )

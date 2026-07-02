@@ -60,7 +60,8 @@
     "projects": "Проекты",
     "templates": "Шаблоны",
     "recent": "Недавние",
-    "settings": "Настройки"
+    "settings": "Настройки",
+    "about": "О программе"
   },
   "topbar": {
     "search": "Поиск или ввод команды",
@@ -78,7 +79,12 @@
     "close": "Закрыть",
     "none": "Нет",
     "optional": "Необязательно",
-    "required": "Обязательно"
+    "required": "Обязательно",
+    "showMore": "Показать больше",
+    "search": "Поиск",
+    "sortNewest": "Сначала новые",
+    "sortOldest": "Сначала старые",
+    "noResults": "Нет совпадений"
   },
   "editor": {
     "untitled": "Документ без названия",
@@ -233,7 +239,8 @@
     "defaultTitle": "Заметки без названия",
     "defaultHeading": "Лекция начинается здесь",
     "defaultBody": "Начните писать заметку здесь.",
-    "exportMarkdown": "Экспорт в Markdown"
+    "exportMarkdown": "Экспорт в Markdown",
+    "filterAll": "Все проекты"
   },
   "projects": {
     "title": "Проекты",
@@ -385,6 +392,7 @@
       "paperSize": "Размер бумаги",
       "lang": "Язык",
       "colorlinks": "Цветные ссылки",
+      "linkColor": "Цвет ссылок",
       "primaryLang": "Основной язык",
       "titleFont": "Шрифт заголовка",
       "bodyFont": "Шрифт текста",
@@ -472,7 +480,18 @@
     "button": "Экспорт в PDF",
     "exporting": "Экспорт…",
     "payloadTitle": "Данные экспорта",
-    "payloadHint": "Это данные, отправляемые при экспорте."
+    "payloadHint": "Это данные, отправляемые при экспорте.",
+    "format": "Формат",
+    "formats": {
+      "pdf": "PDF",
+      "markdown": "Markdown",
+      "docx": "Word (.docx)"
+    },
+    "buttons": {
+      "pdf": "Экспорт в PDF",
+      "markdown": "Экспорт в Markdown",
+      "docx": "Экспорт в Word"
+    }
   },
   "settings": {
     "title": "Настройки",
@@ -662,6 +681,29 @@
       "mac": "macOS",
       "windows": "Windows",
       "linux": "Linux"
+    }
+  },
+  "about": {
+    "appName": "AnvilNote",
+    "version": "Версия {version}",
+    "description": "Куйте идеи в заметки.\nАвтономное приложение для письма со встроенной вёрсткой Typst и экспортом в PDF.",
+    "tabs": {
+      "about": "О программе",
+      "fonts": "Шрифты",
+      "dependencies": "Лицензии"
+    },
+    "fontsTab": {
+      "hint": "Все шрифты, входящие в AnvilNote, и их лицензии.",
+      "family": "Семейство шрифтов",
+      "license": "Лицензия",
+      "source": "Источник"
+    },
+    "dependenciesTab": {
+      "hint": "Открытые пакеты, используемые AnvilNote, и их лицензии.",
+      "name": "Пакет",
+      "license": "Лицензия",
+      "source": "Ссылка",
+      "projectLink": "Страница проекта"
     }
   }
 }

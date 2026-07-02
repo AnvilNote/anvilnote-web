@@ -3,7 +3,8 @@ export type TemplateFieldType =
   | "textarea"
   | "date"
   | "boolean"
-  | "select";
+  | "select"
+  | "color";
 
 export type TemplateFieldScope = "metadata" | "option";
 
@@ -18,7 +19,14 @@ export type TemplateField = {
   default?: string | boolean;
   placeholder?: string;
   options?: string[];
+  // Only render this field while another field (by key) holds `value` —
+  // e.g. a link-color picker that only makes sense while colorlinks is on.
+  dependsOn?: { key: string; value: AnvilMetadataValueLiteral };
 };
+
+// Kept separate from document.ts's AnvilMetadataValue to avoid a circular
+// import; the two types must stay in sync.
+type AnvilMetadataValueLiteral = string | boolean | null;
 
 // Static preview assets live under public/template-previews/{id}/ and are
 // generated offline by scripts/generate-template-previews.mjs.

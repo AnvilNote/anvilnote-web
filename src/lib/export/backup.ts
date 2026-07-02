@@ -57,11 +57,12 @@ export function backupZipFilename(date = new Date()): string {
 /** Export a single document as a standalone .md file. */
 export async function exportDocumentMarkdown(
   doc: AnvilDocument,
+  subfolder?: string,
 ): Promise<DeliverResult> {
   const blob = new Blob([documentToMarkdown(doc)], {
     type: "text/markdown;charset=utf-8",
   });
-  return deliverFile(blob, documentMarkdownFilename(doc));
+  return deliverFile(blob, documentMarkdownFilename(doc), subfolder);
 }
 
 // Adds one .md file per document, de-duplicating filenames within the same

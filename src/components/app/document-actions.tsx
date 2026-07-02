@@ -28,6 +28,7 @@ import { Label } from "@/components/ui/label";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useProjectStore } from "@/lib/stores/project-store";
 import { exportDocumentMarkdown } from "@/lib/export/backup";
+import { resolveExportFolder } from "@/lib/export-folder";
 import { LucideIcon } from "@/lib/lucide-icon";
 import type { AnvilDocument } from "@/types/document";
 import { cn } from "@/lib/utils";
@@ -79,7 +80,10 @@ export function DocumentActions({
 
   async function exportMarkdown() {
     try {
-      const result = await exportDocumentMarkdown(doc);
+      const result = await exportDocumentMarkdown(
+        doc,
+        resolveExportFolder(doc, projects, t("projects.unfiled")),
+      );
       toast.success(
         result.kind === "folder"
           ? t("toast.exportSavedTo", { path: result.path })

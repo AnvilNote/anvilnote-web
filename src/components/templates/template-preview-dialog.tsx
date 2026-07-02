@@ -40,6 +40,12 @@ export function TemplatePreviewDialog({
       <DialogContent
         className="flex h-[92vh] max-h-[92vh] w-[96vw] max-w-[min(1100px,96vw)] flex-col gap-4 sm:max-w-[min(1100px,96vw)]"
         showCloseButton
+        // Radix's Portal keeps the dialog in the React tree (not the DOM
+        // tree) for event bubbling purposes, so a click anywhere in here —
+        // including the built-in close (X) button — would otherwise bubble
+        // up through TemplatePreviewButton into TemplateCard's own onClick
+        // and switch the document's template as a side effect of closing.
+        onClick={(event) => event.stopPropagation()}
       >
         <DialogHeader className="space-y-1 text-left">
           <DialogTitle>
