@@ -3,14 +3,13 @@
 import type { MouseEvent } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { FileText, FolderKanban, LayoutTemplate, Search, Settings } from "lucide-react";
+import { FileText, FolderKanban, Info, LayoutTemplate, Search, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -48,6 +47,7 @@ export function AppSidebar() {
     { href: "/projects", label: t("nav.projects"), icon: FolderKanban },
     { href: "/documents", label: t("nav.documents"), icon: FileText },
     { href: "/templates", label: t("nav.templates"), icon: LayoutTemplate },
+    { href: "/about", label: t("nav.about"), icon: Info },
     { href: "/settings", label: t("nav.settings"), icon: Settings },
   ];
 
@@ -104,9 +104,10 @@ export function AppSidebar() {
 
       <SidebarContent className="px-1 group-data-[collapsible=icon]:px-0">
         <SidebarProjects />
+      </SidebarContent>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>{t("app.name")}</SidebarGroupLabel>
+      <SidebarFooter>
+        <SidebarGroup className="p-0">
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
               {navItems.map((item) => (
@@ -125,9 +126,6 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-      </SidebarContent>
-
-      <SidebarFooter>
         <AppVersion />
       </SidebarFooter>
 

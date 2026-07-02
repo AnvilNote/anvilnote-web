@@ -60,7 +60,8 @@
     "projects": "프로젝트",
     "templates": "템플릿",
     "recent": "최근",
-    "settings": "설정"
+    "settings": "설정",
+    "about": "정보"
   },
   "topbar": {
     "search": "검색하거나 명령어 입력",
@@ -78,7 +79,12 @@
     "close": "닫기",
     "none": "없음",
     "optional": "선택",
-    "required": "필수"
+    "required": "필수",
+    "showMore": "더 보기",
+    "search": "검색",
+    "sortNewest": "최신순",
+    "sortOldest": "오래된순",
+    "noResults": "일치하는 결과가 없습니다"
   },
   "editor": {
     "untitled": "제목 없는 문서",
@@ -233,7 +239,8 @@
     "defaultTitle": "제목 없는 노트",
     "defaultHeading": "강의는 여기서 시작됩니다",
     "defaultBody": "여기에서 노트를 작성하세요.",
-    "exportMarkdown": "Markdown으로 내보내기"
+    "exportMarkdown": "Markdown으로 내보내기",
+    "filterAll": "모든 프로젝트"
   },
   "projects": {
     "title": "프로젝트",
@@ -385,6 +392,7 @@
       "paperSize": "용지 크기",
       "lang": "언어",
       "colorlinks": "색상 링크",
+      "linkColor": "링크 색상",
       "primaryLang": "주 언어",
       "titleFont": "제목 글꼴",
       "bodyFont": "본문 글꼴",
@@ -472,7 +480,18 @@
     "button": "PDF 내보내기",
     "exporting": "내보내는 중…",
     "payloadTitle": "내보내기 데이터",
-    "payloadHint": "이것은 내보낼 때 전송되는 데이터입니다."
+    "payloadHint": "이것은 내보낼 때 전송되는 데이터입니다.",
+    "format": "형식",
+    "formats": {
+      "pdf": "PDF",
+      "markdown": "Markdown",
+      "docx": "Word (.docx)"
+    },
+    "buttons": {
+      "pdf": "PDF 내보내기",
+      "markdown": "Markdown 내보내기",
+      "docx": "Word 내보내기"
+    }
   },
   "settings": {
     "title": "설정",
@@ -662,6 +681,29 @@
       "mac": "macOS",
       "windows": "Windows",
       "linux": "Linux"
+    }
+  },
+  "about": {
+    "appName": "AnvilNote",
+    "version": "버전 {version}",
+    "description": "아이디어를 노트로 벼려내다.\nTypst 조판과 PDF 내보내기를 내장한 오프라인 우선 작성 앱.",
+    "tabs": {
+      "about": "정보",
+      "fonts": "글꼴",
+      "dependencies": "라이선스"
+    },
+    "fontsTab": {
+      "hint": "AnvilNote에 포함된 모든 글꼴과 라이선스입니다.",
+      "family": "글꼴 패밀리",
+      "license": "라이선스",
+      "source": "출처"
+    },
+    "dependenciesTab": {
+      "hint": "AnvilNote가 사용하는 오픈소스 패키지와 라이선스입니다.",
+      "name": "패키지",
+      "license": "라이선스",
+      "source": "링크",
+      "projectLink": "프로젝트 홈페이지"
     }
   }
 }

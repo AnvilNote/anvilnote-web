@@ -60,7 +60,8 @@
     "projects": "プロジェクト",
     "templates": "テンプレート",
     "recent": "最近",
-    "settings": "設定"
+    "settings": "設定",
+    "about": "情報"
   },
   "topbar": {
     "search": "検索またはコマンドを入力",
@@ -78,7 +79,12 @@
     "close": "閉じる",
     "none": "なし",
     "optional": "任意",
-    "required": "必須"
+    "required": "必須",
+    "showMore": "もっと見る",
+    "search": "検索",
+    "sortNewest": "新しい順",
+    "sortOldest": "古い順",
+    "noResults": "一致する結果がありません"
   },
   "editor": {
     "untitled": "無題のドキュメント",
@@ -233,7 +239,8 @@
     "defaultTitle": "無題のノート",
     "defaultHeading": "講義はここから",
     "defaultBody": "ここからノートを書き始めましょう。",
-    "exportMarkdown": "Markdown としてエクスポート"
+    "exportMarkdown": "Markdown としてエクスポート",
+    "filterAll": "すべてのプロジェクト"
   },
   "projects": {
     "title": "プロジェクト",
@@ -385,6 +392,7 @@
       "paperSize": "用紙サイズ",
       "lang": "言語",
       "colorlinks": "色付きリンク",
+      "linkColor": "リンクの色",
       "primaryLang": "主要言語",
       "titleFont": "タイトルフォント",
       "bodyFont": "本文フォント",
@@ -472,7 +480,18 @@
     "button": "PDFを書き出す",
     "exporting": "書き出し中…",
     "payloadTitle": "エクスポートデータ",
-    "payloadHint": "これはエクスポート時に送信されるデータです。"
+    "payloadHint": "これはエクスポート時に送信されるデータです。",
+    "format": "形式",
+    "formats": {
+      "pdf": "PDF",
+      "markdown": "Markdown",
+      "docx": "Word (.docx)"
+    },
+    "buttons": {
+      "pdf": "PDF を書き出す",
+      "markdown": "Markdown を書き出す",
+      "docx": "Word を書き出す"
+    }
   },
   "settings": {
     "title": "設定",
@@ -662,6 +681,29 @@
       "mac": "macOS",
       "windows": "Windows",
       "linux": "Linux"
+    }
+  },
+  "about": {
+    "appName": "AnvilNote",
+    "version": "バージョン {version}",
+    "description": "アイデアをノートへ。\nTypst 組版と PDF 書き出しを内蔵したオフラインファーストの執筆アプリ。",
+    "tabs": {
+      "about": "情報",
+      "fonts": "フォント",
+      "dependencies": "ライセンス"
+    },
+    "fontsTab": {
+      "hint": "AnvilNote に同梱されているフォントとそのライセンス。",
+      "family": "フォントファミリー",
+      "license": "ライセンス",
+      "source": "ソース"
+    },
+    "dependenciesTab": {
+      "hint": "AnvilNote が使用するオープンソースパッケージとそのライセンス。",
+      "name": "パッケージ",
+      "license": "ライセンス",
+      "source": "リンク",
+      "projectLink": "プロジェクトページ"
     }
   }
 }

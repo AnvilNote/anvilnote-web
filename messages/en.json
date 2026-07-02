@@ -60,7 +60,8 @@
     "projects": "Projects",
     "templates": "Templates",
     "recent": "Recent",
-    "settings": "Settings"
+    "settings": "Settings",
+    "about": "About"
   },
   "topbar": {
     "search": "Search or type a command",
@@ -78,7 +79,12 @@
     "close": "Close",
     "none": "None",
     "optional": "Optional",
-    "required": "Required"
+    "required": "Required",
+    "showMore": "Show more",
+    "search": "Search",
+    "sortNewest": "Newest first",
+    "sortOldest": "Oldest first",
+    "noResults": "No matching results"
   },
   "editor": {
     "untitled": "Untitled document",
@@ -233,7 +239,8 @@
     "defaultTitle": "Untitled Notes",
     "defaultHeading": "Your lecture starts here",
     "defaultBody": "Start writing your note here.",
-    "exportMarkdown": "Export as Markdown"
+    "exportMarkdown": "Export as Markdown",
+    "filterAll": "All projects"
   },
   "projects": {
     "title": "Projects",
@@ -385,6 +392,7 @@
       "paperSize": "Paper size",
       "lang": "Language",
       "colorlinks": "Colored links",
+      "linkColor": "Link color",
       "primaryLang": "Primary language",
       "titleFont": "Title font",
       "bodyFont": "Body font",
@@ -472,7 +480,18 @@
     "button": "Export PDF",
     "exporting": "Exporting…",
     "payloadTitle": "Export data",
-    "payloadHint": "This is the data sent when you export."
+    "payloadHint": "This is the data sent when you export.",
+    "format": "Format",
+    "formats": {
+      "pdf": "PDF",
+      "markdown": "Markdown",
+      "docx": "Word (.docx)"
+    },
+    "buttons": {
+      "pdf": "Export PDF",
+      "markdown": "Export Markdown",
+      "docx": "Export Word"
+    }
   },
   "settings": {
     "title": "Settings",
@@ -662,6 +681,29 @@
       "mac": "macOS",
       "windows": "Windows",
       "linux": "Linux"
+    }
+  },
+  "about": {
+    "appName": "AnvilNote",
+    "version": "Version {version}",
+    "description": "Forge your ideas into notes.\nAn offline-first writing app with built-in Typst typesetting and PDF export.",
+    "tabs": {
+      "about": "About",
+      "fonts": "Fonts",
+      "dependencies": "Licenses"
+    },
+    "fontsTab": {
+      "hint": "All fonts bundled with AnvilNote and their licenses.",
+      "family": "Font family",
+      "license": "License",
+      "source": "Source"
+    },
+    "dependenciesTab": {
+      "hint": "Open-source packages used by AnvilNote and their licenses.",
+      "name": "Package",
+      "license": "License",
+      "source": "Link",
+      "projectLink": "Project homepage"
     }
   }
 }

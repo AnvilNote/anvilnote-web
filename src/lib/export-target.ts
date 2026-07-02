@@ -117,15 +117,18 @@ export type WriteResult = { ok: true; path: string } | { ok: false };
 
 /**
  * Write a file (PDF, Markdown, zip backup, …) into
- * "<chosen folder>/AnvilNote/<fileName>". `interactive` must be true when
- * called from a user gesture (re-grants permission across sessions). Returns
- * ok:false when no usable target exists so the caller can fall back to a
- * download.
+ * "<chosen folder>/AnvilNote/[<subfolder>/]<fileName>". `subfolder` nests the
+ * file one level deeper — callers use it for the document's project name (or
+ * "unfiled") so exports land pre-organized instead of all dumped flat.
+ * `interactive` must be true when called from a user gesture (re-grants
+ * permission across sessions). Returns ok:false when no usable target exists
+ * so the caller can fall back to a download.
  */
 export async function writeFileToTarget(
   blob: Blob,
   fileName: string,
   interactive: boolean,
+  subfolder?: string,
 ): Promise<WriteResult> {
   let dir: FileSystemDirectoryHandle | null;
   try {
@@ -136,12 +139,18 @@ export async function writeFileToTarget(
   if (!dir) return { ok: false };
   if (!(await ensurePermission(dir, interactive))) return { ok: false };
 
-  const subDir = await dir.getDirectoryHandle(SUBFOLDER, { create: true });
-  const fileHandle = await subDir.getFileHandle(fileName, { create: true });
+  let targetDir = await dir.getDirectoryHandle(SUBFOLDER, { create: true });
+  const pathParts = [dir.name, SUBFOLDER];
+  if (subfolder) {
+    targetDir = await targetDir.getDirectoryHandle(subfolder, { create: true });
+    pathParts.push(subfolder);
+  }
+  const fileHandle = await targetDir.getFileHandle(fileName, { create: true });
   const writable = await fileHandle.createWritable();
   await writable.write(blob);
   await writable.close();
-  return { ok: true, path: `${dir.name}/${SUBFOLDER}/${fileName}` };
+  pathParts.push(fileName);
+  return { ok: true, path: pathParts.join("/") };
 }
 
 export type DeliverResult =
@@ -152,13 +161,17 @@ export type DeliverResult =
  * Deliver any exported file: write it into the user's chosen export folder
  * via `writeFileToTarget` when one is set, otherwise fall back to a normal
  * browser download. Shared by PDF export and the Markdown/zip backup export.
+ * `subfolder` (e.g. the document's project name) nests it one level deeper;
+ * ignored for the plain-download fallback since browsers can't create
+ * folders from a click-to-download anchor.
  */
 export async function deliverFile(
   blob: Blob,
   fileName: string,
+  subfolder?: string,
 ): Promise<DeliverResult> {
   // Called from a click handler, so permission prompts are allowed.
-  const written = await writeFileToTarget(blob, fileName, true);
+  const written = await writeFileToTarget(blob, fileName, true, subfolder);
   if (written.ok) {
     return { kind: "folder", fileName, path: written.path };
   }

@@ -10,9 +10,11 @@ import { LocaleSwitcher } from "@/components/app/locale-switcher";
 import { ThemeToggle } from "@/components/app/theme-toggle";
 import { useUiStore } from "@/lib/stores/ui-store";
 import { useDocumentStore } from "@/lib/stores/document-store";
+import { useProjectStore } from "@/lib/stores/project-store";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import { getApiBaseUrl } from "@/lib/api";
 import { deliverPdf } from "@/lib/export-pdf";
+import { resolveExportFolder } from "@/lib/export-folder";
 
 export function AppTopbar() {
   const t = useTranslations();
@@ -24,6 +26,7 @@ export function AppTopbar() {
   const renderDocument = useDocumentStore((s) => s.renderDocument);
   const saveStateById = useDocumentStore((s) => s.saveStateById);
   const renderingById = useDocumentStore((s) => s.renderingById);
+  const projects = useProjectStore((s) => s.projects);
   const settings = useSettingsStore();
 
   const documentId =
@@ -46,6 +49,7 @@ export function AppTopbar() {
         const delivered = await deliverPdf(
           `${getApiBaseUrl()}${result.pdfUrl}`,
           activeDoc.title,
+          resolveExportFolder(activeDoc, projects, t("projects.unfiled")),
         );
         toast.success(
           delivered.kind === "folder"

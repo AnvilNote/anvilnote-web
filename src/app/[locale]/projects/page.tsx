@@ -1,11 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { ChevronRight, FileText, FolderPlus, Plus } from "lucide-react";
+import { ChevronRight, FileText, FolderPlus, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +30,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Link, useRouter } from "@/lib/i18n/navigation";
+import { fuzzyMatch } from "@/lib/search/fuzzy";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useProjectStore } from "@/lib/stores/project-store";
 import { useTemplatesStore } from "@/lib/stores/templates-store";
@@ -47,6 +63,27 @@ export default function ProjectsPage() {
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [nameDraft, setNameDraft] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<AnvilProject | null>(null);
+
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<"newest" | "oldest">("newest");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
+
+  const filteredProjects = useMemo(() => {
+    const filtered = projects.filter((p) => fuzzyMatch(query, p.name));
+    const sorted = [...filtered].sort((a, b) => {
+      const diff = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      return sort === "newest" ? -diff : diff;
+    });
+    return sorted;
+  }, [projects, query, sort]);
+
+  const pageCount = Math.max(1, Math.ceil(filteredProjects.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const pagedProjects = filteredProjects.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
 
   function toggle(id: string) {
     setExpanded((prev) => {
@@ -131,7 +168,7 @@ export default function ProjectsPage() {
       </div>
 
       <p className="mt-6 text-xs text-muted-foreground">
-        {t("projects.count", { count: projects.length })}
+        {t("projects.count", { count: filteredProjects.length })}
       </p>
 
       {projects.length === 0 ? (
@@ -146,31 +183,110 @@ export default function ProjectsPage() {
           </Button>
         </div>
       ) : (
-        <ul className="mt-4 divide-y rounded-xl border">
-          {projects.map((project) => {
-            const docs = documents.filter((doc) => doc.projectId === project.id);
-            return (
-              <ProjectListItem
-                key={project.id}
-                project={project}
-                docs={docs}
-                isExpanded={expanded.has(project.id)}
-                isRenaming={renamingId === project.id}
-                nameDraft={nameDraft}
-                onToggle={() => toggle(project.id)}
-                onStartRename={() => startRename(project)}
-                onNameDraftChange={setNameDraft}
-                onCommitRename={commitRename}
-                onCancelRename={() => setRenamingId(null)}
-                onIconChange={(icon) => void updateProject(project.id, { icon })}
-                onNewDoc={() => void handleNewDocIn(project.id)}
-                onDelete={() => setDeleteTarget(project)}
-                onExport={() => void handleExportProject(docs)}
-                onDropDocument={(documentId) => void moveDocumentToProject(documentId, project.id)}
+        <>
+          <div className="mt-3 flex items-center gap-2">
+            <div className="relative w-1/2">
+              <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setPage(1);
+                }}
+                placeholder={t("common.search")}
+                className="rounded-none border-0 border-b pl-8 focus-visible:border-b-ring focus-visible:ring-0"
               />
-            );
-          })}
-        </ul>
+            </div>
+            <Select
+              value={sort}
+              onValueChange={(v) => {
+                setSort(v as "newest" | "oldest");
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="ml-auto w-40 shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">{t("common.sortNewest")}</SelectItem>
+                <SelectItem value="oldest">{t("common.sortOldest")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {filteredProjects.length === 0 ? (
+            <p className="mt-8 text-center text-sm text-muted-foreground">
+              {t("common.noResults")}
+            </p>
+          ) : (
+            <ul className="mt-4 divide-y rounded-xl border">
+              {pagedProjects.map((project) => {
+                const docs = documents.filter((doc) => doc.projectId === project.id);
+                return (
+                  <ProjectListItem
+                    key={project.id}
+                    project={project}
+                    docs={docs}
+                    isExpanded={expanded.has(project.id)}
+                    isRenaming={renamingId === project.id}
+                    nameDraft={nameDraft}
+                    onToggle={() => toggle(project.id)}
+                    onStartRename={() => startRename(project)}
+                    onNameDraftChange={setNameDraft}
+                    onCommitRename={commitRename}
+                    onCancelRename={() => setRenamingId(null)}
+                    onIconChange={(icon) => void updateProject(project.id, { icon })}
+                    onNewDoc={() => void handleNewDocIn(project.id)}
+                    onDelete={() => setDeleteTarget(project)}
+                    onExport={() => void handleExportProject(docs)}
+                    onDropDocument={(documentId) => void moveDocumentToProject(documentId, project.id)}
+                  />
+                );
+              })}
+            </ul>
+          )}
+
+          {pageCount > 1 ? (
+            <Pagination className="mt-6">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setPage((p) => Math.max(1, p - 1));
+                    }}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => (
+                  <PaginationItem key={p}>
+                    <PaginationLink
+                      href="#"
+                      isActive={p === currentPage}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setPage(p);
+                      }}
+                    >
+                      {p}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setPage((p) => Math.min(pageCount, p + 1));
+                    }}
+                    className={currentPage === pageCount ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          ) : null}
+        </>
       )}
 
       <Dialog

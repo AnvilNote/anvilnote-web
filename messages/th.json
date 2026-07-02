@@ -60,7 +60,8 @@
     "projects": "โปรเจกต์",
     "templates": "เทมเพลต",
     "recent": "ล่าสุด",
-    "settings": "การตั้งค่า"
+    "settings": "การตั้งค่า",
+    "about": "เกี่ยวกับ"
   },
   "topbar": {
     "search": "ค้นหาหรือพิมพ์คำสั่ง",
@@ -78,7 +79,12 @@
     "close": "ปิด",
     "none": "ไม่มี",
     "optional": "ไม่บังคับ",
-    "required": "จำเป็น"
+    "required": "จำเป็น",
+    "showMore": "แสดงเพิ่มเติม",
+    "search": "ค้นหา",
+    "sortNewest": "ใหม่สุดก่อน",
+    "sortOldest": "เก่าสุดก่อน",
+    "noResults": "ไม่พบผลลัพธ์ที่ตรงกัน"
   },
   "editor": {
     "untitled": "เอกสารไม่มีชื่อ",
@@ -233,7 +239,8 @@
     "defaultTitle": "โน้ตไม่มีชื่อ",
     "defaultHeading": "การบรรยายเริ่มต้นที่นี่",
     "defaultBody": "เริ่มเขียนโน้ตของคุณที่นี่",
-    "exportMarkdown": "ส่งออกเป็น Markdown"
+    "exportMarkdown": "ส่งออกเป็น Markdown",
+    "filterAll": "ทุกโปรเจกต์"
   },
   "projects": {
     "title": "โปรเจกต์",
@@ -385,6 +392,7 @@
       "paperSize": "ขนาดกระดาษ",
       "lang": "ภาษา",
       "colorlinks": "ลิงก์มีสี",
+      "linkColor": "สีลิงก์",
       "primaryLang": "ภาษาหลัก",
       "titleFont": "ฟอนต์ชื่อเรื่อง",
       "bodyFont": "ฟอนต์เนื้อหา",
@@ -472,7 +480,18 @@
     "button": "ส่งออก PDF",
     "exporting": "กำลังส่งออก…",
     "payloadTitle": "ข้อมูลที่ส่งออก",
-    "payloadHint": "นี่คือข้อมูลที่จะส่งเมื่อส่งออก"
+    "payloadHint": "นี่คือข้อมูลที่จะส่งเมื่อส่งออก",
+    "format": "รูปแบบ",
+    "formats": {
+      "pdf": "PDF",
+      "markdown": "Markdown",
+      "docx": "Word (.docx)"
+    },
+    "buttons": {
+      "pdf": "ส่งออก PDF",
+      "markdown": "ส่งออก Markdown",
+      "docx": "ส่งออก Word"
+    }
   },
   "settings": {
     "title": "การตั้งค่า",
@@ -662,6 +681,29 @@
       "mac": "macOS",
       "windows": "Windows",
       "linux": "Linux"
+    }
+  },
+  "about": {
+    "appName": "AnvilNote",
+    "version": "เวอร์ชัน {version}",
+    "description": "หลอมความคิดให้เป็นบันทึก\nแอปเขียนแบบออฟไลน์ก่อน พร้อมการจัดหน้าด้วย Typst และส่งออก PDF ในตัว",
+    "tabs": {
+      "about": "เกี่ยวกับ",
+      "fonts": "แบบอักษร",
+      "dependencies": "สัญญาอนุญาต"
+    },
+    "fontsTab": {
+      "hint": "แบบอักษรทั้งหมดที่มากับ AnvilNote และสัญญาอนุญาตของแต่ละแบบ",
+      "family": "ตระกูลแบบอักษร",
+      "license": "สัญญาอนุญาต",
+      "source": "แหล่งที่มา"
+    },
+    "dependenciesTab": {
+      "hint": "แพ็กเกจโอเพนซอร์สที่ AnvilNote ใช้และสัญญาอนุญาตของแต่ละแพ็กเกจ",
+      "name": "แพ็กเกจ",
+      "license": "สัญญาอนุญาต",
+      "source": "ลิงก์",
+      "projectLink": "หน้าโปรเจกต์"
     }
   }
 }
