@@ -365,6 +365,14 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         className="anvil-editor mx-auto w-full max-w-[820px] flex-1 pl-12 pr-3 pb-24 lg:pb-32"
         onClick={(event) => {
           if (!editor) return;
+          // The footnotes panel is `position: fixed` (pinned to the bottom
+          // of the column) but is still a real DOM descendant of this
+          // wrapper, so clicks inside it bubble up here too. Without this
+          // guard every click meant to place the cursor in a footnote got
+          // hijacked and sent to the end of the body instead.
+          if ((event.target as HTMLElement).closest(".anvil-footnotes-panel")) {
+            return;
+          }
 
           const doc = editor.state.doc;
           const last = doc.lastChild;
