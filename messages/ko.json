@@ -22,7 +22,15 @@
       },
       "toolbar": {
         "title": "서식 도구 모음",
-        "body": "도구 모음으로 텍스트 서식을 지정하고 제목, 목록, 표, 이미지, 수식을 추가하세요."
+        "body": "툴바는 에디터의 거의 모든 서식 기능을 포함합니다. 섹션별로 소개할게요:",
+        "groups": [
+          "제목과 문단",
+          "텍스트 스타일",
+          "목록",
+          "블록",
+          "수식",
+          "실행 취소 / 다시 실행"
+        ]
       },
       "slash": {
         "title": "슬래시 명령",
@@ -42,7 +50,30 @@
       }
     },
     "cheatSheet": "치트 시트",
-    "helpMenu": "도움말"
+    "helpMenu": "도움말",
+    "itemHints": {
+      "paragraph": "일반 문단으로 되돌리기",
+      "heading1": "가장 큰 제목 레벨",
+      "heading2": "중간 제목 레벨",
+      "heading3": "가장 작은 제목 레벨",
+      "bold": "텍스트를 굵게",
+      "italic": "텍스트를 기울임꼴로",
+      "footnote": "각주 추가, 하단에 고정 표시",
+      "strike": "취소선 추가",
+      "code": "인라인 코드로 표시",
+      "bulletList": "순서 없는 목록",
+      "orderedList": "번호 매긴 목록",
+      "blockquote": "문단 인용",
+      "callout": "눈에 띄는 콜아웃 삽입",
+      "codeBlock": "여러 줄 코드 블록 삽입",
+      "link": "텍스트에 하이퍼링크 추가",
+      "table": "표 삽입",
+      "image": "이미지 삽입",
+      "inlineMath": "인라인 수식 삽입",
+      "blockMath": "독립 표시 수식 삽입",
+      "undo": "마지막 작업 실행 취소",
+      "redo": "실행 취소한 작업 다시 실행"
+    }
   },
   "onboarding": {
     "chooseTheme": "색상 테마 선택",
@@ -136,6 +167,7 @@
       "heading3": "제목 3",
       "bold": "굵게",
       "italic": "기울임",
+      "footnote": "각주",
       "strike": "취소선",
       "code": "인라인 코드",
       "bulletList": "글머리 기호 목록",
@@ -222,6 +254,11 @@
         "example": "예시",
         "quote": "인용"
       }
+    },
+    "footnotes": {
+      "title": "각주",
+      "expand": "각주 펼치기",
+      "collapse": "각주 접기"
     }
   },
   "documents": {
@@ -360,6 +397,10 @@
       "rubber-article": {
         "name": "Rubber Article",
         "description": "고전적인 스타일의 논문에 적합합니다. 저자를 추가하고 제목 번호 매기기를 켤 수 있습니다."
+      },
+      "toffee-tufte": {
+        "name": "Toffee Tufte",
+        "description": "전통적인 각주 대신 여백 사이드노트를 사용하는 Tufte 스타일 학술 보고서."
       }
     },
     "fields": {
@@ -409,7 +450,10 @@
       "semester": "학기",
       "preface": "서문",
       "numberChapters": "챕터 번호",
-      "numberedHeadings": "제목 번호"
+      "numberedHeadings": "제목 번호",
+      "fullWidth": "전체 너비 모드",
+      "header": "머리글",
+      "footer": "바닥글"
     },
     "placeholders": {
       "course": "예: 실해석학",

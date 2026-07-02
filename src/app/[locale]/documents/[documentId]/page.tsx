@@ -33,8 +33,21 @@ export default function DocumentEditorPage({
 
   return (
     <div className="flex min-h-0 flex-1">
-      <div className="min-w-0 flex-1 overflow-y-auto">
-        <AnvilEditor key={documentId} documentId={documentId} />
+      {/* `transform-gpu` (translateZ(0)) is a no-op visually, but it makes
+          this the containing block for any `position: fixed` descendant —
+          FootnotesNodeView uses that to pin the footnotes panel to the
+          bottom of *this column* instead of the whole viewport, without any
+          JS measurement, and without ever detaching from the ProseMirror
+          contentEditable tree (portaling it out, an earlier version of
+          this, broke editing entirely). It has to live on a DIFFERENT
+          element than the one that scrolls: an element that both creates a
+          fixed-position containing block AND clips overflow clips its own
+          fixed descendants too, which just made the panel disappear/collapse
+          into the flow instead of staying pinned. */}
+      <div className="flex min-w-0 flex-1 flex-col transform-gpu">
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <AnvilEditor key={documentId} documentId={documentId} />
+        </div>
       </div>
       <RightPanel documentId={documentId} />
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { HelpCircle, RotateCcw, SquareChartGantt } from "lucide-react";
+import { GraduationCap, HelpCircle, SquareChartGantt } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTourStore } from "@/lib/stores/tour-store";
 import { CheatSheetModal } from "@/components/tour/cheat-sheet-modal";
@@ -45,7 +45,7 @@ export function TourReplayButton() {
             "translate-y-2",
           )}
         >
-          <RotateCcw className="size-4" />
+          <GraduationCap className="size-4" />
         </button>
         <button
           type="button"

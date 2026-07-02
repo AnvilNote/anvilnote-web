@@ -27,6 +27,7 @@ import {
   Rows3,
   Sigma,
   SquareSigma,
+  SquareAsterisk,
   Strikethrough,
   Table as TableIcon,
   Undo2,
@@ -172,148 +173,165 @@ export function TiptapToolbar({
 
   return (
     <div data-tour="toolbar" className="flex items-center gap-0.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden lg:flex-wrap lg:justify-between lg:gap-0.5 lg:overflow-visible lg:pb-0">
-      <ToolbarButton
-        icon={Pilcrow}
-        label={t("paragraph")}
-        active={s.paragraph}
-        onClick={() => editor.chain().focus().setParagraph().run()}
-      />
-      <ToolbarButton
-        icon={Heading1}
-        label={t("heading1")}
-        active={s.h1}
-        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-      />
-      <ToolbarButton
-        icon={Heading2}
-        label={t("heading2")}
-        active={s.h2}
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-      />
-      <ToolbarButton
-        icon={Heading3}
-        label={t("heading3")}
-        active={s.h3}
-        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-      />
+      <div data-tour-toolbar-group="0" className="flex items-center gap-0.5">
+        <ToolbarButton
+          icon={Pilcrow}
+          label={t("paragraph")}
+          active={s.paragraph}
+          onClick={() => editor.chain().focus().setParagraph().run()}
+        />
+        <ToolbarButton
+          icon={Heading1}
+          label={t("heading1")}
+          active={s.h1}
+          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+        />
+        <ToolbarButton
+          icon={Heading2}
+          label={t("heading2")}
+          active={s.h2}
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        />
+        <ToolbarButton
+          icon={Heading3}
+          label={t("heading3")}
+          active={s.h3}
+          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+        />
+      </div>
 
       <Divider />
 
-      <ToolbarButton
-        icon={Bold}
-        label={t("bold")}
-        active={s.bold}
-        onClick={() => editor.chain().focus().toggleBold().run()}
-      />
-      <ToolbarButton
-        icon={Italic}
-        label={t("italic")}
-        active={s.italic}
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-      />
-      <ToolbarButton
-        icon={Strikethrough}
-        label={t("strike")}
-        active={s.strike}
-        onClick={() => editor.chain().focus().toggleStrike().run()}
-      />
-      <ToolbarButton
-        icon={Code}
-        label={t("code")}
-        active={s.code}
-        onClick={() => editor.chain().focus().toggleCode().run()}
-      />
+      <div data-tour-toolbar-group="1" className="flex items-center gap-0.5">
+        <ToolbarButton
+          icon={Bold}
+          label={t("bold")}
+          active={s.bold}
+          onClick={() => editor.chain().focus().toggleBold().run()}
+        />
+        <ToolbarButton
+          icon={Italic}
+          label={t("italic")}
+          active={s.italic}
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+        />
+        <ToolbarButton
+          icon={SquareAsterisk}
+          label={t("footnote")}
+          onClick={() => editor.chain().focus().addFootnote().run()}
+        />
+        <ToolbarButton
+          icon={Strikethrough}
+          label={t("strike")}
+          active={s.strike}
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+        />
+        <ToolbarButton
+          icon={Code}
+          label={t("code")}
+          active={s.code}
+          onClick={() => editor.chain().focus().toggleCode().run()}
+        />
+      </div>
 
       <Divider />
 
-      <ToolbarButton
-        icon={List}
-        label={t("bulletList")}
-        active={s.bulletList}
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-      />
-      <ToolbarButton
-        icon={ListOrdered}
-        label={t("orderedList")}
-        active={s.orderedList}
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-      />
+      <div data-tour-toolbar-group="2" className="flex items-center gap-0.5">
+        <ToolbarButton
+          icon={List}
+          label={t("bulletList")}
+          active={s.bulletList}
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+        />
+        <ToolbarButton
+          icon={ListOrdered}
+          label={t("orderedList")}
+          active={s.orderedList}
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        />
+      </div>
 
       <Divider />
 
-      <ToolbarButton
-        icon={Quote}
-        label={t("blockquote")}
-        active={s.blockquote}
-        onClick={() => editor.chain().focus().toggleBlockquote().run()}
-      />
-      <ToolbarButton
-        icon={MessageSquareWarning}
-        label={t("callout")}
-        active={s.callout}
-        onClick={() =>
-          insertCallout(
-            editor,
-            DEFAULT_CALLOUT_KIND,
-            tCallout(`kinds.${DEFAULT_CALLOUT_KIND}` as never),
-          )
-        }
-      />
-      <ToolbarButton
-        icon={Code2}
-        label={t("codeBlock")}
-        active={s.codeBlock}
-        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-      />
-      <ToolbarButton
-        icon={Link2}
-        label={t("link")}
-        active={s.link}
-        onClick={onEditLink}
-      />
-      <TableSizePicker
-        label={t("table")}
-        onPick={(rows, cols) =>
-          editor
-            .chain()
-            .focus()
-            .insertTable({ rows, cols, withHeaderRow: true })
-            .run()
-        }
-      />
-      <ToolbarButton
-        icon={ImagePlus}
-        label={t("image")}
-        onClick={() => pickAndInsertImage(editor)}
-      />
+      <div data-tour-toolbar-group="3" className="flex items-center gap-0.5">
+        <ToolbarButton
+          icon={Quote}
+          label={t("blockquote")}
+          active={s.blockquote}
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+        />
+        <ToolbarButton
+          icon={MessageSquareWarning}
+          label={t("callout")}
+          active={s.callout}
+          onClick={() =>
+            insertCallout(
+              editor,
+              DEFAULT_CALLOUT_KIND,
+              tCallout(`kinds.${DEFAULT_CALLOUT_KIND}` as never),
+            )
+          }
+        />
+        <ToolbarButton
+          icon={Code2}
+          label={t("codeBlock")}
+          active={s.codeBlock}
+          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+        />
+        <ToolbarButton
+          icon={Link2}
+          label={t("link")}
+          active={s.link}
+          onClick={onEditLink}
+        />
+        <TableSizePicker
+          label={t("table")}
+          onPick={(rows, cols) =>
+            editor
+              .chain()
+              .focus()
+              .insertTable({ rows, cols, withHeaderRow: true })
+              .run()
+          }
+        />
+        <ToolbarButton
+          icon={ImagePlus}
+          label={t("image")}
+          onClick={() => pickAndInsertImage(editor)}
+        />
+      </div>
 
       <Divider />
 
-      <ToolbarButton
-        icon={Sigma}
-        label={t("inlineMath")}
-        onClick={() => onInsertMath("inline")}
-      />
-      <ToolbarButton
-        icon={SquareSigma}
-        label={t("blockMath")}
-        onClick={() => onInsertMath("block")}
-      />
+      <div data-tour-toolbar-group="4" className="flex items-center gap-0.5">
+        <ToolbarButton
+          icon={Sigma}
+          label={t("inlineMath")}
+          onClick={() => onInsertMath("inline")}
+        />
+        <ToolbarButton
+          icon={SquareSigma}
+          label={t("blockMath")}
+          onClick={() => onInsertMath("block")}
+        />
+      </div>
 
       <Divider />
 
-      <ToolbarButton
-        icon={Undo2}
-        label={t("undo")}
-        disabled={!s.canUndo}
-        onClick={() => editor.chain().focus().undo().run()}
-      />
-      <ToolbarButton
-        icon={Redo2}
-        label={t("redo")}
-        disabled={!s.canRedo}
-        onClick={() => editor.chain().focus().redo().run()}
-      />
+      <div data-tour-toolbar-group="5" className="flex items-center gap-0.5">
+        <ToolbarButton
+          icon={Undo2}
+          label={t("undo")}
+          disabled={!s.canUndo}
+          onClick={() => editor.chain().focus().undo().run()}
+        />
+        <ToolbarButton
+          icon={Redo2}
+          label={t("redo")}
+          disabled={!s.canRedo}
+          onClick={() => editor.chain().focus().redo().run()}
+        />
+      </div>
 
       {s.inTable ? (
         <>

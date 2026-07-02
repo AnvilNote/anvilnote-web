@@ -22,7 +22,15 @@
       },
       "toolbar": {
         "title": "Formatting toolbar",
-        "body": "Use the toolbar to format text and add headings, lists, tables, images and math."
+        "body": "The toolbar covers almost every formatting feature — grouped by section:",
+        "groups": [
+          "Headings & paragraph",
+          "Text style",
+          "Lists",
+          "Blocks",
+          "Math",
+          "Undo / redo"
+        ]
       },
       "slash": {
         "title": "Slash commands",
@@ -42,7 +50,30 @@
       }
     },
     "cheatSheet": "Cheat sheet",
-    "helpMenu": "Help"
+    "helpMenu": "Help",
+    "itemHints": {
+      "paragraph": "Back to a plain paragraph",
+      "heading1": "Largest heading level",
+      "heading2": "Medium heading level",
+      "heading3": "Smallest heading level",
+      "bold": "Makes text bold",
+      "italic": "Makes text italic",
+      "footnote": "Adds a footnote, pinned to the bottom",
+      "strike": "Adds a strikethrough",
+      "code": "Marks as inline code",
+      "bulletList": "Unordered list",
+      "orderedList": "Numbered list",
+      "blockquote": "Quotes a passage",
+      "callout": "Inserts a highlighted callout box",
+      "codeBlock": "Inserts a multi-line code block",
+      "link": "Turns text into a hyperlink",
+      "table": "Inserts a table",
+      "image": "Inserts an image",
+      "inlineMath": "Inserts an inline formula",
+      "blockMath": "Inserts a display formula",
+      "undo": "Undoes the last action",
+      "redo": "Redoes the undone action"
+    }
   },
   "onboarding": {
     "chooseTheme": "Choose your color theme",
@@ -136,6 +167,7 @@
       "heading3": "Heading 3",
       "bold": "Bold",
       "italic": "Italic",
+      "footnote": "Footnote",
       "strike": "Strikethrough",
       "code": "Inline code",
       "bulletList": "Bullet list",
@@ -222,6 +254,11 @@
         "example": "Example",
         "quote": "Quote"
       }
+    },
+    "footnotes": {
+      "title": "Footnotes",
+      "expand": "Expand footnotes",
+      "collapse": "Collapse footnotes"
     }
   },
   "documents": {
@@ -360,6 +397,10 @@
       "rubber-article": {
         "name": "Rubber Article",
         "description": "Good for classic-style articles; add authors and turn on numbered headings."
+      },
+      "toffee-tufte": {
+        "name": "Toffee Tufte",
+        "description": "Tufte-style academic report with margin sidenotes instead of traditional footnotes."
       }
     },
     "fields": {
@@ -409,7 +450,10 @@
       "semester": "Semester",
       "preface": "Preface",
       "numberChapters": "Number chapters",
-      "numberedHeadings": "Numbered headings"
+      "numberedHeadings": "Numbered headings",
+      "fullWidth": "Full-width mode",
+      "header": "Header",
+      "footer": "Footer"
     },
     "placeholders": {
       "course": "e.g. Real Analysis",

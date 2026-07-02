@@ -7,7 +7,17 @@ import type { JSONContent } from "@tiptap/core";
 // anything else.
 
 type Mark = { type: string; attrs?: Record<string, unknown> };
-type InlineNode = { type: "text"; text: string; marks?: Mark[] } | { type: "hardBreak" } | { type: "inlineMath"; attrs: { latex: string } };
+// "footnoteRef" is a temporary placeholder, not the final Tiptap node shape —
+// resolveFootnotes() (called once, at the top of markdownToTiptapDoc) walks
+// the parsed tree and replaces each one with a real `footnoteReference` node
+// (data-id + referenceNumber), since assigning those requires seeing the
+// whole document first (order determines numbering, and the matching
+// `[^label]: ...` definition may appear anywhere in the source).
+type InlineNode =
+  | { type: "text"; text: string; marks?: Mark[] }
+  | { type: "hardBreak" }
+  | { type: "inlineMath"; attrs: { latex: string } }
+  | { type: "footnoteRef"; label: string };
 
 function withMark(nodes: InlineNode[], mark: Mark): InlineNode[] {
   return nodes.map((node) =>
@@ -22,6 +32,7 @@ const INLINE_RULES: Array<{
   build: (m: RegExpMatchArray) => InlineNode[];
 }> = [
   { re: /^\$([^$\n]+)\$/, build: (m) => [{ type: "inlineMath", attrs: { latex: m[1] } }] },
+  { re: /^\[\^([^\]]+)\]/, build: (m) => [{ type: "footnoteRef", label: m[1] }] },
   {
     re: /^\*\*\*(.+?)\*\*\*/,
     build: (m) => withMark(withMark(parseInline(m[1]), { type: "bold" }), { type: "italic" }),
@@ -83,6 +94,48 @@ function splitBlocks(markdown: string): string[] {
     .split(/\n{2,}/)
     .map((b) => b.trimEnd())
     .filter((b) => b.trim().length > 0);
+}
+
+// Matches a footnote definition block as emitted by tiptap-to-markdown.ts's
+// exporter: `[^1]: content` (single line — the exporter always collapses a
+// footnote's content to one line, so that's the only shape parsed back).
+const FOOTNOTE_DEF = /^\[\^([^\]]+)\]:\s*([\s\S]*)$/;
+
+// Recursively walks a parsed content tree, replacing each "footnoteRef"
+// placeholder (in document order) with a real `footnoteReference` node and
+// collecting the matching `footnote` node (from `defs`, keyed by the
+// original markdown label) into `footnotes`, out param via the closure.
+function resolveFootnotes(
+  nodes: JSONContent[],
+  defs: Map<string, InlineNode[]>,
+  footnotes: JSONContent[],
+): JSONContent[] {
+  return nodes.map((node) => {
+    if ((node as unknown as InlineNode).type === "footnoteRef") {
+      const label = (node as unknown as { label: string }).label;
+      const id = crypto.randomUUID();
+      const referenceNumber = String(footnotes.length + 1);
+      const defContent = defs.get(label);
+      footnotes.push({
+        type: "footnote",
+        attrs: { id: `fn:${referenceNumber}`, "data-id": id },
+        content: [
+          {
+            type: "paragraph",
+            content: defContent ? (defContent as unknown as JSONContent[]) : [],
+          },
+        ],
+      });
+      return {
+        type: "footnoteReference",
+        attrs: { "data-id": id, referenceNumber },
+      } satisfies JSONContent;
+    }
+    if (Array.isArray(node.content)) {
+      return { ...node, content: resolveFootnotes(node.content, defs, footnotes) };
+    }
+    return node;
+  });
 }
 
 function stripIndent(text: string, prefix: string): string {
@@ -264,8 +317,31 @@ function parseBlock(block: string): JSONContent | null {
 
 /** Parse a Markdown body (no frontmatter) into a Tiptap `doc` node. */
 export function markdownToTiptapDoc(markdown: string): JSONContent {
-  const content = splitBlocks(markdown)
+  const blocks = splitBlocks(markdown);
+
+  // Footnote definitions are their own blocks (separated by blank lines like
+  // everything else) but aren't real document content — pull them out before
+  // the regular block parse so they don't turn into stray paragraphs.
+  const defs = new Map<string, InlineNode[]>();
+  const contentBlocks: string[] = [];
+  for (const block of blocks) {
+    const m = FOOTNOTE_DEF.exec(block.trim());
+    if (m) {
+      defs.set(m[1], parseInline(m[2]));
+    } else {
+      contentBlocks.push(block);
+    }
+  }
+
+  const parsed = contentBlocks
     .map(parseBlock)
     .filter((n): n is JSONContent => n !== null);
+
+  const footnotes: JSONContent[] = [];
+  const content = resolveFootnotes(parsed, defs, footnotes);
+  if (footnotes.length > 0) {
+    content.push({ type: "footnotes", content: footnotes });
+  }
+
   return { type: "doc", content };
 }

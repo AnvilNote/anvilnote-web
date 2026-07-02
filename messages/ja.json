@@ -22,7 +22,15 @@
       },
       "toolbar": {
         "title": "書式ツールバー",
-        "body": "ツールバーで文字の書式、見出し、リスト、表、画像、数式を追加できます。"
+        "body": "ツールバーはエディタのほぼすべての書式機能をカバーしています。セクションごとに紹介します：",
+        "groups": [
+          "見出しと段落",
+          "テキストスタイル",
+          "リスト",
+          "ブロック",
+          "数式",
+          "元に戻す／やり直す"
+        ]
       },
       "slash": {
         "title": "スラッシュコマンド",
@@ -42,7 +50,30 @@
       }
     },
     "cheatSheet": "チートシート",
-    "helpMenu": "ヘルプ"
+    "helpMenu": "ヘルプ",
+    "itemHints": {
+      "paragraph": "通常の段落に戻す",
+      "heading1": "最大の見出しレベル",
+      "heading2": "中間の見出しレベル",
+      "heading3": "最小の見出しレベル",
+      "bold": "文字を太字にする",
+      "italic": "文字を斜体にする",
+      "footnote": "脚注を追加、下部に固定表示",
+      "strike": "取り消し線を追加",
+      "code": "インラインコードにする",
+      "bulletList": "箇条書きリスト",
+      "orderedList": "番号付きリスト",
+      "blockquote": "文章を引用する",
+      "callout": "目立つコールアウトを挿入",
+      "codeBlock": "複数行のコードブロックを挿入",
+      "link": "テキストにリンクを設定",
+      "table": "表を挿入",
+      "image": "画像を挿入",
+      "inlineMath": "インライン数式を挿入",
+      "blockMath": "独立した数式を挿入",
+      "undo": "直前の操作を元に戻す",
+      "redo": "元に戻した操作をやり直す"
+    }
   },
   "onboarding": {
     "chooseTheme": "カラーテーマを選択",
@@ -136,6 +167,7 @@
       "heading3": "見出し3",
       "bold": "太字",
       "italic": "斜体",
+      "footnote": "脚注",
       "strike": "取り消し線",
       "code": "インラインコード",
       "bulletList": "箇条書き",
@@ -222,6 +254,11 @@
         "example": "例",
         "quote": "引用"
       }
+    },
+    "footnotes": {
+      "title": "脚注",
+      "expand": "脚注を展開",
+      "collapse": "脚注を折りたたむ"
     }
   },
   "documents": {
@@ -360,6 +397,10 @@
       "rubber-article": {
         "name": "Rubber Article",
         "description": "クラシックな論文形式に。著者を追加し、見出し番号を有効にできます。"
+      },
+      "toffee-tufte": {
+        "name": "Toffee Tufte",
+        "description": "Tufte スタイルの学術レポート。従来の脚注の代わりに欄外注を使用。"
       }
     },
     "fields": {
@@ -409,7 +450,10 @@
       "semester": "学期",
       "preface": "序文",
       "numberChapters": "章番号",
-      "numberedHeadings": "見出し番号"
+      "numberedHeadings": "見出し番号",
+      "fullWidth": "全幅モード",
+      "header": "ヘッダー",
+      "footer": "フッター"
     },
     "placeholders": {
       "course": "例：実解析",

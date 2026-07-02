@@ -1,4 +1,6 @@
 import type { Editor } from "@tiptap/core";
+import { Extension } from "@tiptap/core";
+import { NodeSelection } from "@tiptap/pm/state";
 import katex from "katex";
 
 // Thin wrappers over the official @tiptap/extension-mathematics commands. The
@@ -56,3 +58,40 @@ export function isValidLatex(latex: string): boolean {
   if (!latex.trim()) return false;
   return renderMathPreview(latex, false).ok;
 }
+
+// blockMath is an atom node (no editable content, per @tiptap/extension-
+// mathematics) with no keyboard shortcuts of its own — pressing Enter while
+// it's selected, or right after one with nothing following it (e.g. it's
+// the last node in the document), otherwise does nothing. Insert a fresh
+// paragraph and move the cursor there, same escape-hatch pattern as
+// callout.ts's Shift-Enter (blockMath has no "content inside" for plain
+// Enter to conflict with, so it doesn't need the Shift modifier).
+export const BlockMathExit = Extension.create({
+  name: "blockMathExit",
+  addKeyboardShortcuts() {
+    return {
+      Enter: () => {
+        const { selection } = this.editor.state;
+        let afterPos: number | null = null;
+
+        if (selection instanceof NodeSelection && selection.node.type.name === "blockMath") {
+          afterPos = selection.to;
+        } else {
+          const { $from } = selection;
+          if ($from.nodeBefore?.type.name === "blockMath") {
+            afterPos = $from.pos;
+          }
+        }
+
+        if (afterPos === null) return false;
+
+        return this.editor
+          .chain()
+          .insertContentAt(afterPos, { type: "paragraph" })
+          .setTextSelection(afterPos + 1)
+          .focus()
+          .run();
+      },
+    };
+  },
+});

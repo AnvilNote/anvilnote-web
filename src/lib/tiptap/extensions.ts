@@ -1,5 +1,9 @@
 import type { Extensions } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
+import Document from "@tiptap/extension-document";
+import { ReactNodeViewRenderer } from "@tiptap/react";
+import { Footnotes, Footnote, FootnoteReference } from "tiptap-footnotes";
+import { FootnotesNodeView } from "@/components/editor/node-views/footnotes-node-view";
 import Placeholder from "@tiptap/extension-placeholder";
 import Typography from "@tiptap/extension-typography";
 import { Table, TableView } from "@tiptap/extension-table";
@@ -9,6 +13,7 @@ import TableCell from "@tiptap/extension-table-cell";
 import { TextStyle } from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import { Mathematics } from "@tiptap/extension-mathematics";
+import { BlockMathExit } from "@/lib/tiptap/math";
 import { AnvilCodeBlock } from "@/lib/tiptap/code-block";
 import { AnvilImage } from "@/lib/tiptap/image";
 import { AnvilCallout } from "@/lib/tiptap/callout";
@@ -175,6 +180,31 @@ const AnvilTable = Table.extend({
   },
 });
 
+// The footnotes list (tiptap-footnotes' `Footnotes` node) has to be a
+// trailing sibling of the document's regular content, not nested inside it —
+// hence the custom top-level Document schema instead of StarterKit's default
+// "block+". StarterKit's own `document` is disabled below to avoid a
+// duplicate-node-name registration.
+const AnvilDocument = Document.extend({
+  content: "block+ footnotes?",
+});
+
+// Pins itself to the bottom of the editor column via CSS — see
+// footnotes-node-view.tsx.
+const AnvilFootnotes = Footnotes.extend({
+  addNodeView() {
+    return ReactNodeViewRenderer(FootnotesNodeView);
+  },
+});
+
+// The package defaults a footnote's content to "paragraph+" (no block math,
+// code blocks, lists, etc.); widen it to also allow blockMath so users can
+// write display equations inside a footnote, matching what inlineMath
+// already allows for free (it's in paragraph's own "inline*" content).
+const AnvilFootnote = Footnote.configure({
+  content: "(paragraph | blockMath)+",
+});
+
 export type MathClickMode = "inline" | "block";
 
 export type BuildExtensionsOptions = {
@@ -201,12 +231,19 @@ export function buildExtensions({
       heading: { levels: [1, 2, 3] },
       // Replaced by CodeBlockLowlight below for syntax highlighting.
       codeBlock: false,
+      // Replaced by AnvilDocument below so the footnotes list can live as a
+      // trailing sibling of the document's regular content.
+      document: false,
       link: {
         openOnClick: false,
         autolink: true,
         HTMLAttributes: { rel: "noopener noreferrer", target: "_blank" },
       },
     }),
+    AnvilDocument,
+    AnvilFootnotes,
+    AnvilFootnote,
+    FootnoteReference,
     Placeholder.configure({ placeholder }),
     Typography,
     // TextStyle + Color back the per-block text color set from the block handle.
@@ -238,5 +275,6 @@ export function buildExtensions({
           onMathClick("block", pos, String(node.attrs.latex ?? "")),
       },
     }),
+    BlockMathExit,
   ];
 }

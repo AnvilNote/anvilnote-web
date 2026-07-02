@@ -22,7 +22,15 @@
       },
       "toolbar": {
         "title": "格式工具列",
-        "body": "用工具列設定文字格式，加入標題、清單、表格、圖片與數學式。"
+        "body": "工具列涵蓋文件裡幾乎所有格式功能，依區塊一次介紹給你：",
+        "groups": [
+          "標題與段落",
+          "文字樣式",
+          "清單",
+          "區塊",
+          "數學式",
+          "復原／重做"
+        ]
       },
       "slash": {
         "title": "斜線指令",
@@ -42,7 +50,30 @@
       }
     },
     "cheatSheet": "小抄",
-    "helpMenu": "說明"
+    "helpMenu": "說明",
+    "itemHints": {
+      "paragraph": "恢復成一般段落",
+      "heading1": "最大的標題層級",
+      "heading2": "中間的標題層級",
+      "heading3": "最小的標題層級",
+      "bold": "讓文字變粗",
+      "italic": "讓文字傾斜",
+      "footnote": "插入腳注，固定顯示在底部",
+      "strike": "加上刪除線",
+      "code": "標記為行內程式碼",
+      "bulletList": "無序項目清單",
+      "orderedList": "有編號的清單",
+      "blockquote": "引用一段文字",
+      "callout": "插入顯眼的提示框",
+      "codeBlock": "插入多行程式碼區塊",
+      "link": "幫文字加上超連結",
+      "table": "插入表格",
+      "image": "插入圖片",
+      "inlineMath": "插入行內數學公式",
+      "blockMath": "插入獨立顯示的公式",
+      "undo": "復原上一步",
+      "redo": "取消復原"
+    }
   },
   "onboarding": {
     "chooseTheme": "選擇主題配色",
@@ -136,6 +167,7 @@
       "heading3": "標題 3",
       "bold": "粗體",
       "italic": "斜體",
+      "footnote": "腳注",
       "strike": "刪除線",
       "code": "行內程式碼",
       "bulletList": "無序清單",
@@ -222,6 +254,11 @@
         "example": "範例",
         "quote": "引言"
       }
+    },
+    "footnotes": {
+      "title": "腳注",
+      "expand": "展開腳注區",
+      "collapse": "收合腳注區"
     }
   },
   "documents": {
@@ -360,6 +397,10 @@
       "rubber-article": {
         "name": "Rubber Article",
         "description": "適合經典風格論文，可填寫作者並開啟章節編號。"
+      },
+      "toffee-tufte": {
+        "name": "Toffee Tufte",
+        "description": "Tufte 風格學術報告範本，側邊註解取代傳統腳注。"
       }
     },
     "fields": {
@@ -409,7 +450,10 @@
       "semester": "學期",
       "preface": "序言",
       "numberChapters": "章節編號",
-      "numberedHeadings": "標題編號"
+      "numberedHeadings": "標題編號",
+      "fullWidth": "全寬模式",
+      "header": "頁首",
+      "footer": "頁尾"
     },
     "placeholders": {
       "course": "例如：英文課",

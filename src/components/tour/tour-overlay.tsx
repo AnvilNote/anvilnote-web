@@ -3,7 +3,31 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Editor } from "@tiptap/core";
+import type { ComponentType } from "react";
 import { useTranslations } from "next-intl";
+import {
+  Bold,
+  Code,
+  Code2,
+  Heading1,
+  Heading2,
+  Heading3,
+  ImagePlus,
+  Italic,
+  Link2,
+  List,
+  ListOrdered,
+  MessageSquareWarning,
+  Pilcrow,
+  Quote,
+  Redo2,
+  Sigma,
+  SquareAsterisk,
+  SquareSigma,
+  Strikethrough,
+  Table as TableIcon,
+  Undo2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "@/lib/i18n/navigation";
 import { useDocumentStore } from "@/lib/stores/document-store";
@@ -16,6 +40,48 @@ import {
   useTourStore,
   type TourStepId,
 } from "@/lib/stores/tour-store";
+
+// Mirrors tiptap-toolbar.tsx's button groups exactly (same icons, same
+// order, same data-tour-toolbar-group="N" wrapper each icon's group
+// spotlights against) and reuses its i18n keys (editor.toolbar.*) so each
+// item's label is guaranteed to match its real tooltip in the toolbar
+// itself, rather than a second hand-written copy that could drift.
+type ToolbarItem = { icon: ComponentType<{ className?: string }>; key: string };
+const TOOLBAR_GROUPS: ToolbarItem[][] = [
+  [
+    { icon: Pilcrow, key: "paragraph" },
+    { icon: Heading1, key: "heading1" },
+    { icon: Heading2, key: "heading2" },
+    { icon: Heading3, key: "heading3" },
+  ],
+  [
+    { icon: Bold, key: "bold" },
+    { icon: Italic, key: "italic" },
+    { icon: SquareAsterisk, key: "footnote" },
+    { icon: Strikethrough, key: "strike" },
+    { icon: Code, key: "code" },
+  ],
+  [
+    { icon: List, key: "bulletList" },
+    { icon: ListOrdered, key: "orderedList" },
+  ],
+  [
+    { icon: Quote, key: "blockquote" },
+    { icon: MessageSquareWarning, key: "callout" },
+    { icon: Code2, key: "codeBlock" },
+    { icon: Link2, key: "link" },
+    { icon: TableIcon, key: "table" },
+    { icon: ImagePlus, key: "image" },
+  ],
+  [
+    { icon: Sigma, key: "inlineMath" },
+    { icon: SquareSigma, key: "blockMath" },
+  ],
+  [
+    { icon: Undo2, key: "undo" },
+    { icon: Redo2, key: "redo" },
+  ],
+];
 
 // Counts nodes of a given type currently in the document, so forced math
 // steps can detect "the user typed a $$..$$ / $$$..$$$ shortcut" without the
@@ -42,6 +108,9 @@ function isDesktop(): boolean {
 
 export function TourOverlay() {
   const t = useTranslations("tour");
+  // Reuses the toolbar's own labels (bold/italic/footnote/…) so the tour
+  // never shows a description that drifts from the real tooltip text.
+  const tToolbar = useTranslations("editor.toolbar");
   const router = useRouter();
 
   const active = useTourStore((s) => s.active);
@@ -60,12 +129,24 @@ export function TourOverlay() {
   const slashOpenCount = useSlashMenuStore((s) => s.openCount);
 
   const [rect, setRect] = useState<Rect | null>(null);
+  // Measured, not hardcoded — steps vary a lot in content length (the
+  // toolbar step's bullet list is much taller than a one-line body), and a
+  // fixed height guess would clip a tall popover off-screen or misplace it.
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const [popoverHeight, setPopoverHeight] = useState(220);
   const createBaselineRef = useRef<number | null>(null);
   const slashBaselineRef = useRef<number | null>(null);
   const inlineMathBaselineRef = useRef<number | null>(null);
   const blockMathBaselineRef = useRef<number | null>(null);
   const [inlineMathCount, setInlineMathCount] = useState(0);
   const [blockMathCount, setBlockMathCount] = useState(0);
+  // The "toolbar" step pages through its groups one at a time instead of
+  // dumping every group into one popover. `toolbarGroupsSeen` mirrors
+  // `visitedTabs`'s Set-of-seen-items pattern (each group is its own "seen"
+  // entry) so the progress count only grows — going Back to re-look at an
+  // earlier group doesn't make the "already seen" count go backwards.
+  const [toolbarGroupIndex, setToolbarGroupIndex] = useState(0);
+  const [toolbarGroupsSeen, setToolbarGroupsSeen] = useState<Set<number>>(() => new Set([0]));
 
   const step = TOUR_STEPS[stepIndex];
   const isLastStep = stepIndex === TOUR_STEPS.length - 1;
@@ -143,6 +224,28 @@ export function TourOverlay() {
     }
   }, [active, step?.id, documents, next, router]);
 
+  // Reset the toolbar sub-step to the first group each time the step is
+  // (re-)entered, so Back-ing into it from "slash" starts over rather than
+  // resuming wherever it was left.
+  useEffect(() => {
+    if (active && step?.id === "toolbar") {
+      setToolbarGroupIndex(0);
+      setToolbarGroupsSeen(new Set([0]));
+    }
+  }, [active, step?.id]);
+
+  // Add the current group to the seen-set whenever it changes (covers both
+  // Next and Back — Back-ing into a group you've already seen is a no-op
+  // add, Back-ing into a genuinely new one, e.g. after a reset, still counts).
+  useEffect(() => {
+    if (active && step?.id === "toolbar") {
+      setToolbarGroupsSeen((prev) =>
+        prev.has(toolbarGroupIndex) ? prev : new Set(prev).add(toolbarGroupIndex),
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, step?.id, toolbarGroupIndex]);
+
   // Mark the default-visible tab as seen when entering the panel step.
   useEffect(() => {
     if (active && step?.id === "panel") {
@@ -151,16 +254,23 @@ export function TourOverlay() {
   }, [active, step?.id, markTabVisited]);
 
   // Measure the anchor; poll until it exists (handles cross-route mount).
+  // On the "toolbar" step, spotlight just the current group (each button
+  // cluster is wrapped with data-tour-toolbar-group="N" in
+  // tiptap-toolbar.tsx) instead of the whole toolbar.
   const measure = useCallback(() => {
     if (!step) return;
-    const el = document.querySelector<HTMLElement>(step.anchor);
+    const selector =
+      step.id === "toolbar"
+        ? `[data-tour-toolbar-group="${toolbarGroupIndex}"]`
+        : step.anchor;
+    const el = document.querySelector<HTMLElement>(selector);
     if (!el) {
       setRect(null);
       return;
     }
     const r = el.getBoundingClientRect();
     setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
-  }, [step]);
+  }, [step, toolbarGroupIndex]);
 
   useLayoutEffect(() => {
     if (!active || !step) return;
@@ -176,6 +286,16 @@ export function TourOverlay() {
       window.removeEventListener("scroll", measure, true);
     };
   }, [active, step, measure]);
+
+  // Re-measure the popover's actual height whenever the step (and therefore
+  // its content) changes, so the position clamp below reflects reality.
+  useLayoutEffect(() => {
+    const h = popoverRef.current?.offsetHeight;
+    if (h && h !== popoverHeight) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPopoverHeight(h);
+    }
+  });
 
   // If a doc-scoped anchor never shows (replay from list page), open the first document.
   useEffect(() => {
@@ -211,6 +331,30 @@ export function TourOverlay() {
   const nextDisabled =
     forcedCreatePending || tabsPending || slashPending || mathInlinePending || mathBlockPending;
 
+  // "toolbar" pages through its groups via the same Next/Back buttons before
+  // they fall through to the normal step-advance behavior — never disabled
+  // (that would deadlock, since paging is the only way to reach "seen all"),
+  // just redirected to increment/decrement the sub-step first.
+  const isToolbarStep = step.id === "toolbar";
+  const toolbarHasMoreForward = isToolbarStep && toolbarGroupIndex < TOOLBAR_GROUPS.length - 1;
+  const toolbarHasMoreBack = isToolbarStep && toolbarGroupIndex > 0;
+
+  function handleNext() {
+    if (toolbarHasMoreForward) {
+      setToolbarGroupIndex((i) => i + 1);
+      return;
+    }
+    next();
+  }
+
+  function handleBack() {
+    if (toolbarHasMoreBack) {
+      setToolbarGroupIndex((i) => i - 1);
+      return;
+    }
+    back();
+  }
+
   const padded: Rect | null = rect
     ? {
         top: rect.top - SPOTLIGHT_PADDING,
@@ -238,12 +382,12 @@ export function TourOverlay() {
   } else {
     popTop = padded ? padded.top + padded.height + 12 : vh / 2 - 80;
     popLeft = padded ? padded.left : vw / 2 - popoverWidth / 2;
-    if (padded && popTop + 220 > vh) {
-      popTop = Math.max(12, padded.top - 220);
+    if (padded && popTop + popoverHeight > vh) {
+      popTop = Math.max(12, padded.top - popoverHeight);
     }
   }
   popLeft = Math.min(Math.max(12, popLeft), vw - popoverWidth - 12);
-  popTop = Math.min(Math.max(12, popTop), vh - 232);
+  popTop = Math.min(Math.max(12, popTop), vh - popoverHeight - 12);
 
   return createPortal(
     <div className="pointer-events-none fixed inset-0 z-[60]">
@@ -274,6 +418,32 @@ export function TourOverlay() {
         <p className="mt-1 text-sm text-muted-foreground">
           {t(`steps.${step.id}.body`)}
         </p>
+        {step.id === "toolbar" ? (
+          <>
+            <p className="mt-3 text-sm font-medium">
+              {(t.raw("steps.toolbar.groups") as string[])[toolbarGroupIndex]}
+            </p>
+            <ul className="mt-1.5 space-y-1.5">
+              {TOOLBAR_GROUPS[toolbarGroupIndex]?.map(({ icon: Icon, key }) => (
+                <li key={key} className="flex items-start gap-2 text-sm">
+                  <Icon className="mt-0.5 size-4 shrink-0 text-foreground" />
+                  <span>
+                    <span className="text-foreground">{tToolbar(key as never)}</span>
+                    <span className="text-muted-foreground">
+                      ：{t(`itemHints.${key}` as never)}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-xs font-medium text-primary">
+              {t("tabsProgress", {
+                visited: toolbarGroupsSeen.size,
+                total: TOOLBAR_GROUPS.length,
+              })}
+            </p>
+          </>
+        ) : null}
 
         {forcedCreatePending ? (
           <p className="mt-2 text-xs font-medium text-primary">{t("createHint")}</p>
@@ -309,13 +479,13 @@ export function TourOverlay() {
               {t("step", { current: stepIndex + 1, total: TOUR_STEPS.length })}
             </span>
             {stepIndex > 0 ? (
-              <Button size="sm" variant="ghost" onClick={back}>
+              <Button size="sm" variant="ghost" onClick={handleBack}>
                 {t("back")}
               </Button>
             ) : null}
             <Button
               size="sm"
-              onClick={isLastStep ? finish : next}
+              onClick={isLastStep ? finish : handleNext}
               disabled={nextDisabled}
             >
               {isLastStep ? t("done") : t("next")}
