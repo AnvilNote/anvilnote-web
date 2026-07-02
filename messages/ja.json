@@ -40,7 +40,9 @@
         "title": "右パネル",
         "body": "アウトライン・ドキュメント情報・テンプレート・エクスポートを順にクリックして確認しましょう。"
       }
-    }
+    },
+    "cheatSheet": "チートシート",
+    "helpMenu": "ヘルプ"
   },
   "onboarding": {
     "chooseTheme": "カラーテーマを選択",
@@ -512,6 +514,14 @@
       "import": "インポート",
       "importHint": ".md ファイルまたはバックアップ .zip から復元します。",
       "importButton": "ファイルを選択…"
+    },
+    "update": {
+      "title": "ソフトウェアアップデート",
+      "description": "AnvilNote Desktop の新しいバージョンがあるか確認します。",
+      "currentVersion": "バージョン {version}",
+      "available": "新しいバージョンがあります",
+      "upToDate": "最新バージョンです。",
+      "download": "ダウンロード"
     }
   },
   "command": {
@@ -644,5 +654,14 @@
     "pdfPreviewUnavailable": "現在PDFをプレビューできません",
     "previewFileMissing": "プレビューファイルが見つかりません",
     "pageIndicator": "{total}ページ中{current}ページ"
+  },
+  "cheatSheet": {
+    "title": "チートシート",
+    "noShortcut": "—",
+    "os": {
+      "mac": "macOS",
+      "windows": "Windows",
+      "linux": "Linux"
+    }
   }
 }

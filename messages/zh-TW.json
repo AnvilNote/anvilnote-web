@@ -40,7 +40,9 @@
         "title": "右側面板",
         "body": "點過大綱、文件資訊、範本、匯出，看看每個功能做什麼。"
       }
-    }
+    },
+    "cheatSheet": "小抄",
+    "helpMenu": "說明"
   },
   "onboarding": {
     "chooseTheme": "選擇主題配色",
@@ -99,8 +101,8 @@
         "heading1": "標題 1",
         "heading2": "標題 2",
         "heading3": "標題 3",
-        "bulletList": "項目符號清單",
-        "orderedList": "編號清單",
+        "bulletList": "無序清單",
+        "orderedList": "有序清單",
         "blockquote": "引言",
         "callout": "callout 方塊",
         "codeBlock": "程式碼區塊",
@@ -130,8 +132,8 @@
       "italic": "斜體",
       "strike": "刪除線",
       "code": "行內程式碼",
-      "bulletList": "項目符號清單",
-      "orderedList": "編號清單",
+      "bulletList": "無序清單",
+      "orderedList": "有序清單",
       "taskList": "待辦清單",
       "blockquote": "引言",
       "callout": "Callout",
@@ -157,8 +159,8 @@
       "heading1": "標題 1",
       "heading2": "標題 2",
       "heading3": "標題 3",
-      "bulletList": "項目符號清單",
-      "orderedList": "編號清單",
+      "bulletList": "無序清單",
+      "orderedList": "有序清單",
       "taskList": "待辦清單",
       "quote": "引言",
       "callout": "Callout",
@@ -512,6 +514,14 @@
       "import": "匯入",
       "importHint": "從 .md 檔案或備份 .zip 還原。",
       "importButton": "選擇檔案…"
+    },
+    "update": {
+      "title": "軟體更新",
+      "description": "檢查是否有新版本的 AnvilNote Desktop 可供下載。",
+      "currentVersion": "版本 {version}",
+      "available": "有新版本可供下載",
+      "upToDate": "目前已是最新版本。",
+      "download": "下載"
     }
   },
   "command": {
@@ -644,5 +654,14 @@
     "pdfPreviewUnavailable": "目前無法預覽 PDF",
     "previewFileMissing": "找不到預覽檔",
     "pageIndicator": "第 {current} 頁，共 {total} 頁"
+  },
+  "cheatSheet": {
+    "title": "快捷鍵小抄",
+    "noShortcut": "—",
+    "os": {
+      "mac": "macOS",
+      "windows": "Windows",
+      "linux": "Linux"
+    }
   }
 }
