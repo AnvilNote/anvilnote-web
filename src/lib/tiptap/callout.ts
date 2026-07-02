@@ -7,7 +7,7 @@ import {
 } from "@/config/callouts";
 import { CalloutNodeView } from "@/components/editor/node-views/callout-node-view";
 
-// Callout: an admonition-style box (kind + title + paragraph body), modeled on
+// Callout: an admonition-style box (kind + title + paragraph/list/code body), modeled on
 // Obsidian's callout syntax. Kind drives accent/background color (both the web
 // preview and the Typst renderer look these up from the same 12-entry palette;
 // see src/config/callouts.ts). `titleTouched` tracks whether the user has
@@ -16,7 +16,7 @@ import { CalloutNodeView } from "@/components/editor/node-views/callout-node-vie
 export const AnvilCallout = Node.create({
   name: "callout",
   group: "block",
-  content: "paragraph+",
+  content: "(paragraph|bulletList|orderedList|codeBlock)+",
   defining: true,
   isolating: true,
 
