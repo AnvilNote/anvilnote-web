@@ -440,8 +440,11 @@ function ProjectRow({
         />
       </div>
 
+      {/* pl-6 matches the header row's chevron button width (size-6), so a
+          document's icon lines up directly under the project's icon
+          instead of under the chevron. */}
       {!isCollapsed ? (
-        <SidebarMenu className="gap-1 pl-3">{renderDocs(docs)}</SidebarMenu>
+        <SidebarMenu className="gap-1 pl-6">{renderDocs(docs)}</SidebarMenu>
       ) : null}
     </div>
   );

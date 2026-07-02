@@ -363,6 +363,47 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
       <div
         data-tour="editor-area"
         className="anvil-editor mx-auto w-full max-w-[820px] flex-1 pl-12 pr-3 pb-24 lg:pb-32"
+        onClick={(event) => {
+          if (!editor) return;
+
+          const doc = editor.state.doc;
+          const last = doc.lastChild;
+          // footnotes must stay the document's trailing node (schema:
+          // "block+ footnotes?") — insert before it, not after. It's also
+          // CSS `position: fixed` (pinned to the bottom of the column, see
+          // footnotes-node-view.tsx), so its own rect is useless as a
+          // "where does real content end" reference.
+          const hasFootnotes = last?.type.name === "footnotes";
+          const insertPos = hasFootnotes ? doc.content.size - last!.nodeSize : doc.content.size;
+          const target = hasFootnotes ? doc.child(doc.childCount - 2) : last;
+          if (!target) return;
+
+          // The bottom padding exists so short documents still have room to
+          // click below their last block. A click there lands on this
+          // wrapper, not on any ProseMirror-tracked node, so it otherwise
+          // does nothing — most annoyingly when the last block is an atom
+          // (blockMath, image, table) with no text position to click into.
+          // Compare against the last block's own rendered bottom edge, not
+          // .ProseMirror's box — that has a large min-height (globals.css)
+          // so short documents still have click room, which would otherwise
+          // make this box cover the "empty" space too and never fire below.
+          const targetPos = insertPos - target.nodeSize;
+          const targetDom = editor.view.nodeDOM(targetPos);
+          const targetRect =
+            targetDom instanceof HTMLElement ? targetDom.getBoundingClientRect() : null;
+          if (targetRect && event.clientY < targetRect.bottom) return;
+
+          if (target.type.name === "paragraph" && target.content.size === 0) {
+            editor.chain().focus().setTextSelection(insertPos).run();
+            return;
+          }
+          editor
+            .chain()
+            .insertContentAt(insertPos, { type: "paragraph" })
+            .focus()
+            .setTextSelection(insertPos + 1)
+            .run();
+        }}
       >
         {editor ? (
           <>

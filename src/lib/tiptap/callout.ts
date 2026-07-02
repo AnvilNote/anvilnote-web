@@ -57,6 +57,35 @@ export const AnvilCallout = Node.create({
   addNodeView() {
     return ReactNodeViewRenderer(CalloutNodeView);
   },
+
+  // Plain Enter creates a new paragraph *inside* the callout (needed for
+  // multi-paragraph callouts, and the default behavior anyway since
+  // `isolating: true` blocks the normal "double-Enter on an empty trailing
+  // paragraph lifts out" pattern most block containers get for free).
+  // Shift-Enter is the explicit "leave the callout" gesture instead.
+  addKeyboardShortcuts() {
+    return {
+      "Shift-Enter": () => {
+        const { $from } = this.editor.state.selection;
+        let calloutDepth = -1;
+        for (let d = $from.depth; d > 0; d -= 1) {
+          if ($from.node(d).type.name === this.name) {
+            calloutDepth = d;
+            break;
+          }
+        }
+        if (calloutDepth === -1) return false;
+
+        const afterPos = $from.after(calloutDepth);
+        return this.editor
+          .chain()
+          .insertContentAt(afterPos, { type: "paragraph" })
+          .setTextSelection(afterPos + 1)
+          .focus()
+          .run();
+      },
+    };
+  },
 });
 
 // Insert a fresh callout with its kind's localized default title (titleTouched
