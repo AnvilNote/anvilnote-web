@@ -40,7 +40,9 @@
         "title": "Правая панель",
         "body": "Откройте «Структуру», «Сведения», «Шаблон» и «Экспорт», чтобы узнать, что делает каждая вкладка."
       }
-    }
+    },
+    "cheatSheet": "Шпаргалка",
+    "helpMenu": "Помощь"
   },
   "onboarding": {
     "chooseTheme": "Выберите цветовую тему",
@@ -512,6 +514,14 @@
       "import": "Импорт",
       "importHint": "Восстановление из файла .md или резервной копии .zip.",
       "importButton": "Выбрать файл…"
+    },
+    "update": {
+      "title": "Обновление ПО",
+      "description": "Проверить, доступна ли новая версия AnvilNote Desktop.",
+      "currentVersion": "Версия {version}",
+      "available": "Доступна новая версия",
+      "upToDate": "У вас последняя версия.",
+      "download": "Скачать"
     }
   },
   "command": {
@@ -644,5 +654,14 @@
     "pdfPreviewUnavailable": "Предпросмотр PDF сейчас недоступен",
     "previewFileMissing": "Файл предпросмотра не найден",
     "pageIndicator": "Страница {current} из {total}"
+  },
+  "cheatSheet": {
+    "title": "Шпаргалка",
+    "noShortcut": "—",
+    "os": {
+      "mac": "macOS",
+      "windows": "Windows",
+      "linux": "Linux"
+    }
   }
 }

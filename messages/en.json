@@ -40,7 +40,9 @@
         "title": "The right panel",
         "body": "Click through Outline, Document info, Template and Export to see what each one does."
       }
-    }
+    },
+    "cheatSheet": "Cheat sheet",
+    "helpMenu": "Help"
   },
   "onboarding": {
     "chooseTheme": "Choose your color theme",
@@ -512,6 +514,14 @@
       "import": "Import",
       "importHint": "Restore from a .md file or a backup .zip.",
       "importButton": "Choose file…"
+    },
+    "update": {
+      "title": "Software update",
+      "description": "Check whether a newer version of AnvilNote Desktop is available.",
+      "currentVersion": "Version {version}",
+      "available": "A new version is available",
+      "upToDate": "You're on the latest version.",
+      "download": "Download"
     }
   },
   "command": {
@@ -644,5 +654,14 @@
     "pdfPreviewUnavailable": "PDF preview is unavailable right now",
     "previewFileMissing": "Preview file not found",
     "pageIndicator": "Page {current} of {total}"
+  },
+  "cheatSheet": {
+    "title": "Cheat sheet",
+    "noShortcut": "—",
+    "os": {
+      "mac": "macOS",
+      "windows": "Windows",
+      "linux": "Linux"
+    }
   }
 }

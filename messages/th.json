@@ -40,7 +40,9 @@
         "title": "แผงด้านขวา",
         "body": "คลิกดูโครงร่าง ข้อมูลเอกสาร เทมเพลต และส่งออก เพื่อดูว่าแต่ละอย่างทำอะไร"
       }
-    }
+    },
+    "cheatSheet": "ชีตช่วยจำ",
+    "helpMenu": "ช่วยเหลือ"
   },
   "onboarding": {
     "chooseTheme": "เลือกธีมสี",
@@ -512,6 +514,14 @@
       "import": "นำเข้า",
       "importHint": "กู้คืนจากไฟล์ .md หรือไฟล์สำรอง .zip",
       "importButton": "เลือกไฟล์…"
+    },
+    "update": {
+      "title": "อัปเดตซอฟต์แวร์",
+      "description": "ตรวจสอบว่ามี AnvilNote Desktop เวอร์ชันใหม่หรือไม่",
+      "currentVersion": "เวอร์ชัน {version}",
+      "available": "มีเวอร์ชันใหม่ให้ดาวน์โหลด",
+      "upToDate": "คุณใช้เวอร์ชันล่าสุดอยู่แล้ว",
+      "download": "ดาวน์โหลด"
     }
   },
   "command": {
@@ -644,5 +654,14 @@
     "pdfPreviewUnavailable": "ขณะนี้ยังไม่สามารถแสดงตัวอย่าง PDF ได้",
     "previewFileMissing": "ไม่พบไฟล์ตัวอย่าง",
     "pageIndicator": "หน้า {current} จาก {total}"
+  },
+  "cheatSheet": {
+    "title": "ชีตช่วยจำ",
+    "noShortcut": "—",
+    "os": {
+      "mac": "macOS",
+      "windows": "Windows",
+      "linux": "Linux"
+    }
   }
 }

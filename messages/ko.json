@@ -40,7 +40,9 @@
         "title": "오른쪽 패널",
         "body": "개요, 문서 정보, 템플릿, 내보내기를 차례로 눌러 각 기능을 확인하세요."
       }
-    }
+    },
+    "cheatSheet": "치트 시트",
+    "helpMenu": "도움말"
   },
   "onboarding": {
     "chooseTheme": "색상 테마 선택",
@@ -512,6 +514,14 @@
       "import": "가져오기",
       "importHint": ".md 파일 또는 백업 .zip에서 복원합니다.",
       "importButton": "파일 선택…"
+    },
+    "update": {
+      "title": "소프트웨어 업데이트",
+      "description": "AnvilNote Desktop의 새 버전이 있는지 확인합니다.",
+      "currentVersion": "버전 {version}",
+      "available": "새 버전이 있습니다",
+      "upToDate": "최신 버전을 사용 중입니다.",
+      "download": "다운로드"
     }
   },
   "command": {
@@ -644,5 +654,14 @@
     "pdfPreviewUnavailable": "지금은 PDF를 미리볼 수 없습니다",
     "previewFileMissing": "미리보기 파일을 찾을 수 없습니다",
     "pageIndicator": "{total}페이지 중 {current}페이지"
+  },
+  "cheatSheet": {
+    "title": "치트 시트",
+    "noShortcut": "—",
+    "os": {
+      "mac": "macOS",
+      "windows": "Windows",
+      "linux": "Linux"
+    }
   }
 }

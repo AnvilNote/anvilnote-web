@@ -21,10 +21,13 @@ import {
 import { FolderPicker } from "@/components/settings/folder-picker";
 import { LocaleSwitcher } from "@/components/app/locale-switcher";
 import { ImportBackupButton } from "@/components/app/import-backup-button";
+import { isDesktopShell, useAppVersion } from "@/components/app/app-version";
 import { useMounted } from "@/hooks/use-mounted";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useProjectStore } from "@/lib/stores/project-store";
+import { selectHasUpdate, useUpdateStore } from "@/lib/stores/update-store";
+import { LATEST_RELEASE_PAGE_URL } from "@/lib/update-check";
 import { exportAllBackup } from "@/lib/export/backup";
 import type { ExportFontPreset, ExportPageSize } from "@/types/export";
 
@@ -36,6 +39,9 @@ export default function SettingsPage() {
   const documents = useDocumentStore((s) => s.documents);
   const projects = useProjectStore((s) => s.projects);
   const [backingUp, setBackingUp] = useState(false);
+  const version = useAppVersion();
+  const hasUpdate = useUpdateStore(selectHasUpdate(version));
+  const isDesktop = isDesktopShell();
 
   async function backupAll() {
     setBackingUp(true);
@@ -207,6 +213,27 @@ export default function SettingsPage() {
             control={<ImportBackupButton label={t("settings.backup.importButton")} />}
           />
         </SettingsSection>
+
+        {isDesktop ? (
+          <SettingsSection
+            title={t("settings.update.title")}
+            description={t("settings.update.description")}
+          >
+            <SettingsRow
+              label={t("settings.update.currentVersion", { version })}
+              hint={hasUpdate ? t("settings.update.available") : t("settings.update.upToDate")}
+              control={
+                hasUpdate ? (
+                  <Button asChild size="sm">
+                    <a href={LATEST_RELEASE_PAGE_URL} target="_blank" rel="noopener noreferrer">
+                      {t("settings.update.download")}
+                    </a>
+                  </Button>
+                ) : null
+              }
+            />
+          </SettingsSection>
+        ) : null}
       </div>
     </div>
   );
