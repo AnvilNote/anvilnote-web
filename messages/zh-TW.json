@@ -515,7 +515,17 @@
     "outlineEmpty": "書寫時，標題會顯示在這裡。",
     "outlineDocument": "文件",
     "metadataEmpty": "此範本沒有可填寫的欄位。",
-    "metadataHint": "這些欄位會依範本變更，選填欄位可留空。"
+    "metadataHint": "這些欄位會依範本變更，選填欄位可留空。",
+    "history": "歷史",
+    "historyEmpty": "還沒有版本快照。",
+    "historyEmptyOff": "版本快照目前已關閉，可以在設定中開啟。",
+    "historyLoading": "載入版本中…",
+    "historyLoadError": "無法載入版本歷史。",
+    "historyPreviewTitle": "版本預覽",
+    "historyRestore": "回復此版本",
+    "historyRestoreDescription": "目前的內容會先自動存成一個版本，之後如果不喜歡回復的結果，還是可以再復原回來。",
+    "historyRestored": "已回復到選取的版本",
+    "historyRestoreFailed": "回復版本失敗"
   },
   "export": {
     "title": "匯出",
@@ -593,6 +603,14 @@
       "available": "有新版本可供下載",
       "upToDate": "目前已是最新版本。",
       "download": "下載"
+    },
+    "versionHistory": {
+      "title": "版本歷史",
+      "description": "自動為文件建立時間點快照，可以隨時回復到先前版本。",
+      "interval": "快照間隔",
+      "intervalHint": "只有在內容真的有變動時才會建立快照，不會浪費空間。",
+      "off": "關閉",
+      "every": "每 {minutes} 分鐘"
     }
   },
   "command": {

@@ -5,7 +5,12 @@ import {
   normalizeTiptapContent,
   toWireContent,
 } from "@/lib/tiptap/serialization";
-import type { AnvilDocument, AnvilMetadataValue } from "@/types/document";
+import type {
+  AnvilDocument,
+  AnvilDocumentVersion,
+  AnvilDocumentVersionSummary,
+  AnvilMetadataValue,
+} from "@/types/document";
 import type { AnvilProject } from "@/types/project";
 import type { AnvilTemplate } from "@/types/template";
 import type { ExportPayload } from "@/types/export";
@@ -72,6 +77,19 @@ type ApiRenderResponse = {
   pdfUrl: string | null;
 };
 
+type ApiDocumentVersionSummary = {
+  id: string;
+  documentId: string;
+  title: string;
+  createdAt: string;
+};
+
+type ApiDocumentVersion = ApiDocumentVersionSummary & {
+  content: unknown;
+  metadata?: Record<string, AnvilMetadataValue>;
+  templateSettings?: Record<string, AnvilMetadataValue>;
+};
+
 function apiUrl(pathname: string) {
   return `${resolveApiBaseUrl()}${pathname}`;
 }
@@ -118,6 +136,28 @@ function fromApiDocument(document: ApiDocument): AnvilDocument {
     projectId: document.projectId ?? null,
     createdAt: document.createdAt,
     updatedAt: document.updatedAt,
+  };
+}
+
+function fromApiVersionSummary(version: ApiDocumentVersionSummary): AnvilDocumentVersionSummary {
+  return {
+    id: version.id,
+    documentId: version.documentId,
+    title: version.title,
+    createdAt: version.createdAt,
+  };
+}
+
+function fromApiVersion(version: ApiDocumentVersion): AnvilDocumentVersion {
+  // Version content went through the same wire format as a document's own
+  // content (see toWireContent below) — normalize it the same way rather
+  // than trusting it's already valid Tiptap JSON.
+  const { content } = normalizeTiptapContent(version.content);
+  return {
+    ...fromApiVersionSummary(version),
+    content,
+    metadata: version.metadata ?? {},
+    templateSettings: version.templateSettings ?? {},
   };
 }
 
@@ -203,6 +243,39 @@ export async function updateDocument(
     }),
   });
 
+  return fromApiDocument(response);
+}
+
+export async function listDocumentVersions(documentId: string) {
+  const response = await requestJson<ApiDocumentVersionSummary[]>(
+    `/api/documents/${documentId}/versions`,
+  );
+  return response.map(fromApiVersionSummary);
+}
+
+export async function getDocumentVersion(documentId: string, versionId: string) {
+  const response = await requestJson<ApiDocumentVersion>(
+    `/api/documents/${documentId}/versions/${versionId}`,
+  );
+  return fromApiVersion(response);
+}
+
+// Snapshots the document's CURRENT persisted state — the caller must save
+// first (see document-store.ts), since this doesn't take a content payload;
+// it just tells the server "copy what's there now into a new version row".
+export async function createDocumentVersion(documentId: string) {
+  const response = await requestJson<ApiDocumentVersionSummary>(
+    `/api/documents/${documentId}/versions`,
+    { method: "POST" },
+  );
+  return fromApiVersionSummary(response);
+}
+
+export async function restoreDocumentVersion(documentId: string, versionId: string) {
+  const response = await requestJson<ApiDocument>(
+    `/api/documents/${documentId}/versions/${versionId}/restore`,
+    { method: "POST" },
+  );
   return fromApiDocument(response);
 }
 

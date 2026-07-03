@@ -19,3 +19,19 @@ export type AnvilDocument = {
   createdAt: string;
   updatedAt: string;
 };
+
+// A point-in-time snapshot of a document, for version history. Summaries
+// (list view) omit `content` — it can be large (inline base64 images) and
+// isn't needed until a specific version is actually opened.
+export type AnvilDocumentVersionSummary = {
+  id: string;
+  documentId: string;
+  title: string;
+  createdAt: string;
+};
+
+export type AnvilDocumentVersion = AnvilDocumentVersionSummary & {
+  content: JSONContent;
+  metadata: Record<string, AnvilMetadataValue>;
+  templateSettings: Record<string, AnvilMetadataValue>;
+};

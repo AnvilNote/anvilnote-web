@@ -2,15 +2,22 @@
 
 import { create } from "zustand";
 import type { JSONContent } from "@tiptap/core";
-import type { AnvilDocument, AnvilMetadataValue } from "@/types/document";
+import type {
+  AnvilDocument,
+  AnvilDocumentVersionSummary,
+  AnvilMetadataValue,
+} from "@/types/document";
 import type { ExportOptions } from "@/types/export";
 import { buildDefaultContent } from "@/lib/tiptap/default-content";
 import { buildExportPayload } from "@/lib/export";
 import {
   createDocument as createDocumentRequest,
+  createDocumentVersion,
   deleteDocument as deleteDocumentRequest,
   listDocuments,
+  listDocumentVersions,
   renderDocument as renderDocumentRequest,
+  restoreDocumentVersion,
   updateDocument as updateDocumentRequest,
 } from "@/lib/api";
 import {
@@ -23,6 +30,69 @@ import { useTemplatesStore } from "@/lib/stores/templates-store";
 
 const saveTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
+// When each document last got a version-history snapshot, and what its
+// content looked like at that point — both session-only (not persisted; if
+// the app restarts, the next due save just snapshots a bit earlier than it
+// otherwise would, which is harmless). Content is compared as a JSON string
+// since Tiptap docs don't carry a revision/hash of their own.
+const lastSnapshotAt = new Map<string, number>();
+const lastSnapshottedContent = new Map<string, string>();
+
+// Called after every successful save. A snapshot is a deliberate, coarser
+// checkpoint than autosave — firing on every save (as often as every 600ms
+// while actively typing) would make "version history" meaningless noise —
+// so on a normal (autosave-triggered) save this only actually creates one
+// once the user's configured interval has elapsed AND the content has
+// changed since the last snapshot. A *manual* save (the topbar Save button
+// — see app-topbar.tsx) skips the interval check entirely: a deliberate
+// click is already the kind of meaningful checkpoint the interval exists to
+// approximate for autosave, so gating it the same way just makes a manual
+// save feel broken ("I hit save and nothing happened in history"). The
+// interval-off switch (0) still wins either way — it's an explicit opt-out
+// of the whole feature, not a throttle a manual save should bypass.
+// Best-effort: a failure here must never surface as a save failure to the
+// user, since the document itself was already saved successfully.
+function maybeSnapshotVersion(document: AnvilDocument, options?: { manual?: boolean }) {
+  const intervalMinutes = useSettingsStore.getState().versionSnapshotIntervalMinutes;
+  if (intervalMinutes <= 0) return;
+
+  const now = Date.now();
+  const last = lastSnapshotAt.get(document.id) ?? 0;
+  if (!options?.manual && now - last < intervalMinutes * 60_000) return;
+
+  const contentJson = JSON.stringify(document.content);
+  if (lastSnapshottedContent.get(document.id) === contentJson) return;
+
+  // Only recorded once the snapshot actually succeeds — marking it done
+  // beforehand would mean a failed request silently gets treated as a
+  // completed checkpoint, and no snapshot would be attempted again until a
+  // full interval later.
+  void createDocumentVersion(document.id)
+    .then((created) => {
+      lastSnapshotAt.set(document.id, now);
+      lastSnapshottedContent.set(document.id, contentJson);
+      // versionsById is the history panel's only data source (see
+      // version-history-panel.tsx) — prepending here means a snapshot that
+      // fires while that panel is open shows up immediately, without the
+      // user having to leave and reopen the tab to see it. Left untouched
+      // if never loaded (undefined) — nothing to prepend onto, and the
+      // panel will fetch the full list fresh whenever it's first opened.
+      useDocumentStore.setState((state) => {
+        const existing = state.versionsById[document.id];
+        if (!existing) return state;
+        return {
+          versionsById: {
+            ...state.versionsById,
+            [document.id]: [created, ...existing],
+          },
+        };
+      });
+    })
+    .catch((error) => {
+      console.error("Failed to create version snapshot:", error);
+    });
+}
+
 type DocumentState = {
   documents: AnvilDocument[];
   activeId: string | null;
@@ -31,6 +101,21 @@ type DocumentState = {
   error: string | null;
   saveStateById: Record<string, "saved" | "saving" | "unsaved" | "failed">;
   renderingById: Record<string, boolean>;
+  // Bumped whenever a document's content is overwritten by something other
+  // than the live editor itself (currently just restoreVersion). The editor
+  // is intentionally uncontrolled — see setContent's comment — so it only
+  // ever reads content once, on mount; the page component keys the editor
+  // on this value (alongside documentId) specifically to force a fresh
+  // mount and pick up the restored content, the same way navigating to a
+  // different document already does.
+  restoreNonceById: Record<string, number>;
+  // Loaded lazily (see loadVersions) and kept in the store — not local
+  // component state — specifically so version-history-panel.tsx re-renders
+  // automatically whenever a snapshot fires or a restore happens, instead
+  // of only refreshing when the panel's own tab becomes active again.
+  // Undefined means "never loaded yet" (distinct from an empty array).
+  versionsById: Record<string, AnvilDocumentVersionSummary[] | undefined>;
+  loadVersions: (id: string) => Promise<void>;
   setActive: (id: string | null) => void;
   hydrate: () => Promise<void>;
   createDocument: (
@@ -56,7 +141,8 @@ type DocumentState = {
   setMetadataField: (id: string, key: string, value: AnvilMetadataValue) => void;
   setTemplateSettingField: (id: string, key: string, value: AnvilMetadataValue) => void;
   setTemplate: (id: string, templateId: string) => void;
-  saveDocument: (id: string) => Promise<AnvilDocument | undefined>;
+  saveDocument: (id: string, options?: { manual?: boolean }) => Promise<AnvilDocument | undefined>;
+  restoreVersion: (id: string, versionId: string) => Promise<void>;
   renderDocument: (id: string, exportOptions: ExportOptions) => Promise<{ pdfUrl: string | null }>;
   getDocument: (id: string) => AnvilDocument | undefined;
 };
@@ -104,6 +190,15 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
   error: null,
   saveStateById: {},
   renderingById: {},
+  restoreNonceById: {},
+  versionsById: {},
+
+  loadVersions: async (id) => {
+    const versions = await listDocumentVersions(id);
+    set((state) => ({
+      versionsById: { ...state.versionsById, [id]: versions },
+    }));
+  },
 
   setActive: (id) => set({ activeId: id }),
 
@@ -328,7 +423,7 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
     scheduleSave(id);
   },
 
-  saveDocument: async (id) => {
+  saveDocument: async (id, options) => {
     const document = get().documents.find((entry) => entry.id === id);
     if (!document) {
       return undefined;
@@ -364,6 +459,8 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
           [id]: "saved",
         },
       }));
+
+      maybeSnapshotVersion(document, { manual: options?.manual });
 
       return saved;
     } catch {
@@ -407,4 +504,30 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
   },
 
   getDocument: (id) => get().documents.find((document) => document.id === id),
+
+  restoreVersion: async (id, versionId) => {
+    const restored = await restoreDocumentVersion(id, versionId);
+    set((state) => ({
+      documents: state.documents.map((entry) => (entry.id === id ? restored : entry)),
+      saveStateById: {
+        ...state.saveStateById,
+        [id]: "saved",
+      },
+      restoreNonceById: {
+        ...state.restoreNonceById,
+        [id]: (state.restoreNonceById[id] ?? 0) + 1,
+      },
+    }));
+    // The server already created a version for both the pre-restore state
+    // and the restored content itself (see the API's restoreVersion), so
+    // treat this moment as freshly snapshotted — otherwise the very next
+    // autosave would immediately create a redundant duplicate version of
+    // content that's already represented in history twice over.
+    lastSnapshotAt.set(id, Date.now());
+    lastSnapshottedContent.set(id, JSON.stringify(restored.content));
+    // Two new versions exist server-side now (see above) that we don't
+    // have summaries for locally — a full refetch, not a prepend, is the
+    // simplest way to pick both up correctly.
+    void get().loadVersions(id);
+  },
 }));

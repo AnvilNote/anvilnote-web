@@ -23,7 +23,11 @@ import { LocaleSwitcher } from "@/components/app/locale-switcher";
 import { ImportBackupButton } from "@/components/app/import-backup-button";
 import { isDesktopShell, useAppVersion } from "@/components/app/app-version";
 import { useMounted } from "@/hooks/use-mounted";
-import { useSettingsStore } from "@/lib/stores/settings-store";
+import {
+  useSettingsStore,
+  VERSION_SNAPSHOT_INTERVAL_OPTIONS,
+  type VersionSnapshotIntervalMinutes,
+} from "@/lib/stores/settings-store";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useProjectStore } from "@/lib/stores/project-store";
 import { selectHasUpdate, useUpdateStore } from "@/lib/stores/update-store";
@@ -126,6 +130,39 @@ export default function SettingsPage() {
           <SettingsRow
             label={t("settings.language.label")}
             control={<LocaleSwitcher />}
+          />
+        </SettingsSection>
+
+        <SettingsSection
+          title={t("settings.versionHistory.title")}
+          description={t("settings.versionHistory.description")}
+        >
+          <SettingsRow
+            label={t("settings.versionHistory.interval")}
+            hint={t("settings.versionHistory.intervalHint")}
+            control={
+              <Select
+                value={String(settings.versionSnapshotIntervalMinutes)}
+                onValueChange={(v) =>
+                  settings.setVersionSnapshotIntervalMinutes(
+                    Number(v) as VersionSnapshotIntervalMinutes,
+                  )
+                }
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {VERSION_SNAPSHOT_INTERVAL_OPTIONS.map((minutes) => (
+                    <SelectItem key={minutes} value={String(minutes)}>
+                      {minutes === 0
+                        ? t("settings.versionHistory.off")
+                        : t("settings.versionHistory.every", { minutes })}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            }
           />
         </SettingsSection>
 
