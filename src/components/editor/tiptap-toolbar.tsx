@@ -172,7 +172,7 @@ export function TiptapToolbar({
   }
 
   return (
-    <div data-tour="toolbar" className="flex items-center gap-0.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden lg:flex-wrap lg:justify-between lg:gap-0.5 lg:overflow-visible lg:pb-0">
+    <div data-tour="toolbar" className="flex items-center gap-0.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       <div data-tour-toolbar-group="0" className="flex items-center gap-0.5">
         <ToolbarButton
           icon={Pilcrow}

@@ -76,31 +76,37 @@ function RightPanelContent({ documentId }: { documentId: string }) {
       className="flex h-full min-h-0 flex-col gap-0"
     >
       <div className="px-3 pt-3">
+        {/* flex + content-sized triggers, not a 4-equal-column grid — a
+            fixed grid force-truncated longer labels (e.g. "Template" or
+            longer ja/ko compounds) even when the panel had room to spare
+            elsewhere. overflow-x-auto is the same fallback used for the
+            main toolbar: if labels genuinely don't fit, it scrolls instead
+            of ever cutting text off mid-word. */}
         <TabsList
           data-tour="right-tabs"
-          className="grid h-auto w-full grid-cols-4 rounded-[1.7rem] bg-muted p-1"
+          className="flex h-auto w-full items-center gap-0.5 overflow-x-auto rounded-[1.7rem] bg-muted p-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
           <TabsTrigger
             value="outline"
-            className="rounded-[1.3rem] px-2 py-1.5 text-[0.95rem] leading-none truncate data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            className="shrink-0 rounded-[1.3rem] px-2.5 py-1.5 text-[0.95rem] leading-none whitespace-nowrap data-[state=active]:bg-background data-[state=active]:shadow-sm"
           >
             {t("outline")}
           </TabsTrigger>
           <TabsTrigger
             value="metadata"
-            className="rounded-[1.3rem] px-2 py-1.5 text-[0.95rem] leading-none truncate data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            className="shrink-0 rounded-[1.3rem] px-2.5 py-1.5 text-[0.95rem] leading-none whitespace-nowrap data-[state=active]:bg-background data-[state=active]:shadow-sm"
           >
             {t("metadata")}
           </TabsTrigger>
           <TabsTrigger
             value="template"
-            className="rounded-[1.3rem] px-2 py-1.5 text-[0.95rem] leading-none truncate data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            className="shrink-0 rounded-[1.3rem] px-2.5 py-1.5 text-[0.95rem] leading-none whitespace-nowrap data-[state=active]:bg-background data-[state=active]:shadow-sm"
           >
             {t("template")}
           </TabsTrigger>
           <TabsTrigger
             value="export"
-            className="rounded-[1.3rem] px-2 py-1.5 text-[0.95rem] leading-none truncate data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            className="shrink-0 rounded-[1.3rem] px-2.5 py-1.5 text-[0.95rem] leading-none whitespace-nowrap data-[state=active]:bg-background data-[state=active]:shadow-sm"
           >
             {t("export")}
           </TabsTrigger>
