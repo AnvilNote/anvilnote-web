@@ -27,6 +27,7 @@ import { TiptapToolbar } from "@/components/editor/tiptap-toolbar";
 import { TiptapBubbleMenu } from "@/components/editor/tiptap-bubble-menu";
 import { BlockHandle } from "@/components/editor/block-handle";
 import { LinkInput } from "@/components/editor/link-input";
+import { TextColorPicker } from "@/components/editor/text-color-picker";
 import {
   MathEditorDialog,
   CLOSED_MATH_DIALOG,
@@ -69,6 +70,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
 
   const [mathDialog, setMathDialog] = useState<MathDialogState>(CLOSED_MATH_DIALOG);
   const [linkOpen, setLinkOpen] = useState(false);
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [tableDialogOpen, setTableDialogOpen] = useState(false);
 
   // Snapshot the stored content once; the editor is uncontrolled afterwards so
@@ -466,6 +468,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
               editor={editor}
               onInsertMath={requestMath}
               onEditLink={() => setLinkOpen(true)}
+              onEditColor={() => setColorPickerOpen(true)}
             />
             <BlockHandle editor={editor} />
           </>
@@ -475,6 +478,10 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
 
       {editor && linkOpen ? (
         <LinkInput editor={editor} onClose={() => setLinkOpen(false)} />
+      ) : null}
+
+      {editor && colorPickerOpen ? (
+        <TextColorPicker editor={editor} onClose={() => setColorPickerOpen(false)} />
       ) : null}
 
       <MathEditorDialog

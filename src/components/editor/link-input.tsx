@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Editor } from "@tiptap/core";
 import { useTranslations } from "next-intl";
 import { Check, Trash2 } from "lucide-react";
@@ -69,7 +70,17 @@ export function LinkInput({
 
   const hasLink = Boolean(editor.getAttributes("link").href);
 
-  return (
+  // Portaled to document.body, not rendered in place: this floats via
+  // `position: fixed` in viewport coordinates (matching coordsAtPos, which
+  // is viewport-relative), but the editor column has `transform-gpu`
+  // applied a few levels up (so the pinned footnotes panel has a stable
+  // containing block — see footnotes-node-view.tsx) — any CSS transform on
+  // an ancestor makes IT the containing block for fixed descendants
+  // instead of the viewport, which silently offset this by however far the
+  // editor column sits from the viewport origin. Escaping via a portal
+  // sidesteps the containing-block issue entirely rather than having to
+  // track and subtract that ancestor's offset.
+  return createPortal(
     <>
       {/* Click-away layer closes without applying. */}
       <div className="fixed inset-0 z-40" onMouseDown={onClose} />
@@ -121,6 +132,7 @@ export function LinkInput({
           </button>
         ) : null}
       </div>
-    </>
+    </>,
+    document.body,
   );
 }

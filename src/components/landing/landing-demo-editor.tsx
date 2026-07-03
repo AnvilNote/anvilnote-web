@@ -35,6 +35,7 @@ import {
   type MathDialogState,
 } from "@/components/editor/math-editor-dialog";
 import { LinkInput } from "@/components/editor/link-input";
+import { TextColorPicker } from "@/components/editor/text-color-picker";
 import { TiptapBubbleMenu } from "@/components/editor/tiptap-bubble-menu";
 import { TiptapToolbar } from "@/components/editor/tiptap-toolbar";
 import { BlockHandle } from "@/components/editor/block-handle";
@@ -299,6 +300,7 @@ export function LandingDemoEditor({ copy }: { copy: DemoCopy }) {
   const [status, setStatus] = useState<SaveStatus>("saved");
   const [mathDialog, setMathDialog] = useState<MathDialogState>(CLOSED_MATH_DIALOG);
   const [linkOpen, setLinkOpen] = useState(false);
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [tableDialogOpen, setTableDialogOpen] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -643,6 +645,7 @@ export function LandingDemoEditor({ copy }: { copy: DemoCopy }) {
                       editor={editor}
                       onInsertMath={requestMath}
                       onEditLink={() => setLinkOpen(true)}
+                      onEditColor={() => setColorPickerOpen(true)}
                     />
                     <BlockHandle editor={editor} />
                   </>
@@ -698,6 +701,10 @@ export function LandingDemoEditor({ copy }: { copy: DemoCopy }) {
 
       {editor && linkOpen ? (
         <LinkInput editor={editor} onClose={() => setLinkOpen(false)} />
+      ) : null}
+
+      {editor && colorPickerOpen ? (
+        <TextColorPicker editor={editor} onClose={() => setColorPickerOpen(false)} />
       ) : null}
 
       <MathEditorDialog

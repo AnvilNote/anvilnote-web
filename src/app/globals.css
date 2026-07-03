@@ -903,6 +903,21 @@
   background-color: var(--background);
 }
 
+/* While a block drag is in progress (the drag-handle library marks its
+   handle with data-dragging="true"), the pinned panel must not intercept
+   drag hit-testing: it floats over the bottom strip of the editor, so with
+   pointer events on, (a) drops aimed near the bottom resolved into the
+   footnotes zone and were rejected — a permanent dead zone — and (b) the
+   browser's native drag auto-scroll targeted the panel's own scrollable
+   list (`__content`, overflow-y: auto) instead of the editor's scroll
+   container, so dragging toward the bottom edge wouldn't scroll the
+   document the way it does in editors without the panel. pointer-events:
+   none makes hit-testing (and both behaviors) fall through to the
+   document content beneath for the duration of the drag. */
+body:has(.anvil-drag-handle[data-dragging="true"]) .anvil-footnotes-panel {
+  pointer-events: none;
+}
+
 .anvil-footnotes-panel__content {
   max-height: 30vh;
   overflow-y: auto;
