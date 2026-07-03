@@ -127,9 +127,9 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
   const slashItems = useMemo<SlashItem[]>(() => {
     const run =
       (fn: (chain: ChainedCommands) => void) =>
-      ({ editor, range }: Parameters<SlashItem["run"]>[0]) => {
-        fn(editor.chain().focus().deleteRange(range));
-      };
+        ({ editor, range }: Parameters<SlashItem["run"]>[0]) => {
+          fn(editor.chain().focus().deleteRange(range));
+        };
     return [
       {
         title: tt("text"),
@@ -336,8 +336,19 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Sticky editor header: toolbar (left) on the same line as the autosave
           indicator (right). Stays pinned to the top while the note scrolls. */}
-      <div className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-        <div className="@container mx-auto flex w-full flex-col gap-1 pl-12 pr-4 py-1.5 lg:flex-row lg:items-center lg:gap-3">
+      <div className="@container sticky top-0 z-20 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+        {/* pl-2, not pl-12 like the title/content rows below — those reserve
+            room for the sidebar-toggle icon above them, but this is a
+            working icon bar, not reading content, and the wasted space was
+            exactly what made it scroll/wrap sooner than it needed to.
+            @lg:flex-row (a container query, keyed off this row's own
+            measured width — the @container is on the parent sticky
+            wrapper), not lg:flex-row (a viewport breakpoint): the sidebar
+            and right panel already eat into the space this row actually
+            gets, so it could still be squeezed well within any single
+            viewport breakpoint, dropping the indicator onto its own line
+            with room to spare on the right. */}
+        <div className="mx-auto flex w-full flex-col gap-1 pl-2 pr-4 py-1.5 @lg:flex-row @lg:items-center @lg:gap-3">
           <div className="min-w-0 w-full flex-1">
             {editor ? (
               <TiptapToolbar
@@ -347,7 +358,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
               />
             ) : null}
           </div>
-          <div className="flex w-full justify-end lg:w-auto lg:shrink-0">
+          <div className="flex w-full justify-end @lg:w-auto @lg:shrink-0">
             <AutosaveIndicator documentId={documentId} />
           </div>
         </div>
