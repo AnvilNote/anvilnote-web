@@ -120,29 +120,6 @@ export function BlockHandle({ editor }: { editor: Editor }) {
       editor={editor}
       className="anvil-drag-handle"
       onNodeChange={handleNodeChange}
-      // The footnotes panel is CSS `position: fixed` (pinned to the bottom
-      // of the editor column, see footnotes-node-view.tsx) — its DOM box no
-      // longer sits at its logical document position, which confuses this
-      // library's coordinate-based hit testing (it can resolve the panel as
-      // a target no matter where the cursor actually is). There's no
-      // exclude hook for the plain top-level algorithm, so `nested` mode is
-      // enabled specifically to get access to its rule system; the
-      // `defaultRules` still cover the existing top-level-only behavior for
-      // everything else, this rule just blocks the footnote subtree.
-      nested={{
-        rules: [
-          {
-            id: "excludeFootnotes",
-            evaluate: ({ node, parent }) =>
-              node.type.name === "footnotes" ||
-              node.type.name === "footnote" ||
-              parent?.type.name === "footnotes" ||
-              parent?.type.name === "footnote"
-                ? 1000
-                : 0,
-          },
-        ],
-      }}
     >
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
