@@ -12,7 +12,19 @@ export function insertInlineMath(editor: Editor, latex: string): boolean {
   return editor.chain().focus().insertInlineMath({ latex }).run();
 }
 
-export function insertBlockMath(editor: Editor, latex: string): boolean {
+// refName is the optional user-given display name shown by the cross-ref
+// suggestion list instead of raw LaTeX. The extension's own insertBlockMath
+// command only knows `latex`, so a named insert goes through insertContent
+// with explicit attrs instead.
+export function insertBlockMath(editor: Editor, latex: string, refName?: string): boolean {
+  const name = refName?.trim();
+  if (name) {
+    return editor
+      .chain()
+      .focus()
+      .insertContent({ type: "blockMath", attrs: { latex, refName: name } })
+      .run();
+  }
   return editor.chain().focus().insertBlockMath({ latex }).run();
 }
 
@@ -28,8 +40,20 @@ export function updateBlockMath(
   editor: Editor,
   pos: number,
   latex: string,
+  refName?: string,
 ): boolean {
-  return editor.chain().focus().updateBlockMath({ latex, pos }).run();
+  return editor
+    .chain()
+    .focus()
+    .updateBlockMath({ latex, pos })
+    // The extension's update command spreads ...node.attrs, so it preserves
+    // refName but can't CHANGE it — write it separately in the same chain.
+    // Empty/whitespace input clears the name back to null.
+    .command(({ tr }) => {
+      tr.setNodeAttribute(pos, "refName", refName?.trim() || null);
+      return true;
+    })
+    .run();
 }
 
 export function deleteInlineMath(editor: Editor, pos: number): boolean {

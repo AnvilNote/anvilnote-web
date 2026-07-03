@@ -241,7 +241,9 @@
       "invalid": "สมการไม่ถูกต้อง — ตรวจสอบไวยากรณ์ LaTeX",
       "save": "บันทึก",
       "cancel": "ยกเลิก",
-      "supportedSyntax": "ไวยากรณ์ที่รองรับ"
+      "supportedSyntax": "ไวยากรณ์ที่รองรับ",
+      "refName": "ชื่อ (ไม่บังคับ)",
+      "refNamePlaceholder": "เช่น สมการพลังงาน — แสดงในรายการอ้างอิงไขว้"
     },
     "codeBlock": {
       "selectLanguage": "เลือกภาษา"
@@ -267,6 +269,24 @@
       "title": "เชิงอรรถ",
       "expand": "ขยายเชิงอรรถ",
       "collapse": "ยุบเชิงอรรถ"
+    },
+    "crossRef": {
+      "labels": {
+        "figure": "รูปที่ {number}",
+        "table": "ตารางที่ {number}",
+        "equation": "สมการ ({number})",
+        "heading": "{number}"
+      },
+      "broken": "การอ้างอิงที่ใช้งานไม่ได้",
+      "brokenHint": "ไม่พบเป้าหมายที่อ้างอิง อาจถูกลบไปแล้ว",
+      "insertHint": "แทรกการอ้างอิงไขว้",
+      "empty": "ยังไม่มีรูปภาพ ตาราง สมการ หรือหัวข้อให้อ้างอิง",
+      "groupFigure": "รูปภาพ",
+      "groupTable": "ตาราง",
+      "groupEquation": "สมการ",
+      "groupHeading": "หัวข้อ",
+      "untitledFigure": "รูปภาพไม่มีชื่อ",
+      "untitledTable": "ตารางไม่มีชื่อ"
     }
   },
   "documents": {

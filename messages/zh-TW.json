@@ -241,7 +241,9 @@
       "invalid": "公式無效——請檢查 LaTeX 語法。",
       "save": "儲存",
       "cancel": "取消",
-      "supportedSyntax": "支援語法"
+      "supportedSyntax": "支援語法",
+      "refName": "名稱（選填）",
+      "refNamePlaceholder": "例如：能量方程式，用於交互參照清單"
     },
     "codeBlock": {
       "selectLanguage": "選擇語言"
@@ -267,6 +269,24 @@
       "title": "腳注",
       "expand": "展開腳注區",
       "collapse": "收合腳注區"
+    },
+    "crossRef": {
+      "labels": {
+        "figure": "圖 {number}",
+        "table": "表 {number}",
+        "equation": "式 ({number})",
+        "heading": "{number}"
+      },
+      "broken": "已失效的引用",
+      "brokenHint": "找不到引用的目標，可能已被刪除",
+      "insertHint": "插入交互參照",
+      "empty": "文件中還沒有可供引用的圖、表、公式或標題",
+      "groupFigure": "圖片",
+      "groupTable": "表格",
+      "groupEquation": "公式",
+      "groupHeading": "標題",
+      "untitledFigure": "未命名圖片",
+      "untitledTable": "未命名表格"
     }
   },
   "documents": {

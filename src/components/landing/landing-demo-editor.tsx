@@ -307,8 +307,8 @@ export function LandingDemoEditor({ copy }: { copy: DemoCopy }) {
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleMathClick = useCallback(
-    (mode: MathClickMode, pos: number, latex: string) => {
-      setMathDialog({ open: true, mode, pos, latex });
+    (mode: MathClickMode, pos: number, latex: string, refName?: string) => {
+      setMathDialog({ open: true, mode, pos, latex, refName });
     },
     [],
   );
@@ -467,16 +467,16 @@ export function LandingDemoEditor({ copy }: { copy: DemoCopy }) {
   const outline = useMemo(() => extractOutline(content), [content]);
 
   const handleMathSave = useCallback(
-    (latex: string) => {
+    (latex: string, refName?: string) => {
       if (editor) {
         const { mode, pos } = mathDialog;
         if (pos !== null) {
           if (mode === "inline") updateInlineMath(editor, pos, latex);
-          else updateBlockMath(editor, pos, latex);
+          else updateBlockMath(editor, pos, latex, refName);
         } else if (mode === "inline") {
           insertInlineMath(editor, latex);
         } else {
-          insertBlockMath(editor, latex);
+          insertBlockMath(editor, latex, refName);
         }
       }
       setMathDialog(CLOSED_MATH_DIALOG);

@@ -241,7 +241,9 @@
       "invalid": "Недопустимая формула — проверьте синтаксис LaTeX.",
       "save": "Сохранить",
       "cancel": "Отмена",
-      "supportedSyntax": "Поддерживаемый синтаксис"
+      "supportedSyntax": "Поддерживаемый синтаксис",
+      "refName": "Название (необязательно)",
+      "refNamePlaceholder": "напр. Уравнение энергии — отображается в списке ссылок"
     },
     "codeBlock": {
       "selectLanguage": "Выберите язык"
@@ -267,6 +269,24 @@
       "title": "Сноски",
       "expand": "Развернуть сноски",
       "collapse": "Свернуть сноски"
+    },
+    "crossRef": {
+      "labels": {
+        "figure": "Рис. {number}",
+        "table": "Табл. {number}",
+        "equation": "Ур. ({number})",
+        "heading": "{number}"
+      },
+      "broken": "Неработающая ссылка",
+      "brokenHint": "Не удалось найти объект ссылки — возможно, он был удалён",
+      "insertHint": "Вставить перекрёстную ссылку",
+      "empty": "Пока нет рисунков, таблиц, формул или заголовков для ссылки",
+      "groupFigure": "Рисунки",
+      "groupTable": "Таблицы",
+      "groupEquation": "Формулы",
+      "groupHeading": "Заголовки",
+      "untitledFigure": "Рисунок без названия",
+      "untitledTable": "Таблица без названия"
     }
   },
   "documents": {

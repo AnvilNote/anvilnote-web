@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { renderMathPreview } from "@/lib/tiptap/math";
 import type { MathClickMode } from "@/lib/tiptap/extensions";
 
@@ -24,6 +25,9 @@ export type MathDialogState = {
   // null = inserting a new node; a number = editing the node at this position.
   pos: number | null;
   latex: string;
+  // Optional display name for cross-references (block math only) — the @
+  // suggestion list shows this instead of raw LaTeX when set.
+  refName?: string;
 };
 
 export const CLOSED_MATH_DIALOG: MathDialogState = {
@@ -41,7 +45,7 @@ export function MathEditorDialog({
 }: {
   state: MathDialogState;
   onOpenChange: (open: boolean) => void;
-  onSave: (latex: string) => void;
+  onSave: (latex: string, refName?: string) => void;
   onDelete: () => void;
 }) {
   return (
@@ -69,13 +73,14 @@ function MathDialogForm({
 }: {
   state: MathDialogState;
   onCancel: () => void;
-  onSave: (latex: string) => void;
+  onSave: (latex: string, refName?: string) => void;
   onDelete: () => void;
 }) {
   const t = useTranslations("editor.math");
   const tBlock = useTranslations("editor.block");
   const { resolvedTheme } = useTheme();
   const [draft, setDraft] = useState(state.latex);
+  const [nameDraft, setNameDraft] = useState(state.refName ?? "");
 
   const isBlock = state.mode === "block";
   const preview = draft.trim() ? renderMathPreview(draft, isBlock) : null;
@@ -85,7 +90,7 @@ function MathDialogForm({
   const isEditing = state.pos !== null;
 
   function handleSave() {
-    onSave(draft);
+    onSave(draft, isBlock ? nameDraft : undefined);
   }
 
   // codemirror-lang-latex is built from Overleaf's own LaTeX grammar —
@@ -117,7 +122,7 @@ function MathDialogForm({
       ]),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [draft],
+    [draft, nameDraft],
   );
 
   return (
@@ -210,6 +215,23 @@ function MathDialogForm({
             </div>
           </div>
         </div>
+
+        {isBlock ? (
+          <div className="space-y-1.5">
+            <label
+              htmlFor="math-ref-name"
+              className="text-xs font-medium text-muted-foreground"
+            >
+              {t("refName")}
+            </label>
+            <Input
+              id="math-ref-name"
+              value={nameDraft}
+              onChange={(event) => setNameDraft(event.target.value)}
+              placeholder={t("refNamePlaceholder")}
+            />
+          </div>
+        ) : null}
 
         <DialogFooter>
           {isEditing ? (

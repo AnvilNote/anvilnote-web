@@ -1,4 +1,5 @@
 import type { JSONContent } from "@tiptap/core";
+import { formatCrossRefLabel } from "@/lib/export/cross-ref-labels";
 
 // Converts a Tiptap document (AnvilDocument.content — an unwrapped `doc`
 // node) to plain Markdown, for the .md backup/export feature. Math nodes
@@ -21,6 +22,9 @@ let footnoteDefs: [label: string, content: string][] | null = null;
 // data-id -> rendered content, built once per conversion from the doc's
 // trailing `footnotes` node before the body is rendered.
 let footnoteContentById: Map<string, string> | null = null;
+// The document's own language (doc.templateSettings.primaryLang), for
+// formatting crossRef display text — see cross-ref-labels.ts.
+let primaryLang: string | undefined;
 
 function attrLatex(node: Node): string {
   const attrs = node.attrs ?? {};
@@ -104,6 +108,26 @@ export function inlineToMarkdown(content: unknown): string {
         if (!label || content === undefined) return "";
         footnoteDefs?.push([label, content]);
         return `[^${label}]`;
+      }
+      if (type === "crossRef") {
+        // No live re-numbering here (unlike the Typst path's real @label
+        // refs) — Markdown/DOCX just print whatever the editor's own
+        // resolver (anvilnote-web's cross-ref.ts) already computed and
+        // stored on the node the last time the document was edited/saved,
+        // formatted per the document's own language (see
+        // cross-ref-labels.ts — "圖 1" vs "Figure 1" vs "式 (1)", etc.). A
+        // dangling reference (its target was deleted) prints nothing, same
+        // as a footnote reference whose content went missing above.
+        const kind = node.attrs?.resolvedKind;
+        const value = node.attrs?.resolvedValue;
+        if (node.attrs?.broken || typeof kind !== "string" || typeof value !== "string") {
+          return "";
+        }
+        return formatCrossRefLabel(
+          kind as "figure" | "table" | "equation" | "heading",
+          value,
+          primaryLang,
+        );
       }
       return "";
     })
@@ -274,10 +298,11 @@ function buildFootnoteContentMap(nodes: Node[]): Map<string, string> {
 }
 
 /** Convert an AnvilDocument's `content` (an unwrapped Tiptap `doc` node) to Markdown. */
-export function tiptapDocToMarkdown(doc: JSONContent): string {
+export function tiptapDocToMarkdown(doc: JSONContent, docPrimaryLang?: string): string {
   const nodes = asNodes(doc.content);
   footnoteContentById = buildFootnoteContentMap(nodes);
   footnoteDefs = [];
+  primaryLang = docPrimaryLang;
 
   const body = renderBlocks(nodes);
   const defs = footnoteDefs
@@ -286,6 +311,7 @@ export function tiptapDocToMarkdown(doc: JSONContent): string {
 
   footnoteContentById = null;
   footnoteDefs = null;
+  primaryLang = undefined;
 
   return defs ? `${body}\n\n${defs}` : body;
 }

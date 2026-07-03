@@ -241,7 +241,9 @@
       "invalid": "無効な数式です — LaTeXの構文を確認してください。",
       "save": "保存",
       "cancel": "キャンセル",
-      "supportedSyntax": "対応構文"
+      "supportedSyntax": "対応構文",
+      "refName": "名前（任意）",
+      "refNamePlaceholder": "例：エネルギー方程式（相互参照リストに表示）"
     },
     "codeBlock": {
       "selectLanguage": "言語を選択"
@@ -267,6 +269,24 @@
       "title": "脚注",
       "expand": "脚注を展開",
       "collapse": "脚注を折りたたむ"
+    },
+    "crossRef": {
+      "labels": {
+        "figure": "図 {number}",
+        "table": "表 {number}",
+        "equation": "式 ({number})",
+        "heading": "{number}"
+      },
+      "broken": "無効な参照",
+      "brokenHint": "参照先が見つかりません。削除された可能性があります",
+      "insertHint": "相互参照を挿入",
+      "empty": "参照できる図・表・数式・見出しがまだありません",
+      "groupFigure": "図",
+      "groupTable": "表",
+      "groupEquation": "数式",
+      "groupHeading": "見出し",
+      "untitledFigure": "無題の図",
+      "untitledTable": "無題の表"
     }
   },
   "documents": {

@@ -1030,8 +1030,27 @@ body:has(.anvil-drag-handle[data-dragging="true"]) .anvil-footnotes-panel {
 
 .tiptap-mathematics-render[data-type="block-math"] {
   display: block;
+  position: relative;
   text-align: center;
   margin: 0.75rem 0;
+}
+
+/* data-equation-number is added by a node decoration (cross-ref.ts), not by
+   this node's own renderHTML — its NodeView is a plain vanilla one that
+   bypasses Tiptap's usual attribute-to-HTML pipeline, so this attr() +
+   ::after trick (same technique image/table captions already use for their
+   figure/table numbers) is how a referenced equation's "(N)" gets shown
+   without forking @tiptap/extension-mathematics' internals. Only equations
+   that are actually cross-referenced get this attribute at all — an
+   un-referenced equation has none, so ::after never renders for it. */
+.tiptap-mathematics-render[data-equation-number]::after {
+  content: "(" attr(data-equation-number) ")";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.875em;
+  color: var(--muted-foreground);
 }
 
 .inline-math-error,
