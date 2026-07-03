@@ -128,10 +128,12 @@ export function TiptapToolbar({
   editor,
   onInsertMath,
   onEditLink,
+  onImageError,
 }: {
   editor: Editor;
   onInsertMath: (mode: MathClickMode) => void;
   onEditLink: () => void;
+  onImageError: (kind: "unsupported" | "pdfRenderFailed") => void;
 }) {
   const t = useTranslations("editor.toolbar");
   const tCallout = useTranslations("editor.callout");
@@ -297,7 +299,7 @@ export function TiptapToolbar({
         <ToolbarButton
           icon={ImagePlus}
           label={t("image")}
-          onClick={() => pickAndInsertImage(editor)}
+          onClick={() => pickAndInsertImage(editor, onImageError)}
         />
       </div>
 

@@ -32,6 +32,14 @@ export function updateBlockMath(
   return editor.chain().focus().updateBlockMath({ latex, pos }).run();
 }
 
+export function deleteInlineMath(editor: Editor, pos: number): boolean {
+  return editor.chain().focus().deleteInlineMath({ pos }).run();
+}
+
+export function deleteBlockMath(editor: Editor, pos: number): boolean {
+  return editor.chain().focus().deleteBlockMath({ pos }).run();
+}
+
 // Render LaTeX to KaTeX HTML for the live dialog preview. Never throws — invalid
 // input returns an `{ ok: false }` result with KaTeX's error message so callers
 // can show a hint without crashing the editor.

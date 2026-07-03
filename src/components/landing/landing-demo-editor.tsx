@@ -51,6 +51,8 @@ import { AutosaveIndicatorView, type SaveStatus } from "@/components/editor/auto
 import { buildExtensions, type MathClickMode } from "@/lib/tiptap/extensions";
 import { pickAndInsertImage } from "@/lib/tiptap/image";
 import {
+  deleteBlockMath,
+  deleteInlineMath,
   insertBlockMath,
   insertInlineMath,
   updateBlockMath,
@@ -482,6 +484,14 @@ export function LandingDemoEditor({ copy }: { copy: DemoCopy }) {
     [editor, mathDialog],
   );
 
+  const handleMathDelete = useCallback(() => {
+    if (editor && mathDialog.pos !== null) {
+      if (mathDialog.mode === "inline") deleteInlineMath(editor, mathDialog.pos);
+      else deleteBlockMath(editor, mathDialog.pos);
+    }
+    setMathDialog(CLOSED_MATH_DIALOG);
+  }, [editor, mathDialog]);
+
   return (
     <div className="landing-demo overflow-hidden rounded-[2rem] border border-border bg-card shadow-[0_24px_80px_-48px_rgba(0,0,0,0.38)]">
       <div
@@ -618,6 +628,7 @@ export function LandingDemoEditor({ copy }: { copy: DemoCopy }) {
                     editor={editor}
                     onInsertMath={requestMath}
                     onEditLink={() => setLinkOpen(true)}
+                    onImageError={() => {}}
                   />
                 ) : null}
               </div>
@@ -713,6 +724,7 @@ export function LandingDemoEditor({ copy }: { copy: DemoCopy }) {
           if (!open) setMathDialog(CLOSED_MATH_DIALOG);
         }}
         onSave={handleMathSave}
+        onDelete={handleMathDelete}
       />
 
       <TableSizeDialog

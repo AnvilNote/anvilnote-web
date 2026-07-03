@@ -6,6 +6,7 @@ import {
   NodeViewWrapper,
   type NodeViewProps,
 } from "@tiptap/react";
+import { Trash2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -17,11 +18,24 @@ import { CALLOUT_KINDS, calloutPalette, normalizeCalloutKind } from "@/config/ca
 
 // React NodeView for callouts: a colored box (accent left border + tinted
 // background from the kind's palette), an editable title, the paragraph body
-// (NodeViewContent), and a borderless kind switcher pinned to the bottom-right
-// corner. Switching kind only re-seeds the title while the user hasn't typed
-// their own (titleTouched stays false until they edit it).
-export function CalloutNodeView({ node, updateAttributes }: NodeViewProps) {
+// (NodeViewContent), a borderless kind switcher, and a delete button, both
+// pinned to the bottom-right corner. Switching kind only re-seeds the title
+// while the user hasn't typed their own (titleTouched stays false until
+// they edit it).
+//
+// The delete button exists because callout sets `isolating: true` (blocks
+// merging content across its boundary — needed so pressing Enter at the end
+// of the last paragraph doesn't accidentally splice the next block's
+// content into the callout). That same isolation means the normal
+// "Backspace at the start of the block right after this one" gesture,
+// which deletes/merges most other block types, does nothing here by
+// design — a callout was never deletable that way, only via an explicit
+// affordance. A plain onClick button (not layered on the shared drag
+// handle) has none of the pointerdown-vs-drag-gesture conflict that a
+// dropdown trigger there ran into (see block-handle.tsx's history).
+export function CalloutNodeView({ node, updateAttributes, deleteNode }: NodeViewProps) {
   const t = useTranslations("editor.callout");
+  const tBlock = useTranslations("editor.block");
   const kind = normalizeCalloutKind(node.attrs.kind as string | undefined);
   const title = typeof node.attrs.title === "string" ? node.attrs.title : "";
   const titleTouched = Boolean(node.attrs.titleTouched);
@@ -78,6 +92,16 @@ export function CalloutNodeView({ node, updateAttributes }: NodeViewProps) {
             ))}
           </SelectContent>
         </Select>
+        <button
+          type="button"
+          aria-label={tBlock("delete", { type: tBlock("types.callout") })}
+          title={tBlock("delete", { type: tBlock("types.callout") })}
+          onClick={deleteNode}
+          onMouseDown={(event) => event.stopPropagation()}
+          className="flex size-6 items-center justify-center rounded text-muted-foreground/60 transition-colors hover:bg-black/5 hover:text-destructive"
+        >
+          <Trash2 className="size-3.5" />
+        </button>
       </div>
     </NodeViewWrapper>
   );

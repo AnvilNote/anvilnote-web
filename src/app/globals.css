@@ -883,6 +883,9 @@
   position: absolute;
   right: 0.35rem;
   bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
 }
 
 /* Footnotes list (tiptap-footnotes' `Footnotes`/`Footnote` nodes, rendered as

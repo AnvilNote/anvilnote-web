@@ -133,7 +133,7 @@
     "oldDocReset": "這份筆記是由舊版編輯器建立，無法自動轉換，已改為空白頁。",
     "block": {
       "menu": "區塊設定",
-      "delete": "刪除 {type}",
+      "delete": "刪除{type}",
       "types": {
         "paragraph": "段落",
         "heading1": "標題 1",
@@ -148,7 +148,8 @@
         "table": "表格",
         "blockMath": "區塊公式",
         "divider": "分隔線",
-        "block": "區塊"
+        "block": "區塊",
+        "inlineMath": "行內公式"
       },
       "color": "文字顏色",
       "colors": {
@@ -216,7 +217,9 @@
       "captionPlaceholder": "輸入圖片說明",
       "left": "靠左對齊",
       "center": "置中對齊",
-      "right": "靠右對齊"
+      "right": "靠右對齊",
+      "unsupportedFormat": "不支援的圖片格式，請上傳 PNG、JPG、GIF、WebP、SVG 或 PDF",
+      "pdfRenderFailed": "PDF 預覽產生失敗，請確認檔案沒有加密或損毀"
     },
     "table": {
       "figure": "表",
@@ -234,7 +237,8 @@
       "emptyPreview": "輸入 LaTeX 後會在這裡預覽。",
       "invalid": "公式無效——請檢查 LaTeX 語法。",
       "save": "儲存",
-      "cancel": "取消"
+      "cancel": "取消",
+      "supportedSyntax": "支援語法"
     },
     "codeBlock": {
       "selectLanguage": "選擇語言"

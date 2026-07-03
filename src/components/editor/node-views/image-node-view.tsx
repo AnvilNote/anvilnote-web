@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { useTranslations } from "next-intl";
-import { AlignCenter, AlignLeft, AlignRight } from "lucide-react";
+import { AlignCenter, AlignLeft, AlignRight, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type ImageAlign = "left" | "center" | "right";
@@ -20,8 +20,10 @@ export function ImageNodeView({
   updateAttributes,
   selected,
   editor,
+  deleteNode,
 }: NodeViewProps) {
   const t = useTranslations("editor.image");
+  const tBlock = useTranslations("editor.block");
   const frameRef = useRef<HTMLDivElement>(null);
 
   const align = normalizeAlign(node.attrs.align);
@@ -97,6 +99,17 @@ export function ImageNodeView({
                     </button>
                   );
                 })}
+                <span className="mx-0.5 h-4 w-px bg-border" />
+                <button
+                  type="button"
+                  title={tBlock("delete", { type: tBlock("types.image") })}
+                  aria-label={tBlock("delete", { type: tBlock("types.image") })}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={deleteNode}
+                  className="inline-flex size-6 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-destructive"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
               </div>
               <span
                 className="anvil-image__handle"

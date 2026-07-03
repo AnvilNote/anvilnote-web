@@ -133,7 +133,7 @@
     "oldDocReset": "이 노트는 이전 에디터로 만들어져 자동으로 이전할 수 없어 빈 페이지가 되었습니다.",
     "block": {
       "menu": "블록 설정",
-      "delete": "{type} 삭제",
+      "delete": "{type}삭제",
       "types": {
         "paragraph": "단락",
         "heading1": "제목 1",
@@ -148,7 +148,8 @@
         "table": "표",
         "blockMath": "블록 수식",
         "divider": "구분선",
-        "block": "블록"
+        "block": "블록",
+        "inlineMath": "인라인 수식"
       },
       "color": "글자 색",
       "colors": {
@@ -216,7 +217,9 @@
       "captionPlaceholder": "이미지 설명 입력",
       "left": "왼쪽 정렬",
       "center": "가운데 정렬",
-      "right": "오른쪽 정렬"
+      "right": "오른쪽 정렬",
+      "unsupportedFormat": "지원하지 않는 이미지 형식입니다. PNG, JPG, GIF, WebP, SVG, PDF 중 하나를 사용하세요",
+      "pdfRenderFailed": "PDF 미리보기 생성에 실패했습니다. 파일이 암호화되었거나 손상되지 않았는지 확인하세요"
     },
     "table": {
       "figure": "표",
@@ -234,7 +237,8 @@
       "emptyPreview": "LaTeX를 입력하면 여기에 미리보기가 표시됩니다.",
       "invalid": "잘못된 수식입니다 — LaTeX 구문을 확인하세요.",
       "save": "저장",
-      "cancel": "취소"
+      "cancel": "취소",
+      "supportedSyntax": "지원 문법"
     },
     "codeBlock": {
       "selectLanguage": "언어 선택"
