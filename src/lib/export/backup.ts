@@ -42,7 +42,8 @@ function frontmatter(doc: AnvilDocument): string {
 
 export function documentToMarkdown(doc: AnvilDocument): string {
   const title = doc.title || "Untitled";
-  const body = tiptapDocToMarkdown(doc.content);
+  const primaryLang = doc.templateSettings.primaryLang;
+  const body = tiptapDocToMarkdown(doc.content, typeof primaryLang === "string" ? primaryLang : undefined);
   return `${frontmatter(doc)}\n\n# ${title}\n\n${body}\n`;
 }
 

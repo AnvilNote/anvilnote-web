@@ -241,7 +241,9 @@
       "invalid": "잘못된 수식입니다 — LaTeX 구문을 확인하세요.",
       "save": "저장",
       "cancel": "취소",
-      "supportedSyntax": "지원 문법"
+      "supportedSyntax": "지원 문법",
+      "refName": "이름 (선택)",
+      "refNamePlaceholder": "예: 에너지 방정식 — 상호 참조 목록에 표시됩니다"
     },
     "codeBlock": {
       "selectLanguage": "언어 선택"
@@ -267,6 +269,24 @@
       "title": "각주",
       "expand": "각주 펼치기",
       "collapse": "각주 접기"
+    },
+    "crossRef": {
+      "labels": {
+        "figure": "그림 {number}",
+        "table": "표 {number}",
+        "equation": "식 ({number})",
+        "heading": "{number}"
+      },
+      "broken": "끊어진 참조",
+      "brokenHint": "참조 대상을 찾을 수 없습니다. 삭제되었을 수 있습니다",
+      "insertHint": "상호 참조 삽입",
+      "empty": "아직 참조할 수 있는 그림, 표, 수식, 제목이 없습니다",
+      "groupFigure": "그림",
+      "groupTable": "표",
+      "groupEquation": "수식",
+      "groupHeading": "제목",
+      "untitledFigure": "제목 없는 그림",
+      "untitledTable": "제목 없는 표"
     }
   },
   "documents": {

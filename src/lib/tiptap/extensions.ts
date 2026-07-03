@@ -17,6 +17,8 @@ import { BlockMathExit } from "@/lib/tiptap/math";
 import { AnvilCodeBlock } from "@/lib/tiptap/code-block";
 import { AnvilImage } from "@/lib/tiptap/image";
 import { AnvilCallout } from "@/lib/tiptap/callout";
+import { CrossRef, CrossRefTargetIds } from "@/lib/tiptap/cross-ref";
+import { CrossRefSuggestion } from "@/components/editor/cross-ref-suggestion";
 
 export type TableVariant = "normal" | "three-line";
 export type TableAlign = "left" | "center" | "right";
@@ -214,8 +216,9 @@ export type BuildExtensionsOptions = {
   figureCaptionPlaceholder: string;
   tableCaptionPlaceholder: string;
   // Called when a rendered formula is clicked, so the editor can open the math
-  // dialog seeded with the existing LaTeX and its document position.
-  onMathClick: (mode: MathClickMode, pos: number, latex: string) => void;
+  // dialog seeded with the existing LaTeX and its document position (and, for
+  // block math, its optional cross-ref display name).
+  onMathClick: (mode: MathClickMode, pos: number, latex: string, refName?: string) => void;
 };
 
 export function buildExtensions({
@@ -272,9 +275,17 @@ export function buildExtensions({
       },
       blockOptions: {
         onClick: (node, pos) =>
-          onMathClick("block", pos, String(node.attrs.latex ?? "")),
+          onMathClick(
+            "block",
+            pos,
+            String(node.attrs.latex ?? ""),
+            typeof node.attrs.refName === "string" ? node.attrs.refName : undefined,
+          ),
       },
     }),
     BlockMathExit,
+    CrossRefTargetIds,
+    CrossRef,
+    CrossRefSuggestion,
   ];
 }

@@ -241,7 +241,9 @@
       "invalid": "Invalid equation — check the LaTeX syntax.",
       "save": "Save",
       "cancel": "Cancel",
-      "supportedSyntax": "Supported syntax"
+      "supportedSyntax": "Supported syntax",
+      "refName": "Name (optional)",
+      "refNamePlaceholder": "e.g. Energy equation — shown in the cross-reference list"
     },
     "codeBlock": {
       "selectLanguage": "Select language"
@@ -267,6 +269,24 @@
       "title": "Footnotes",
       "expand": "Expand footnotes",
       "collapse": "Collapse footnotes"
+    },
+    "crossRef": {
+      "labels": {
+        "figure": "Figure {number}",
+        "table": "Table {number}",
+        "equation": "Equation ({number})",
+        "heading": "{number}"
+      },
+      "broken": "Broken reference",
+      "brokenHint": "The referenced target could not be found — it may have been deleted",
+      "insertHint": "Insert cross-reference",
+      "empty": "No figures, tables, equations, or headings to reference yet",
+      "groupFigure": "Figures",
+      "groupTable": "Tables",
+      "groupEquation": "Equations",
+      "groupHeading": "Headings",
+      "untitledFigure": "Untitled figure",
+      "untitledTable": "Untitled table"
     }
   },
   "documents": {

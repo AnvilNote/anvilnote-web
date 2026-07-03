@@ -103,12 +103,48 @@ const SlashList = forwardRef<SlashListHandle, SlashListProps>(
   },
 );
 
+// Flips the menu above the caret instead of below when there isn't enough
+// room left underneath it in the viewport — triggering "/" near the bottom
+// of the window otherwise let the list run past the visible area, hidden
+// behind whatever the browser/OS renders at the screen edge. Needs the
+// popup's own rendered height, so this only works once it's already in the
+// DOM (called from onStart/onUpdate, after ReactRenderer has mounted it).
+// The list's own Tailwind cap (max-h-72 = 18rem = 288px). The flip decision
+// below uses this constant instead of measuring the popup's rendered
+// height: positionPopup runs from Suggestion's onStart, BEFORE React has
+// painted the freshly-mounted list into the wrapper, so a live
+// getBoundingClientRect() height read 0 at exactly that moment — "does it
+// fit below" was then always true and the flip never fired, leaving the
+// menu pinned under the caret with its lower half past the viewport edge.
+const MENU_MAX_HEIGHT = 288;
+
 function positionPopup(popup: HTMLElement | null, rect: DOMRect | null) {
   if (!popup || !rect) return;
   popup.style.left = `${rect.left}px`;
-  // Drop the menu just below the caret; the list is height-capped so it stays
-  // on screen for typical positions.
-  popup.style.top = `${rect.bottom + 6}px`;
+  popup.style.top = "";
+  popup.style.bottom = "";
+  // maxHeight alone doesn't clip/scroll anything without this — the outer
+  // wrapper otherwise just grows past it and the constraint is a no-op.
+  popup.style.overflowY = "auto";
+
+  const margin = 12;
+  const spaceBelow = window.innerHeight - rect.bottom - 6 - margin;
+  const spaceAbove = rect.top - 6 - margin;
+  // Flip above as soon as the full-size list can't fit below AND above has
+  // more room; if both sides are tight, the larger side loses the least
+  // content to the maxHeight cap.
+  const placeAbove = spaceBelow < MENU_MAX_HEIGHT && spaceAbove > spaceBelow;
+
+  if (placeAbove) {
+    popup.style.bottom = `${window.innerHeight - rect.top + 6}px`;
+    popup.style.maxHeight = `${Math.min(MENU_MAX_HEIGHT, spaceAbove)}px`;
+  } else {
+    popup.style.top = `${rect.bottom + 6}px`;
+    // Capped to the ACTUAL remaining space — an earlier version floored
+    // this at 100px, which near the very bottom of the window exceeded the
+    // real space and pushed the menu's lower half off-screen anyway.
+    popup.style.maxHeight = `${Math.min(MENU_MAX_HEIGHT, spaceBelow)}px`;
+  }
 }
 
 // Builds the slash-command extension. `items` is provided by the editor so the
