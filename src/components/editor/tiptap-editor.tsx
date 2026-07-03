@@ -40,6 +40,8 @@ import {
 import { TableSizeDialog } from "@/components/editor/table-size-picker";
 import { buildExtensions, type MathClickMode } from "@/lib/tiptap/extensions";
 import {
+  deleteBlockMath,
+  deleteInlineMath,
   insertBlockMath,
   insertInlineMath,
   updateBlockMath,
@@ -67,6 +69,13 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
 
   const register = useEditorBridge((s) => s.register);
   const unregister = useEditorBridge((s) => s.unregister);
+
+  const handleImageError = useCallback(
+    (kind: "unsupported" | "pdfRenderFailed") => {
+      toast.error(t(`editor.image.${kind === "unsupported" ? "unsupportedFormat" : "pdfRenderFailed"}`));
+    },
+    [t],
+  );
 
   const [mathDialog, setMathDialog] = useState<MathDialogState>(CLOSED_MATH_DIALOG);
   const [linkOpen, setLinkOpen] = useState(false);
@@ -210,7 +219,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         aliases: ["image", "img", "picture", "photo", "圖片"],
         run: ({ editor, range }) => {
           editor.chain().focus().deleteRange(range).run();
-          pickAndInsertImage(editor);
+          pickAndInsertImage(editor, handleImageError);
         },
       },
       {
@@ -242,7 +251,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         },
       },
     ];
-  }, [t, tt, requestMath, requestTable]);
+  }, [t, tt, requestMath, requestTable, handleImageError]);
 
   // Keep the slash extension instance stable while letting it read the latest
   // (localized) items at trigger time through a ref updated in an effect.
@@ -366,6 +375,14 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
     [editor, mathDialog],
   );
 
+  const handleMathDelete = useCallback(() => {
+    if (editor && mathDialog.pos !== null) {
+      if (mathDialog.mode === "inline") deleteInlineMath(editor, mathDialog.pos);
+      else deleteBlockMath(editor, mathDialog.pos);
+    }
+    setMathDialog(CLOSED_MATH_DIALOG);
+  }, [editor, mathDialog]);
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Sticky editor header: toolbar (left) on the same line as the autosave
@@ -393,6 +410,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
                 editor={editor}
                 onInsertMath={requestMath}
                 onEditLink={() => setLinkOpen(true)}
+                onImageError={handleImageError}
               />
             ) : null}
           </div>
@@ -490,6 +508,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
           if (!open) setMathDialog(CLOSED_MATH_DIALOG);
         }}
         onSave={handleMathSave}
+        onDelete={handleMathDelete}
       />
 
       <TableSizeDialog

@@ -148,7 +148,8 @@
         "table": "table",
         "blockMath": "block equation",
         "divider": "divider",
-        "block": "block"
+        "block": "block",
+        "inlineMath": "Inline formula"
       },
       "color": "Text color",
       "colors": {
@@ -216,7 +217,9 @@
       "captionPlaceholder": "Enter an image caption",
       "left": "Align left",
       "center": "Align center",
-      "right": "Align right"
+      "right": "Align right",
+      "unsupportedFormat": "Unsupported image format — use PNG, JPG, GIF, WebP, SVG, or PDF",
+      "pdfRenderFailed": "Failed to generate a PDF preview — check the file isn't encrypted or corrupted"
     },
     "table": {
       "figure": "Table",
@@ -234,7 +237,8 @@
       "emptyPreview": "Once you type LaTeX, the preview appears here.",
       "invalid": "Invalid equation — check the LaTeX syntax.",
       "save": "Save",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "supportedSyntax": "Supported syntax"
     },
     "codeBlock": {
       "selectLanguage": "Select language"

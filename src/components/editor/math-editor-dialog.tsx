@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Sigma } from "lucide-react";
+import { Sigma, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -35,10 +35,12 @@ export function MathEditorDialog({
   state,
   onOpenChange,
   onSave,
+  onDelete,
 }: {
   state: MathDialogState;
   onOpenChange: (open: boolean) => void;
   onSave: (latex: string) => void;
+  onDelete: () => void;
 }) {
   return (
     <Dialog open={state.open} onOpenChange={onOpenChange}>
@@ -50,6 +52,7 @@ export function MathEditorDialog({
           state={state}
           onCancel={() => onOpenChange(false)}
           onSave={onSave}
+          onDelete={onDelete}
         />
       ) : null}
     </Dialog>
@@ -60,16 +63,23 @@ function MathDialogForm({
   state,
   onCancel,
   onSave,
+  onDelete,
 }: {
   state: MathDialogState;
   onCancel: () => void;
   onSave: (latex: string) => void;
+  onDelete: () => void;
 }) {
   const t = useTranslations("editor.math");
+  const tBlock = useTranslations("editor.block");
   const [draft, setDraft] = useState(state.latex);
 
   const isBlock = state.mode === "block";
   const preview = draft.trim() ? renderMathPreview(draft, isBlock) : null;
+  // Delete only makes sense for an existing node (state.pos !== null) —
+  // matches link-input.tsx's hasLink-conditional Remove button: an action
+  // only appears once there's something to remove.
+  const isEditing = state.pos !== null;
 
   function handleSave() {
     onSave(draft);
@@ -93,12 +103,22 @@ function MathDialogForm({
 
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <label
-              htmlFor="math-source"
-              className="text-xs font-medium text-muted-foreground"
-            >
-              {t("source")}
-            </label>
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="math-source"
+                className="text-xs font-medium text-muted-foreground"
+              >
+                {t("source")}
+              </label>
+              <a
+                href="https://katex.org/docs/supported.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+              >
+                {t("supportedSyntax")}
+              </a>
+            </div>
             <Textarea
               id="math-source"
               autoFocus
@@ -138,6 +158,16 @@ function MathDialogForm({
         </div>
 
         <DialogFooter>
+          {isEditing ? (
+            <Button
+              variant="ghost"
+              onClick={onDelete}
+              className="text-destructive hover:text-destructive sm:mr-auto"
+            >
+              <Trash2 className="size-4" />
+              {tBlock("delete", { type: tBlock(`types.${isBlock ? "blockMath" : "inlineMath"}`) })}
+            </Button>
+          ) : null}
           <Button variant="ghost" onClick={onCancel}>
             {t("cancel")}
           </Button>

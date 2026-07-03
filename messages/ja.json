@@ -148,7 +148,8 @@
         "table": "表",
         "blockMath": "ブロック数式",
         "divider": "区切り線",
-        "block": "ブロック"
+        "block": "ブロック",
+        "inlineMath": "インライン数式"
       },
       "color": "文字色",
       "colors": {
@@ -216,7 +217,9 @@
       "captionPlaceholder": "画像の説明を入力",
       "left": "左揃え",
       "center": "中央揃え",
-      "right": "右揃え"
+      "right": "右揃え",
+      "unsupportedFormat": "対応していない画像形式です。PNG、JPG、GIF、WebP、SVG、PDF のいずれかをご利用ください",
+      "pdfRenderFailed": "PDFプレビューの生成に失敗しました。ファイルが暗号化・破損していないか確認してください"
     },
     "table": {
       "figure": "表",
@@ -234,7 +237,8 @@
       "emptyPreview": "LaTeXを入力すると、ここにプレビューが表示されます。",
       "invalid": "無効な数式です — LaTeXの構文を確認してください。",
       "save": "保存",
-      "cancel": "キャンセル"
+      "cancel": "キャンセル",
+      "supportedSyntax": "対応構文"
     },
     "codeBlock": {
       "selectLanguage": "言語を選択"

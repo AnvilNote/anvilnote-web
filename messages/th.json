@@ -148,7 +148,8 @@
         "table": "ตาราง",
         "blockMath": "สมการแบบบล็อก",
         "divider": "เส้นแบ่ง",
-        "block": "บล็อก"
+        "block": "บล็อก",
+        "inlineMath": "สมการในบรรทัด"
       },
       "color": "สีข้อความ",
       "colors": {
@@ -216,7 +217,9 @@
       "captionPlaceholder": "ใส่คำบรรยายรูปภาพ",
       "left": "จัดชิดซ้าย",
       "center": "จัดกึ่งกลาง",
-      "right": "จัดชิดขวา"
+      "right": "จัดชิดขวา",
+      "unsupportedFormat": "รูปแบบไฟล์ภาพไม่รองรับ กรุณาใช้ PNG, JPG, GIF, WebP, SVG หรือ PDF",
+      "pdfRenderFailed": "สร้างตัวอย่าง PDF ไม่สำเร็จ กรุณาตรวจสอบว่าไฟล์ไม่ได้เข้ารหัสหรือเสียหาย"
     },
     "table": {
       "figure": "ตาราง",
@@ -234,7 +237,8 @@
       "emptyPreview": "เมื่อพิมพ์ LaTeX ตัวอย่างจะแสดงที่นี่",
       "invalid": "สมการไม่ถูกต้อง — ตรวจสอบไวยากรณ์ LaTeX",
       "save": "บันทึก",
-      "cancel": "ยกเลิก"
+      "cancel": "ยกเลิก",
+      "supportedSyntax": "ไวยากรณ์ที่รองรับ"
     },
     "codeBlock": {
       "selectLanguage": "เลือกภาษา"
