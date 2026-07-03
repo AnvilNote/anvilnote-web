@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { ChainedCommands } from "@tiptap/core";
+import type { EditorView } from "@tiptap/pm/view";
 import { EditorContent, useEditor } from "@tiptap/react";
 import {
   Code2,
@@ -276,6 +277,37 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         if (href) {
           window.open(href, "_blank", "noopener,noreferrer");
           return true;
+        }
+        return false;
+      },
+      // Blocks dropping a dragged block into or right up against the
+      // footnotes list. AnvilDocument's schema requires footnotes to stay
+      // the trailing node and only accept footnote content ("block+
+      // footnotes?") — a generic block-reorder drop that lands there isn't
+      // schema-valid, and ProseMirror's move-via-delete-then-insert isn't
+      // atomic: the delete half had already been confirmed to go through
+      // even when the insert half failed, silently destroying content
+      // (reproduced: dragging a paragraph near the footnotes list deleted
+      // both that paragraph and the footnote's own text). Rejecting the
+      // drop outright here — before any transaction is dispatched — is
+      // cheaper and safer than trying to make the reorder logic itself
+      // schema-aware.
+      handleDrop: (view: EditorView, event: DragEvent) => {
+        const coords = { left: event.clientX, top: event.clientY };
+        const dropPos = view.posAtCoords(coords);
+        if (!dropPos) return false;
+
+        const doc = view.state.doc;
+        const $pos = doc.resolve(dropPos.pos);
+        for (let d = $pos.depth; d >= 0; d -= 1) {
+          const name = $pos.node(d).type.name;
+          if (name === "footnotes" || name === "footnote") return true;
+        }
+
+        const last = doc.lastChild;
+        if (last?.type.name === "footnotes") {
+          const footnotesStart = doc.content.size - last.nodeSize;
+          if (dropPos.pos >= footnotesStart) return true;
         }
         return false;
       },
