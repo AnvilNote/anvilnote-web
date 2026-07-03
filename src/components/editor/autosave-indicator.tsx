@@ -29,13 +29,15 @@ export function AutosaveIndicatorView({ status }: { status: SaveStatus }) {
           status === "failed" && "bg-destructive",
         )}
       />
-      {/* Fixed-width label so swapping states (儲存中… → 已儲存) never changes
-          the indicator size and jolts the header layout. Hidden below a
+      {/* Content-width, not a fixed min-width reserved for the longest
+          label across every locale/state ("Save failed" is the widest,
+          but it's also the rarest — not worth widening the indicator for
+          the common "Saved" case just to avoid it). Hidden below a
           container width (not viewport width — this row sits next to the
           toolbar, which can eat all the room well above any viewport
           breakpoint), so the dot alone still shows once the row is tight
           instead of forcing the toolbar row to wrap. */}
-      <span className="hidden min-w-[3.75rem] @[22rem]:inline-block">{t(status)}</span>
+      <span className="hidden @[22rem]:inline-block">{t(status)}</span>
     </span>
   );
 }

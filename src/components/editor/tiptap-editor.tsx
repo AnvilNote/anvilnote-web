@@ -341,14 +341,18 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
             room for the sidebar-toggle icon above them, but this is a
             working icon bar, not reading content, and the wasted space was
             exactly what made it scroll/wrap sooner than it needed to.
-            @lg:flex-row (a container query, keyed off this row's own
+            @[20rem]:flex-row (a container query, keyed off this row's own
             measured width — the @container is on the parent sticky
-            wrapper), not lg:flex-row (a viewport breakpoint): the sidebar
-            and right panel already eat into the space this row actually
-            gets, so it could still be squeezed well within any single
-            viewport breakpoint, dropping the indicator onto its own line
-            with room to spare on the right. */}
-        <div className="mx-auto flex w-full flex-col gap-1 pl-2 pr-4 py-1.5 @lg:flex-row @lg:items-center @lg:gap-3">
+            wrapper) with a deliberately low threshold, not lg:flex-row (a
+            viewport breakpoint, which stacked with room to spare on the
+            right well within any single viewport breakpoint since the
+            sidebar/right panel eat into this row's actual space). The
+            toolbar itself already scrolls internally when tight
+            (overflow-x-auto), so this row can stay side-by-side down to
+            a much smaller width than it needs for the toolbar's full
+            content — flex-col is really just for genuinely narrow/mobile
+            widths at this point. */}
+        <div className="mx-auto flex w-full flex-col gap-1 pl-4 pr-4 py-1.5 @[20rem]:flex-row @[20rem]:items-center @[20rem]:gap-3">
           <div className="min-w-0 w-full flex-1">
             {editor ? (
               <TiptapToolbar
@@ -358,7 +362,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
               />
             ) : null}
           </div>
-          <div className="flex w-full justify-end @lg:w-auto @lg:shrink-0">
+          <div className="flex w-full justify-end @[20rem]:w-auto @[20rem]:shrink-0">
             <AutosaveIndicator documentId={documentId} />
           </div>
         </div>
