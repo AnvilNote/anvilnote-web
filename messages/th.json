@@ -662,10 +662,6 @@
       "save": "บันทึก",
       "export": "ส่งออก PDF",
       "exportDisabled": "การส่งออก PDF ใช้ได้ในพื้นที่ทำงานเต็มรูปแบบ",
-      "outline": "โครงร่าง",
-      "metadata": "ข้อมูลกำกับ",
-      "template": "เทมเพลต",
-      "exportTab": "ส่งออก",
       "starterTitle": "ทัวร์ฟีเจอร์ AnvilNote"
     }
   },

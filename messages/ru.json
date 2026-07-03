@@ -662,10 +662,6 @@
       "save": "Сохранить",
       "export": "Экспорт в PDF",
       "exportDisabled": "Экспорт в PDF доступен в полной рабочей среде",
-      "outline": "Структура",
-      "metadata": "Метаданные",
-      "template": "Шаблон",
-      "exportTab": "Экспорт",
       "starterTitle": "Обзор возможностей AnvilNote"
     }
   },

@@ -662,10 +662,6 @@
       "save": "儲存",
       "export": "匯出 PDF",
       "exportDisabled": "PDF 匯出可在正式工作區使用",
-      "outline": "大綱",
-      "metadata": "文件資訊",
-      "template": "範本",
-      "exportTab": "匯出",
       "starterTitle": "AnvilNote 功能示範"
     }
   },

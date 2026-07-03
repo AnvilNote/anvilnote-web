@@ -662,10 +662,6 @@
       "save": "저장",
       "export": "PDF 내보내기",
       "exportDisabled": "PDF 내보내기는 정식 워크스페이스에서 사용할 수 있습니다",
-      "outline": "개요",
-      "metadata": "메타데이터",
-      "template": "템플릿",
-      "exportTab": "내보내기",
       "starterTitle": "AnvilNote 기능 둘러보기"
     }
   },
