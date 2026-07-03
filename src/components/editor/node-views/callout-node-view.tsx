@@ -58,12 +58,19 @@ export function CalloutNodeView({ node, updateAttributes, deleteNode }: NodeView
     <NodeViewWrapper
       className="anvil-callout"
       data-kind={kind}
-      // The background is computed in CSS from this one accent variable
-      // (color-mix against the theme's own --background), not a second
-      // hardcoded pastel hex per kind — a fixed light pastel looked fine in
-      // light mode but was a jarring bright box against a dark editor,
-      // since it never adapted to the theme at all.
-      style={{ "--callout-accent": palette.accent, borderLeftColor: palette.accent } as CSSProperties}
+      // Both background variants are fixed hex from the palette (see
+      // callouts.ts's comment on why — a runtime color-mix() formula here
+      // measured correctly in a regular browser but rendered visibly wrong,
+      // uniformly yellow-green, inside the packaged Electron app). The CSS
+      // .dark selector below picks between them — this component doesn't
+      // need to know the current theme itself.
+      style={
+        {
+          "--callout-bg-light": palette.background,
+          "--callout-bg-dark": palette.darkBackground,
+          borderLeftColor: palette.accent,
+        } as CSSProperties
+      }
     >
       <input
         type="text"
