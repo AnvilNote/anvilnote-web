@@ -41,12 +41,15 @@ export function TiptapBubbleMenu({
   editor,
   onInsertMath,
   onEditLink,
+  onEditColor,
 }: {
   editor: Editor;
   onInsertMath: (mode: MathClickMode) => void;
   onEditLink: () => void;
+  onEditColor: () => void;
 }) {
   const t = useTranslations("editor.toolbar");
+  const tBlock = useTranslations("editor.block");
   const s = useEditorState({
     editor,
     selector: ({ editor: e }) => ({
@@ -55,6 +58,7 @@ export function TiptapBubbleMenu({
       strike: e.isActive("strike"),
       code: e.isActive("code"),
       link: e.isActive("link"),
+      color: e.getAttributes("textStyle").color as string | undefined,
     }),
   });
 
@@ -99,8 +103,36 @@ export function TiptapBubbleMenu({
       <MenuButton
         icon={Sigma}
         label={t("inlineMath")}
-        onClick={() => onInsertMath("inline")}
+        onClick={() => {
+          // The bubble menu only shows while there's a real, non-empty
+          // selection (its own shouldShow requires from !== to), so marking
+          // text and clicking this is a request to turn exactly that text
+          // into its LaTeX source directly — skip the empty-dialog
+          // round-trip and convert in place. Falls back to the dialog only
+          // for the edge case of a whitespace-only selection.
+          const { from, to } = editor.state.selection;
+          const text = editor.state.doc.textBetween(from, to, " ").trim();
+          if (!text) {
+            onInsertMath("inline");
+            return;
+          }
+          editor.chain().focus().deleteSelection().insertInlineMath({ latex: text }).run();
+        }}
       />
+      <span className="mx-0.5 h-5 w-px bg-border" />
+      <button
+        type="button"
+        title={tBlock("color")}
+        aria-label={tBlock("color")}
+        onClick={onEditColor}
+        className="inline-flex h-7 items-center gap-1.5 rounded px-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+      >
+        <span
+          className="size-3.5 shrink-0 rounded-full border"
+          style={{ backgroundColor: s.color ?? "#000000" }}
+        />
+        <span className="font-mono text-xs">{s.color ?? tBlock("colors.default")}</span>
+      </button>
     </BubbleMenu>
   );
 }
