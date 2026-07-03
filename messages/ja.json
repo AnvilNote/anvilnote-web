@@ -662,10 +662,6 @@
       "save": "保存",
       "export": "PDFを書き出す",
       "exportDisabled": "PDF 書き出しは正式なワークスペースで利用できます",
-      "outline": "アウトライン",
-      "metadata": "メタデータ",
-      "template": "テンプレート",
-      "exportTab": "書き出し",
       "starterTitle": "AnvilNote 機能ツアー"
     }
   },

@@ -85,6 +85,10 @@ export default async function LocaleIndexPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "landing" });
+  // The demo's right-panel tabs reuse the real editor's own labels (not a
+  // separate landing.demo.* copy) so they can't drift out of sync — they
+  // had (different wording for outline/metadata/template across locales).
+  const tPanel = await getTranslations({ locale, namespace: "panel" });
   const copy: LandingCopy = {
     heroLabel: t("hero.label"),
     heroLine1: t("hero.line1"),
@@ -112,10 +116,10 @@ export default async function LocaleIndexPage({
       save: t("demo.save"),
       export: t("demo.export"),
       exportDisabled: t("demo.exportDisabled"),
-      outline: t("demo.outline"),
-      metadata: t("demo.metadata"),
-      template: t("demo.template"),
-      exportTab: t("demo.exportTab"),
+      outline: tPanel("outline"),
+      metadata: tPanel("metadata"),
+      template: tPanel("template"),
+      exportTab: tPanel("export"),
       starterTitle: t("demo.starterTitle"),
     },
   };

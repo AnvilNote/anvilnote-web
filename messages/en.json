@@ -662,10 +662,6 @@
       "save": "Save",
       "export": "Export PDF",
       "exportDisabled": "PDF export is available in the full workspace",
-      "outline": "Outline",
-      "metadata": "Metadata",
-      "template": "Template",
-      "exportTab": "Export",
       "starterTitle": "AnvilNote Feature Tour"
     }
   },
