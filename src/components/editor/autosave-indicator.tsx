@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useDocumentStore } from "@/lib/stores/document-store";
 
-export type SaveStatus = "saved" | "saving" | "unsaved";
+export type SaveStatus = "saved" | "saving" | "unsaved" | "failed";
 
 // Presentational indicator driven by an explicit status (used by the landing
 // demo, which has no store-backed document).
@@ -15,7 +15,9 @@ export function AutosaveIndicatorView({ status }: { status: SaveStatus }) {
     <span
       className={cn(
         "inline-flex items-center gap-1.5 text-xs whitespace-nowrap",
-        status === "saved" ? "text-[#00CF00]" : "text-muted-foreground",
+        status === "saved" && "text-[#00CF00]",
+        status === "failed" && "text-destructive",
+        (status === "saving" || status === "unsaved") && "text-muted-foreground",
       )}
     >
       <span
@@ -24,11 +26,16 @@ export function AutosaveIndicatorView({ status }: { status: SaveStatus }) {
           status === "saved" && "bg-[#00CF00]",
           status === "saving" && "animate-pulse bg-foreground/60",
           status === "unsaved" && "bg-foreground/25",
+          status === "failed" && "bg-destructive",
         )}
       />
       {/* Fixed-width label so swapping states (儲存中… → 已儲存) never changes
-          the indicator size and jolts the header layout. */}
-      <span className="hidden min-w-[3.75rem] md:inline-block">{t(status)}</span>
+          the indicator size and jolts the header layout. Hidden below a
+          container width (not viewport width — this row sits next to the
+          toolbar, which can eat all the room well above any viewport
+          breakpoint), so the dot alone still shows once the row is tight
+          instead of forcing the toolbar row to wrap. */}
+      <span className="hidden min-w-[3.75rem] @[22rem]:inline-block">{t(status)}</span>
     </span>
   );
 }
