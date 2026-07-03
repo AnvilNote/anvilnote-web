@@ -849,30 +849,26 @@
   font-weight: 600;
 }
 
-/* Callout NodeView: accent-tinted admonition box. Only --callout-accent and
-   border-left-color are set inline per-instance (data-driven from the
-   kind's palette); background is derived here via color-mix against the
-   theme's own --background, so it's a light pastel tint in light mode and
-   a dark tint in dark mode automatically, instead of a single hardcoded
-   pastel hex that only ever looked right in light mode.
-   Mixed `in oklch`, not `in srgb`: this app's whole theme is defined in
-   OKLCH (see --background above), which is perceptually uniform — sRGB
-   mixing isn't, so against dark mode's very dark --background
-   (oklch(0.16 0 0)) a modest sRGB-mixed percentage barely shifted the
-   result at all (first attempt: nearly indistinguishable from the page,
-   not a visible tinted box). oklch mixing actually lightens/tints by the
-   stated percentage the way it looks like it should. */
+/* Callout NodeView: accent-tinted admonition box. --callout-bg-light,
+   --callout-bg-dark, and border-left-color are set inline per-instance
+   (fixed hex from the kind's palette — see callouts.ts's comment for why
+   these are plain hex now, not a color-mix() formula: mixing accent into
+   the theme's own --background at render time measured correctly in a
+   regular browser but rendered uniformly wrong, yellow-green regardless of
+   the actual accent hue, inside the packaged Electron desktop app). This
+   selector just picks which precomputed variable applies for the current
+   theme — no color math happens in CSS at all anymore. */
 .anvil-callout {
   position: relative;
   margin: 1rem 0;
   padding: 0.75rem 2.5rem 0.75rem 1rem;
   border-radius: 0rem;
   border-left: 4px solid transparent;
-  background-color: color-mix(in oklch, var(--callout-accent) 12%, var(--background));
+  background-color: var(--callout-bg-light);
 }
 
 .dark .anvil-callout {
-  background-color: color-mix(in oklch, var(--callout-accent) 22%, var(--background));
+  background-color: var(--callout-bg-dark);
 }
 
 .anvil-callout__title {
