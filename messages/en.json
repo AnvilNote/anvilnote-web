@@ -515,7 +515,17 @@
     "outlineEmpty": "Headings will appear here as you write.",
     "outlineDocument": "Document",
     "metadataEmpty": "This template has no fields to fill in.",
-    "metadataHint": "These fields come from the template; optional ones can be left blank."
+    "metadataHint": "These fields come from the template; optional ones can be left blank.",
+    "history": "History",
+    "historyEmpty": "No version snapshots yet.",
+    "historyEmptyOff": "Version snapshots are currently off — turn them on in Settings.",
+    "historyLoading": "Loading versions…",
+    "historyLoadError": "Failed to load version history.",
+    "historyPreviewTitle": "Version preview",
+    "historyRestore": "Restore this version",
+    "historyRestoreDescription": "Your current content is snapshotted first, so you can always undo this if you change your mind.",
+    "historyRestored": "Restored the selected version",
+    "historyRestoreFailed": "Failed to restore version"
   },
   "export": {
     "title": "Export",
@@ -593,6 +603,14 @@
       "available": "A new version is available",
       "upToDate": "You're on the latest version.",
       "download": "Download"
+    },
+    "versionHistory": {
+      "title": "Version History",
+      "description": "Automatically snapshot documents over time so you can restore an earlier version.",
+      "interval": "Snapshot interval",
+      "intervalHint": "A snapshot is only created when content has actually changed, so it never wastes space.",
+      "off": "Off",
+      "every": "Every {minutes} minutes"
     }
   },
   "command": {

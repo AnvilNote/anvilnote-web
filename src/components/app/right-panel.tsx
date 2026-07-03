@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import type { ComponentType } from "react";
 import { useTranslations } from "next-intl";
-import { FileText, Hash } from "lucide-react";
+import { FileDown, FileText, Hash, History, Info, LayoutTemplate, List } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -15,8 +15,9 @@ import {
 import { MetadataForm } from "@/components/templates/metadata-form";
 import { TemplateSelector } from "@/components/templates/template-selector";
 import { ExportPanel } from "@/components/export/export-panel";
+import { VersionHistoryPanel } from "@/components/app/version-history-panel";
 import { useDocumentStore } from "@/lib/stores/document-store";
-import { useUiStore } from "@/lib/stores/ui-store";
+import { useUiStore, useRightPanelTabStore } from "@/lib/stores/ui-store";
 import { useTourStore } from "@/lib/stores/tour-store";
 import { extractOutline, type OutlineItem } from "@/lib/tiptap/serialization";
 import { cn } from "@/lib/utils";
@@ -61,9 +62,44 @@ function OutlinePanel({ documentId }: { documentId: string }) {
   );
 }
 
+// Unselected tabs show only their icon; the active tab additionally shows
+// its label. Five tabs' full labels don't fit this panel's ~320px width at
+// once (Outline/History both ended up clipped mid-word), and unlike the
+// main toolbar there's no natural "scroll instead of clipping" fallback
+// that still keeps every tab identifiable when the row's already this
+// narrow — collapsing to icon-only for the tabs you're not looking at is
+// the same tradeoff macOS's own Finder sidebar makes for the same reason.
+function PanelTab({
+  value,
+  active,
+  icon: Icon,
+  label,
+}: {
+  value: string;
+  active: boolean;
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+}) {
+  return (
+    <TabsTrigger
+      value={value}
+      aria-label={label}
+      title={label}
+      className="shrink-0 gap-1.5 rounded-[1.3rem] px-2.5 py-1.5 text-[0.95rem] leading-none whitespace-nowrap data-[state=active]:bg-background data-[state=active]:shadow-sm"
+    >
+      <Icon className="size-4 shrink-0" />
+      {active ? label : null}
+    </TabsTrigger>
+  );
+}
+
 function RightPanelContent({ documentId }: { documentId: string }) {
   const t = useTranslations("panel");
-  const [tab, setTab] = useState("outline");
+  // Persisted (see ui-store.ts's useRightPanelTabStore) so which tab was
+  // last open survives a reload or locale switch instead of always
+  // resetting to Outline.
+  const tab = useRightPanelTabStore((s) => s.tab);
+  const setTab = useRightPanelTabStore((s) => s.setTab);
   const markTabVisited = useTourStore((s) => s.markTabVisited);
 
   return (
@@ -76,40 +112,30 @@ function RightPanelContent({ documentId }: { documentId: string }) {
       className="flex h-full min-h-0 flex-col gap-0"
     >
       <div className="px-3 pt-3">
-        {/* flex + content-sized triggers, not a 4-equal-column grid — a
-            fixed grid force-truncated longer labels (e.g. "Template" or
-            longer ja/ko compounds) even when the panel had room to spare
-            elsewhere. overflow-x-auto is the same fallback used for the
-            main toolbar: if labels genuinely don't fit, it scrolls instead
-            of ever cutting text off mid-word. */}
+        {/* flex + content-sized triggers, not a 4-equal-column grid — a fixed
+            grid force-truncated longer labels even when the panel had room
+            to spare elsewhere. overflow-x-auto is still the fallback for
+            whatever doesn't fit even after collapsing inactive tabs to
+            icon-only (see PanelTab). */}
         <TabsList
           data-tour="right-tabs"
           className="flex h-auto w-full items-center gap-0.5 overflow-x-auto rounded-[1.7rem] bg-muted p-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
-          <TabsTrigger
-            value="outline"
-            className="shrink-0 rounded-[1.3rem] px-2.5 py-1.5 text-[0.95rem] leading-none whitespace-nowrap data-[state=active]:bg-background data-[state=active]:shadow-sm"
-          >
-            {t("outline")}
-          </TabsTrigger>
-          <TabsTrigger
-            value="metadata"
-            className="shrink-0 rounded-[1.3rem] px-2.5 py-1.5 text-[0.95rem] leading-none whitespace-nowrap data-[state=active]:bg-background data-[state=active]:shadow-sm"
-          >
-            {t("metadata")}
-          </TabsTrigger>
-          <TabsTrigger
+          <PanelTab value="outline" active={tab === "outline"} icon={List} label={t("outline")} />
+          <PanelTab value="metadata" active={tab === "metadata"} icon={Info} label={t("metadata")} />
+          <PanelTab
             value="template"
-            className="shrink-0 rounded-[1.3rem] px-2.5 py-1.5 text-[0.95rem] leading-none whitespace-nowrap data-[state=active]:bg-background data-[state=active]:shadow-sm"
-          >
-            {t("template")}
-          </TabsTrigger>
-          <TabsTrigger
-            value="export"
-            className="shrink-0 rounded-[1.3rem] px-2.5 py-1.5 text-[0.95rem] leading-none whitespace-nowrap data-[state=active]:bg-background data-[state=active]:shadow-sm"
-          >
-            {t("export")}
-          </TabsTrigger>
+            active={tab === "template"}
+            icon={LayoutTemplate}
+            label={t("template")}
+          />
+          <PanelTab value="export" active={tab === "export"} icon={FileDown} label={t("export")} />
+          <PanelTab
+            value="history"
+            active={tab === "history"}
+            icon={History}
+            label={t("history")}
+          />
         </TabsList>
       </div>
       <ScrollArea className="min-h-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:!block">
@@ -125,6 +151,9 @@ function RightPanelContent({ documentId }: { documentId: string }) {
           </TabsContent>
           <TabsContent value="export" className="mt-0">
             <ExportPanel documentId={documentId} />
+          </TabsContent>
+          <TabsContent value="history" className="mt-0">
+            <VersionHistoryPanel documentId={documentId} active={tab === "history"} />
           </TabsContent>
         </div>
       </ScrollArea>

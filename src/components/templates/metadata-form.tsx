@@ -1,11 +1,14 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
+import { CalendarIcon, RotateCcw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Select,
   SelectContent,
@@ -35,9 +38,34 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
+// Stored/wire value is a plain "YYYY-MM-DD" string (unchanged — this is a
+// display-layer swap, not a data model change). Parsed at noon UTC, not
+// midnight: constructing from just the date parts is otherwise interpreted
+// in the LOCAL timezone, and a browser west of UTC would then render the
+// picker's day highlight as the day before the one that's actually stored.
+function parseIsoDate(iso: string): Date | undefined {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return undefined;
+  const parsed = new Date(`${iso}T12:00:00Z`);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+}
+
+// react-day-picker's onSelect hands back a Date at LOCAL midnight of the
+// clicked day. toISOString() always converts to UTC first, which shifts
+// the calendar day backward for any timezone ahead of UTC (e.g. clicking
+// July 15 in Taipei, UTC+8, produced "2026-07-14" — local midnight July 15
+// is 16:00 UTC July 14). Building the string from the Date's own local
+// year/month/day fields instead avoids that conversion entirely.
+function toIsoDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export function MetadataForm({ documentId }: { documentId: string }) {
   const t = useTranslations();
   const tt = useTranslations("templates");
+  const format = useFormatter();
   const doc = useDocumentStore((s) =>
     s.documents.find((d) => d.id === documentId),
   );
@@ -113,6 +141,22 @@ export function MetadataForm({ documentId }: { documentId: string }) {
                     {t("common.required")}
                   </Badge>
                 ) : null}
+                {field.type === "color" ? (
+                  <button
+                    type="button"
+                    title={t("editor.block.colors.default")}
+                    aria-label={t("editor.block.colors.default")}
+                    onClick={() =>
+                      writeValue(
+                        field,
+                        typeof field.default === "string" ? field.default : null,
+                      )
+                    }
+                    className="ml-auto flex size-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  >
+                    <RotateCcw className="size-3.5" />
+                  </button>
+                ) : null}
               </div>
             ) : null}
 
@@ -135,12 +179,31 @@ export function MetadataForm({ documentId }: { documentId: string }) {
             )}
 
             {field.type === "date" && (
-              <Input
-                id={`meta-${field.key}`}
-                type="date"
-                value={stringValue}
-                onChange={(e) => writeValue(field, e.target.value)}
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    id={`meta-${field.key}`}
+                    type="button"
+                    variant="outline"
+                    className="w-full justify-start gap-2 font-normal"
+                  >
+                    <CalendarIcon className="size-4 text-muted-foreground" />
+                    {stringValue && parseIsoDate(stringValue) ? (
+                      format.dateTime(parseIsoDate(stringValue)!, { dateStyle: "long" })
+                    ) : (
+                      <span className="text-muted-foreground">{field.placeholder}</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={parseIsoDate(stringValue)}
+                    onSelect={(date) => date && writeValue(field, toIsoDate(date))}
+                    autoFocus
+                  />
+                </PopoverContent>
+              </Popover>
             )}
 
             {field.type === "select" && (

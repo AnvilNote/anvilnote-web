@@ -75,7 +75,7 @@ export function AppTopbar() {
     }
 
     try {
-      await saveDocument(activeDoc.id);
+      await saveDocument(activeDoc.id, { manual: true });
       toast.success(t("toast.documentSaved"));
     } catch {
       toast.error(t("toast.saveFailed"));

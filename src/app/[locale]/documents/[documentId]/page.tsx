@@ -18,6 +18,12 @@ export default function DocumentEditorPage({
   );
   const hydrated = useDocumentStore((s) => s.hydrated);
   const setActive = useDocumentStore((s) => s.setActive);
+  // The editor is intentionally uncontrolled (see document-store.ts's
+  // setContent comment) — it only reads content once, on mount. Restoring a
+  // version overwrites the store's content directly, so the key includes
+  // restoreNonceById to force a remount and pick that up, same as switching
+  // documents already does via documentId.
+  const restoreNonce = useDocumentStore((s) => s.restoreNonceById[documentId] ?? 0);
 
   useEffect(() => {
     if (exists) setActive(documentId);
@@ -46,7 +52,7 @@ export default function DocumentEditorPage({
           into the flow instead of staying pinned. */}
       <div className="flex min-w-0 flex-1 flex-col transform-gpu">
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <AnvilEditor key={documentId} documentId={documentId} />
+          <AnvilEditor key={`${documentId}-${restoreNonce}`} documentId={documentId} />
         </div>
       </div>
       <RightPanel documentId={documentId} />
