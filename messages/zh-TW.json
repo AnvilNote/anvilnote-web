@@ -127,7 +127,8 @@
     "autosave": {
       "saved": "已儲存",
       "saving": "儲存中…",
-      "unsaved": "未儲存"
+      "unsaved": "未儲存",
+      "failed": "儲存失敗"
     },
     "oldDocReset": "這份筆記是由舊版編輯器建立，無法自動轉換，已改為空白頁。",
     "block": {

@@ -337,7 +337,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
       {/* Sticky editor header: toolbar (left) on the same line as the autosave
           indicator (right). Stays pinned to the top while the note scrolls. */}
       <div className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-        <div className="mx-auto flex w-full flex-col gap-1 pl-12 pr-4 py-1.5 lg:flex-row lg:items-center lg:gap-3">
+        <div className="@container mx-auto flex w-full flex-col gap-1 pl-12 pr-4 py-1.5 lg:flex-row lg:items-center lg:gap-3">
           <div className="min-w-0 w-full flex-1">
             {editor ? (
               <TiptapToolbar

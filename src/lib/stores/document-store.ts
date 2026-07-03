@@ -29,7 +29,7 @@ type DocumentState = {
   hydrated: boolean;
   loading: boolean;
   error: string | null;
-  saveStateById: Record<string, "saved" | "saving" | "unsaved">;
+  saveStateById: Record<string, "saved" | "saving" | "unsaved" | "failed">;
   renderingById: Record<string, boolean>;
   setActive: (id: string | null) => void;
   hydrate: () => Promise<void>;
@@ -370,7 +370,7 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
       set((state) => ({
         saveStateById: {
           ...state.saveStateById,
-          [id]: "unsaved",
+          [id]: "failed",
         },
       }));
       throw new Error("Failed to save document");
