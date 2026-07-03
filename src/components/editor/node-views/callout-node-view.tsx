@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import {
   NodeViewContent,
@@ -57,10 +58,12 @@ export function CalloutNodeView({ node, updateAttributes, deleteNode }: NodeView
     <NodeViewWrapper
       className="anvil-callout"
       data-kind={kind}
-      style={{
-        backgroundColor: palette.background,
-        borderLeftColor: palette.accent,
-      }}
+      // The background is computed in CSS from this one accent variable
+      // (color-mix against the theme's own --background), not a second
+      // hardcoded pastel hex per kind — a fixed light pastel looked fine in
+      // light mode but was a jarring bright box against a dark editor,
+      // since it never adapted to the theme at all.
+      style={{ "--callout-accent": palette.accent, borderLeftColor: palette.accent } as CSSProperties}
     >
       <input
         type="text"
@@ -98,7 +101,7 @@ export function CalloutNodeView({ node, updateAttributes, deleteNode }: NodeView
           title={tBlock("delete", { type: tBlock("types.callout") })}
           onClick={deleteNode}
           onMouseDown={(event) => event.stopPropagation()}
-          className="flex size-6 items-center justify-center rounded text-muted-foreground/60 transition-colors hover:bg-black/5 hover:text-destructive"
+          className="flex size-6 items-center justify-center rounded text-muted-foreground/60 transition-colors hover:text-destructive"
         >
           <Trash2 className="size-3.5" />
         </button>

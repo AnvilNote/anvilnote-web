@@ -219,7 +219,10 @@
       "center": "Align center",
       "right": "Align right",
       "unsupportedFormat": "Unsupported image format — use PNG, JPG, GIF, WebP, SVG, or PDF",
-      "pdfRenderFailed": "Failed to generate a PDF preview — check the file isn't encrypted or corrupted"
+      "pdfRenderFailed": "Failed to generate a PDF preview — check the file isn't encrypted or corrupted",
+      "crop": "Crop image",
+      "revertCrop": "Revert to original",
+      "cropTitle": "Crop image"
     },
     "table": {
       "figure": "Table",

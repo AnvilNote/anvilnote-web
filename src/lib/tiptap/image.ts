@@ -28,7 +28,13 @@ export const SUPPORTED_IMAGE_MIME_TYPES = [
 //            itself natively at export time. The renderer prefers pdfSrc
 //            over src when present; every other exporter (docx, markdown)
 //            keeps using src, since Word/Markdown can't inline a PDF either.
-// All three round-trip through data-* so they survive serialization. Images
+//   originalSrc — set the first time the user crops this image (see
+//            image-crop-dialog.tsx): the pre-crop `src`, kept so "revert"
+//            can restore it. Only captured once — cropping an
+//            already-cropped image must not overwrite this with an
+//            already-cropped intermediate, or revert would stop reaching
+//            all the way back to the true original.
+// All four round-trip through data-* so they survive serialization. Images
 // are stored inline as data URLs (no upload backend); the renderer decodes
 // them to a file for Typst's `image(...)`.
 export const AnvilImage = Image.extend({
@@ -60,6 +66,12 @@ export const AnvilImage = Image.extend({
         parseHTML: (element) => element.getAttribute("data-pdf-src") ?? null,
         renderHTML: (attributes) =>
           attributes.pdfSrc ? { "data-pdf-src": attributes.pdfSrc } : {},
+      },
+      originalSrc: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("data-original-src") ?? null,
+        renderHTML: (attributes) =>
+          attributes.originalSrc ? { "data-original-src": attributes.originalSrc } : {},
       },
     };
   },

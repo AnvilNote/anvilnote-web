@@ -219,7 +219,10 @@
       "center": "置中對齊",
       "right": "靠右對齊",
       "unsupportedFormat": "不支援的圖片格式，請上傳 PNG、JPG、GIF、WebP、SVG 或 PDF",
-      "pdfRenderFailed": "PDF 預覽產生失敗，請確認檔案沒有加密或損毀"
+      "pdfRenderFailed": "PDF 預覽產生失敗，請確認檔案沒有加密或損毀",
+      "crop": "裁切圖片",
+      "revertCrop": "還原成原圖",
+      "cropTitle": "裁切圖片"
     },
     "table": {
       "figure": "表",

@@ -219,7 +219,10 @@
       "center": "가운데 정렬",
       "right": "오른쪽 정렬",
       "unsupportedFormat": "지원하지 않는 이미지 형식입니다. PNG, JPG, GIF, WebP, SVG, PDF 중 하나를 사용하세요",
-      "pdfRenderFailed": "PDF 미리보기 생성에 실패했습니다. 파일이 암호화되었거나 손상되지 않았는지 확인하세요"
+      "pdfRenderFailed": "PDF 미리보기 생성에 실패했습니다. 파일이 암호화되었거나 손상되지 않았는지 확인하세요",
+      "crop": "이미지 자르기",
+      "revertCrop": "원본으로 되돌리기",
+      "cropTitle": "이미지 자르기"
     },
     "table": {
       "figure": "표",

@@ -219,7 +219,10 @@
       "center": "中央揃え",
       "right": "右揃え",
       "unsupportedFormat": "対応していない画像形式です。PNG、JPG、GIF、WebP、SVG、PDF のいずれかをご利用ください",
-      "pdfRenderFailed": "PDFプレビューの生成に失敗しました。ファイルが暗号化・破損していないか確認してください"
+      "pdfRenderFailed": "PDFプレビューの生成に失敗しました。ファイルが暗号化・破損していないか確認してください",
+      "crop": "画像を切り抜く",
+      "revertCrop": "元の画像に戻す",
+      "cropTitle": "画像を切り抜く"
     },
     "table": {
       "figure": "表",
