@@ -45,8 +45,40 @@
         "body": "On an empty line, type $$$ followed by a formula and $$$ again to insert a standalone display formula."
       },
       "panel": {
-        "title": "The right panel",
-        "body": "Click through Outline, Document info, Template and Export to see what each one does."
+        "tabs": {
+          "outline": {
+            "title": "Outline",
+            "body": "Lists every heading in the document — click one to jump straight to that section, handy for navigating long documents."
+          },
+          "metadata": {
+            "title": "Document Info",
+            "body": "Fill in title, author, date, and other metadata. Fields adjust automatically based on your chosen template, and some can be left blank."
+          },
+          "template": {
+            "title": "Template",
+            "body": "Switch the document's layout template. Each one has its own fonts and heading style, plus its own customization options."
+          },
+          "export": {
+            "title": "Export",
+            "body": "Export the document as PDF, DOCX, or Markdown — the PDF export also lets you toggle whether a table of contents is included."
+          },
+          "history": {
+            "title": "Version History",
+            "body": "The document snapshots automatically at an interval you set. Preview any snapshot, and restoring never loses your current content — it's snapshotted first."
+          }
+        }
+      },
+      "footnote": {
+        "title": "Footnotes",
+        "body": "Besides the toolbar button, you can insert a footnote right after any text. Its content always shows at the bottom of the document, separate from the body — good for citations or asides without breaking up the reading flow."
+      },
+      "crossRef": {
+        "title": "Cross-references",
+        "body": "Type @ to reference any figure, table, equation, or heading in the document. Figures and tables number themselves automatically; equations only get a number once something actually references them. Clicking an inserted reference jumps straight to its target."
+      },
+      "imageCrop": {
+        "title": "Image cropping",
+        "body": "Click an image you've already inserted to crop it right there in place, no separate image editor needed. Not happy with the crop? Revert back to the original in one click, any time."
       }
     },
     "cheatSheet": "Cheat sheet",
@@ -73,7 +105,9 @@
       "blockMath": "Inserts a display formula",
       "undo": "Undoes the last action",
       "redo": "Redoes the undone action"
-    }
+    },
+    "footnoteHint": "Try inserting a footnote",
+    "crossRefHint": "Type @ anywhere in the editor to open the menu"
   },
   "onboarding": {
     "chooseTheme": "Choose your color theme",

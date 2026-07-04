@@ -31,8 +31,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { useRouter } from "@/lib/i18n/navigation";
 import { useDocumentStore } from "@/lib/stores/document-store";
+import { useRightPanelTabStore } from "@/lib/stores/ui-store";
 import { useEditorBridge } from "@/lib/stores/editor-bridge";
 import { useSlashMenuStore } from "@/lib/stores/slash-menu-store";
+import { useCrossRefMenuStore } from "@/lib/stores/cross-ref-menu-store";
 import {
   TOUR_STEPS,
   TOUR_TAB_IDS,
@@ -127,6 +129,13 @@ export function TourOverlay() {
   const hydrated = useDocumentStore((s) => s.hydrated);
   const editor = useEditorBridge((s) => s.editor);
   const slashOpenCount = useSlashMenuStore((s) => s.openCount);
+  const crossRefOpenCount = useCrossRefMenuStore((s) => s.openCount);
+  // Drives the "panel" step's title/body: rather than one static blurb
+  // covering all 5 right-panel tabs at once, the popover's text switches to
+  // match whichever tab the user actually has open right now — mirrors the
+  // "toolbar" step paging through its own groups, but driven by the user's
+  // real navigation instead of the tour's own Next/Back.
+  const rightPanelTab = useRightPanelTabStore((s) => s.tab);
 
   const [rect, setRect] = useState<Rect | null>(null);
   // Measured, not hardcoded — steps vary a lot in content length (the
@@ -138,8 +147,11 @@ export function TourOverlay() {
   const slashBaselineRef = useRef<number | null>(null);
   const inlineMathBaselineRef = useRef<number | null>(null);
   const blockMathBaselineRef = useRef<number | null>(null);
+  const footnoteBaselineRef = useRef<number | null>(null);
+  const crossRefBaselineRef = useRef<number | null>(null);
   const [inlineMathCount, setInlineMathCount] = useState(0);
   const [blockMathCount, setBlockMathCount] = useState(0);
+  const [footnoteCount, setFootnoteCount] = useState(0);
   // The "toolbar" step pages through its groups one at a time instead of
   // dumping every group into one popover. `toolbarGroupsSeen` mirrors
   // `visitedTabs`'s Set-of-seen-items pattern (each group is its own "seen"
@@ -200,14 +212,41 @@ export function TourOverlay() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, step?.id]);
 
-  // Poll the document for math nodes while a math step is active (mirrors the
-  // anchor-measuring interval below; Tiptap content changes don't otherwise
-  // trigger a re-render here).
   useEffect(() => {
-    if (!active || (step?.id !== "mathInline" && step?.id !== "mathBlock")) return;
+    if (active && step?.id === "footnote") {
+      footnoteBaselineRef.current = countNodesOfType(editor, "footnoteReference");
+    } else {
+      footnoteBaselineRef.current = null;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, step?.id]);
+
+  // Baseline the @ cross-ref counter the same way slash's is baselined
+  // above — re-entering the step (Back then Next again) shouldn't count an
+  // @ opened in an earlier session.
+  useEffect(() => {
+    if (active && step?.id === "crossRef") {
+      crossRefBaselineRef.current = crossRefOpenCount;
+    } else {
+      crossRefBaselineRef.current = null;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, step?.id]);
+
+  // Poll the document for math/footnote nodes while their step is active
+  // (mirrors the anchor-measuring interval below; Tiptap content changes
+  // don't otherwise trigger a re-render here).
+  useEffect(() => {
+    if (
+      !active ||
+      (step?.id !== "mathInline" && step?.id !== "mathBlock" && step?.id !== "footnote")
+    ) {
+      return;
+    }
     const interval = window.setInterval(() => {
       setInlineMathCount(countNodesOfType(editor, "inlineMath"));
       setBlockMathCount(countNodesOfType(editor, "blockMath"));
+      setFootnoteCount(countNodesOfType(editor, "footnoteReference"));
     }, ANCHOR_POLL_MS);
     return () => window.clearInterval(interval);
   }, [active, step?.id, editor]);
@@ -300,7 +339,16 @@ export function TourOverlay() {
   // If a doc-scoped anchor never shows (replay from list page), open the first document.
   useEffect(() => {
     if (!active || !step) return;
-    const docScopedSteps: TourStepId[] = ["toolbar", "slash", "mathInline", "mathBlock", "panel"];
+    const docScopedSteps: TourStepId[] = [
+      "toolbar",
+      "slash",
+      "mathInline",
+      "mathBlock",
+      "footnote",
+      "crossRef",
+      "imageCrop",
+      "panel",
+    ];
     if (!docScopedSteps.includes(step.id)) return;
     if (rect) return;
     const timer = window.setTimeout(() => {
@@ -328,8 +376,22 @@ export function TourOverlay() {
     step.id === "mathBlock" &&
     blockMathBaselineRef.current !== null &&
     blockMathCount <= blockMathBaselineRef.current;
+  const footnotePending =
+    step.id === "footnote" &&
+    footnoteBaselineRef.current !== null &&
+    footnoteCount <= footnoteBaselineRef.current;
+  const crossRefPending =
+    step.id === "crossRef" &&
+    crossRefBaselineRef.current !== null &&
+    crossRefOpenCount <= crossRefBaselineRef.current;
   const nextDisabled =
-    forcedCreatePending || tabsPending || slashPending || mathInlinePending || mathBlockPending;
+    forcedCreatePending ||
+    tabsPending ||
+    slashPending ||
+    mathInlinePending ||
+    mathBlockPending ||
+    footnotePending ||
+    crossRefPending;
 
   // "toolbar" pages through its groups via the same Next/Back buttons before
   // they fall through to the normal step-advance behavior — never disabled
@@ -414,9 +476,15 @@ export function TourOverlay() {
         className="pointer-events-auto absolute rounded-2xl border bg-popover p-4 text-popover-foreground shadow-xl"
         style={{ top: popTop, left: popLeft, width: popoverWidth }}
       >
-        <p className="text-sm font-semibold">{t(`steps.${step.id}.title`)}</p>
+        <p className="text-sm font-semibold">
+          {step.id === "panel"
+            ? t(`steps.panel.tabs.${rightPanelTab}.title` as never)
+            : t(`steps.${step.id}.title`)}
+        </p>
         <p className="mt-1 text-sm text-muted-foreground">
-          {t(`steps.${step.id}.body`)}
+          {step.id === "panel"
+            ? t(`steps.panel.tabs.${rightPanelTab}.body` as never)
+            : t(`steps.${step.id}.body`)}
         </p>
         {step.id === "toolbar" ? (
           <>
@@ -456,6 +524,12 @@ export function TourOverlay() {
         ) : null}
         {mathBlockPending ? (
           <p className="mt-2 text-xs font-medium text-primary">{t("mathBlockHint")}</p>
+        ) : null}
+        {footnotePending ? (
+          <p className="mt-2 text-xs font-medium text-primary">{t("footnoteHint")}</p>
+        ) : null}
+        {crossRefPending ? (
+          <p className="mt-2 text-xs font-medium text-primary">{t("crossRefHint")}</p>
         ) : null}
         {step.id === "panel" ? (
           <p className="mt-2 text-xs font-medium text-primary">
