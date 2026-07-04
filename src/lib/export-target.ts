@@ -1,22 +1,47 @@
 "use client";
 
-// Persistent export target using the File System Access API. The user picks a
-// folder once; we keep its FileSystemDirectoryHandle in IndexedDB (handles are
-// structured-cloneable, so they survive reloads — localStorage can't store
-// them). On export we create an "AnvilNote" subfolder inside the chosen folder
-// and write the PDF there.
+// Persistent export target. Two backends:
 //
-// Availability: Chromium only. Chrome blocks Downloads/Desktop/Documents from
-// the picker, so the user must choose another folder. Callers fall back to a
-// plain download when no usable target exists.
+// - Desktop (window.anvilnote.pickExportDir present): a native folder dialog
+//   via IPC to the Electron main process (see anvilnote-desktop/src/main/
+//   export-dialog.ts). No blocklist — any folder, including Downloads/
+//   Desktop/Documents, works.
+// - Browser: the File System Access API. The user picks a folder once; we
+//   keep its FileSystemDirectoryHandle in IndexedDB (handles are
+//   structured-cloneable, so they survive reloads — localStorage can't store
+//   them). Chromium hard-blocks Downloads/Desktop/Documents/the home dir from
+//   this picker, so in-browser users must choose another folder — there's no
+//   workaround from here; only the desktop shell bypasses it.
+//
+// Either way we create an "AnvilNote" subfolder inside the chosen folder and
+// write into it. Callers fall back to a plain download when no usable target
+// exists.
 
 const DB_NAME = "anvilnote";
 const STORE = "handles";
 const KEY = "exportDir";
 const SUBFOLDER = "AnvilNote";
+const DESKTOP_DIR_KEY = "anvilnote:exportDirPath";
+
+type DesktopBridge = Required<
+  Pick<NonNullable<Window["anvilnote"]>, "pickExportDir" | "writeExportFile">
+>;
+
+function desktopBridge(): DesktopBridge | null {
+  if (typeof window === "undefined") return null;
+  const b = window.anvilnote;
+  if (!b?.pickExportDir || !b.writeExportFile) return null;
+  return b as DesktopBridge;
+}
+
+function baseName(p: string): string {
+  return p.split(/[/\\]+/).filter(Boolean).pop() ?? p;
+}
 
 export function supportsFileSystemAccess(): boolean {
-  return typeof window !== "undefined" && "showDirectoryPicker" in window;
+  if (typeof window === "undefined") return false;
+  if (desktopBridge()) return true;
+  return "showDirectoryPicker" in window;
 }
 
 function openDb(): Promise<IDBDatabase> {
@@ -81,8 +106,16 @@ async function ensurePermission(
   return (await h.requestPermission({ mode: "readwrite" })) === "granted";
 }
 
-/** Prompt for a folder, store its handle, and return its display name. */
+/** Prompt for a folder, store it, and return its display name. */
 export async function pickExportDir(): Promise<string> {
+  const desktop = desktopBridge();
+  if (desktop) {
+    const dirPath = await desktop.pickExportDir();
+    if (!dirPath) throw new DOMException("Folder picker was cancelled", "AbortError");
+    localStorage.setItem(DESKTOP_DIR_KEY, dirPath);
+    return baseName(dirPath);
+  }
+
   const picker = (
     window as Window & {
       showDirectoryPicker?: (o?: {
@@ -98,6 +131,10 @@ export async function pickExportDir(): Promise<string> {
 
 /** The stored folder's display name, or null if none is set. */
 export async function getExportDirName(): Promise<string | null> {
+  if (desktopBridge()) {
+    const dirPath = localStorage.getItem(DESKTOP_DIR_KEY);
+    return dirPath ? baseName(dirPath) : null;
+  }
   try {
     return (await idbGet())?.name ?? null;
   } catch {
@@ -106,6 +143,10 @@ export async function getExportDirName(): Promise<string | null> {
 }
 
 export async function clearExportDir(): Promise<void> {
+  if (desktopBridge()) {
+    localStorage.removeItem(DESKTOP_DIR_KEY);
+    return;
+  }
   try {
     await idbClear();
   } catch {
@@ -130,6 +171,20 @@ export async function writeFileToTarget(
   interactive: boolean,
   subfolder?: string,
 ): Promise<WriteResult> {
+  const desktop = desktopBridge();
+  if (desktop) {
+    const dirPath = localStorage.getItem(DESKTOP_DIR_KEY);
+    if (!dirPath) return { ok: false };
+    const segments = [SUBFOLDER, ...(subfolder ? [subfolder] : []), fileName];
+    try {
+      const data = new Uint8Array(await blob.arrayBuffer());
+      const written = await desktop.writeExportFile(dirPath, segments, data);
+      return { ok: true, path: written };
+    } catch {
+      return { ok: false };
+    }
+  }
+
   let dir: FileSystemDirectoryHandle | null;
   try {
     dir = await idbGet();
