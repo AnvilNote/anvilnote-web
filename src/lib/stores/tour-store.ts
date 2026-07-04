@@ -4,7 +4,12 @@ import { create } from "zustand";
 
 const STORAGE_KEY = "anvilnote.tour.done";
 
-export const TOUR_TAB_IDS = ["outline", "metadata", "template", "export"] as const;
+// "history" (Version History) counts toward the panel step's own
+// visited-tabs progress ("已看 N/5") rather than getting a separate tour
+// step — it lives in the same right-panel tab strip as the other four, so
+// folding it in there instead of a standalone step avoids sending the user
+// back and forth between two steps that spotlight the same element.
+export const TOUR_TAB_IDS = ["outline", "metadata", "template", "export", "history"] as const;
 
 export type TourStepId =
   | "sidebar"
@@ -13,6 +18,9 @@ export type TourStepId =
   | "slash"
   | "mathInline"
   | "mathBlock"
+  | "footnote"
+  | "crossRef"
+  | "imageCrop"
   | "panel";
 
 export type TourStep = {
@@ -30,6 +38,13 @@ export const TOUR_STEPS: TourStep[] = [
   { id: "slash", anchor: '[data-tour="editor-area"]', forced: true },
   { id: "mathInline", anchor: '[data-tour="editor-area"]', forced: true },
   { id: "mathBlock", anchor: '[data-tour="editor-area"]', forced: true },
+  { id: "footnote", anchor: '[data-tour="editor-area"]', forced: true },
+  { id: "crossRef", anchor: '[data-tour="editor-area"]', forced: true },
+  // Not forced: unlike the other input-shortcut steps, trying this out
+  // requires an image already sitting in the document, which the tour has
+  // no way to guarantee at this point — so it's shown as a plain tip
+  // instead of gating Next on the user actually cropping something.
+  { id: "imageCrop", anchor: '[data-tour="editor-area"]' },
   { id: "panel", anchor: '[data-tour="right-tabs"]', forced: true },
 ];
 

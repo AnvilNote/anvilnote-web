@@ -15,6 +15,7 @@ import { useTranslations } from "next-intl";
 import { FileImage, Hash, Sigma, Table2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { insertCrossRef, type CrossRefKind } from "@/lib/tiptap/cross-ref";
+import { useCrossRefMenuStore } from "@/lib/stores/cross-ref-menu-store";
 
 type CrossRefTarget = {
   id: string;
@@ -237,6 +238,7 @@ export const CrossRefSuggestion = Extension.create({
 
           return {
             onStart: (props) => {
+              useCrossRefMenuStore.getState().markOpened();
               component = new ReactRenderer(CrossRefList, {
                 props: {
                   targets: props.items,
