@@ -6,6 +6,7 @@ import {
   NodeViewWrapper,
   type NodeViewProps,
 } from "@tiptap/react";
+import { Trash2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -19,11 +20,15 @@ import {
 } from "@/config/code-languages";
 
 // React NodeView for code blocks. Renders the standard editable code surface
-// (NodeViewContent) plus a custom language selector pinned to the top-left.
+// (NodeViewContent) plus a custom language selector pinned to the top-left,
+// and a delete button pinned to the bottom-right — same corner/pattern as
+// callout's own delete button (see callout-node-view.tsx's comment on why a
+// plain onClick button, not layered on the shared drag handle, is used).
 // The trigger is transparent (it floats over the code); the dropdown panel uses
 // the popover surface. lowlight decorations still apply to the content.
-export function CodeBlockNodeView({ node, updateAttributes }: NodeViewProps) {
+export function CodeBlockNodeView({ node, updateAttributes, deleteNode }: NodeViewProps) {
   const t = useTranslations("editor.codeBlock");
+  const tBlock = useTranslations("editor.block");
   const language = normalizeCodeLanguage(
     node.attrs.language as string | undefined,
   );
@@ -59,6 +64,19 @@ export function CodeBlockNodeView({ node, updateAttributes }: NodeViewProps) {
       <pre className={language === "text" ? undefined : `language-${language}`}>
         <NodeViewContent<"code"> as="code" />
       </pre>
+
+      <div className="anvil-codeblock__actions" contentEditable={false}>
+        <button
+          type="button"
+          aria-label={tBlock("delete", { type: tBlock("types.codeBlock") })}
+          title={tBlock("delete", { type: tBlock("types.codeBlock") })}
+          onClick={deleteNode}
+          onMouseDown={(event) => event.stopPropagation()}
+          className="flex size-6 items-center justify-center rounded text-muted-foreground/60 transition-colors hover:text-destructive"
+        >
+          <Trash2 className="size-3.5" />
+        </button>
+      </div>
     </NodeViewWrapper>
   );
 }
