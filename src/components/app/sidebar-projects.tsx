@@ -214,7 +214,7 @@ export function SidebarProjects() {
           aria-label={t("projects.create")}
           title={t("projects.create")}
           onClick={() => void handleCreateProject()}
-          className="top-3 right-2 size-7 rounded-lg"
+          className="top-2.5 right-2 size-7 rounded-lg"
         >
           <Plus className="size-4.5" />
         </SidebarGroupAction>
@@ -273,7 +273,7 @@ export function SidebarProjects() {
           aria-label={t("nav.newDocument")}
           title={t("nav.newDocument")}
           onClick={() => void newDocIn(null)}
-          className="top-3 right-2 size-7 rounded-lg"
+          className="top-0.5 right-2 size-7 rounded-lg"
         >
           <Plus className="size-4.5" />
         </SidebarGroupAction>
