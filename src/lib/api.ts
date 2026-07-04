@@ -26,6 +26,15 @@ declare global {
     anvilnote?: {
       getApiBaseUrl?: () => string | null;
       getAppVersion?: () => string | null;
+      // Native "export to a folder" bridge — see lib/export-target.ts. Only
+      // present on desktop; the browser's File System Access API is used
+      // instead when it's absent.
+      pickExportDir?: () => Promise<string | null>;
+      writeExportFile?: (
+        dirPath: string,
+        segments: string[],
+        data: Uint8Array,
+      ) => Promise<string>;
     };
   }
 }
