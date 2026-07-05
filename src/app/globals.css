@@ -832,6 +832,43 @@
   display: grid;
   gap: 0.75rem;
   align-items: start;
+  position: relative;
+}
+
+/* Swap buttons sit in their own absolutely-positioned layer over the grid,
+   not as real grid items — NodeViewContent only ever renders the actual
+   image nodes, so there's no way to interleave a button between them in
+   the grid's own item flow. inset:0 + pointer-events:none lets clicks
+   still reach the images/grid underneath everywhere except each button's
+   own (pointer-events:auto) hit area. */
+.anvil-image-row__swap-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.anvil-image-row__swap {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.anvil-image-row__swap:hover {
+  background: var(--accent);
+  color: var(--foreground);
 }
 
 /* NodeViewContent renders as <div class="contents"> wrapping ANOTHER

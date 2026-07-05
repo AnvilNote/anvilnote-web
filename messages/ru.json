@@ -356,7 +356,8 @@
     },
     "imageRow": {
       "tooFewImages": "Выберите не менее двух изображений",
-      "captionPlaceholder": "Добавить подпись ко всей группе"
+      "captionPlaceholder": "Добавить подпись ко всей группе",
+      "swap": "Поменять местами"
     }
   },
   "documents": {

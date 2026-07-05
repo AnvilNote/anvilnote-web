@@ -356,7 +356,8 @@
     },
     "imageRow": {
       "tooFewImages": "請至少選擇兩張圖片",
-      "captionPlaceholder": "為整組圖片新增說明"
+      "captionPlaceholder": "為整組圖片新增說明",
+      "swap": "交換順序"
     }
   },
   "documents": {

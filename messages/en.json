@@ -356,7 +356,8 @@
     },
     "imageRow": {
       "tooFewImages": "Please select at least two images",
-      "captionPlaceholder": "Add a caption for the whole group"
+      "captionPlaceholder": "Add a caption for the whole group",
+      "swap": "Swap order"
     }
   },
   "documents": {
