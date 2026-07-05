@@ -18,6 +18,8 @@ import { AnvilCodeBlock } from "@/lib/tiptap/code-block";
 import { AnvilImage } from "@/lib/tiptap/image";
 import { AnvilCallout } from "@/lib/tiptap/callout";
 import { AnvilProof } from "@/lib/tiptap/proof";
+import { AnvilMermaid } from "@/lib/tiptap/mermaid";
+import { AnvilImageRow } from "@/lib/tiptap/image-row";
 import { CrossRef, CrossRefTargetIds } from "@/lib/tiptap/cross-ref";
 import { CrossRefSuggestion } from "@/components/editor/cross-ref-suggestion";
 import { captionHasMath, renderCaptionHtml } from "@/lib/tiptap/caption-math";
@@ -51,6 +53,29 @@ class AnvilTableView extends TableView {
       typeof HTMLAttributes["data-caption-placeholder"] === "string"
         ? HTMLAttributes["data-caption-placeholder"]
         : "Caption";
+    const deleteLabel =
+      typeof HTMLAttributes["data-delete-label"] === "string"
+        ? HTMLAttributes["data-delete-label"]
+        : "Delete";
+
+    // Vanilla DOM delete button — same bottom-right corner pattern as
+    // callout/proof/codeBlock/mermaid's own React NodeView delete buttons,
+    // hand-rolled here since AnvilTableView is a plain TableView subclass,
+    // not a React NodeView. Icon markup copied verbatim from lucide-react's
+    // own Trash2 SVG (no lucide-react import available in vanilla DOM code).
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "anvil-table__delete";
+    deleteButton.setAttribute("aria-label", deleteLabel);
+    deleteButton.title = deleteLabel;
+    deleteButton.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
+    deleteButton.addEventListener("mousedown", (event) => {
+      event.stopPropagation();
+    });
+    deleteButton.addEventListener("click", () => {
+      this.deleteTable();
+    });
 
     const caption = document.createElement("div");
     caption.className = "anvil-table__caption";
@@ -91,9 +116,42 @@ class AnvilTableView extends TableView {
     });
 
     caption.append(label, this.captionInput, this.captionDisplay);
-    this.dom.append(caption);
+    this.dom.append(caption, deleteButton);
 
     this.syncWrapperAttrs();
+  }
+
+  // Same "search up from a DOM position for the ancestor node matching
+  // this.node.type" approach as updateCaption below — the only way to find
+  // this table's own current document position from inside a vanilla
+  // NodeView, which isn't handed its position directly the way a React
+  // NodeView's deleteNode prop already resolves it.
+  private deleteTable() {
+    const domCandidates: Node[] = [this.dom, this.table, this.contentDOM];
+
+    for (const dom of domCandidates) {
+      try {
+        const domPos = this.viewInstance.posAtDOM(dom, 0);
+        for (const candidate of [domPos, domPos - 1, domPos + 1]) {
+          if (candidate < 0 || candidate > this.viewInstance.state.doc.content.size) {
+            continue;
+          }
+          const resolved = this.viewInstance.state.doc.resolve(candidate);
+          for (let depth = resolved.depth; depth >= 0; depth -= 1) {
+            const target = resolved.node(depth);
+            if (target.type === this.node.type) {
+              const pos = depth === 0 ? 0 : resolved.before(depth);
+              this.viewInstance.dispatch(
+                this.viewInstance.state.tr.delete(pos, pos + target.nodeSize),
+              );
+              return;
+            }
+          }
+        }
+      } catch {
+        continue;
+      }
+    }
   }
 
   override update(node: import("@tiptap/pm/model").Node) {
@@ -173,6 +231,7 @@ class AnvilTableView extends TableView {
 function createAnvilTableView(
   captionLabel: string,
   captionPlaceholder: string,
+  deleteLabel: string,
 ) {
   return class extends AnvilTableView {
     constructor(
@@ -185,6 +244,7 @@ function createAnvilTableView(
         ...HTMLAttributes,
         "data-caption-label": captionLabel,
         "data-caption-placeholder": captionPlaceholder,
+        "data-delete-label": deleteLabel,
       });
     }
   };
@@ -252,6 +312,7 @@ export type BuildExtensionsOptions = {
   tableLabel: string;
   figureCaptionPlaceholder: string;
   tableCaptionPlaceholder: string;
+  tableDeleteLabel: string;
   // Called when a rendered formula is clicked, so the editor can open the math
   // dialog seeded with the existing LaTeX and its document position (and, for
   // block math, its optional cross-ref display name).
@@ -264,6 +325,7 @@ export function buildExtensions({
   tableLabel,
   figureCaptionPlaceholder,
   tableCaptionPlaceholder,
+  tableDeleteLabel,
   onMathClick,
 }: BuildExtensionsOptions): Extensions {
   return [
@@ -292,6 +354,8 @@ export function buildExtensions({
     AnvilCodeBlock,
     AnvilCallout,
     AnvilProof,
+    AnvilMermaid,
+    AnvilImageRow,
     AnvilImage.configure({
       HTMLAttributes: {
         "data-caption-label": figureLabel,
@@ -300,7 +364,7 @@ export function buildExtensions({
     }),
     AnvilTable.configure({
       resizable: true,
-      View: createAnvilTableView(tableLabel, tableCaptionPlaceholder),
+      View: createAnvilTableView(tableLabel, tableCaptionPlaceholder, tableDeleteLabel),
     }),
     TableRow,
     TableHeader,

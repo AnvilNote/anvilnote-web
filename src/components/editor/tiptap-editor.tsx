@@ -12,6 +12,7 @@ import {
   Heading2,
   Heading3,
   ImagePlus as ImageIcon,
+  Images,
   List,
   ListOrdered,
   MessageSquareWarning,
@@ -21,6 +22,7 @@ import {
   SquareSigma,
   Table as TableIcon,
   Type,
+  Workflow,
 } from "lucide-react";
 import { DocumentTitle } from "@/components/editor/document-title";
 import { AutosaveIndicator } from "@/components/editor/autosave-indicator";
@@ -48,9 +50,10 @@ import {
   updateBlockMath,
   updateInlineMath,
 } from "@/lib/tiptap/math";
-import { pickAndInsertImage } from "@/lib/tiptap/image";
+import { pickAndInsertImage, pickAndInsertImageRow } from "@/lib/tiptap/image";
 import { insertCallout } from "@/lib/tiptap/callout";
 import { insertProof } from "@/lib/tiptap/proof";
+import { insertMermaid } from "@/lib/tiptap/mermaid";
 import { DEFAULT_CALLOUT_KIND } from "@/config/callouts";
 import { migratedDocIds } from "@/lib/tiptap/serialization";
 import { emptyTiptapContent } from "@/lib/tiptap/default-content";
@@ -75,6 +78,15 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
   const handleImageError = useCallback(
     (kind: "unsupported" | "pdfRenderFailed") => {
       toast.error(t(`editor.image.${kind === "unsupported" ? "unsupportedFormat" : "pdfRenderFailed"}`));
+    },
+    [t],
+  );
+
+  const handleImageRowError = useCallback(
+    (kind: "unsupported" | "tooFew") => {
+      toast.error(
+        t(kind === "tooFew" ? "editor.imageRow.tooFewImages" : "editor.image.unsupportedFormat"),
+      );
     },
     [t],
   );
@@ -116,6 +128,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
   const tableLabel = t("editor.table.figure");
   const figureCaptionPlaceholder = t("editor.image.captionPlaceholder");
   const tableCaptionPlaceholder = t("editor.table.captionPlaceholder");
+  const tableDeleteLabel = t("editor.block.delete", { type: t("editor.block.types.table") });
   const extensions = useMemo(
     () =>
       buildExtensions({
@@ -124,6 +137,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         tableLabel,
         figureCaptionPlaceholder,
         tableCaptionPlaceholder,
+        tableDeleteLabel,
         onMathClick: handleMathClick,
       }),
     [
@@ -132,6 +146,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
       tableLabel,
       figureCaptionPlaceholder,
       tableCaptionPlaceholder,
+      tableDeleteLabel,
       handleMathClick,
     ],
   );
@@ -201,6 +216,15 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         },
       },
       {
+        title: tt("mermaid"),
+        icon: Workflow,
+        aliases: ["mermaid", "diagram", "flowchart", "圖表"],
+        run: ({ editor, range }) => {
+          editor.chain().focus().deleteRange(range).run();
+          insertMermaid(editor);
+        },
+      },
+      {
         title: tt("proof"),
         icon: Square,
         aliases: ["proof", "qed", "證明"],
@@ -234,6 +258,15 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         },
       },
       {
+        title: tt("imageRow"),
+        icon: Images,
+        aliases: ["imagerow", "sidebyside", "subfigure", "並排圖片", "並排"],
+        run: ({ editor, range }) => {
+          editor.chain().focus().deleteRange(range).run();
+          pickAndInsertImageRow(editor, handleImageRowError);
+        },
+      },
+      {
         title: tt("inlineMath"),
         subtitle: tt("inlineMathHint"),
         icon: Sigma,
@@ -262,7 +295,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         },
       },
     ];
-  }, [t, tt, requestMath, requestTable, handleImageError]);
+  }, [t, tt, requestMath, requestTable, handleImageError, handleImageRowError]);
 
   // Keep the slash extension instance stable while letting it read the latest
   // (localized) items at trigger time through a ref updated in an effect.

@@ -25,8 +25,12 @@ export const AnvilCallout = Node.create({
   // caption/cross-ref label) needs no separate handling there. proof
   // included so a proof can sit inside a callout (e.g. a "definition" or
   // "theorem" callout containing its own proof) — same renderBlocks() path
-  // covers it renderer-side with no extra handling either.
-  content: "(paragraph|bulletList|orderedList|codeBlock|blockMath|image|proof)+",
+  // covers it renderer-side with no extra handling either. mermaid included
+  // for the same reason as image — an atom node, no separate renderer-side
+  // handling needed. imageRow included so side-by-side subfigures can sit
+  // inside a callout too — its own tiptap-to-typst.ts case handles the
+  // subpar.grid() emission regardless of nesting depth.
+  content: "(paragraph|bulletList|orderedList|codeBlock|blockMath|image|proof|mermaid|imageRow)+",
   defining: true,
   isolating: true,
 

@@ -327,6 +327,7 @@ export function LandingDemoEditor({ copy }: { copy: DemoCopy }) {
         tableLabel: t("editor.table.figure"),
         figureCaptionPlaceholder: t("editor.image.captionPlaceholder"),
         tableCaptionPlaceholder: t("editor.table.captionPlaceholder"),
+        tableDeleteLabel: t("editor.block.delete", { type: t("editor.block.types.table") }),
         onMathClick: handleMathClick,
       }),
     [handleMathClick, t],

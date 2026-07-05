@@ -184,7 +184,9 @@
         "divider": "区切り線",
         "block": "ブロック",
         "inlineMath": "インライン数式",
-        "proof": "証明ブロック"
+        "proof": "証明ブロック",
+        "mermaid": "mermaid ブロック",
+        "imageRow": "並列画像ブロック"
       },
       "color": "文字色",
       "colors": {
@@ -227,7 +229,8 @@
       "tableThreeLine": "三線表",
       "tableAlignLeft": "表を左揃え",
       "tableAlignCenter": "表を中央揃え",
-      "tableAlignRight": "表を右揃え"
+      "tableAlignRight": "表を右揃え",
+      "mermaid": "Mermaid 図"
     },
     "slash": {
       "text": "テキスト",
@@ -246,7 +249,9 @@
       "inlineMathHint": "文中にLaTeX数式を挿入",
       "blockMath": "ブロック数式",
       "blockMathHint": "独立した数式を挿入",
-      "proof": "証明"
+      "proof": "証明",
+      "mermaid": "Mermaid 図",
+      "imageRow": "並列画像"
     },
     "image": {
       "figure": "図",
@@ -313,7 +318,8 @@
         "figure": "図 {number}",
         "table": "表 {number}",
         "equation": "式 ({number})",
-        "heading": "{number}"
+        "heading": "{number}",
+        "figureSub": "図 {number}"
       },
       "broken": "無効な参照",
       "brokenHint": "参照先が見つかりません。削除された可能性があります",
@@ -324,10 +330,32 @@
       "groupEquation": "数式",
       "groupHeading": "見出し",
       "untitledFigure": "無題の図",
-      "untitledTable": "無題の表"
+      "untitledTable": "無題の表",
+      "groupFigureSub": "サブ図"
     },
     "proof": {
       "label": "証明"
+    },
+    "mermaid": {
+      "selectTheme": "テーマを選択",
+      "editSource": "ソースを編集",
+      "showPreview": "プレビューを表示",
+      "renderError": "レンダリングエラー",
+      "themes": {
+        "default": "デフォルト",
+        "base": "ベース",
+        "dark": "ダーク",
+        "forest": "フォレスト",
+        "neutral": "ニュートラル",
+        "monochrome": "白黒"
+      },
+      "modeWrite": "編集",
+      "modeSplit": "編集 + プレビュー",
+      "modePreview": "プレビュー",
+      "customColor": "カスタムカラー"
+    },
+    "imageRow": {
+      "tooFewImages": "画像を2枚以上選択してください"
     }
   },
   "documents": {

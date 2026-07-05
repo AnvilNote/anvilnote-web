@@ -13,9 +13,14 @@ import { CrossRefNodeView } from "@/components/editor/node-views/cross-ref-node-
 // purely to resolve what a crossRef pointing at a given figure/table
 // should display, since a crossRef can sit anywhere in the document, not
 // just right next to its target.
-const TARGET_TYPES = new Set(["image", "table", "blockMath", "heading"]);
+// imageRow included so it (and its child images — see the numbering pass
+// below) gets a backfilled id too; imageRow itself shares "figure" numbering
+// with plain standalone images (one number for the whole row), while its
+// children get the new "figureSub" kind instead of "figure" — see the
+// numbering pass's own imageRow branch for how that split is computed.
+const TARGET_TYPES = new Set(["image", "table", "blockMath", "heading", "imageRow"]);
 
-export type CrossRefKind = "figure" | "table" | "equation" | "heading";
+export type CrossRefKind = "figure" | "figureSub" | "table" | "equation" | "heading";
 
 // Backfills a stable `id` on every referenceable node (image/table/
 // blockMath/heading), and — the actual cross-referencing logic — resolves
@@ -125,8 +130,42 @@ export const CrossRefTargetIds = Extension.create({
           let equationN = 0;
           const resolved = new Map<string, { kind: CrossRefKind; value: string }>();
 
-          tr.doc.descendants((node, pos) => {
+          tr.doc.descendants((node, pos, parent) => {
             const id = node.attrs.id as string | null;
+
+            // imageRow gets ONE figure number for the whole row; its child
+            // images get "figureSub" instead ("圖 1 (a)"/"圖 1 (b)", not
+            // "圖 1"/"圖 2" — see cross-ref-labels.ts's own figureSub case
+            // for why that space-before-paren format, and mermaid-plan's
+            // memo on why this is computed here rather than sourced from
+            // subpar's own numbering). Handled before the generic `if (!id)
+            // return` below since imageRow itself needs its id resolved
+            // even though its children are walked manually via
+            // node.forEach, not the generic recursive descendants — hence
+            // `return false` to skip descending into them a second time.
+            if (node.type.name === "imageRow") {
+              figureN += 1;
+              const rowValue = String(figureN);
+              if (id) resolved.set(id, { kind: "figure", value: rowValue });
+              let letterIndex = 0;
+              node.forEach((child) => {
+                const childId = child.attrs.id as string | null;
+                if (child.type.name === "image" && childId) {
+                  const letter = String.fromCharCode(97 + letterIndex);
+                  // Space before the paren ("1 (a)") so formatCrossRefLabel's
+                  // plain "{supplement} {value}" rule (same one "figure"
+                  // itself uses) produces "圖 1 (a)" without figureSub
+                  // needing its own special-cased join format.
+                  resolved.set(childId, { kind: "figureSub", value: `${rowValue} (${letter})` });
+                  letterIndex += 1;
+                }
+              });
+              return false;
+            }
+            // Already handled as part of its parent imageRow above — skip,
+            // don't let the plain "image" branch below double-count it.
+            if (parent?.type.name === "imageRow") return;
+
             if (!id) return;
 
             if (node.type.name === "image") {

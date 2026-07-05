@@ -31,6 +31,7 @@ import {
   Strikethrough,
   Table as TableIcon,
   Undo2,
+  Workflow,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -41,6 +42,7 @@ import {
 import { TableSizeGrid } from "@/components/editor/table-size-picker";
 import { pickAndInsertImage } from "@/lib/tiptap/image";
 import { insertCallout } from "@/lib/tiptap/callout";
+import { insertMermaid } from "@/lib/tiptap/mermaid";
 import { DEFAULT_CALLOUT_KIND } from "@/config/callouts";
 import type {
   MathClickMode,
@@ -155,6 +157,7 @@ export function TiptapToolbar({
       orderedList: e.isActive("orderedList"),
       blockquote: e.isActive("blockquote"),
       callout: e.isActive("callout"),
+      mermaid: e.isActive("mermaid"),
       codeBlock: e.isActive("codeBlock"),
       link: e.isActive("link"),
       inTable: e.isActive("table"),
@@ -273,6 +276,12 @@ export function TiptapToolbar({
               tCallout(`kinds.${DEFAULT_CALLOUT_KIND}` as never),
             )
           }
+        />
+        <ToolbarButton
+          icon={Workflow}
+          label={t("mermaid")}
+          active={s.mermaid}
+          onClick={() => insertMermaid(editor)}
         />
         <ToolbarButton
           icon={Code2}

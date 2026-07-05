@@ -26,6 +26,7 @@ export function VersionPreview({ content }: { content: JSONContent }) {
         tableLabel: t("table.figure"),
         figureCaptionPlaceholder: t("image.captionPlaceholder"),
         tableCaptionPlaceholder: t("table.captionPlaceholder"),
+        tableDeleteLabel: t("block.delete", { type: t("block.types.table") }),
         onMathClick: () => {},
       }),
     [t],

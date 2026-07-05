@@ -604,6 +604,25 @@
   color: var(--foreground);
 }
 
+/* Side-by-side images share ONE figure number, each sub-image gets a
+   letter — "圖1(a)"/"圖1(b)", not "圖1"/"圖2". The row itself increments
+   anvil-figure once; this overrides the plain .anvil-image rule's own
+   counter-increment (CSS counter-increment on the same property doesn't
+   merge across cascading rules — the more specific selector here wins
+   outright), so a child image increments anvil-figure-sub instead. */
+.anvil-image-row {
+  counter-increment: anvil-figure;
+  counter-reset: anvil-figure-sub;
+}
+
+.anvil-image-row .anvil-image {
+  counter-increment: anvil-figure-sub;
+}
+
+.anvil-image-row .anvil-image__caption-label::before {
+  content: attr(data-label) " " counter(anvil-figure) " (" counter(anvil-figure-sub, lower-alpha) ") ";
+}
+
 .anvil-table__caption-label::before {
   content: attr(data-label) " " counter(anvil-table) " ";
   font-weight: 700;
@@ -706,6 +725,147 @@
   height: 0.6em;
   margin: 0 0.35rem;
   background-color: black;
+}
+
+/* Mermaid block: width-resizable like AnvilImage (same percentage-of-editor-
+   width convention and drag-handle interaction — see mermaid-node-view.tsx's
+   startResize, copied from image-node-view.tsx's own). */
+.anvil-mermaid {
+  display: flex;
+  margin: 0.75rem 0;
+}
+
+.anvil-mermaid__frame {
+  position: relative;
+  min-width: 10%;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  padding: 2rem 0.75rem 0.75rem;
+}
+
+.anvil-mermaid__toolbar {
+  position: absolute;
+  top: 0.35rem;
+  left: 0.35rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.anvil-mermaid__modes {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.125rem;
+  border-radius: 0.375rem;
+  background: var(--muted);
+}
+
+.anvil-mermaid__actions {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  z-index: 2;
+  display: flex;
+}
+
+/* Split mode: source (CodeMirror) and preview side by side, matching
+   math-editor-dialog.tsx's own grid-cols-2 side-by-side layout. */
+.anvil-mermaid__split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.anvil-mermaid__source {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+}
+
+.anvil-mermaid__source .cm-editor {
+  border-radius: 0.375rem;
+}
+
+.anvil-mermaid__preview {
+  display: flex;
+  justify-content: center;
+  overflow-x: auto;
+}
+
+.anvil-mermaid__preview svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.anvil-mermaid__error {
+  padding: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--destructive);
+  white-space: pre-wrap;
+}
+
+.anvil-mermaid__handle {
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  height: 36px;
+  width: 9px;
+  transform: translateY(-50%);
+  border: 1px solid var(--background);
+  border-radius: 4px;
+  background: var(--ring);
+  cursor: ew-resize;
+}
+
+/* Side-by-side image row: each child is a full AnvilImage (own caption,
+   resize, crop) — this only owns the grid around them. */
+.anvil-image-row {
+  position: relative;
+  margin: 0.75rem 0;
+}
+
+.anvil-image-row__grid {
+  display: grid;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+/* NodeViewContent renders as <div class="contents"> wrapping ANOTHER
+   Tiptap-owned wrapper div ([data-node-view-content-react]) before the
+   actual child image nodes — display:contents on .contents alone isn't
+   enough to let the grid "see through" to the images, since that inner
+   wrapper is still a real block box with no contents of its own.
+   Confirmed by inspecting the live DOM: images stacked vertically despite
+   grid-template-columns being set correctly, because that inner wrapper —
+   not the images — was the actual grid item. */
+.anvil-image-row__grid > .contents,
+.anvil-image-row__grid [data-node-view-content-react] {
+  display: contents;
+}
+
+/* Each grid cell holds one .anvil-image (itself display:flex with its own
+   margin) — reset that margin so the image doesn't add extra vertical gap
+   on top of the row's own, and let the image use the cell's full width
+   instead of its own natural width, so images end up matched in size. */
+.anvil-image-row__grid .anvil-image {
+  margin: 0;
+  width: 100%;
+}
+
+.anvil-image-row__grid .anvil-image .anvil-image__figure {
+  width: 100%;
+}
+
+.anvil-image-row__actions {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  z-index: 2;
+  display: flex;
 }
 
 .anvil-codeblock pre {
@@ -874,8 +1034,33 @@
 }
 
 .ProseMirror .tableWrapper {
+  position: relative;
   margin: 0.75rem 0;
   counter-increment: anvil-table;
+}
+
+.anvil-table__delete {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.25rem;
+  color: color-mix(in srgb, var(--muted-foreground) 60%, transparent);
+  transition: color 0.15s;
+}
+
+.anvil-table__delete:hover {
+  color: var(--destructive);
+}
+
+.anvil-table__delete svg {
+  width: 0.875rem;
+  height: 0.875rem;
 }
 
 .ProseMirror .tableWrapper[data-align="center"] .anvil-table__caption {

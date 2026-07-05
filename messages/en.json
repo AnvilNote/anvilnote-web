@@ -184,7 +184,9 @@
         "divider": "divider",
         "block": "block",
         "inlineMath": "Inline formula",
-        "proof": "proof block"
+        "proof": "proof block",
+        "mermaid": "mermaid block",
+        "imageRow": "image row block"
       },
       "color": "Text color",
       "colors": {
@@ -227,7 +229,8 @@
       "tableThreeLine": "Three-line table",
       "tableAlignLeft": "Align table left",
       "tableAlignCenter": "Align table center",
-      "tableAlignRight": "Align table right"
+      "tableAlignRight": "Align table right",
+      "mermaid": "Mermaid diagram"
     },
     "slash": {
       "text": "Text",
@@ -246,7 +249,9 @@
       "inlineMathHint": "Insert a LaTeX formula inline",
       "blockMath": "Block math",
       "blockMathHint": "Insert a standalone formula",
-      "proof": "Proof"
+      "proof": "Proof",
+      "mermaid": "Mermaid diagram",
+      "imageRow": "Side-by-side images"
     },
     "image": {
       "figure": "Figure",
@@ -313,7 +318,8 @@
         "figure": "Figure {number}",
         "table": "Table {number}",
         "equation": "Equation ({number})",
-        "heading": "{number}"
+        "heading": "{number}",
+        "figureSub": "Figure {number}"
       },
       "broken": "Broken reference",
       "brokenHint": "The referenced target could not be found — it may have been deleted",
@@ -324,10 +330,32 @@
       "groupEquation": "Equations",
       "groupHeading": "Headings",
       "untitledFigure": "Untitled figure",
-      "untitledTable": "Untitled table"
+      "untitledTable": "Untitled table",
+      "groupFigureSub": "Sub-figures"
     },
     "proof": {
       "label": "Proof."
+    },
+    "mermaid": {
+      "selectTheme": "Select theme",
+      "editSource": "Edit source",
+      "showPreview": "Show preview",
+      "renderError": "Render error",
+      "themes": {
+        "default": "Default",
+        "base": "Base",
+        "dark": "Dark",
+        "forest": "Forest",
+        "neutral": "Neutral",
+        "monochrome": "Black & White"
+      },
+      "modeWrite": "Write",
+      "modeSplit": "Write + Preview",
+      "modePreview": "Preview",
+      "customColor": "Custom color"
+    },
+    "imageRow": {
+      "tooFewImages": "Please select at least two images"
     }
   },
   "documents": {
