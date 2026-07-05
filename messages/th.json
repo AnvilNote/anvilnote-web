@@ -183,7 +183,8 @@
         "blockMath": "สมการแบบบล็อก",
         "divider": "เส้นแบ่ง",
         "block": "บล็อก",
-        "inlineMath": "สมการในบรรทัด"
+        "inlineMath": "สมการในบรรทัด",
+        "proof": "บล็อกการพิสูจน์"
       },
       "color": "สีข้อความ",
       "colors": {
@@ -244,7 +245,8 @@
       "inlineMath": "สมการในบรรทัด",
       "inlineMathHint": "แทรกสูตร LaTeX ในบรรทัด",
       "blockMath": "สมการแบบบล็อก",
-      "blockMathHint": "แทรกสูตรแบบแยกบรรทัด"
+      "blockMathHint": "แทรกสูตรแบบแยกบรรทัด",
+      "proof": "การพิสูจน์"
     },
     "image": {
       "figure": "ภาพ",
@@ -321,6 +323,9 @@
       "groupHeading": "หัวข้อ",
       "untitledFigure": "รูปภาพไม่มีชื่อ",
       "untitledTable": "ตารางไม่มีชื่อ"
+    },
+    "proof": {
+      "label": "พิสูจน์"
     }
   },
   "documents": {

@@ -183,7 +183,8 @@
         "blockMath": "블록 수식",
         "divider": "구분선",
         "block": "블록",
-        "inlineMath": "인라인 수식"
+        "inlineMath": "인라인 수식",
+        "proof": "증명 블록"
       },
       "color": "글자 색",
       "colors": {
@@ -244,7 +245,8 @@
       "inlineMath": "인라인 수식",
       "inlineMathHint": "본문에 LaTeX 수식 삽입",
       "blockMath": "블록 수식",
-      "blockMathHint": "독립 수식 삽입"
+      "blockMathHint": "독립 수식 삽입",
+      "proof": "증명"
     },
     "image": {
       "figure": "그림",
@@ -321,6 +323,9 @@
       "groupHeading": "제목",
       "untitledFigure": "제목 없는 그림",
       "untitledTable": "제목 없는 표"
+    },
+    "proof": {
+      "label": "증명"
     }
   },
   "documents": {

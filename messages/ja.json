@@ -183,7 +183,8 @@
         "blockMath": "ブロック数式",
         "divider": "区切り線",
         "block": "ブロック",
-        "inlineMath": "インライン数式"
+        "inlineMath": "インライン数式",
+        "proof": "証明ブロック"
       },
       "color": "文字色",
       "colors": {
@@ -244,7 +245,8 @@
       "inlineMath": "インライン数式",
       "inlineMathHint": "文中にLaTeX数式を挿入",
       "blockMath": "ブロック数式",
-      "blockMathHint": "独立した数式を挿入"
+      "blockMathHint": "独立した数式を挿入",
+      "proof": "証明"
     },
     "image": {
       "figure": "図",
@@ -321,6 +323,9 @@
       "groupHeading": "見出し",
       "untitledFigure": "無題の図",
       "untitledTable": "無題の表"
+    },
+    "proof": {
+      "label": "証明"
     }
   },
   "documents": {

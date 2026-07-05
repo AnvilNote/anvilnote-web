@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Sans_TC, Source_Serif_4 } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages } from "next-intl/server";
@@ -18,6 +18,14 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 const sourceSerif = Source_Serif_4({
   variable: "--font-source-serif",
   subsets: ["latin"],
+});
+// Source Han Sans (思源黑體) for the proof block's fixed sans-serif look —
+// the app's other CJK text follows the user's chosen template font instead,
+// but the proof block's header/body are meant to look the same everywhere
+// regardless of that setting (see proof.ts's doc comment).
+const notoSansTC = Noto_Sans_TC({
+  variable: "--font-noto-sans-tc",
+  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
@@ -44,7 +52,7 @@ export default async function LocaleLayout({
   return (
     <html
       lang={locale}
-      className={`${geistSans.variable} ${geistMono.variable} ${sourceSerif.variable} h-full`}
+      className={`${geistSans.variable} ${geistMono.variable} ${sourceSerif.variable} ${notoSansTC.variable} h-full`}
       suppressHydrationWarning
     >
       <head>

@@ -183,7 +183,8 @@
         "blockMath": "區塊公式",
         "divider": "分隔線",
         "block": "區塊",
-        "inlineMath": "行內公式"
+        "inlineMath": "行內公式",
+        "proof": "證明方塊"
       },
       "color": "文字顏色",
       "colors": {
@@ -244,7 +245,8 @@
       "inlineMath": "行內公式",
       "inlineMathHint": "在文字中插入 LaTeX 公式",
       "blockMath": "區塊公式",
-      "blockMathHint": "插入獨立顯示的公式"
+      "blockMathHint": "插入獨立顯示的公式",
+      "proof": "證明"
     },
     "image": {
       "figure": "圖",
@@ -321,6 +323,9 @@
       "groupHeading": "標題",
       "untitledFigure": "未命名圖片",
       "untitledTable": "未命名表格"
+    },
+    "proof": {
+      "label": "證"
     }
   },
   "documents": {
