@@ -47,6 +47,18 @@ export const AnvilCodeBlock = CodeBlockLowlight.extend({
   addNodeView() {
     return ReactNodeViewRenderer(CodeBlockNodeView);
   },
+
+  // Fixed 4 spaces, not the browser's default Tab-to-next-focusable-element
+  // behavior — CodeBlockLowlight (unlike e.g. CodeMirror-backed editors)
+  // doesn't handle Tab on its own.
+  addKeyboardShortcuts() {
+    return {
+      Tab: () => {
+        if (!this.editor.isActive(this.name)) return false;
+        return this.editor.commands.insertContent("    ");
+      },
+    };
+  },
 }).configure({
   lowlight,
   defaultLanguage: "text",
