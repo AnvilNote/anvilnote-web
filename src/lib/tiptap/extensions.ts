@@ -19,6 +19,7 @@ import { AnvilImage } from "@/lib/tiptap/image";
 import { AnvilCallout } from "@/lib/tiptap/callout";
 import { CrossRef, CrossRefTargetIds } from "@/lib/tiptap/cross-ref";
 import { CrossRefSuggestion } from "@/components/editor/cross-ref-suggestion";
+import { captionHasMath, renderCaptionHtml } from "@/lib/tiptap/caption-math";
 
 export type TableVariant = "normal" | "three-line";
 export type TableAlign = "left" | "center" | "right";
@@ -26,6 +27,11 @@ export type TableAlign = "left" | "center" | "right";
 class AnvilTableView extends TableView {
   private readonly viewInstance;
   private readonly captionInput: HTMLInputElement;
+  // Shown instead of captionInput whenever the caption has $$...$$ math and
+  // isn't currently focused for editing — mirrors caption-input.tsx's React
+  // version (image captions), reimplemented with plain DOM here since
+  // AnvilTableView is a vanilla TableView subclass, not a React NodeView.
+  private readonly captionDisplay: HTMLDivElement;
 
   constructor(
     node: import("@tiptap/pm/model").Node,
@@ -68,9 +74,22 @@ class AnvilTableView extends TableView {
     });
     this.captionInput.addEventListener("blur", () => {
       this.updateCaption(this.captionInput.value);
+      this.syncCaptionDisplayMode();
     });
 
-    caption.append(label, this.captionInput);
+    this.captionDisplay = document.createElement("div");
+    this.captionDisplay.className = "anvil-caption-input";
+    this.captionDisplay.tabIndex = 0;
+    this.captionDisplay.addEventListener("mousedown", (event) => {
+      event.stopPropagation();
+    });
+    this.captionDisplay.addEventListener("click", () => {
+      this.captionDisplay.hidden = true;
+      this.captionInput.hidden = false;
+      this.captionInput.focus();
+    });
+
+    caption.append(label, this.captionInput, this.captionDisplay);
     this.dom.append(caption);
 
     this.syncWrapperAttrs();
@@ -98,6 +117,23 @@ class AnvilTableView extends TableView {
       this.captionInput.value !== caption
     ) {
       this.captionInput.value = caption;
+    }
+    this.syncCaptionDisplayMode();
+  }
+
+  // Shows captionDisplay (KaTeX-rendered) instead of captionInput whenever
+  // the caption has $$...$$ math and isn't the currently-focused input —
+  // matches caption-input.tsx's "never leaves <input> mode for plain-text
+  // captions" behavior: a caption with no math segment always keeps the
+  // plain input visible, no click-to-edit step to discover.
+  private syncCaptionDisplayMode() {
+    if (document.activeElement === this.captionInput) return;
+    const caption = this.captionInput.value;
+    const showDisplay = caption.length > 0 && captionHasMath(caption);
+    this.captionDisplay.hidden = !showDisplay;
+    this.captionInput.hidden = showDisplay;
+    if (showDisplay) {
+      this.captionDisplay.innerHTML = renderCaptionHtml(caption);
     }
   }
 

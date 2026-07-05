@@ -13,6 +13,17 @@ function asNodes(content: unknown): Node[] {
   return Array.isArray(content) ? (content as Node[]) : [];
 }
 
+// Figure/table captions are a plain string attribute (an <input> in the
+// editor, not ProseMirror content — see caption-math.ts), so math support
+// there is just a $$...$$ convention rather than a real inlineMath node.
+// $$...$$ is the editor's own inlineMath delimiter (matches its InputRule);
+// Markdown/Pandoc's own inline math delimiter is a single $...$, so this
+// just swaps delimiters — the LaTeX source itself needs no translation,
+// same as this file's own inlineMath case just below.
+function renderCaptionMarkdown(caption: string): string {
+  return caption.replace(/\$\$([^$\n]+?)\$\$/g, "$$$1$$");
+}
+
 // Footnote definitions collected in body-encounter order during the current
 // conversion (tiptapDocToMarkdown resets it). Pandoc's `[^N]: content`
 // definitions can live anywhere in the file; appending them at the end after
@@ -207,7 +218,7 @@ function renderTable(node: Node): string {
   }
 
   const caption = typeof node.attrs?.caption === "string" ? node.attrs.caption.trim() : "";
-  return caption ? `${lines.join("\n")}\n\n*${caption}*` : lines.join("\n");
+  return caption ? `${lines.join("\n")}\n\n*${renderCaptionMarkdown(caption)}*` : lines.join("\n");
 }
 
 function renderImage(node: Node): string {
@@ -215,7 +226,9 @@ function renderImage(node: Node): string {
   if (!src) return "";
   const caption = typeof node.attrs?.caption === "string" ? node.attrs.caption.trim() : "";
   const alt = caption || "";
-  return caption ? `![${alt}](${src})\n\n*${caption}*` : `![${alt}](${src})`;
+  return caption
+    ? `![${alt}](${src})\n\n*${renderCaptionMarkdown(caption)}*`
+    : `![${alt}](${src})`;
 }
 
 function renderBlock(node: Node): string {
