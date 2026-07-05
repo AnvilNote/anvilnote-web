@@ -183,7 +183,8 @@
         "blockMath": "block equation",
         "divider": "divider",
         "block": "block",
-        "inlineMath": "Inline formula"
+        "inlineMath": "Inline formula",
+        "proof": "proof block"
       },
       "color": "Text color",
       "colors": {
@@ -244,7 +245,8 @@
       "inlineMath": "Inline math",
       "inlineMathHint": "Insert a LaTeX formula inline",
       "blockMath": "Block math",
-      "blockMathHint": "Insert a standalone formula"
+      "blockMathHint": "Insert a standalone formula",
+      "proof": "Proof"
     },
     "image": {
       "figure": "Figure",
@@ -321,6 +323,9 @@
       "groupHeading": "Headings",
       "untitledFigure": "Untitled figure",
       "untitledTable": "Untitled table"
+    },
+    "proof": {
+      "label": "Proof."
     }
   },
   "documents": {

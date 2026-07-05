@@ -17,6 +17,7 @@ import {
   MessageSquareWarning,
   Quote,
   Sigma,
+  Square,
   SquareSigma,
   Table as TableIcon,
   Type,
@@ -49,6 +50,7 @@ import {
 } from "@/lib/tiptap/math";
 import { pickAndInsertImage } from "@/lib/tiptap/image";
 import { insertCallout } from "@/lib/tiptap/callout";
+import { insertProof } from "@/lib/tiptap/proof";
 import { DEFAULT_CALLOUT_KIND } from "@/config/callouts";
 import { migratedDocIds } from "@/lib/tiptap/serialization";
 import { emptyTiptapContent } from "@/lib/tiptap/default-content";
@@ -196,6 +198,15 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
             DEFAULT_CALLOUT_KIND,
             t(`editor.callout.kinds.${DEFAULT_CALLOUT_KIND}` as never),
           );
+        },
+      },
+      {
+        title: tt("proof"),
+        icon: Square,
+        aliases: ["proof", "qed", "證明"],
+        run: ({ editor, range }) => {
+          editor.chain().focus().deleteRange(range).run();
+          insertProof(editor);
         },
       },
       {

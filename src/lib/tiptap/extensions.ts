@@ -17,6 +17,7 @@ import { BlockMathExit } from "@/lib/tiptap/math";
 import { AnvilCodeBlock } from "@/lib/tiptap/code-block";
 import { AnvilImage } from "@/lib/tiptap/image";
 import { AnvilCallout } from "@/lib/tiptap/callout";
+import { AnvilProof } from "@/lib/tiptap/proof";
 import { CrossRef, CrossRefTargetIds } from "@/lib/tiptap/cross-ref";
 import { CrossRefSuggestion } from "@/components/editor/cross-ref-suggestion";
 import { captionHasMath, renderCaptionHtml } from "@/lib/tiptap/caption-math";
@@ -290,6 +291,7 @@ export function buildExtensions({
     Color,
     AnvilCodeBlock,
     AnvilCallout,
+    AnvilProof,
     AnvilImage.configure({
       HTMLAttributes: {
         "data-caption-label": figureLabel,

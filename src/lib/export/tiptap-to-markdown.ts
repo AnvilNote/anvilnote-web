@@ -1,5 +1,6 @@
 import type { JSONContent } from "@tiptap/core";
 import { formatCrossRefLabel } from "@/lib/export/cross-ref-labels";
+import { proofLabel } from "@/lib/export/proof-labels";
 
 // Converts a Tiptap document (AnvilDocument.content — an unwrapped `doc`
 // node) to plain Markdown, for the .md backup/export feature. Math nodes
@@ -255,6 +256,11 @@ function renderBlock(node: Node): string {
       const kind = typeof node.attrs?.kind === "string" ? node.attrs.kind : "note";
       const title = typeof node.attrs?.title === "string" ? node.attrs.title.trim() : "";
       const label = title ? `**${kind.toUpperCase()}: ${title}**` : `**${kind.toUpperCase()}**`;
+      const inner = renderBlocks(asNodes(node.content));
+      return quoteLines([label, inner].filter(Boolean).join("\n\n"), "> ");
+    }
+    case "proof": {
+      const label = `**${proofLabel(primaryLang)}**`;
       const inner = renderBlocks(asNodes(node.content));
       return quoteLines([label, inner].filter(Boolean).join("\n\n"), "> ");
     }
