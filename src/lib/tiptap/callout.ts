@@ -7,19 +7,23 @@ import {
 } from "@/config/callouts";
 import { CalloutNodeView } from "@/components/editor/node-views/callout-node-view";
 
-// Callout: an admonition-style box (kind + title + paragraph/list/code/math body),
-// modeled on Obsidian's callout syntax. Kind drives accent/background color (both
-// the web preview and the Typst renderer look these up from the same 12-entry
-// palette; see src/config/callouts.ts). `titleTouched` tracks whether the user has
-// edited the title away from its kind's auto-filled default, so switching kind
-// only re-seeds the title while it's still pristine.
+// Callout: an admonition-style box (kind + title + paragraph/list/code/math/image
+// body), modeled on Obsidian's callout syntax. Kind drives accent/background color
+// (both the web preview and the Typst renderer look these up from the same
+// 12-entry palette; see src/config/callouts.ts). `titleTouched` tracks whether the
+// user has edited the title away from its kind's auto-filled default, so switching
+// kind only re-seeds the title while it's still pristine.
 export const AnvilCallout = Node.create({
   name: "callout",
   group: "block",
   // blockMath included so the $$$...$$$ display-math shortcut (and the math
   // dialog) works inside a callout the same as it does at the top level —
   // matches AnvilFootnote's own content spec in math.ts for the same reason.
-  content: "(paragraph|bulletList|orderedList|codeBlock|blockMath)+",
+  // image included so the slash-menu/toolbar image insert also works inside
+  // a callout; the Typst renderer's callout case renders its content via
+  // the same renderBlocks() used everywhere else, so image (and its
+  // caption/cross-ref label) needs no separate handling there.
+  content: "(paragraph|bulletList|orderedList|codeBlock|blockMath|image)+",
   defining: true,
   isolating: true,
 
