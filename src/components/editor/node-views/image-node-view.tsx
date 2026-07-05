@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { AlignCenter, AlignLeft, AlignRight, Crop, RotateCcw, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImageCropDialog } from "@/components/editor/image-crop-dialog";
+import { CaptionInput } from "@/components/editor/caption-input";
 
 type ImageAlign = "left" | "center" | "right";
 
@@ -250,14 +251,10 @@ export function ImageNodeView({
             className="anvil-image__caption-label"
             data-label={captionLabel}
           />
-          <input
-            type="text"
+          <CaptionInput
             value={caption}
             placeholder={t("captionPlaceholder")}
-            onChange={(event) =>
-              updateAttributes({ caption: event.currentTarget.value })
-            }
-            onMouseDown={(event) => event.stopPropagation()}
+            onChange={(value) => updateAttributes({ caption: value })}
             className="anvil-caption-input"
           />
         </figcaption>
