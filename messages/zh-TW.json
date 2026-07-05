@@ -622,14 +622,6 @@
     "title": "匯出",
     "subtitle": "預覽匯出內容，並將目前文件輸出成 PDF。",
     "template": "範本",
-    "pageSize": "頁面尺寸",
-    "fontPreset": "字體預設",
-    "includeMetadata": "包含文件資訊",
-    "fonts": {
-      "sans": "無襯線",
-      "serif": "襯線",
-      "mono": "等寬"
-    },
     "button": "匯出 PDF",
     "exporting": "正在匯出…",
     "payloadTitle": "匯出資料",
@@ -644,6 +636,11 @@
       "pdf": "匯出 PDF",
       "markdown": "匯出 Markdown",
       "docx": "匯出 Word"
+    },
+    "fonts": {
+      "sans": "無襯線",
+      "serif": "襯線",
+      "mono": "等寬"
     }
   },
   "settings": {

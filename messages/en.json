@@ -622,14 +622,6 @@
     "title": "Export",
     "subtitle": "Preview the export and output the current document as a PDF.",
     "template": "Template",
-    "pageSize": "Page size",
-    "fontPreset": "Font preset",
-    "includeMetadata": "Include document info",
-    "fonts": {
-      "sans": "Sans",
-      "serif": "Serif",
-      "mono": "Mono"
-    },
     "button": "Export PDF",
     "exporting": "Exporting…",
     "payloadTitle": "Export data",
@@ -644,6 +636,11 @@
       "pdf": "Export PDF",
       "markdown": "Export Markdown",
       "docx": "Export Word"
+    },
+    "fonts": {
+      "sans": "Sans",
+      "serif": "Serif",
+      "mono": "Mono"
     }
   },
   "settings": {

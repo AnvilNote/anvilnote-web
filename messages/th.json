@@ -622,14 +622,6 @@
     "title": "ส่งออก",
     "subtitle": "ส่งออกเอกสารเป็น PDF",
     "template": "เทมเพลต",
-    "pageSize": "ขนาดหน้า",
-    "fontPreset": "ชุดฟอนต์",
-    "includeMetadata": "รวมข้อมูลเอกสาร",
-    "fonts": {
-      "sans": "ไม่มีเชิง",
-      "serif": "มีเชิง",
-      "mono": "ความกว้างคงที่"
-    },
     "button": "ส่งออก PDF",
     "exporting": "กำลังส่งออก…",
     "payloadTitle": "ข้อมูลที่ส่งออก",
@@ -644,6 +636,11 @@
       "pdf": "ส่งออก PDF",
       "markdown": "ส่งออก Markdown",
       "docx": "ส่งออก Word"
+    },
+    "fonts": {
+      "sans": "ไม่มีเชิง",
+      "serif": "มีเชิง",
+      "mono": "ความกว้างคงที่"
     }
   },
   "settings": {

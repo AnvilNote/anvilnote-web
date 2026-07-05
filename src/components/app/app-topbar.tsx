@@ -42,7 +42,7 @@ export function AppTopbar() {
       const result = await renderDocument(activeDoc.id, {
         pageSize: settings.exportPageSize,
         fontPreset: settings.exportFontPreset,
-        includeMetadata: settings.exportIncludeMetadata,
+        includeMetadata: true,
       });
 
       if (result.pdfUrl) {

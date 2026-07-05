@@ -23,14 +23,12 @@ type SettingsState = {
   spellcheck: boolean;
   exportPageSize: ExportPageSize;
   exportFontPreset: ExportFontPreset;
-  exportIncludeMetadata: boolean;
   exportStorageLocation: string;
   versionSnapshotIntervalMinutes: VersionSnapshotIntervalMinutes;
   setAutosave: (v: boolean) => void;
   setSpellcheck: (v: boolean) => void;
   setExportPageSize: (v: ExportPageSize) => void;
   setExportFontPreset: (v: ExportFontPreset) => void;
-  setExportIncludeMetadata: (v: boolean) => void;
   setExportStorageLocation: (v: string) => void;
   setVersionSnapshotIntervalMinutes: (v: VersionSnapshotIntervalMinutes) => void;
 };
@@ -42,14 +40,12 @@ export const useSettingsStore = create<SettingsState>()(
       spellcheck: true,
       exportPageSize: "A4",
       exportFontPreset: "serif",
-      exportIncludeMetadata: true,
       exportStorageLocation: DEFAULT_STORAGE_LOCATION,
       versionSnapshotIntervalMinutes: 15,
       setAutosave: (v) => set({ autosave: v }),
       setSpellcheck: (v) => set({ spellcheck: v }),
       setExportPageSize: (v) => set({ exportPageSize: v }),
       setExportFontPreset: (v) => set({ exportFontPreset: v }),
-      setExportIncludeMetadata: (v) => set({ exportIncludeMetadata: v }),
       setExportStorageLocation: (v) => set({ exportStorageLocation: v }),
       setVersionSnapshotIntervalMinutes: (v) => set({ versionSnapshotIntervalMinutes: v }),
     }),
