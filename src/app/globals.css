@@ -901,6 +901,7 @@
 
 .ProseMirror th,
 .ProseMirror td {
+  position: relative;
   border: 1px solid var(--border);
   padding: 0.4rem 0.6rem;
   text-align: left;
@@ -910,6 +911,29 @@
 .ProseMirror th {
   background: var(--muted);
   font-weight: 600;
+}
+
+/* @tiptap/extension-table's columnResizing plugin inserts these as bare,
+   unstyled decoration widgets (confirmed by inspecting the live DOM: a
+   0-height div stretched to the cell's full width) — the package ships no
+   default CSS of its own, so without this the drag handle is functionally
+   present (the resize logic itself works) but invisible and effectively
+   unusable. Positioned relative to the th/td above, which needed its own
+   position:relative added for this to land in the right place at all. */
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: -1px;
+  right: -2px;
+  width: 4px;
+  z-index: 20;
+  background-color: var(--ring);
+  cursor: col-resize;
+  pointer-events: none;
+}
+
+.ProseMirror.resize-cursor {
+  cursor: col-resize;
 }
 
 /* Callout NodeView: accent-tinted admonition box. --callout-bg-light,
