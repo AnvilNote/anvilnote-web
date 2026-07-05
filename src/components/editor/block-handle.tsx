@@ -26,33 +26,22 @@ export function BlockHandle({ editor }: { editor: Editor }) {
       editor={editor}
       className="anvil-drag-handle"
       onNodeChange={handleNodeChange}
-      // Without this, the handle's own coordinate-based hit-testing (used to
-      // figure out which node it's currently hovering, since it isn't told
-      // directly) resolves to whatever child DOM element the cursor lands
-      // on — for a plain paragraph that's the paragraph itself, but for
-      // callout's custom ReactNodeViewRenderer wrapper it resolved to the
-      // paragraph INSIDE the callout instead of the callout node. The
-      // resulting "drag" then replaced the callout's own child with itself,
-      // which is indistinguishable from doing nothing. Confirmed by
-      // instrumenting the extension directly: dragContext correctly saw
-      // { node: callout, pos: 5 } but the coordinate lookup still returned
-      // { type: paragraph, pos: 6 } because nested mode was off.
-      //
-      // The fix mirrors the extension's own built-in `listItemFirstChild`
-      // rule (excludes listItem's content paragraph so the listItem itself
-      // is the drag target): exclude any node whose direct parent is a
-      // callout, so scoring falls back to the callout itself instead of
-      // its (only) paragraph child. defaultRules stays on (implicit
-      // default), so list/table dragging — which already worked — is
-      // untouched.
-      nested={{
-        rules: [
-          {
-            id: "calloutTargetsContainer",
-            evaluate: ({ parent }) => (parent?.type.name === "callout" ? 1000 : 0),
-          },
-        ],
-      }}
+      // nested.enabled: true — NOT the extension's own default. Read the
+      // extension's source directly to settle this (two contradictory doc
+      // comments had accumulated here across earlier sessions): with
+      // nested disabled (the default), coordinate lookup goes through
+      // findClosestTopLevelBlock, which unconditionally walks UP the DOM
+      // to the nearest direct child of the ProseMirror root — there is no
+      // code path there that can ever resolve to a node nested inside
+      // another block like callout's paragraphs. Confirmed by testing:
+      // hovering a callout's inner paragraph and dragging still moved the
+      // whole callout. nested:true switches to findBestDragTarget instead,
+      // which scores EVERY ancestor at the cursor position and, on a tie
+      // (defaultRules don't deduct anything from a plain paragraph or from
+      // callout), breaks it by depth — the deeper node wins. That means a
+      // callout's inner paragraph (deeper) naturally outscores the callout
+      // itself with no custom rules needed.
+      nested={true}
     >
       <div
         aria-label={t("menu")}
