@@ -184,7 +184,11 @@ export function RightPanel({
       </aside>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-[22rem] gap-0 p-0 lg:hidden">
+        <SheetContent
+          side="right"
+          className="w-[22rem] gap-0 p-0 lg:hidden"
+          showCloseButton={false}
+        >
           <SheetHeader className="sr-only">
             <SheetTitle>{t("topbar.togglePanel")}</SheetTitle>
             <SheetDescription>{t("panel.metadataHint")}</SheetDescription>

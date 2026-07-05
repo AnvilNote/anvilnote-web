@@ -622,14 +622,6 @@
     "title": "書き出し",
     "subtitle": "現在のドキュメントをPDFに書き出します。",
     "template": "テンプレート",
-    "pageSize": "ページサイズ",
-    "fontPreset": "フォントプリセット",
-    "includeMetadata": "ドキュメント情報を含める",
-    "fonts": {
-      "sans": "ゴシック",
-      "serif": "明朝",
-      "mono": "等幅"
-    },
     "button": "PDFを書き出す",
     "exporting": "書き出し中…",
     "payloadTitle": "エクスポートデータ",
@@ -644,6 +636,11 @@
       "pdf": "PDF を書き出す",
       "markdown": "Markdown を書き出す",
       "docx": "Word を書き出す"
+    },
+    "fonts": {
+      "sans": "ゴシック",
+      "serif": "明朝",
+      "mono": "等幅"
     }
   },
   "settings": {

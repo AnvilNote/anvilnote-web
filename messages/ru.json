@@ -622,14 +622,6 @@
     "title": "Экспорт",
     "subtitle": "Экспорт документа в PDF.",
     "template": "Шаблон",
-    "pageSize": "Размер страницы",
-    "fontPreset": "Набор шрифтов",
-    "includeMetadata": "Включить сведения о документе",
-    "fonts": {
-      "sans": "Без засечек",
-      "serif": "С засечками",
-      "mono": "Моноширинный"
-    },
     "button": "Экспорт в PDF",
     "exporting": "Экспорт…",
     "payloadTitle": "Данные экспорта",
@@ -644,6 +636,11 @@
       "pdf": "Экспорт в PDF",
       "markdown": "Экспорт в Markdown",
       "docx": "Экспорт в Word"
+    },
+    "fonts": {
+      "sans": "Без засечек",
+      "serif": "С засечками",
+      "mono": "Моноширинный"
     }
   },
   "settings": {

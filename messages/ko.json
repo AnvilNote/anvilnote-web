@@ -622,14 +622,6 @@
     "title": "내보내기",
     "subtitle": "내보낼 내용을 미리 보고 현재 문서를 PDF로 출력합니다.",
     "template": "템플릿",
-    "pageSize": "페이지 크기",
-    "fontPreset": "글꼴 프리셋",
-    "includeMetadata": "문서 정보 포함",
-    "fonts": {
-      "sans": "고딕",
-      "serif": "명조",
-      "mono": "고정폭"
-    },
     "button": "PDF 내보내기",
     "exporting": "내보내는 중…",
     "payloadTitle": "내보내기 데이터",
@@ -644,6 +636,11 @@
       "pdf": "PDF 내보내기",
       "markdown": "Markdown 내보내기",
       "docx": "Word 내보내기"
+    },
+    "fonts": {
+      "sans": "고딕",
+      "serif": "명조",
+      "mono": "고정폭"
     }
   },
   "settings": {

@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { FileDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -25,15 +24,8 @@ import { deliverPdf } from "@/lib/export-pdf";
 import { deliverDocx } from "@/lib/export-docx";
 import { exportDocumentMarkdown } from "@/lib/export/backup";
 import { resolveExportFolder } from "@/lib/export-folder";
-import type {
-  ExportFontPreset,
-  ExportFormat,
-  ExportPageSize,
-  ExportPayload,
-} from "@/types/export";
+import type { ExportFormat, ExportPayload } from "@/types/export";
 
-const PAGE_SIZES: ExportPageSize[] = ["A4", "Letter"];
-const FONT_PRESETS: ExportFontPreset[] = ["sans", "serif", "mono"];
 const EXPORT_FORMATS: ExportFormat[] = ["pdf", "markdown", "docx"];
 
 export function ExportPanel({ documentId }: { documentId: string }) {
@@ -52,13 +44,6 @@ export function ExportPanel({ documentId }: { documentId: string }) {
   const projects = useProjectStore((s) => s.projects);
 
   const [format, setFormat] = useState<ExportFormat>("pdf");
-  const [pageSize, setPageSize] = useState<ExportPageSize>(settings.exportPageSize);
-  const [fontPreset, setFontPreset] = useState<ExportFontPreset>(
-    settings.exportFontPreset,
-  );
-  const [includeMetadata, setIncludeMetadata] = useState(
-    settings.exportIncludeMetadata,
-  );
   const [loading, setLoading] = useState(false);
   const [payload, setPayload] = useState<ExportPayload | null>(null);
 
@@ -76,12 +61,16 @@ export function ExportPanel({ documentId }: { documentId: string }) {
     if (!doc) return;
     // Reveal the renderer payload (Tiptap JSON + LaTeX math) and render to PDF.
     setPayload(
-      buildExportPayload(doc, { pageSize, fontPreset, includeMetadata }),
+      buildExportPayload(doc, {
+        pageSize: settings.exportPageSize,
+        fontPreset: settings.exportFontPreset,
+        includeMetadata: true,
+      }),
     );
     const result = await renderDocument(doc.id, {
-      pageSize,
-      fontPreset,
-      includeMetadata,
+      pageSize: settings.exportPageSize,
+      fontPreset: settings.exportFontPreset,
+      includeMetadata: true,
     });
     if (result.pdfUrl) {
       const delivered = await deliverPdf(
@@ -163,59 +152,6 @@ export function ExportPanel({ documentId }: { documentId: string }) {
           {templateName}
         </div>
       </div>
-
-      {format === "pdf" ? (
-        <>
-          <div className="space-y-1.5">
-            <Label className="text-sm">{te("pageSize")}</Label>
-            <Select
-              value={pageSize}
-              onValueChange={(v) => setPageSize(v as ExportPageSize)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PAGE_SIZES.map((size) => (
-                  <SelectItem key={size} value={size}>
-                    {size}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-sm">{te("fontPreset")}</Label>
-            <Select
-              value={fontPreset}
-              onValueChange={(v) => setFontPreset(v as ExportFontPreset)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {FONT_PRESETS.map((preset) => (
-                  <SelectItem key={preset} value={preset}>
-                    {te(`fonts.${preset}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center justify-between rounded-lg border px-3 py-2">
-            <Label htmlFor="include-metadata" className="text-sm font-normal">
-              {te("includeMetadata")}
-            </Label>
-            <Switch
-              id="include-metadata"
-              checked={includeMetadata}
-              onCheckedChange={setIncludeMetadata}
-            />
-          </div>
-        </>
-      ) : null}
 
       <Button
         onClick={() => void handleExport()}
