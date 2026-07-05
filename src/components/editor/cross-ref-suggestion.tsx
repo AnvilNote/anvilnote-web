@@ -45,20 +45,23 @@ function collectTargets(editor: Editor): CrossRefTarget[] {
 
     if (node.type.name === "imageRow") {
       // The row itself is referenceable as a whole ("圖 1", no letter) —
-      // labeled by its first child's caption so it's distinguishable in
-      // the list from a plain standalone image sharing that caption.
-      // Children are walked manually (node.forEach, not the generic
-      // recursive descendants) so each gets its own "figureSub" entry
-      // ("(a) caption") — `return false` below skips the normal recursive
-      // descent into them, which would otherwise also hit the plain
-      // "image" branch and add them a second time as bare "figure"s.
-      let firstCaption = "";
+      // labeled by its own shared caption when set, falling back to the
+      // first child's caption so it's still distinguishable in the list
+      // when the row has no shared caption of its own. Children are walked
+      // manually (node.forEach, not the generic recursive descendants) so
+      // each gets its own "figureSub" entry ("(a) caption") — `return
+      // false` below skips the normal recursive descent into them, which
+      // would otherwise also hit the plain "image" branch and add them a
+      // second time as bare "figure"s.
+      const rowCaption = typeof node.attrs.caption === "string" ? node.attrs.caption.trim() : "";
+      let firstChildCaption = "";
       node.forEach((child) => {
-        if (!firstCaption && child.type.name === "image") {
-          firstCaption = typeof child.attrs.caption === "string" ? child.attrs.caption.trim() : "";
+        if (!firstChildCaption && child.type.name === "image") {
+          firstChildCaption =
+            typeof child.attrs.caption === "string" ? child.attrs.caption.trim() : "";
         }
       });
-      targets.push({ id, kind: "figure", label: firstCaption });
+      targets.push({ id, kind: "figure", label: rowCaption || firstChildCaption });
       let letterIndex = 0;
       node.forEach((child) => {
         const childId = child.attrs.id as string | undefined;

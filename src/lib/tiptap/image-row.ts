@@ -23,6 +23,23 @@ export const AnvilImageRow = Node.create({
   group: "block",
   content: "image{2,}",
 
+  addAttributes() {
+    return {
+      // Shared caption for the WHOLE row ("圖 1: 兩種方法比較"), on top of
+      // each child image's own individual caption ("(a) 分段函數") — added
+      // per explicit feedback after subpar's own grid() caption: [...]
+      // option was seen rendering just the per-child ones. Optional: an
+      // empty row caption renders no caption line at all, same convention
+      // as AnvilImage's own caption.
+      caption: {
+        default: "",
+        parseHTML: (element) => element.getAttribute("data-caption") ?? "",
+        renderHTML: (attributes) =>
+          attributes.caption ? { "data-caption": attributes.caption } : {},
+      },
+    };
+  },
+
   parseHTML() {
     return [{ tag: 'div[data-type="image-row"]' }];
   },

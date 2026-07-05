@@ -355,7 +355,8 @@
       "customColor": "Свой цвет"
     },
     "imageRow": {
-      "tooFewImages": "Выберите не менее двух изображений"
+      "tooFewImages": "Выберите не менее двух изображений",
+      "captionPlaceholder": "Добавить подпись ко всей группе"
     }
   },
   "documents": {

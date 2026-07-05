@@ -355,7 +355,8 @@
       "customColor": "Custom color"
     },
     "imageRow": {
-      "tooFewImages": "Please select at least two images"
+      "tooFewImages": "Please select at least two images",
+      "captionPlaceholder": "Add a caption for the whole group"
     }
   },
   "documents": {

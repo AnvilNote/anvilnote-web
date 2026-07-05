@@ -355,7 +355,8 @@
       "customColor": "สีกำหนดเอง"
     },
     "imageRow": {
-      "tooFewImages": "โปรดเลือกรูปภาพอย่างน้อยสองรูป"
+      "tooFewImages": "โปรดเลือกรูปภาพอย่างน้อยสองรูป",
+      "captionPlaceholder": "เพิ่มคำอธิบายสำหรับทั้งกลุ่ม"
     }
   },
   "documents": {

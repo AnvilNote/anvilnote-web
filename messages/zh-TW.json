@@ -355,7 +355,8 @@
       "customColor": "自訂顏色"
     },
     "imageRow": {
-      "tooFewImages": "請至少選擇兩張圖片"
+      "tooFewImages": "請至少選擇兩張圖片",
+      "captionPlaceholder": "為整組圖片新增說明"
     }
   },
   "documents": {
