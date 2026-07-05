@@ -184,7 +184,9 @@
         "divider": "分隔線",
         "block": "區塊",
         "inlineMath": "行內公式",
-        "proof": "證明方塊"
+        "proof": "證明方塊",
+        "mermaid": "mermaid 方塊",
+        "imageRow": "並排圖片方塊"
       },
       "color": "文字顏色",
       "colors": {
@@ -227,7 +229,8 @@
       "tableThreeLine": "三線表",
       "tableAlignLeft": "表格置左",
       "tableAlignCenter": "表格置中",
-      "tableAlignRight": "表格置右"
+      "tableAlignRight": "表格置右",
+      "mermaid": "Mermaid 圖表"
     },
     "slash": {
       "text": "內文",
@@ -246,7 +249,9 @@
       "inlineMathHint": "在文字中插入 LaTeX 公式",
       "blockMath": "區塊公式",
       "blockMathHint": "插入獨立顯示的公式",
-      "proof": "證明"
+      "proof": "證明",
+      "mermaid": "Mermaid 圖表",
+      "imageRow": "並排圖片"
     },
     "image": {
       "figure": "圖",
@@ -313,7 +318,8 @@
         "figure": "圖 {number}",
         "table": "表 {number}",
         "equation": "式 ({number})",
-        "heading": "{number}"
+        "heading": "{number}",
+        "figureSub": "圖 {number}"
       },
       "broken": "已失效的引用",
       "brokenHint": "找不到引用的目標，可能已被刪除",
@@ -324,10 +330,32 @@
       "groupEquation": "公式",
       "groupHeading": "標題",
       "untitledFigure": "未命名圖片",
-      "untitledTable": "未命名表格"
+      "untitledTable": "未命名表格",
+      "groupFigureSub": "子圖"
     },
     "proof": {
       "label": "證"
+    },
+    "mermaid": {
+      "selectTheme": "選擇主題",
+      "editSource": "編輯原始碼",
+      "showPreview": "顯示預覽",
+      "renderError": "渲染錯誤",
+      "themes": {
+        "default": "預設",
+        "base": "基礎",
+        "dark": "深色",
+        "forest": "森林",
+        "neutral": "中性",
+        "monochrome": "黑白"
+      },
+      "modeWrite": "編輯",
+      "modeSplit": "編輯+預覽",
+      "modePreview": "預覽",
+      "customColor": "自訂顏色"
+    },
+    "imageRow": {
+      "tooFewImages": "請至少選擇兩張圖片"
     }
   },
   "documents": {

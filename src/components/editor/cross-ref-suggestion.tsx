@@ -25,12 +25,13 @@ type CrossRefTarget = {
 
 const KIND_ICON = {
   figure: FileImage,
+  figureSub: FileImage,
   table: Table2,
   equation: Sigma,
   heading: Hash,
 } as const;
 
-const KIND_ORDER: CrossRefKind[] = ["heading", "figure", "table", "equation"];
+const KIND_ORDER: CrossRefKind[] = ["heading", "figure", "figureSub", "table", "equation"];
 
 // Walks the current doc for everything a crossRef could point at. Unlike
 // the numbering plugin in cross-ref.ts, this doesn't gate equations on
@@ -42,6 +43,39 @@ function collectTargets(editor: Editor): CrossRefTarget[] {
     const id = node.attrs.id as string | undefined;
     if (!id) return true;
 
+    if (node.type.name === "imageRow") {
+      // The row itself is referenceable as a whole ("圖 1", no letter) —
+      // labeled by its first child's caption so it's distinguishable in
+      // the list from a plain standalone image sharing that caption.
+      // Children are walked manually (node.forEach, not the generic
+      // recursive descendants) so each gets its own "figureSub" entry
+      // ("(a) caption") — `return false` below skips the normal recursive
+      // descent into them, which would otherwise also hit the plain
+      // "image" branch and add them a second time as bare "figure"s.
+      let firstCaption = "";
+      node.forEach((child) => {
+        if (!firstCaption && child.type.name === "image") {
+          firstCaption = typeof child.attrs.caption === "string" ? child.attrs.caption.trim() : "";
+        }
+      });
+      targets.push({ id, kind: "figure", label: firstCaption });
+      let letterIndex = 0;
+      node.forEach((child) => {
+        const childId = child.attrs.id as string | undefined;
+        if (child.type.name === "image" && childId) {
+          const letter = String.fromCharCode(97 + letterIndex);
+          const childCaption =
+            typeof child.attrs.caption === "string" ? child.attrs.caption.trim() : "";
+          targets.push({
+            id: childId,
+            kind: "figureSub",
+            label: childCaption ? `(${letter}) ${childCaption}` : `(${letter})`,
+          });
+          letterIndex += 1;
+        }
+      });
+      return false;
+    }
     if (node.type.name === "image") {
       const caption = typeof node.attrs.caption === "string" ? node.attrs.caption.trim() : "";
       targets.push({ id, kind: "figure", label: caption });

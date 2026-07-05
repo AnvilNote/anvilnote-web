@@ -184,7 +184,9 @@
         "divider": "เส้นแบ่ง",
         "block": "บล็อก",
         "inlineMath": "สมการในบรรทัด",
-        "proof": "บล็อกการพิสูจน์"
+        "proof": "บล็อกการพิสูจน์",
+        "mermaid": "บล็อก mermaid",
+        "imageRow": "บล็อกแถวรูปภาพ"
       },
       "color": "สีข้อความ",
       "colors": {
@@ -227,7 +229,8 @@
       "tableThreeLine": "ตารางสามเส้น",
       "tableAlignLeft": "จัดตารางชิดซ้าย",
       "tableAlignCenter": "จัดตารางกึ่งกลาง",
-      "tableAlignRight": "จัดตารางชิดขวา"
+      "tableAlignRight": "จัดตารางชิดขวา",
+      "mermaid": "แผนภาพ Mermaid"
     },
     "slash": {
       "text": "ข้อความ",
@@ -246,7 +249,9 @@
       "inlineMathHint": "แทรกสูตร LaTeX ในบรรทัด",
       "blockMath": "สมการแบบบล็อก",
       "blockMathHint": "แทรกสูตรแบบแยกบรรทัด",
-      "proof": "การพิสูจน์"
+      "proof": "การพิสูจน์",
+      "mermaid": "แผนภาพ Mermaid",
+      "imageRow": "รูปภาพเรียงกัน"
     },
     "image": {
       "figure": "ภาพ",
@@ -313,7 +318,8 @@
         "figure": "รูปที่ {number}",
         "table": "ตารางที่ {number}",
         "equation": "สมการ ({number})",
-        "heading": "{number}"
+        "heading": "{number}",
+        "figureSub": "รูปที่ {number}"
       },
       "broken": "การอ้างอิงที่ใช้งานไม่ได้",
       "brokenHint": "ไม่พบเป้าหมายที่อ้างอิง อาจถูกลบไปแล้ว",
@@ -324,10 +330,32 @@
       "groupEquation": "สมการ",
       "groupHeading": "หัวข้อ",
       "untitledFigure": "รูปภาพไม่มีชื่อ",
-      "untitledTable": "ตารางไม่มีชื่อ"
+      "untitledTable": "ตารางไม่มีชื่อ",
+      "groupFigureSub": "รูปย่อย"
     },
     "proof": {
       "label": "พิสูจน์"
+    },
+    "mermaid": {
+      "selectTheme": "เลือกธีม",
+      "editSource": "แก้ไขซอร์สโค้ด",
+      "showPreview": "แสดงตัวอย่าง",
+      "renderError": "ข้อผิดพลาดในการเรนเดอร์",
+      "themes": {
+        "default": "ค่าเริ่มต้น",
+        "base": "Base",
+        "dark": "มืด",
+        "forest": "Forest",
+        "neutral": "Neutral",
+        "monochrome": "ขาวดำ"
+      },
+      "modeWrite": "แก้ไข",
+      "modeSplit": "แก้ไข + ตัวอย่าง",
+      "modePreview": "ตัวอย่าง",
+      "customColor": "สีกำหนดเอง"
+    },
+    "imageRow": {
+      "tooFewImages": "โปรดเลือกรูปภาพอย่างน้อยสองรูป"
     }
   },
   "documents": {

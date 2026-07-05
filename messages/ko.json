@@ -184,7 +184,9 @@
         "divider": "구분선",
         "block": "블록",
         "inlineMath": "인라인 수식",
-        "proof": "증명 블록"
+        "proof": "증명 블록",
+        "mermaid": "mermaid 블록",
+        "imageRow": "이미지 행 블록"
       },
       "color": "글자 색",
       "colors": {
@@ -227,7 +229,8 @@
       "tableThreeLine": "삼선 표",
       "tableAlignLeft": "표 왼쪽 정렬",
       "tableAlignCenter": "표 가운데 정렬",
-      "tableAlignRight": "표 오른쪽 정렬"
+      "tableAlignRight": "표 오른쪽 정렬",
+      "mermaid": "Mermaid 다이어그램"
     },
     "slash": {
       "text": "텍스트",
@@ -246,7 +249,9 @@
       "inlineMathHint": "본문에 LaTeX 수식 삽입",
       "blockMath": "블록 수식",
       "blockMathHint": "독립 수식 삽입",
-      "proof": "증명"
+      "proof": "증명",
+      "mermaid": "Mermaid 다이어그램",
+      "imageRow": "나란히 배치된 이미지"
     },
     "image": {
       "figure": "그림",
@@ -313,7 +318,8 @@
         "figure": "그림 {number}",
         "table": "표 {number}",
         "equation": "식 ({number})",
-        "heading": "{number}"
+        "heading": "{number}",
+        "figureSub": "그림 {number}"
       },
       "broken": "끊어진 참조",
       "brokenHint": "참조 대상을 찾을 수 없습니다. 삭제되었을 수 있습니다",
@@ -324,10 +330,32 @@
       "groupEquation": "수식",
       "groupHeading": "제목",
       "untitledFigure": "제목 없는 그림",
-      "untitledTable": "제목 없는 표"
+      "untitledTable": "제목 없는 표",
+      "groupFigureSub": "하위 그림"
     },
     "proof": {
       "label": "증명"
+    },
+    "mermaid": {
+      "selectTheme": "테마 선택",
+      "editSource": "소스 편집",
+      "showPreview": "미리보기 표시",
+      "renderError": "렌더링 오류",
+      "themes": {
+        "default": "기본",
+        "base": "베이스",
+        "dark": "다크",
+        "forest": "포레스트",
+        "neutral": "뉴트럴",
+        "monochrome": "흑백"
+      },
+      "modeWrite": "편집",
+      "modeSplit": "편집 + 미리보기",
+      "modePreview": "미리보기",
+      "customColor": "사용자 지정 색상"
+    },
+    "imageRow": {
+      "tooFewImages": "이미지를 2장 이상 선택하세요"
     }
   },
   "documents": {

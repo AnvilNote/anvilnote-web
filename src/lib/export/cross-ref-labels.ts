@@ -42,13 +42,17 @@ function normalizePrimaryLang(value: string | undefined): CrossRefPrimaryLang {
 // confirmed directly with the user (a named equation's crossRef still
 // shows "式 (1)", not the name).
 export function formatCrossRefLabel(
-  kind: "figure" | "table" | "equation" | "heading",
+  kind: "figure" | "figureSub" | "table" | "equation" | "heading",
   value: string,
   primaryLang: string | undefined,
 ): string {
   if (kind === "heading") return value;
 
   const lang = normalizePrimaryLang(primaryLang);
-  const supplement = SUPPLEMENTS[lang][kind];
+  // figureSub's value already comes pre-formatted as "1 (a)" (see
+  // cross-ref.ts's numbering pass) — it shares "figure"'s own supplement
+  // and plain "{supplement} {value}" join, not equation's parenthesized
+  // one, so no separate SUPPLEMENTS entry is needed for it.
+  const supplement = SUPPLEMENTS[lang][kind === "figureSub" ? "figure" : kind];
   return kind === "equation" ? `${supplement} (${value})` : `${supplement} ${value}`;
 }

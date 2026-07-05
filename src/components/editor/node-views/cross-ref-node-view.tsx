@@ -9,6 +9,7 @@ import type { CrossRefKind } from "@/lib/tiptap/cross-ref";
 
 const KIND_ICON: Record<CrossRefKind, typeof FileImage> = {
   figure: FileImage,
+  figureSub: FileImage,
   table: Table2,
   equation: Sigma,
   heading: Hash,

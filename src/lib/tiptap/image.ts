@@ -149,3 +149,53 @@ export function pickAndInsertImage(editor: Editor, onError?: (kind: "unsupported
   };
   input.click();
 }
+
+// Open a file picker for 2+ images (PNG/JPEG/GIF/WebP/SVG/PDF, same set the
+// single-image picker above supports) and insert them as a single imageRow
+// (side-by-side, each keeping its own caption — see image-row.ts's own
+// comment). Each file resolves independently — a PDF rasterizes to a PNG
+// preview (kept alongside the original PDF as pdfSrc, same as
+// pickAndInsertImage above) while everything else just reads as a data URL
+// — so a row can freely mix a PDF page with plain images.
+export function pickAndInsertImageRow(editor: Editor, onError?: (kind: "unsupported" | "tooFew") => void) {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.multiple = true;
+  input.accept = SUPPORTED_IMAGE_MIME_TYPES.join(",");
+  input.onchange = () => {
+    const files = Array.from(input.files ?? []);
+    if (files.length < 2) {
+      onError?.("tooFew");
+      return;
+    }
+    if (files.some((file) => !SUPPORTED_IMAGE_MIME_TYPES.includes(file.type as (typeof SUPPORTED_IMAGE_MIME_TYPES)[number]))) {
+      onError?.("unsupported");
+      return;
+    }
+
+    Promise.all(
+      files.map((file) =>
+        file.type === "application/pdf"
+          ? Promise.all([renderPdfFirstPageToPng(file), readAsDataUrl(file)]).then(
+              ([png, pdfSrc]) => ({ src: png, pdfSrc }),
+            )
+          : readAsDataUrl(file).then((src) => ({ src })),
+      ),
+    )
+      .then((attrsList) => {
+        editor
+          .chain()
+          .focus()
+          .insertContent({
+            type: "imageRow",
+            content: attrsList.map((attrs) => ({ type: "image", attrs })),
+          })
+          .run();
+      })
+      .catch((error) => {
+        console.error("Failed to read image files:", error);
+        onError?.("unsupported");
+      });
+  };
+  input.click();
+}

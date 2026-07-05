@@ -184,7 +184,9 @@
         "divider": "разделитель",
         "block": "блок",
         "inlineMath": "Встроенная формула",
-        "proof": "блок доказательства"
+        "proof": "блок доказательства",
+        "mermaid": "блок mermaid",
+        "imageRow": "блок ряда изображений"
       },
       "color": "Цвет текста",
       "colors": {
@@ -227,7 +229,8 @@
       "tableThreeLine": "Таблица из трёх линий",
       "tableAlignLeft": "Выровнять таблицу по левому краю",
       "tableAlignCenter": "Выровнять таблицу по центру",
-      "tableAlignRight": "Выровнять таблицу по правому краю"
+      "tableAlignRight": "Выровнять таблицу по правому краю",
+      "mermaid": "Диаграмма Mermaid"
     },
     "slash": {
       "text": "Текст",
@@ -246,7 +249,9 @@
       "inlineMathHint": "Вставить формулу LaTeX в строку",
       "blockMath": "Блочная формула",
       "blockMathHint": "Вставить отдельную формулу",
-      "proof": "Доказательство"
+      "proof": "Доказательство",
+      "mermaid": "Диаграмма Mermaid",
+      "imageRow": "Изображения рядом"
     },
     "image": {
       "figure": "Рисунок",
@@ -313,7 +318,8 @@
         "figure": "Рис. {number}",
         "table": "Табл. {number}",
         "equation": "Ур. ({number})",
-        "heading": "{number}"
+        "heading": "{number}",
+        "figureSub": "Рис. {number}"
       },
       "broken": "Неработающая ссылка",
       "brokenHint": "Не удалось найти объект ссылки — возможно, он был удалён",
@@ -324,10 +330,32 @@
       "groupEquation": "Формулы",
       "groupHeading": "Заголовки",
       "untitledFigure": "Рисунок без названия",
-      "untitledTable": "Таблица без названия"
+      "untitledTable": "Таблица без названия",
+      "groupFigureSub": "Вложенные рисунки"
     },
     "proof": {
       "label": "Доказательство."
+    },
+    "mermaid": {
+      "selectTheme": "Выбрать тему",
+      "editSource": "Редактировать исходный код",
+      "showPreview": "Показать предпросмотр",
+      "renderError": "Ошибка рендеринга",
+      "themes": {
+        "default": "По умолчанию",
+        "base": "Base",
+        "dark": "Тёмная",
+        "forest": "Forest",
+        "neutral": "Neutral",
+        "monochrome": "Чёрно-белый"
+      },
+      "modeWrite": "Редактировать",
+      "modeSplit": "Редактировать + просмотр",
+      "modePreview": "Просмотр",
+      "customColor": "Свой цвет"
+    },
+    "imageRow": {
+      "tooFewImages": "Выберите не менее двух изображений"
     }
   },
   "documents": {
