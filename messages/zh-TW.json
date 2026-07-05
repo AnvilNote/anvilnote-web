@@ -282,7 +282,9 @@
       "refNamePlaceholder": "例如：能量方程式，用於交互參照清單"
     },
     "codeBlock": {
-      "selectLanguage": "選擇語言"
+      "selectLanguage": "選擇語言",
+      "copy": "複製程式碼",
+      "copied": "已複製"
     },
     "callout": {
       "selectKind": "Callout 類型",

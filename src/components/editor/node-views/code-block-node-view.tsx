@@ -1,12 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   NodeViewContent,
   NodeViewWrapper,
   type NodeViewProps,
 } from "@tiptap/react";
-import { Trash2 } from "lucide-react";
+import { Check, Copy, Trash2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -32,6 +33,13 @@ export function CodeBlockNodeView({ node, updateAttributes, deleteNode }: NodeVi
   const language = normalizeCodeLanguage(
     node.attrs.language as string | undefined,
   );
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(node.textContent);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
 
   return (
     <NodeViewWrapper className="anvil-codeblock" data-language={language}>
@@ -59,6 +67,19 @@ export function CodeBlockNodeView({ node, updateAttributes, deleteNode }: NodeVi
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="anvil-codeblock__copy" contentEditable={false}>
+        <button
+          type="button"
+          aria-label={t(copied ? "copied" : "copy")}
+          title={t(copied ? "copied" : "copy")}
+          onClick={handleCopy}
+          onMouseDown={(event) => event.stopPropagation()}
+          className="flex size-6 items-center justify-center rounded text-muted-foreground/60 transition-colors hover:bg-accent hover:text-foreground"
+        >
+          {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+        </button>
       </div>
 
       <pre className={language === "text" ? undefined : `language-${language}`}>

@@ -282,7 +282,9 @@
       "refNamePlaceholder": "напр. Уравнение энергии — отображается в списке ссылок"
     },
     "codeBlock": {
-      "selectLanguage": "Выберите язык"
+      "selectLanguage": "Выберите язык",
+      "copy": "Копировать код",
+      "copied": "Скопировано"
     },
     "callout": {
       "selectKind": "Тип врезки",
