@@ -9,9 +9,12 @@ import {
   AlignLeft,
   AlignRight,
   Bold,
+  Check,
+  ChevronDown,
   Code,
   Code2,
   Grid2x2,
+  Heading,
   Heading1,
   Heading2,
   Heading3,
@@ -39,6 +42,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { TableSizeGrid } from "@/components/editor/table-size-picker";
 import { pickAndInsertImage } from "@/lib/tiptap/image";
 import { insertCallout } from "@/lib/tiptap/callout";
@@ -79,6 +88,63 @@ function ToolbarButton({
     >
       <Icon className="size-4" />
     </button>
+  );
+}
+
+// H1/H2/H3 merged into one dropdown (explicit ask — the toolbar was
+// cramped) instead of three separate always-visible buttons. Trigger icon
+// swaps to whichever level is currently active (or the plain "Heading"
+// glyph when the selection is a paragraph/something else), same pattern
+// as e.g. Google Docs' own style dropdown.
+function HeadingDropdown({
+  editor,
+  active,
+  labels,
+}: {
+  editor: Editor;
+  active: { h1: boolean; h2: boolean; h3: boolean };
+  labels: { heading1: string; heading2: string; heading3: string };
+}) {
+  const entries = [
+    { level: 1 as const, icon: Heading1, label: labels.heading1, isActive: active.h1 },
+    { level: 2 as const, icon: Heading2, label: labels.heading2, isActive: active.h2 },
+    { level: 3 as const, icon: Heading3, label: labels.heading3, isActive: active.h3 },
+  ];
+  const activeEntry = entries.find((entry) => entry.isActive);
+  const TriggerIcon = activeEntry?.icon ?? Heading;
+  const isActive = Boolean(activeEntry);
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-label={activeEntry?.label ?? "Heading"}
+          title={activeEntry?.label ?? "Heading"}
+          aria-pressed={isActive}
+          className={cn(
+            "inline-flex h-7 shrink-0 items-center gap-0.5 rounded-md px-1 text-muted-foreground transition-colors md:h-8",
+            "hover:bg-accent hover:text-foreground",
+            isActive && "bg-accent text-foreground",
+          )}
+        >
+          <TriggerIcon className="size-4" />
+          <ChevronDown className="size-3" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-40">
+        {entries.map(({ level, icon: Icon, label, isActive: entryActive }) => (
+          <DropdownMenuItem
+            key={level}
+            onSelect={() => editor.chain().focus().toggleHeading({ level }).run()}
+          >
+            <Icon className="size-4" />
+            {label}
+            <Check className={cn("ml-auto size-4", entryActive ? "opacity-100" : "opacity-0")} />
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -185,23 +251,10 @@ export function TiptapToolbar({
           active={s.paragraph}
           onClick={() => editor.chain().focus().setParagraph().run()}
         />
-        <ToolbarButton
-          icon={Heading1}
-          label={t("heading1")}
-          active={s.h1}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        />
-        <ToolbarButton
-          icon={Heading2}
-          label={t("heading2")}
-          active={s.h2}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        />
-        <ToolbarButton
-          icon={Heading3}
-          label={t("heading3")}
-          active={s.h3}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+        <HeadingDropdown
+          editor={editor}
+          active={{ h1: s.h1, h2: s.h2, h3: s.h3 }}
+          labels={{ heading1: t("heading1"), heading2: t("heading2"), heading3: t("heading3") }}
         />
       </div>
 
