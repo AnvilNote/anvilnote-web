@@ -51,11 +51,25 @@ export const AnvilCodeBlock = CodeBlockLowlight.extend({
   // Fixed 4 spaces, not the browser's default Tab-to-next-focusable-element
   // behavior — CodeBlockLowlight (unlike e.g. CodeMirror-backed editors)
   // doesn't handle Tab on its own.
+  //
+  // Enter carries the previous line's leading whitespace onto the new
+  // line — same reasoning: CodeBlockLowlight's content is plain text
+  // ("text*", a single textblock with literal \n characters, not a
+  // paragraph-per-line structure), so a plain Enter starts the new line
+  // at column 0 with no indent carried over, unlike a real code editor.
   addKeyboardShortcuts() {
     return {
       Tab: () => {
         if (!this.editor.isActive(this.name)) return false;
         return this.editor.commands.insertContent("    ");
+      },
+      Enter: () => {
+        if (!this.editor.isActive(this.name)) return false;
+        const { $from } = this.editor.state.selection;
+        const textBefore = $from.parent.textContent.slice(0, $from.parentOffset);
+        const lastLine = textBefore.slice(textBefore.lastIndexOf("\n") + 1);
+        const indent = lastLine.match(/^[ \t]*/)?.[0] ?? "";
+        return this.editor.commands.insertContent(`\n${indent}`);
       },
     };
   },

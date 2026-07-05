@@ -282,7 +282,9 @@
       "refNamePlaceholder": "예: 에너지 방정식 — 상호 참조 목록에 표시됩니다"
     },
     "codeBlock": {
-      "selectLanguage": "언어 선택"
+      "selectLanguage": "언어 선택",
+      "copy": "코드 복사",
+      "copied": "복사됨"
     },
     "callout": {
       "selectKind": "콜아웃 종류",

@@ -282,7 +282,9 @@
       "refNamePlaceholder": "例：エネルギー方程式（相互参照リストに表示）"
     },
     "codeBlock": {
-      "selectLanguage": "言語を選択"
+      "selectLanguage": "言語を選択",
+      "copy": "コードをコピー",
+      "copied": "コピーしました"
     },
     "callout": {
       "selectKind": "コールアウトの種類",
