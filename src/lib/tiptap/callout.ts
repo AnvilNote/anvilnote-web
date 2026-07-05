@@ -98,26 +98,38 @@ export const AnvilCallout = Node.create({
       // "indent into a nested list" (sinkListItem's default meaning) — it's
       // "demote this item to a plain paragraph sitting under the previous
       // item" (e.g. typing "1. foo", pressing Enter for a fresh "2.", then
-      // Tab to turn that empty "2." into an unnumbered continuation
-      // paragraph of "1." instead). When there IS a previous sibling item,
-      // joinBackward (Tiptap's core wrapper for prosemirror-commands'
-      // function, the same one Backspace-at-start-of-block uses) merges the
-      // current item's content into the end of that previous item's content
-      // — listItem's own content spec ("paragraph block*", see
-      // @tiptap/extension-list's ListItem) already allows more than one
-      // child block, so this doesn't need any hand-rolled splitting.
-      // joinBackward itself guards on cursor-at-block-start, so calling it
-      // from elsewhere in the item is a safe no-op, not a stray edit.
+      // Tab to turn that "2." into an unnumbered continuation paragraph of
+      // "1." instead) — regardless of whether the user has already typed
+      // something into the new item before pressing Tab, not just when the
+      // cursor still sits at its very start.
+      //
+      // That "regardless of cursor position" requirement rules out
+      // joinBackward (Tiptap's core wrapper for prosemirror-commands' own
+      // function) despite it having exactly the right merge semantics: it
+      // guards on cursor-at-block-start (confirmed by reading its source —
+      // `atBlockStart` bails unless `$cursor.parentOffset === 0`), so once
+      // real usage put text in the new item before Tab, it silently
+      // declined and fell through to sinkListItem's nested-list behavior
+      // instead — confirmed via direct feedback after the joinBackward-only
+      // version shipped. Hand-rolling the merge instead: splice the current
+      // item's content onto the end of the previous sibling item's content,
+      // then delete the now-empty current item — listItem's own content
+      // spec ("paragraph block*", see @tiptap/extension-list's ListItem)
+      // already allows more than one child block, so this needs no schema
+      // changes.
       //
       // A list item with NO previous sibling (index 0 — the callout's very
-      // first/only item) has nothing to merge into; that's the original
-      // fallback from before this feedback — sinkListItem declining (no
-      // earlier item to become a child of) falls through to liftListItem,
-      // which already demotes to a plain paragraph via its own
-      // liftOutOfList path (see prosemirror-schema-list) when there's no
-      // outer list item to lift into either.
+      // first/only item) has nothing to merge into; that keeps the original
+      // fallback — sinkListItem declining (no earlier item to become a
+      // child of) falls through to liftListItem, which already demotes to
+      // a plain paragraph via its own liftOutOfList path (see
+      // prosemirror-schema-list) when there's no outer list item to lift
+      // into either.
       Tab: () => {
-        const { $from } = this.editor.state.selection;
+        const { selection } = this.editor.state;
+        const { $from, empty } = selection;
+        if (!empty) return false;
+
         const inCallout = Array.from({ length: $from.depth }, (_, i) => i + 1).some(
           (d) => $from.node(d).type.name === this.name,
         );
@@ -131,7 +143,24 @@ export const AnvilCallout = Node.create({
           }
         }
         const hasPreviousSibling = itemDepth > 0 && $from.index(itemDepth - 1) > 0;
-        if (hasPreviousSibling && this.editor.commands.joinBackward()) return true;
+        if (hasPreviousSibling) {
+          return this.editor
+            .chain()
+            .command(({ tr }) => {
+              const currentItem = $from.node(itemDepth);
+              const currentItemStart = $from.before(itemDepth);
+              const currentItemEnd = $from.after(itemDepth);
+              const insertPos = currentItemStart - 1;
+
+              tr.insert(insertPos, currentItem.content);
+              tr.delete(
+                tr.mapping.map(currentItemStart),
+                tr.mapping.map(currentItemEnd),
+              );
+              return true;
+            })
+            .run();
+        }
 
         if (this.editor.commands.sinkListItem("listItem")) return true;
         return this.editor.commands.liftListItem("listItem");
