@@ -868,6 +868,37 @@
   display: flex;
 }
 
+/* Shared caption for the whole row, centered under the grid — distinct
+   from each child's own left-aligned-by-default caption underneath it. */
+.anvil-image-row__caption {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+
+.anvil-image-row__caption-label::before {
+  content: attr(data-label) " " counter(anvil-figure) " ";
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+/* justify-content: center on the row above only centers the label+input
+   block as a whole — it doesn't touch how TEXT sits inside the input
+   itself, which is left-aligned by default. Since the input already
+   stretches close to the row's full width (.anvil-caption-input's own
+   width: min(100%, 18rem)), that left-aligned text still read as
+   flush-left in practice. Centering the input's own text directly is what
+   actually makes the caption look centered under the grid. */
+.anvil-image-row__caption .anvil-caption-input {
+  text-align: center;
+}
+
 .anvil-codeblock pre {
   margin: 0;
   border: none;

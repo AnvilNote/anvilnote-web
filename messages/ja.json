@@ -355,7 +355,8 @@
       "customColor": "カスタムカラー"
     },
     "imageRow": {
-      "tooFewImages": "画像を2枚以上選択してください"
+      "tooFewImages": "画像を2枚以上選択してください",
+      "captionPlaceholder": "画像グループ全体にキャプションを追加"
     }
   },
   "documents": {
