@@ -356,7 +356,8 @@
     },
     "imageRow": {
       "tooFewImages": "โปรดเลือกรูปภาพอย่างน้อยสองรูป",
-      "captionPlaceholder": "เพิ่มคำอธิบายสำหรับทั้งกลุ่ม"
+      "captionPlaceholder": "เพิ่มคำอธิบายสำหรับทั้งกลุ่ม",
+      "swap": "สลับลำดับ"
     }
   },
   "documents": {
