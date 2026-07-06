@@ -16,6 +16,13 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   ColorPicker,
   ColorPickerSelection,
   ColorPickerHue,
@@ -24,7 +31,15 @@ import {
   ColorPickerFormat,
 } from "@/components/ui/color-picker";
 import { renderFunctionPlot } from "@/lib/function-plot-render";
-import { CURVE_PREVIEW_LIMIT, defaultCurveStyle, MAX_CURVES } from "@/lib/function-plot-defaults";
+import {
+  CURVE_PREVIEW_LIMIT,
+  DASH_CYCLE,
+  type DashStyle,
+  defaultCurveStyle,
+  MAX_CURVES,
+  MAX_THICKNESS,
+  MIN_THICKNESS,
+} from "@/lib/function-plot-defaults";
 import { parseNumericInput, numericInputValue } from "@/lib/numeric-input";
 import type { FunctionPlotCurve, FunctionPlotSpec } from "@/lib/tiptap/function-plot";
 
@@ -243,7 +258,7 @@ function FunctionPlotForm({
               type="button"
             >
               <span
-                className="size-4 shrink-0 rounded-sm border"
+                className="size-4 shrink-0 rounded-full border"
                 style={{ backgroundColor: curve.color }}
               />
               <span className="truncate font-mono text-xs text-muted-foreground">{curve.color}</span>
@@ -271,6 +286,37 @@ function FunctionPlotForm({
             </ColorPicker>
           </PopoverContent>
         </Popover>
+        <Input
+          aria-label={t("curveThickness")}
+          className="h-8 w-16 shrink-0 px-2 text-xs"
+          max={MAX_THICKNESS}
+          min={MIN_THICKNESS}
+          onChange={(event) =>
+            updateCurve(index, { thickness: parseNumericInput(event.target.value) })
+          }
+          step={0.1}
+          type="number"
+          value={numericInputValue(curve.thickness)}
+        />
+        <Select
+          onValueChange={(value) => updateCurve(index, { dash: value as DashStyle })}
+          value={curve.dash}
+        >
+          <SelectTrigger
+            aria-label={t("curveDash")}
+            className="h-8 w-24 shrink-0 text-xs"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {DASH_CYCLE.map((dash) => (
+              <SelectItem className="text-xs" key={dash} value={dash}>
+                {t(`dashStyles.${dash}`)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {draft.curves.length > 1 ? (
           <Button
             aria-label={t("removeCurve")}

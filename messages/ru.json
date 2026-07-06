@@ -300,6 +300,14 @@
       "curveFormulaPlaceholder": "Введите формулу",
       "syntaxHelp": "Справочник синтаксиса",
       "curveColor": "Цвет",
+      "curveThickness": "Толщина линии",
+      "curveDash": "Стиль линии",
+      "dashStyles": {
+        "solid": "Сплошная",
+        "dashed": "Пунктирная",
+        "dotted": "Точечная",
+        "dash-dot": "Штрихпунктирная"
+      },
       "curveLabel": "Кривая {number}",
       "showMoreCurves": "Показать ещё {count}",
       "showFewerCurves": "Показать меньше",

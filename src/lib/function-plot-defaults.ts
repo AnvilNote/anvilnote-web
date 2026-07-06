@@ -9,12 +9,19 @@ export const MAX_CURVES = 6;
 // Compact-view row cap in function-plot-dialog.tsx, matching
 // stats-chart-dialog.tsx's VISIBLE_ROW_LIMIT pattern.
 export const CURVE_PREVIEW_LIMIT = 3;
+// Matches anvilnote-charts's own curve schema default (points) — used both
+// as a new curve's initial stroke width and as the display fallback for
+// older saved curves that predate this field.
+export const DEFAULT_THICKNESS = 1.5;
+export const MIN_THICKNESS = 0.5;
+export const MAX_THICKNESS = 4;
 
 export type DashStyle = (typeof DASH_CYCLE)[number];
 
-export function defaultCurveStyle(index: number): { color: string; dash: DashStyle } {
+export function defaultCurveStyle(index: number): { color: string; dash: DashStyle; thickness: number } {
   return {
     dash: DASH_CYCLE[index % DASH_CYCLE.length],
     color: COLOR_CYCLE[Math.floor(index / DASH_CYCLE.length) % COLOR_CYCLE.length],
+    thickness: DEFAULT_THICKNESS,
   };
 }

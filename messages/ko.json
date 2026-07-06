@@ -300,6 +300,14 @@
       "curveFormulaPlaceholder": "수식 입력",
       "syntaxHelp": "문법 참고",
       "curveColor": "색상",
+      "curveThickness": "선 굵기",
+      "curveDash": "선 스타일",
+      "dashStyles": {
+        "solid": "실선",
+        "dashed": "파선",
+        "dotted": "점선",
+        "dash-dot": "1점 쇄선"
+      },
       "curveLabel": "곡선 {number}",
       "showMoreCurves": "{count}개 더 보기",
       "showFewerCurves": "간략히 보기",

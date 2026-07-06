@@ -300,6 +300,14 @@
       "curveFormulaPlaceholder": "ป้อนสูตร",
       "syntaxHelp": "อ้างอิงไวยากรณ์",
       "curveColor": "สี",
+      "curveThickness": "ความหนาของเส้น",
+      "curveDash": "รูปแบบเส้น",
+      "dashStyles": {
+        "solid": "เส้นทึบ",
+        "dashed": "เส้นประ",
+        "dotted": "เส้นจุด",
+        "dash-dot": "เส้นประจุด"
+      },
       "curveLabel": "เส้นโค้ง {number}",
       "showMoreCurves": "แสดงเพิ่มอีก {count}",
       "showFewerCurves": "แสดงน้อยลง",
