@@ -186,7 +186,8 @@
         "inlineMath": "인라인 수식",
         "proof": "증명 블록",
         "mermaid": "mermaid 블록",
-        "imageRow": "이미지 행 블록"
+        "imageRow": "이미지 행 블록",
+        "functionPlot": "함수 그래프 블록"
       },
       "color": "글자 색",
       "colors": {
@@ -251,7 +252,9 @@
       "blockMathHint": "독립 수식 삽입",
       "proof": "증명",
       "mermaid": "Mermaid 다이어그램",
-      "imageRow": "나란히 배치된 이미지"
+      "imageRow": "나란히 배치된 이미지",
+      "functionPlot": "함수 그래프",
+      "functionPlotHint": "y = f(x) 곡선 그리기"
     },
     "image": {
       "figure": "그림",
@@ -285,6 +288,22 @@
       "supportedSyntax": "지원 문법",
       "refName": "이름 (선택)",
       "refNamePlaceholder": "예: 에너지 방정식 — 상호 참조 목록에 표시됩니다"
+    },
+    "functionPlot": {
+      "dialogTitle": "함수 그래프",
+      "curveFormula": "수식(예: sin(x))",
+      "curveColor": "색상",
+      "addCurve": "곡선 추가",
+      "removeCurve": "제거",
+      "curveLimitReached": "최대 6개 곡선",
+      "xRangeMin": "x 최솟값",
+      "xRangeMax": "x 최댓값",
+      "showGridlines": "격자선 표시",
+      "preview": "미리보기",
+      "previewLoading": "렌더링 중…",
+      "previewError": "렌더링할 수 없습니다 — 수식 구문을 확인하세요.",
+      "save": "저장",
+      "cancel": "취소"
     },
     "codeBlock": {
       "selectLanguage": "언어 선택",

@@ -186,7 +186,8 @@
         "inlineMath": "สมการในบรรทัด",
         "proof": "บล็อกการพิสูจน์",
         "mermaid": "บล็อก mermaid",
-        "imageRow": "บล็อกแถวรูปภาพ"
+        "imageRow": "บล็อกแถวรูปภาพ",
+        "functionPlot": "บล็อกกราฟฟังก์ชัน"
       },
       "color": "สีข้อความ",
       "colors": {
@@ -251,7 +252,9 @@
       "blockMathHint": "แทรกสูตรแบบแยกบรรทัด",
       "proof": "การพิสูจน์",
       "mermaid": "แผนภาพ Mermaid",
-      "imageRow": "รูปภาพเรียงกัน"
+      "imageRow": "รูปภาพเรียงกัน",
+      "functionPlot": "กราฟฟังก์ชัน",
+      "functionPlotHint": "วาดเส้นโค้ง y = f(x)"
     },
     "image": {
       "figure": "ภาพ",
@@ -285,6 +288,22 @@
       "supportedSyntax": "ไวยากรณ์ที่รองรับ",
       "refName": "ชื่อ (ไม่บังคับ)",
       "refNamePlaceholder": "เช่น สมการพลังงาน — แสดงในรายการอ้างอิงไขว้"
+    },
+    "functionPlot": {
+      "dialogTitle": "กราฟฟังก์ชัน",
+      "curveFormula": "สูตร (เช่น sin(x))",
+      "curveColor": "สี",
+      "addCurve": "เพิ่มเส้นโค้ง",
+      "removeCurve": "ลบ",
+      "curveLimitReached": "สูงสุด 6 เส้นโค้ง",
+      "xRangeMin": "x ต่ำสุด",
+      "xRangeMax": "x สูงสุด",
+      "showGridlines": "แสดงเส้นกริด",
+      "preview": "ตัวอย่าง",
+      "previewLoading": "กำลังเรนเดอร์…",
+      "previewError": "ไม่สามารถเรนเดอร์ได้ — โปรดตรวจสอบไวยากรณ์สูตร",
+      "save": "บันทึก",
+      "cancel": "ยกเลิก"
     },
     "codeBlock": {
       "selectLanguage": "เลือกภาษา",

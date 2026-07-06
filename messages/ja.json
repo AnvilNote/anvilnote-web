@@ -186,7 +186,8 @@
         "inlineMath": "インライン数式",
         "proof": "証明ブロック",
         "mermaid": "mermaid ブロック",
-        "imageRow": "並列画像ブロック"
+        "imageRow": "並列画像ブロック",
+        "functionPlot": "関数グラフブロック"
       },
       "color": "文字色",
       "colors": {
@@ -251,7 +252,9 @@
       "blockMathHint": "独立した数式を挿入",
       "proof": "証明",
       "mermaid": "Mermaid 図",
-      "imageRow": "並列画像"
+      "imageRow": "並列画像",
+      "functionPlot": "関数グラフ",
+      "functionPlotHint": "y = f(x) の曲線を描画"
     },
     "image": {
       "figure": "図",
@@ -285,6 +288,22 @@
       "supportedSyntax": "対応構文",
       "refName": "名前（任意）",
       "refNamePlaceholder": "例：エネルギー方程式（相互参照リストに表示）"
+    },
+    "functionPlot": {
+      "dialogTitle": "関数グラフ",
+      "curveFormula": "数式(例:sin(x))",
+      "curveColor": "色",
+      "addCurve": "曲線を追加",
+      "removeCurve": "削除",
+      "curveLimitReached": "曲線は最大6本まで",
+      "xRangeMin": "x の最小値",
+      "xRangeMax": "x の最大値",
+      "showGridlines": "グリッド線を表示",
+      "preview": "プレビュー",
+      "previewLoading": "レンダリング中…",
+      "previewError": "描画できません — 数式の構文を確認してください。",
+      "save": "保存",
+      "cancel": "キャンセル"
     },
     "codeBlock": {
       "selectLanguage": "言語を選択",

@@ -186,7 +186,8 @@
         "inlineMath": "行內公式",
         "proof": "證明方塊",
         "mermaid": "mermaid 方塊",
-        "imageRow": "並排圖片方塊"
+        "imageRow": "並排圖片方塊",
+        "functionPlot": "函數圖方塊"
       },
       "color": "文字顏色",
       "colors": {
@@ -251,7 +252,9 @@
       "blockMathHint": "插入獨立顯示的公式",
       "proof": "證明",
       "mermaid": "Mermaid 圖表",
-      "imageRow": "並排圖片"
+      "imageRow": "並排圖片",
+      "functionPlot": "函數圖",
+      "functionPlotHint": "繪製 y = f(x) 曲線"
     },
     "image": {
       "figure": "圖",
@@ -285,6 +288,22 @@
       "supportedSyntax": "支援語法",
       "refName": "名稱（選填）",
       "refNamePlaceholder": "例如：能量方程式，用於交互參照清單"
+    },
+    "functionPlot": {
+      "dialogTitle": "函數圖",
+      "curveFormula": "公式(例如 sin(x))",
+      "curveColor": "顏色",
+      "addCurve": "新增曲線",
+      "removeCurve": "移除",
+      "curveLimitReached": "最多 6 條曲線",
+      "xRangeMin": "x 最小值",
+      "xRangeMax": "x 最大值",
+      "showGridlines": "顯示格線",
+      "preview": "預覽",
+      "previewLoading": "編譯中…",
+      "previewError": "無法渲染——請檢查公式語法。",
+      "save": "儲存",
+      "cancel": "取消"
     },
     "codeBlock": {
       "selectLanguage": "選擇語言",
