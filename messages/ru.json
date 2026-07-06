@@ -186,7 +186,8 @@
         "inlineMath": "Встроенная формула",
         "proof": "блок доказательства",
         "mermaid": "блок mermaid",
-        "imageRow": "блок ряда изображений"
+        "imageRow": "блок ряда изображений",
+        "functionPlot": "блок графика функции"
       },
       "color": "Цвет текста",
       "colors": {
@@ -251,7 +252,9 @@
       "blockMathHint": "Вставить отдельную формулу",
       "proof": "Доказательство",
       "mermaid": "Диаграмма Mermaid",
-      "imageRow": "Изображения рядом"
+      "imageRow": "Изображения рядом",
+      "functionPlot": "График функции",
+      "functionPlotHint": "Построить кривые y = f(x)"
     },
     "image": {
       "figure": "Рисунок",
@@ -285,6 +288,22 @@
       "supportedSyntax": "Поддерживаемый синтаксис",
       "refName": "Название (необязательно)",
       "refNamePlaceholder": "напр. Уравнение энергии — отображается в списке ссылок"
+    },
+    "functionPlot": {
+      "dialogTitle": "График функции",
+      "curveFormula": "Формула (напр. sin(x))",
+      "curveColor": "Цвет",
+      "addCurve": "Добавить кривую",
+      "removeCurve": "Удалить",
+      "curveLimitReached": "Максимум 6 кривых",
+      "xRangeMin": "мин. x",
+      "xRangeMax": "макс. x",
+      "showGridlines": "Показать сетку",
+      "preview": "Предпросмотр",
+      "previewLoading": "Рендеринг…",
+      "previewError": "Не удалось отрендерить — проверьте синтаксис формулы.",
+      "save": "Сохранить",
+      "cancel": "Отмена"
     },
     "codeBlock": {
       "selectLanguage": "Выберите язык",

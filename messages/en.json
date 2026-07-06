@@ -186,7 +186,8 @@
         "inlineMath": "Inline formula",
         "proof": "proof block",
         "mermaid": "mermaid block",
-        "imageRow": "image row block"
+        "imageRow": "image row block",
+        "functionPlot": "function plot block"
       },
       "color": "Text color",
       "colors": {
@@ -251,7 +252,9 @@
       "blockMathHint": "Insert a standalone formula",
       "proof": "Proof",
       "mermaid": "Mermaid diagram",
-      "imageRow": "Side-by-side images"
+      "imageRow": "Side-by-side images",
+      "functionPlot": "Function plot",
+      "functionPlotHint": "Plot y = f(x) curves"
     },
     "image": {
       "figure": "Figure",
@@ -285,6 +288,22 @@
       "supportedSyntax": "Supported syntax",
       "refName": "Name (optional)",
       "refNamePlaceholder": "e.g. Energy equation — shown in the cross-reference list"
+    },
+    "functionPlot": {
+      "dialogTitle": "Function plot",
+      "curveFormula": "Formula (e.g. sin(x))",
+      "curveColor": "Color",
+      "addCurve": "Add curve",
+      "removeCurve": "Remove",
+      "curveLimitReached": "Up to 6 curves",
+      "xRangeMin": "x min",
+      "xRangeMax": "x max",
+      "showGridlines": "Show gridlines",
+      "preview": "Preview",
+      "previewLoading": "Rendering…",
+      "previewError": "Couldn't render — check the formula syntax.",
+      "save": "Save",
+      "cancel": "Cancel"
     },
     "codeBlock": {
       "selectLanguage": "Select language",
