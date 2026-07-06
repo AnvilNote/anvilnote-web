@@ -300,6 +300,14 @@
       "curveFormulaPlaceholder": "Enter a formula",
       "syntaxHelp": "Syntax reference",
       "curveColor": "Color",
+      "curveThickness": "Line thickness",
+      "curveDash": "Line style",
+      "dashStyles": {
+        "solid": "Solid",
+        "dashed": "Dashed",
+        "dotted": "Dotted",
+        "dash-dot": "Dash-dot"
+      },
       "curveLabel": "Curve {number}",
       "showMoreCurves": "Show {count} more",
       "showFewerCurves": "Show fewer",

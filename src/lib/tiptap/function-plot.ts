@@ -1,9 +1,9 @@
 import { Node, mergeAttributes, type Editor } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { FunctionPlotNodeView } from "@/components/editor/node-views/function-plot-node-view";
-import { defaultCurveStyle, type DashStyle } from "@/lib/function-plot-defaults";
+import { DEFAULT_THICKNESS, defaultCurveStyle, type DashStyle } from "@/lib/function-plot-defaults";
 
-export type FunctionPlotCurve = { formula: string; color: string; dash: DashStyle };
+export type FunctionPlotCurve = { formula: string; color: string; dash: DashStyle; thickness: number };
 
 export type FunctionPlotSpec = {
   curves: FunctionPlotCurve[];
@@ -21,7 +21,15 @@ function parseCurves(value: string | null): FunctionPlotCurve[] {
   if (!value) return defaultCurves();
   try {
     const parsed = JSON.parse(value);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : defaultCurves();
+    if (!Array.isArray(parsed) || parsed.length === 0) return defaultCurves();
+    // Backfills thickness for curves saved before this field existed —
+    // the single choke point where raw JSON becomes typed data, rather
+    // than scattering `?? DEFAULT_THICKNESS` fallbacks across every
+    // place a curve gets read.
+    return parsed.map((curve) => ({
+      ...curve,
+      thickness: typeof curve.thickness === "number" ? curve.thickness : DEFAULT_THICKNESS,
+    }));
   } catch {
     return defaultCurves();
   }

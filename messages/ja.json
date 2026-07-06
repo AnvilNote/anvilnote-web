@@ -300,6 +300,14 @@
       "curveFormulaPlaceholder": "数式を入力",
       "syntaxHelp": "構文リファレンス",
       "curveColor": "色",
+      "curveThickness": "線の太さ",
+      "curveDash": "線のスタイル",
+      "dashStyles": {
+        "solid": "実線",
+        "dashed": "破線",
+        "dotted": "点線",
+        "dash-dot": "一点鎖線"
+      },
       "curveLabel": "曲線 {number}",
       "showMoreCurves": "他 {count} 件を表示",
       "showFewerCurves": "表示を減らす",

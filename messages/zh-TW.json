@@ -300,6 +300,14 @@
       "curveFormulaPlaceholder": "輸入公式",
       "syntaxHelp": "語法參考",
       "curveColor": "顏色",
+      "curveThickness": "線條粗細",
+      "curveDash": "線條樣式",
+      "dashStyles": {
+        "solid": "實線",
+        "dashed": "虛線",
+        "dotted": "點線",
+        "dash-dot": "點虛線"
+      },
       "curveLabel": "曲線 {number}",
       "showMoreCurves": "顯示更多 {count} 條",
       "showFewerCurves": "顯示較少",
