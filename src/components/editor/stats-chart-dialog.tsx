@@ -98,6 +98,16 @@ function StatsChartForm({
     initialSpec.chartType === "pie" ? initialSpec.showLegend : true,
   );
   const [previewSvg, setPreviewSvg] = useState<string | null>(null);
+  // Tracks which spec previewSvg was actually rendered for, as a JSON key —
+  // NOT just whether a render happened. Without this, switching chart type
+  // (e.g. bar -> boxwhisker) leaves the old chart's SVG sitting in
+  // previewSvg; hasLabel briefly goes false (new slice starts empty) so the
+  // render effect's early-return never clears it, and once the user types
+  // one character into the new slice, `hasLabel && previewSvg` would show —
+  // and Save would persist — the PREVIOUS chart type's image under the NEW
+  // spec's chartType/data. Comparing against currentSpecKey below prevents
+  // ever displaying or saving an SVG that doesn't match the spec on screen.
+  const [renderedFor, setRenderedFor] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -114,14 +124,19 @@ function StatsChartForm({
     return { chartType, data: categoricalData };
   }
 
+  const currentSpecKey = JSON.stringify(buildSpec());
+  const isPreviewCurrent = hasLabel && renderedFor === currentSpecKey;
+
   useEffect(() => {
     if (!hasLabel) return;
     const controller = new AbortController();
+    const specKeyAtRequestTime = currentSpecKey;
     const timer = setTimeout(() => {
       setLoading(true);
       renderStatsChart(buildSpec(), controller.signal)
         .then((svg) => {
           setPreviewSvg(svg);
+          setRenderedFor(specKeyAtRequestTime);
           setError(null);
         })
         .catch((err: unknown) => {
@@ -136,7 +151,7 @@ function StatsChartForm({
       controller.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chartType, JSON.stringify(categoricalData), JSON.stringify(boxWhiskerData), showLegend]);
+  }, [currentSpecKey]);
 
   function updateCategoricalEntry(index: number, patch: Partial<CategoricalEntry>) {
     setCategoricalData((prev) => prev.map((entry, i) => (i === index ? { ...entry, ...patch } : entry)));
@@ -338,7 +353,7 @@ function StatsChartForm({
           ) : null}
         </div>
         <div className="flex min-h-[220px] flex-col items-center justify-center gap-2 rounded border p-2">
-          {hasLabel && previewSvg ? (
+          {isPreviewCurrent && previewSvg ? (
             <div dangerouslySetInnerHTML={{ __html: previewSvg }} />
           ) : hasLabel && loading ? (
             <span className="text-muted-foreground text-sm">{t("previewLoading")}</span>
@@ -351,8 +366,8 @@ function StatsChartForm({
           {t("cancel")}
         </Button>
         <Button
-          disabled={!hasLabel || !previewSvg}
-          onClick={() => hasLabel && previewSvg && onSave(buildSpec(), previewSvg)}
+          disabled={!isPreviewCurrent || !previewSvg}
+          onClick={() => isPreviewCurrent && previewSvg && onSave(buildSpec(), previewSvg)}
         >
           {t("save")}
         </Button>
