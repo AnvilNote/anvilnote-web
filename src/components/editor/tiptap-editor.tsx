@@ -7,6 +7,7 @@ import type { ChainedCommands } from "@tiptap/core";
 import type { EditorView } from "@tiptap/pm/view";
 import { EditorContent, useEditor } from "@tiptap/react";
 import {
+  BarChart3,
   Code2,
   Heading1,
   Heading2,
@@ -56,6 +57,7 @@ import { insertCallout } from "@/lib/tiptap/callout";
 import { insertProof } from "@/lib/tiptap/proof";
 import { insertMermaid } from "@/lib/tiptap/mermaid";
 import { insertFunctionPlot } from "@/lib/tiptap/function-plot";
+import { insertStatsChart } from "@/lib/tiptap/stats-chart";
 import { DEFAULT_CALLOUT_KIND } from "@/config/callouts";
 import { migratedDocIds } from "@/lib/tiptap/serialization";
 import { emptyTiptapContent } from "@/lib/tiptap/default-content";
@@ -234,6 +236,16 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         run: ({ editor, range }) => {
           editor.chain().focus().deleteRange(range).run();
           insertFunctionPlot(editor);
+        },
+      },
+      {
+        title: tt("statsChart"),
+        subtitle: tt("statsChartHint"),
+        icon: BarChart3,
+        aliases: ["stats", "chart", "bar", "pie", "統計圖", "長條圖", "圓餅圖"],
+        run: ({ editor, range }) => {
+          editor.chain().focus().deleteRange(range).run();
+          insertStatsChart(editor);
         },
       },
       {

@@ -187,7 +187,8 @@
         "proof": "증명 블록",
         "mermaid": "mermaid 블록",
         "imageRow": "이미지 행 블록",
-        "functionPlot": "함수 그래프 블록"
+        "functionPlot": "함수 그래프 블록",
+        "statsChart": "통계 차트 블록"
       },
       "color": "글자 색",
       "colors": {
@@ -232,7 +233,8 @@
       "tableAlignCenter": "표 가운데 정렬",
       "tableAlignRight": "표 오른쪽 정렬",
       "mermaid": "Mermaid 다이어그램",
-      "functionPlot": "함수 그래프"
+      "functionPlot": "함수 그래프",
+      "statsChart": "통계 차트"
     },
     "slash": {
       "text": "텍스트",
@@ -255,7 +257,9 @@
       "mermaid": "Mermaid 다이어그램",
       "imageRow": "나란히 배치된 이미지",
       "functionPlot": "함수 그래프",
-      "functionPlotHint": "y = f(x) 곡선 그리기"
+      "functionPlotHint": "y = f(x) 곡선 그리기",
+      "statsChart": "통계 차트",
+      "statsChartHint": "막대, 파이, 피라미드, 상자수염 그림"
     },
     "image": {
       "figure": "그림",
@@ -305,6 +309,33 @@
       "preview": "미리보기",
       "previewLoading": "렌더링 중…",
       "previewError": "렌더링할 수 없습니다 — 수식 구문을 확인하세요.",
+      "save": "저장",
+      "cancel": "취소"
+    },
+    "statsChart": {
+      "dialogTitle": "통계 차트",
+      "chartType": "차트 종류",
+      "chartTypes": {
+        "bar": "가로 막대",
+        "column": "세로 막대",
+        "pie": "파이",
+        "pyramid": "피라미드",
+        "boxwhisker": "상자수염 그림"
+      },
+      "label": "레이블",
+      "value": "값",
+      "entryColor": "색상",
+      "min": "최솟값",
+      "q1": "제1사분위수",
+      "median": "중앙값",
+      "q3": "제3사분위수",
+      "max": "최댓값",
+      "showLegend": "범례 표시",
+      "addEntry": "항목 추가",
+      "removeEntry": "제거",
+      "entryLimitReached": "최대 20개 항목",
+      "previewLoading": "렌더링 중…",
+      "previewError": "렌더링할 수 없습니다 — 값을 확인하세요.",
       "save": "저장",
       "cancel": "취소"
     },
