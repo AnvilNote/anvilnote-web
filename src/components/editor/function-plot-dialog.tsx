@@ -190,9 +190,9 @@ function FunctionPlotForm({
       prev.curves.length >= MAX_CURVES
         ? prev
         : {
-            ...prev,
-            curves: [...prev.curves, { formula: "", ...defaultCurveStyle(prev.curves.length) }],
-          },
+          ...prev,
+          curves: [...prev.curves, { formula: "", ...defaultCurveStyle(prev.curves.length) }],
+        },
     );
   }
 
@@ -253,7 +253,7 @@ function FunctionPlotForm({
           <PopoverTrigger asChild>
             <button
               aria-label={t("curveColor")}
-              className="flex h-8 w-28 shrink-0 items-center gap-1.5 rounded border px-2 hover:bg-accent"
+              className="flex h-8 w-28 shrink-0 items-center gap-1.5 rounded-md border px-2 hover:bg-accent"
               onMouseDown={(event) => event.stopPropagation()}
               type="button"
             >
@@ -343,7 +343,7 @@ function FunctionPlotForm({
           as a whole would resize every time a curve is added/removed.
           Left column scrolls internally instead; the right column fills
           the same fixed height. */}
-      <div className="grid grid-cols-1 gap-4 sm:h-[480px] sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:h-120 sm:grid-cols-2">
         <div className="flex flex-col gap-3 overflow-y-auto pr-1">
           {visibleCurves.map((curve, index) => curveRow(curve, index))}
           {hiddenCurveCount > 0 ? (
