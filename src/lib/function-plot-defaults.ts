@@ -6,6 +6,9 @@
 export const DASH_CYCLE = ["solid", "dashed", "dotted", "dash-dot"] as const;
 export const COLOR_CYCLE = ["#000000", "#595959"] as const;
 export const MAX_CURVES = 6;
+// Compact-view row cap in function-plot-dialog.tsx, matching
+// stats-chart-dialog.tsx's VISIBLE_ROW_LIMIT pattern.
+export const CURVE_PREVIEW_LIMIT = 3;
 
 export type DashStyle = (typeof DASH_CYCLE)[number];
 
