@@ -42,6 +42,7 @@ import {
   parseBoxWhiskerSpreadsheet,
   parseCategoricalSpreadsheet,
 } from "@/lib/stats-chart-import";
+import { parseNumericInput, numericInputValue } from "@/lib/numeric-input";
 import type { BoxWhiskerEntry, CategoricalEntry, StatsChartSpec } from "@/lib/tiptap/stats-chart";
 
 export type StatsChartDialogProps = {
@@ -389,50 +390,52 @@ function StatsChartForm({
                           <input
                             className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
                             onChange={(event) =>
-                              updateBoxWhiskerEntry(index, { min: Number(event.target.value) })
+                              updateBoxWhiskerEntry(index, { min: parseNumericInput(event.target.value) })
                             }
                             type="number"
-                            value={entry.min}
+                            value={numericInputValue(entry.min)}
                           />
                         </td>
                         <td className="border-b border-l p-0">
                           <input
                             className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
                             onChange={(event) =>
-                              updateBoxWhiskerEntry(index, { q1: Number(event.target.value) })
+                              updateBoxWhiskerEntry(index, { q1: parseNumericInput(event.target.value) })
                             }
                             type="number"
-                            value={entry.q1}
+                            value={numericInputValue(entry.q1)}
                           />
                         </td>
                         <td className="border-b border-l p-0">
                           <input
                             className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
                             onChange={(event) =>
-                              updateBoxWhiskerEntry(index, { median: Number(event.target.value) })
+                              updateBoxWhiskerEntry(index, {
+                                median: parseNumericInput(event.target.value),
+                              })
                             }
                             type="number"
-                            value={entry.median}
+                            value={numericInputValue(entry.median)}
                           />
                         </td>
                         <td className="border-b border-l p-0">
                           <input
                             className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
                             onChange={(event) =>
-                              updateBoxWhiskerEntry(index, { q3: Number(event.target.value) })
+                              updateBoxWhiskerEntry(index, { q3: parseNumericInput(event.target.value) })
                             }
                             type="number"
-                            value={entry.q3}
+                            value={numericInputValue(entry.q3)}
                           />
                         </td>
                         <td className="border-b border-l p-0">
                           <input
                             className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
                             onChange={(event) =>
-                              updateBoxWhiskerEntry(index, { max: Number(event.target.value) })
+                              updateBoxWhiskerEntry(index, { max: parseNumericInput(event.target.value) })
                             }
                             type="number"
-                            value={entry.max}
+                            value={numericInputValue(entry.max)}
                           />
                         </td>
                         <td className="border-b border-l p-1 text-center">
@@ -464,10 +467,12 @@ function StatsChartForm({
                           <input
                             className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
                             onChange={(event) =>
-                              updateCategoricalEntry(index, { value: Number(event.target.value) })
+                              updateCategoricalEntry(index, {
+                                value: parseNumericInput(event.target.value),
+                              })
                             }
                             type="number"
-                            value={entry.value}
+                            value={numericInputValue(entry.value)}
                           />
                         </td>
                         <td className="border-b border-l p-0">
