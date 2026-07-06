@@ -231,7 +231,8 @@
       "tableAlignLeft": "表を左揃え",
       "tableAlignCenter": "表を中央揃え",
       "tableAlignRight": "表を右揃え",
-      "mermaid": "Mermaid 図"
+      "mermaid": "Mermaid 図",
+      "functionPlot": "関数グラフ"
     },
     "slash": {
       "text": "テキスト",
@@ -292,6 +293,7 @@
     "functionPlot": {
       "dialogTitle": "関数グラフ",
       "curveFormula": "数式(例:sin(x))",
+      "syntaxHelp": "構文リファレンス",
       "curveColor": "色",
       "addCurve": "曲線を追加",
       "removeCurve": "削除",
@@ -299,6 +301,7 @@
       "xRangeMin": "x の最小値",
       "xRangeMax": "x の最大値",
       "showGridlines": "グリッド線を表示",
+      "showAxisTicks": "軸の目盛りを表示",
       "preview": "プレビュー",
       "previewLoading": "レンダリング中…",
       "previewError": "描画できません — 数式の構文を確認してください。",

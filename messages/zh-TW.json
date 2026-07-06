@@ -231,7 +231,8 @@
       "tableAlignLeft": "表格置左",
       "tableAlignCenter": "表格置中",
       "tableAlignRight": "表格置右",
-      "mermaid": "Mermaid 圖表"
+      "mermaid": "Mermaid 圖表",
+      "functionPlot": "函數圖"
     },
     "slash": {
       "text": "內文",
@@ -292,6 +293,7 @@
     "functionPlot": {
       "dialogTitle": "函數圖",
       "curveFormula": "公式(例如 sin(x))",
+      "syntaxHelp": "語法參考",
       "curveColor": "顏色",
       "addCurve": "新增曲線",
       "removeCurve": "移除",
@@ -299,6 +301,7 @@
       "xRangeMin": "x 最小值",
       "xRangeMax": "x 最大值",
       "showGridlines": "顯示格線",
+      "showAxisTicks": "顯示座標軸標記",
       "preview": "預覽",
       "previewLoading": "編譯中…",
       "previewError": "無法渲染——請檢查公式語法。",

@@ -231,7 +231,8 @@
       "tableAlignLeft": "Выровнять таблицу по левому краю",
       "tableAlignCenter": "Выровнять таблицу по центру",
       "tableAlignRight": "Выровнять таблицу по правому краю",
-      "mermaid": "Диаграмма Mermaid"
+      "mermaid": "Диаграмма Mermaid",
+      "functionPlot": "График функции"
     },
     "slash": {
       "text": "Текст",
@@ -292,6 +293,7 @@
     "functionPlot": {
       "dialogTitle": "График функции",
       "curveFormula": "Формула (напр. sin(x))",
+      "syntaxHelp": "Справочник синтаксиса",
       "curveColor": "Цвет",
       "addCurve": "Добавить кривую",
       "removeCurve": "Удалить",
@@ -299,6 +301,7 @@
       "xRangeMin": "мин. x",
       "xRangeMax": "макс. x",
       "showGridlines": "Показать сетку",
+      "showAxisTicks": "Показать метки осей",
       "preview": "Предпросмотр",
       "previewLoading": "Рендеринг…",
       "previewError": "Не удалось отрендерить — проверьте синтаксис формулы.",

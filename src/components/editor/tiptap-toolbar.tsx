@@ -20,6 +20,7 @@ import {
   Heading3,
   ImagePlus,
   Italic,
+  LineChart,
   Link2,
   List,
   ListOrdered,
@@ -52,6 +53,7 @@ import { TableSizeGrid } from "@/components/editor/table-size-picker";
 import { pickAndInsertImage } from "@/lib/tiptap/image";
 import { insertCallout } from "@/lib/tiptap/callout";
 import { insertMermaid } from "@/lib/tiptap/mermaid";
+import { insertFunctionPlot } from "@/lib/tiptap/function-plot";
 import { DEFAULT_CALLOUT_KIND } from "@/config/callouts";
 import type {
   MathClickMode,
@@ -148,6 +150,59 @@ function HeadingDropdown({
   );
 }
 
+// Inline/block math merged into one dropdown — same treatment as
+// HeadingDropdown above (explicit ask, same "toolbar was cramped"
+// rationale). Unlike Heading, selecting an entry doesn't apply a mark
+// directly; it opens the math dialog seeded for that mode (onInsertMath),
+// matching how the two separate buttons behaved before merging.
+function MathDropdown({
+  active,
+  labels,
+  onInsertMath,
+}: {
+  active: { inlineMath: boolean; blockMath: boolean };
+  labels: { inlineMath: string; blockMath: string };
+  onInsertMath: (mode: MathClickMode) => void;
+}) {
+  const entries = [
+    { mode: "inline" as const, icon: Sigma, label: labels.inlineMath, isActive: active.inlineMath },
+    { mode: "block" as const, icon: SquareSigma, label: labels.blockMath, isActive: active.blockMath },
+  ];
+  const activeEntry = entries.find((entry) => entry.isActive);
+  const TriggerIcon = activeEntry?.icon ?? Sigma;
+  const isActive = Boolean(activeEntry);
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          aria-label={activeEntry?.label ?? labels.inlineMath}
+          aria-pressed={isActive}
+          className={cn(
+            "inline-flex h-7 shrink-0 items-center gap-0.5 rounded-md px-1 text-muted-foreground transition-colors md:h-8",
+            "hover:bg-accent hover:text-foreground",
+            isActive && "bg-accent text-foreground",
+          )}
+          title={activeEntry?.label ?? labels.inlineMath}
+          type="button"
+        >
+          <TriggerIcon className="size-4" />
+          <ChevronDown className="size-3" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-48">
+        {entries.map(({ mode, icon: Icon, label, isActive: entryActive }) => (
+          <DropdownMenuItem key={mode} onSelect={() => onInsertMath(mode)}>
+            <Icon className="size-4" />
+            {label}
+            <Check className={cn("ml-auto size-4", entryActive ? "opacity-100" : "opacity-0")} />
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function Divider() {
   return <span className="mx-0.5 h-5 w-px shrink-0 bg-border md:mx-1" />;
 }
@@ -224,8 +279,11 @@ export function TiptapToolbar({
       blockquote: e.isActive("blockquote"),
       callout: e.isActive("callout"),
       mermaid: e.isActive("mermaid"),
+      functionPlot: e.isActive("functionPlot"),
       codeBlock: e.isActive("codeBlock"),
       link: e.isActive("link"),
+      inlineMath: e.isActive("inlineMath"),
+      blockMath: e.isActive("blockMath"),
       inTable: e.isActive("table"),
       tableVariant: (e.getAttributes("table").variant ?? "normal") as TableVariant,
       tableAlign: (e.getAttributes("table").align ?? "center") as TableAlign,
@@ -337,17 +395,23 @@ export function TiptapToolbar({
           onClick={() => insertMermaid(editor)}
         />
         <ToolbarButton
+          icon={LineChart}
+          label={t("functionPlot")}
+          active={s.functionPlot}
+          onClick={() => insertFunctionPlot(editor)}
+        />
+        <ToolbarButton
           icon={Code2}
           label={t("codeBlock")}
           active={s.codeBlock}
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
         />
-        <ToolbarButton
+        {/* <ToolbarButton
           icon={Link2}
           label={t("link")}
           active={s.link}
           onClick={onEditLink}
-        />
+        /> */}
         <TableSizePicker
           label={t("table")}
           onPick={(rows, cols) =>
@@ -368,15 +432,10 @@ export function TiptapToolbar({
       <Divider />
 
       <div data-tour-toolbar-group="4" className="flex items-center gap-0.5">
-        <ToolbarButton
-          icon={Sigma}
-          label={t("inlineMath")}
-          onClick={() => onInsertMath("inline")}
-        />
-        <ToolbarButton
-          icon={SquareSigma}
-          label={t("blockMath")}
-          onClick={() => onInsertMath("block")}
+        <MathDropdown
+          active={{ inlineMath: s.inlineMath, blockMath: s.blockMath }}
+          labels={{ inlineMath: t("inlineMath"), blockMath: t("blockMath") }}
+          onInsertMath={onInsertMath}
         />
       </div>
 

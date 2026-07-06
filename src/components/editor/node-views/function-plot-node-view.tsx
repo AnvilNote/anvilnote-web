@@ -22,6 +22,7 @@ export function FunctionPlotNodeView({ node, updateAttributes, deleteNode }: Nod
     xMin: typeof node.attrs.xMin === "number" ? node.attrs.xMin : -10,
     xMax: typeof node.attrs.xMax === "number" ? node.attrs.xMax : 10,
     showGridlines: node.attrs.showGridlines !== false,
+    showAxisTicks: node.attrs.showAxisTicks !== false,
   };
 
   return (
