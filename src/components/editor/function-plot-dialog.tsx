@@ -226,7 +226,7 @@ function FunctionPlotForm({
                 highlightActiveLine: false,
               }}
               extensions={formulaExtensions}
-              height="48px"
+              height="32px"
               onChange={(value) => updateCurve(index, { formula: value })}
               placeholder={t("curveFormulaPlaceholder")}
               theme={resolvedTheme === "dark" ? "dark" : "light"}
@@ -234,6 +234,43 @@ function FunctionPlotForm({
             />
           </div>
         </div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              aria-label={t("curveColor")}
+              className="flex h-8 w-28 shrink-0 items-center gap-1.5 rounded border px-2 hover:bg-accent"
+              onMouseDown={(event) => event.stopPropagation()}
+              type="button"
+            >
+              <span
+                className="size-4 shrink-0 rounded-sm border"
+                style={{ backgroundColor: curve.color }}
+              />
+              <span className="truncate font-mono text-xs text-muted-foreground">{curve.color}</span>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64" onMouseDown={(event) => event.stopPropagation()}>
+            <ColorPicker
+              className="gap-3"
+              onChange={(rgba) => {
+                const [r, g, b] = rgba as [number, number, number, number];
+                const hex = `#${[r, g, b]
+                  .map((c) => Math.round(c).toString(16).padStart(2, "0"))
+                  .join("")}`;
+                updateCurve(index, { color: hex });
+              }}
+              value={curve.color}
+            >
+              <ColorPickerSelection className="h-32" />
+              <ColorPickerHue />
+              <div className="flex items-center gap-2">
+                <ColorPickerEyeDropper />
+                <ColorPickerOutput />
+              </div>
+              <ColorPickerFormat />
+            </ColorPicker>
+          </PopoverContent>
+        </Popover>
         {draft.curves.length > 1 ? (
           <Button
             aria-label={t("removeCurve")}
@@ -253,17 +290,16 @@ function FunctionPlotForm({
       <DialogHeader>
         <DialogTitle>{t("dialogTitle")}</DialogTitle>
       </DialogHeader>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="flex flex-col gap-3">
-          {/* Scrollable only once expanded past CURVE_PREVIEW_LIMIT — a
-              fixed max-height keeps the modal itself from growing to fit
-              up to MAX_CURVES (6) rows at once, matching
-              stats-chart-dialog.tsx's expanded-table scroll pattern. */}
-          <div
-            className={showAllCurves ? "flex max-h-[280px] flex-col gap-3 overflow-y-auto" : "flex flex-col gap-3"}
-          >
-            {visibleCurves.map((curve, index) => curveRow(curve, index))}
-          </div>
+      {/* Fixed height on the two-column row (not just min-height on the
+          preview pane) — otherwise the left column's own height grows
+          with curve count (color rows are unconditionally listed for
+          every curve, not just the visible/capped ones), so the modal
+          as a whole would resize every time a curve is added/removed.
+          Left column scrolls internally instead; the right column fills
+          the same fixed height. */}
+      <div className="grid grid-cols-1 gap-4 sm:h-[480px] sm:grid-cols-2">
+        <div className="flex flex-col gap-3 overflow-y-auto pr-1">
+          {visibleCurves.map((curve, index) => curveRow(curve, index))}
           {hiddenCurveCount > 0 ? (
             <Button onClick={() => setShowAllCurves(true)} size="sm" variant="ghost">
               {t("showMoreCurves", { count: hiddenCurveCount })}
@@ -317,58 +353,6 @@ function FunctionPlotForm({
               />
             </div>
           </div>
-          <div className="space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">{t("curveColor")}</span>
-            <div className="flex flex-col gap-1.5">
-              {draft.curves.map((curve, index) => (
-                <div className="flex items-center gap-2" key={index}>
-                  <span className="w-16 shrink-0 text-xs text-muted-foreground">
-                    {t("curveLabel", { number: index + 1 })}
-                  </span>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button
-                        aria-label={t("curveColor")}
-                        className="flex flex-1 items-center gap-2 rounded border px-2 py-1.5 hover:bg-accent"
-                        onMouseDown={(event) => event.stopPropagation()}
-                        type="button"
-                      >
-                        <span
-                          className="size-4 shrink-0 rounded-sm border"
-                          style={{ backgroundColor: curve.color }}
-                        />
-                        <span className="font-mono text-xs text-muted-foreground">{curve.color}</span>
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      className="w-64"
-                      onMouseDown={(event) => event.stopPropagation()}
-                    >
-                      <ColorPicker
-                        className="gap-3"
-                        onChange={(rgba) => {
-                          const [r, g, b] = rgba as [number, number, number, number];
-                          const hex = `#${[r, g, b]
-                            .map((c) => Math.round(c).toString(16).padStart(2, "0"))
-                            .join("")}`;
-                          updateCurve(index, { color: hex });
-                        }}
-                        value={curve.color}
-                      >
-                        <ColorPickerSelection className="h-32" />
-                        <ColorPickerHue />
-                        <div className="flex items-center gap-2">
-                          <ColorPickerEyeDropper />
-                          <ColorPickerOutput />
-                        </div>
-                        <ColorPickerFormat />
-                      </ColorPicker>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              ))}
-            </div>
-          </div>
           <label className="flex items-center gap-2 text-sm">
             <Switch
               checked={draft.showGridlines}
@@ -384,7 +368,7 @@ function FunctionPlotForm({
             {t("showAxisTicks")}
           </label>
         </div>
-        <div className="flex min-h-[380px] flex-col items-center justify-end gap-2 overflow-hidden rounded border p-2 [&_svg]:h-auto [&_svg]:max-w-full">
+        <div className="flex h-full flex-col items-center justify-end gap-2 overflow-hidden rounded border p-2 [&_svg]:h-auto [&_svg]:max-w-full">
           {/* Gated on isPreviewCurrent (hasFormula AND renderedFor matches
               the draft on screen), not just previewSvg/error/loading
               directly: this hides a stale render left over from a PREVIOUS
