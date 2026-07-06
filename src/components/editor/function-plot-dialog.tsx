@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/color-picker";
 import { renderFunctionPlot } from "@/lib/function-plot-render";
 import { defaultCurveStyle, MAX_CURVES } from "@/lib/function-plot-defaults";
+import { parseNumericInput, numericInputValue } from "@/lib/numeric-input";
 import type { FunctionPlotCurve, FunctionPlotSpec } from "@/lib/tiptap/function-plot";
 
 export type FunctionPlotDialogProps = {
@@ -294,10 +295,12 @@ function FunctionPlotForm({
               </label>
               <Input
                 id="function-plot-x-min"
-                onChange={(event) => setDraft((prev) => ({ ...prev, xMin: Number(event.target.value) }))}
+                onChange={(event) =>
+                  setDraft((prev) => ({ ...prev, xMin: parseNumericInput(event.target.value) }))
+                }
                 placeholder={t("xRangeMin")}
                 type="number"
-                value={draft.xMin}
+                value={numericInputValue(draft.xMin)}
               />
             </div>
             <div className="flex-1 space-y-1.5">
@@ -309,10 +312,12 @@ function FunctionPlotForm({
               </label>
               <Input
                 id="function-plot-x-max"
-                onChange={(event) => setDraft((prev) => ({ ...prev, xMax: Number(event.target.value) }))}
+                onChange={(event) =>
+                  setDraft((prev) => ({ ...prev, xMax: parseNumericInput(event.target.value) }))
+                }
                 placeholder={t("xRangeMax")}
                 type="number"
-                value={draft.xMax}
+                value={numericInputValue(draft.xMax)}
               />
             </div>
           </div>
