@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
-import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 import { FunctionPlotDialog } from "@/components/editor/function-plot-dialog";
 import type { FunctionPlotCurve, FunctionPlotSpec } from "@/lib/tiptap/function-plot";
 
@@ -40,16 +40,18 @@ export function FunctionPlotNodeView({ node, updateAttributes, deleteNode }: Nod
           className="absolute top-1 right-1 hidden group-hover:flex"
           onMouseDown={(event) => event.stopPropagation()}
         >
-          <Button
+          <button
+            aria-label={t("delete", { type: t("types.functionPlot") })}
+            className="flex size-6 items-center justify-center rounded text-muted-foreground/60 transition-colors hover:text-destructive"
             onClick={(event) => {
               event.stopPropagation();
               deleteNode();
             }}
-            size="sm"
-            variant="outline"
+            title={t("delete", { type: t("types.functionPlot") })}
+            type="button"
           >
-            {t("delete", { type: t("types.functionPlot") })}
-          </Button>
+            <Trash2 className="size-3.5" />
+          </button>
         </div>
       </div>
       <FunctionPlotDialog

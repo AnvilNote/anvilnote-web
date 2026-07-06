@@ -1,7 +1,7 @@
 import { Node, mergeAttributes, type Editor } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { StatsChartNodeView } from "@/components/editor/node-views/stats-chart-node-view";
-import type { ChartType } from "@/lib/stats-chart-defaults";
+import { VISIBLE_ROW_LIMIT, defaultEntryColor, type ChartType } from "@/lib/stats-chart-defaults";
 
 export type CategoricalEntry = { label: string; value: number; color?: string };
 export type BoxWhiskerEntry = {
@@ -20,12 +20,29 @@ export type StatsChartSpec =
   | { chartType: "pie"; data: CategoricalEntry[]; showLegend: boolean }
   | { chartType: "boxwhisker"; data: BoxWhiskerEntry[] };
 
+// Starts a freshly-inserted node with VISIBLE_ROW_LIMIT (10) empty rows,
+// not just 1 — per explicit feedback, so a user filling in several
+// entries doesn't have to click "Add entry" repeatedly first. Blank
+// rows left over are filtered out by the dialog before saving/rendering
+// (see stats-chart-dialog.tsx's buildSpec), so unfilled trailing rows
+// never reach the API as invalid empty-label entries.
 function defaultCategoricalData(): CategoricalEntry[] {
-  return [{ label: "", value: 0 }];
+  return Array.from({ length: VISIBLE_ROW_LIMIT }, (_, index) => ({
+    label: "",
+    value: 0,
+    color: defaultEntryColor(index),
+  }));
 }
 
 function defaultBoxWhiskerData(): BoxWhiskerEntry[] {
-  return [{ label: "", min: 0, q1: 0, median: 0, q3: 0, max: 0 }];
+  return Array.from({ length: VISIBLE_ROW_LIMIT }, () => ({
+    label: "",
+    min: 0,
+    q1: 0,
+    median: 0,
+    q3: 0,
+    max: 0,
+  }));
 }
 
 function parseData(value: string | null, chartType: ChartType): CategoricalEntry[] | BoxWhiskerEntry[] {
