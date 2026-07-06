@@ -10,7 +10,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
@@ -204,137 +203,197 @@ function StatsChartForm({
             </Select>
           </div>
 
-          {isBoxWhisker
-            ? boxWhiskerData.map((entry, index) => (
-                <div className="flex items-end gap-2 rounded-md border p-2" key={index}>
-                  <div className="grid flex-1 grid-cols-3 gap-2">
-                    <Input
-                      onChange={(event) => updateBoxWhiskerEntry(index, { label: event.target.value })}
-                      placeholder={t("label")}
-                      value={entry.label}
-                    />
-                    <Input
-                      onChange={(event) =>
-                        updateBoxWhiskerEntry(index, { min: Number(event.target.value) })
-                      }
-                      placeholder={t("min")}
-                      type="number"
-                      value={entry.min}
-                    />
-                    <Input
-                      onChange={(event) =>
-                        updateBoxWhiskerEntry(index, { q1: Number(event.target.value) })
-                      }
-                      placeholder={t("q1")}
-                      type="number"
-                      value={entry.q1}
-                    />
-                    <Input
-                      onChange={(event) =>
-                        updateBoxWhiskerEntry(index, { median: Number(event.target.value) })
-                      }
-                      placeholder={t("median")}
-                      type="number"
-                      value={entry.median}
-                    />
-                    <Input
-                      onChange={(event) =>
-                        updateBoxWhiskerEntry(index, { q3: Number(event.target.value) })
-                      }
-                      placeholder={t("q3")}
-                      type="number"
-                      value={entry.q3}
-                    />
-                    <Input
-                      onChange={(event) =>
-                        updateBoxWhiskerEntry(index, { max: Number(event.target.value) })
-                      }
-                      placeholder={t("max")}
-                      type="number"
-                      value={entry.max}
-                    />
-                  </div>
-                  {boxWhiskerData.length > 1 ? (
-                    <Button
-                      aria-label={t("removeEntry")}
-                      onClick={() => removeEntry(index)}
-                      size="icon"
-                      variant="ghost"
-                    >
-                      ×
-                    </Button>
-                  ) : null}
-                </div>
-              ))
-            : categoricalData.map((entry, index) => (
-                <div className="flex items-end gap-2" key={index}>
-                  <div className="flex-1 space-y-1.5">
-                    {index === 0 ? (
-                      <label className="text-xs font-medium text-muted-foreground">{t("label")}</label>
-                    ) : null}
-                    <Input
-                      onChange={(event) => updateCategoricalEntry(index, { label: event.target.value })}
-                      placeholder={t("label")}
-                      value={entry.label}
-                    />
-                  </div>
-                  <div className="w-24 space-y-1.5">
-                    {index === 0 ? (
-                      <label className="text-xs font-medium text-muted-foreground">{t("value")}</label>
-                    ) : null}
-                    <Input
-                      onChange={(event) =>
-                        updateCategoricalEntry(index, { value: Number(event.target.value) })
-                      }
-                      placeholder={t("value")}
-                      type="number"
-                      value={entry.value}
-                    />
-                  </div>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button
-                        aria-label={t("entryColor")}
-                        className="size-8 shrink-0 rounded border"
-                        onMouseDown={(event) => event.stopPropagation()}
-                        style={{ backgroundColor: entry.color ?? defaultEntryColor(index) }}
-                        type="button"
-                      />
-                    </PopoverTrigger>
-                    <PopoverContent className="w-64" onMouseDown={(event) => event.stopPropagation()}>
-                      <ColorPicker
-                        className="gap-3"
-                        onChange={(rgba) => {
-                          const [r, g, b] = rgba as [number, number, number, number];
-                          const hex = `#${[r, g, b]
-                            .map((c) => Math.round(c).toString(16).padStart(2, "0"))
-                            .join("")}`;
-                          updateCategoricalEntry(index, { color: hex });
-                        }}
-                        value={entry.color ?? defaultEntryColor(index)}
-                      >
-                        <ColorPickerSelection className="h-32" />
-                        <ColorPickerHue />
-                        <div className="flex items-center gap-2">
-                          <ColorPickerEyeDropper />
-                          <ColorPickerOutput />
-                        </div>
-                        <ColorPickerFormat />
-                      </ColorPicker>
-                    </PopoverContent>
-                  </Popover>
-                  {categoricalData.length > 1 ? (
-                    <Button
-                      aria-label={t("removeEntry")}
-                      onClick={() => removeEntry(index)}
-                      size="icon"
-                      variant="ghost"
-                    >
-                      ×
-                    </Button>
-                  ) : null}
-                </div>
-              ))}
+          {/* Spreadsheet-style grid (bordered cells, no per-field labels) —
+              replaces an earlier one-Input-per-line layout per explicit
+              feedback that it didn't read as "a place to enter data" the
+              way a familiar table does. Cell inputs are borderless; the
+              <td> borders themselves form the grid lines. */}
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full border-collapse text-sm">
+              <thead>
+                <tr className="bg-muted/50">
+                  <th className="border-b p-1.5 text-left text-xs font-medium text-muted-foreground">
+                    {t("label")}
+                  </th>
+                  {isBoxWhisker ? (
+                    <>
+                      <th className="w-20 border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground">
+                        {t("min")}
+                      </th>
+                      <th className="w-20 border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground">
+                        {t("q1")}
+                      </th>
+                      <th className="w-20 border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground">
+                        {t("median")}
+                      </th>
+                      <th className="w-20 border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground">
+                        {t("q3")}
+                      </th>
+                      <th className="w-20 border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground">
+                        {t("max")}
+                      </th>
+                    </>
+                  ) : (
+                    <th className="w-20 border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground">
+                      {t("value")}
+                    </th>
+                  )}
+                  {isBoxWhisker ? null : <th className="w-10 border-b border-l p-1.5" />}
+                  <th className="w-8 border-b border-l p-1.5" />
+                </tr>
+              </thead>
+              <tbody>
+                {isBoxWhisker
+                  ? boxWhiskerData.map((entry, index) => (
+                      <tr key={index}>
+                        <td className="border-b p-0">
+                          <input
+                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                            onChange={(event) =>
+                              updateBoxWhiskerEntry(index, { label: event.target.value })
+                            }
+                            value={entry.label}
+                          />
+                        </td>
+                        <td className="border-b border-l p-0">
+                          <input
+                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                            onChange={(event) =>
+                              updateBoxWhiskerEntry(index, { min: Number(event.target.value) })
+                            }
+                            type="number"
+                            value={entry.min}
+                          />
+                        </td>
+                        <td className="border-b border-l p-0">
+                          <input
+                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                            onChange={(event) =>
+                              updateBoxWhiskerEntry(index, { q1: Number(event.target.value) })
+                            }
+                            type="number"
+                            value={entry.q1}
+                          />
+                        </td>
+                        <td className="border-b border-l p-0">
+                          <input
+                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                            onChange={(event) =>
+                              updateBoxWhiskerEntry(index, { median: Number(event.target.value) })
+                            }
+                            type="number"
+                            value={entry.median}
+                          />
+                        </td>
+                        <td className="border-b border-l p-0">
+                          <input
+                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                            onChange={(event) =>
+                              updateBoxWhiskerEntry(index, { q3: Number(event.target.value) })
+                            }
+                            type="number"
+                            value={entry.q3}
+                          />
+                        </td>
+                        <td className="border-b border-l p-0">
+                          <input
+                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                            onChange={(event) =>
+                              updateBoxWhiskerEntry(index, { max: Number(event.target.value) })
+                            }
+                            type="number"
+                            value={entry.max}
+                          />
+                        </td>
+                        <td className="border-b border-l p-1 text-center">
+                          {boxWhiskerData.length > 1 ? (
+                            <button
+                              aria-label={t("removeEntry")}
+                              className="text-muted-foreground hover:text-foreground"
+                              onClick={() => removeEntry(index)}
+                              type="button"
+                            >
+                              ×
+                            </button>
+                          ) : null}
+                        </td>
+                      </tr>
+                    ))
+                  : categoricalData.map((entry, index) => (
+                      <tr key={index}>
+                        <td className="border-b p-0">
+                          <input
+                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                            onChange={(event) =>
+                              updateCategoricalEntry(index, { label: event.target.value })
+                            }
+                            value={entry.label}
+                          />
+                        </td>
+                        <td className="border-b border-l p-0">
+                          <input
+                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                            onChange={(event) =>
+                              updateCategoricalEntry(index, { value: Number(event.target.value) })
+                            }
+                            type="number"
+                            value={entry.value}
+                          />
+                        </td>
+                        <td className="border-b border-l p-1 text-center">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button
+                                aria-label={t("entryColor")}
+                                className="mx-auto size-5 shrink-0 rounded border"
+                                onMouseDown={(event) => event.stopPropagation()}
+                                style={{ backgroundColor: entry.color ?? defaultEntryColor(index) }}
+                                type="button"
+                              />
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-64"
+                              onMouseDown={(event) => event.stopPropagation()}
+                            >
+                              <ColorPicker
+                                className="gap-3"
+                                onChange={(rgba) => {
+                                  const [r, g, b] = rgba as [number, number, number, number];
+                                  const hex = `#${[r, g, b]
+                                    .map((c) => Math.round(c).toString(16).padStart(2, "0"))
+                                    .join("")}`;
+                                  updateCategoricalEntry(index, { color: hex });
+                                }}
+                                value={entry.color ?? defaultEntryColor(index)}
+                              >
+                                <ColorPickerSelection className="h-32" />
+                                <ColorPickerHue />
+                                <div className="flex items-center gap-2">
+                                  <ColorPickerEyeDropper />
+                                  <ColorPickerOutput />
+                                </div>
+                                <ColorPickerFormat />
+                              </ColorPicker>
+                            </PopoverContent>
+                          </Popover>
+                        </td>
+                        <td className="border-b border-l p-1 text-center">
+                          {categoricalData.length > 1 ? (
+                            <button
+                              aria-label={t("removeEntry")}
+                              className="text-muted-foreground hover:text-foreground"
+                              onClick={() => removeEntry(index)}
+                              type="button"
+                            >
+                              ×
+                            </button>
+                          ) : null}
+                        </td>
+                      </tr>
+                    ))}
+              </tbody>
+            </table>
+          </div>
 
           <Button
             disabled={activeData.length >= MAX_ENTRIES}
