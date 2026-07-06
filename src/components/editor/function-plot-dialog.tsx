@@ -70,8 +70,16 @@ function FunctionPlotForm({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // The AbortController is created here, in the effect body — NOT inside
+    // the setTimeout callback — so the effect's own cleanup can reach it.
+    // A controller created inside the timeout callback would have its
+    // would-be "abort on cleanup" return value silently discarded by
+    // setTimeout (it doesn't call or store a callback's return value),
+    // so an in-flight request from a stale keystroke would never actually
+    // be cancelled and could resolve after a newer one, overwriting the
+    // fresher preview with stale data.
+    const controller = new AbortController();
     const timer = setTimeout(() => {
-      const controller = new AbortController();
       setLoading(true);
       renderFunctionPlot(draft, controller.signal)
         .then((svg) => {
@@ -84,9 +92,11 @@ function FunctionPlotForm({
           }
         })
         .finally(() => setLoading(false));
-      return () => controller.abort();
     }, 500);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
     // Re-run whenever the draft's actual content changes; JSON.stringify
     // keeps this a single dependency instead of enumerating every field.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -123,11 +133,20 @@ function FunctionPlotForm({
         <div className="flex flex-col gap-3">
           {draft.curves.map((curve, index) => (
             <div className="flex items-center gap-2" key={index}>
-              <Input
-                onChange={(event) => updateCurve(index, { formula: event.target.value })}
-                placeholder={t("curveFormula")}
-                value={curve.formula}
-              />
+              <div className="flex-1 space-y-1.5">
+                <label
+                  className="text-xs font-medium text-muted-foreground"
+                  htmlFor={`curve-formula-${index}`}
+                >
+                  {t("curveFormula")}
+                </label>
+                <Input
+                  id={`curve-formula-${index}`}
+                  onChange={(event) => updateCurve(index, { formula: event.target.value })}
+                  placeholder={t("curveFormula")}
+                  value={curve.formula}
+                />
+              </div>
               <Popover>
                 <PopoverTrigger asChild>
                   <button
@@ -181,18 +200,36 @@ function FunctionPlotForm({
             {draft.curves.length >= MAX_CURVES ? t("curveLimitReached") : t("addCurve")}
           </Button>
           <div className="flex items-center gap-2">
-            <Input
-              onChange={(event) => setDraft((prev) => ({ ...prev, xMin: Number(event.target.value) }))}
-              placeholder={t("xRangeMin")}
-              type="number"
-              value={draft.xMin}
-            />
-            <Input
-              onChange={(event) => setDraft((prev) => ({ ...prev, xMax: Number(event.target.value) }))}
-              placeholder={t("xRangeMax")}
-              type="number"
-              value={draft.xMax}
-            />
+            <div className="flex-1 space-y-1.5">
+              <label
+                className="text-xs font-medium text-muted-foreground"
+                htmlFor="function-plot-x-min"
+              >
+                {t("xRangeMin")}
+              </label>
+              <Input
+                id="function-plot-x-min"
+                onChange={(event) => setDraft((prev) => ({ ...prev, xMin: Number(event.target.value) }))}
+                placeholder={t("xRangeMin")}
+                type="number"
+                value={draft.xMin}
+              />
+            </div>
+            <div className="flex-1 space-y-1.5">
+              <label
+                className="text-xs font-medium text-muted-foreground"
+                htmlFor="function-plot-x-max"
+              >
+                {t("xRangeMax")}
+              </label>
+              <Input
+                id="function-plot-x-max"
+                onChange={(event) => setDraft((prev) => ({ ...prev, xMax: Number(event.target.value) }))}
+                placeholder={t("xRangeMax")}
+                type="number"
+                value={draft.xMax}
+              />
+            </div>
           </div>
           <label className="flex items-center gap-2 text-sm">
             <Switch
