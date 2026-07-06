@@ -301,7 +301,7 @@
       "showGridlines": "Show gridlines",
       "preview": "Preview",
       "previewLoading": "Rendering…",
-      "previewError": "Couldn't render — check the formula syntax.",
+      "previewError": "Couldn’t render — check the formula syntax.",
       "save": "Save",
       "cancel": "Cancel"
     },
