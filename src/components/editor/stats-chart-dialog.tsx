@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +32,7 @@ import {
 import { renderStatsChart } from "@/lib/stats-chart-render";
 import {
   CHART_TYPE_GROUPS,
+  CROWDED_ENTRY_THRESHOLD,
   MAX_ENTRIES,
   VISIBLE_ROW_LIMIT,
   chartTypeGroup,
@@ -101,11 +104,19 @@ function StatsChartForm({
   // and forth doesn't lose already-entered data. The actual discriminated
   // StatsChartSpec is only assembled (via buildSpec below) at the two
   // points that actually need it: the render effect and onSave.
+  // Starts with VISIBLE_ROW_LIMIT (10) empty rows when there's no prior
+  // data for that shape yet (e.g. switching to box-whisker for the first
+  // time in this session) — same "don't make the user click Add entry
+  // repeatedly" rationale as stats-chart.ts's own node-level defaults.
   const [categoricalData, setCategoricalData] = useState<CategoricalEntry[]>(
-    initialSpec.chartType === "boxwhisker" ? [defaultCategoricalEntry(0)] : initialSpec.data,
+    initialSpec.chartType === "boxwhisker"
+      ? Array.from({ length: VISIBLE_ROW_LIMIT }, (_, index) => defaultCategoricalEntry(index))
+      : initialSpec.data,
   );
   const [boxWhiskerData, setBoxWhiskerData] = useState<BoxWhiskerEntry[]>(
-    initialSpec.chartType === "boxwhisker" ? initialSpec.data : [defaultBoxWhiskerEntry()],
+    initialSpec.chartType === "boxwhisker"
+      ? initialSpec.data
+      : Array.from({ length: VISIBLE_ROW_LIMIT }, () => defaultBoxWhiskerEntry()),
   );
   const [showLegend, setShowLegend] = useState(
     initialSpec.chartType === "pie" ? initialSpec.showLegend : true,
@@ -115,6 +126,9 @@ function StatsChartForm({
   // to MAX_ENTRIES (20) at once — "Show more" reveals the rest on demand.
   const [showAllRows, setShowAllRows] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+  // Shown as the expanded full-table view's subtitle — null until the
+  // user actually imports a file (manually-entered data has no filename).
+  const [importedFileName, setImportedFileName] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewSvg, setPreviewSvg] = useState<string | null>(null);
   // Tracks which spec previewSvg was actually rendered for, as a JSON key —
@@ -138,7 +152,7 @@ function StatsChartForm({
   const hasLabel = activeData.some((entry) => entry.label.trim());
 
   // Pairs each entry with its ORIGINAL array index before slicing to the
-  // visible-row limit, so update/removeEntry (which index into the full
+  // visible-row limit, so update/clearEntry (which index into the full
   // categoricalData/boxWhiskerData arrays) still target the right row once
   // rows beyond VISIBLE_ROW_LIMIT are hidden.
   const categoricalRows = categoricalData.map((entry, index) => ({ entry, index }));
@@ -150,9 +164,18 @@ function StatsChartForm({
   const hiddenRowCount = activeData.length - Math.min(activeData.length, VISIBLE_ROW_LIMIT);
 
   function buildSpec(): StatsChartSpec {
-    if (chartType === "boxwhisker") return { chartType, data: boxWhiskerData };
-    if (chartType === "pie") return { chartType, data: categoricalData, showLegend };
-    return { chartType, data: categoricalData };
+    // Rows with a blank label are filtered out here, not just left in —
+    // a freshly-inserted node starts with VISIBLE_ROW_LIMIT (10) empty
+    // rows (see stats-chart.ts's defaultCategoricalData/
+    // defaultBoxWhiskerData), and the API's per-entry schema requires a
+    // non-empty label, so any trailing unfilled rows would otherwise fail
+    // validation the moment the user has typed into even one earlier row.
+    if (chartType === "boxwhisker") {
+      return { chartType, data: boxWhiskerData.filter((entry) => entry.label.trim()) };
+    }
+    const filteredData = categoricalData.filter((entry) => entry.label.trim());
+    if (chartType === "pie") return { chartType, data: filteredData, showLegend };
+    return { chartType, data: filteredData };
   }
 
   const currentSpecKey = JSON.stringify(buildSpec());
@@ -202,11 +225,21 @@ function StatsChartForm({
     }
   }
 
-  function removeEntry(index: number) {
+  // Clears a row's contents in place — like an Excel cell's Delete key —
+  // rather than removing it from the array, per explicit feedback. This
+  // also means the row count never shrinks from this button, so there's
+  // no need to guard against removing the last remaining row (unlike the
+  // earlier "delete/splice" version, which had to hide this button when
+  // only 1 row was left to avoid an empty table).
+  function clearEntry(index: number) {
     if (isBoxWhisker) {
-      setBoxWhiskerData((prev) => prev.filter((_, i) => i !== index));
+      setBoxWhiskerData((prev) =>
+        prev.map((entry, i) => (i === index ? defaultBoxWhiskerEntry() : entry)),
+      );
     } else {
-      setCategoricalData((prev) => prev.filter((_, i) => i !== index));
+      setCategoricalData((prev) =>
+        prev.map((entry, i) => (i === index ? defaultCategoricalEntry(index) : entry)),
+      );
     }
   }
 
@@ -219,359 +252,409 @@ function StatsChartForm({
     event.target.value = "";
     if (!file) return;
     try {
+      let importedCount = 0;
       if (isBoxWhisker) {
         const entries = await parseBoxWhiskerSpreadsheet(file);
+        importedCount = entries.length;
         setBoxWhiskerData(entries.length > 0 ? entries : [defaultBoxWhiskerEntry()]);
       } else {
         const entries = await parseCategoricalSpreadsheet(file);
+        importedCount = entries.length;
         setCategoricalData(entries.length > 0 ? entries : [defaultCategoricalEntry(0)]);
       }
       setShowAllRows(false);
       setImportError(null);
+      setImportedFileName(file.name);
+      // Warn (not block) once the import brings in enough entries that the
+      // chart's own size clamp (anvilnote-charts's MAX_SCALED_DIMENSION)
+      // starts compressing bar/box width instead of growing with count —
+      // an import is the realistic path for crossing this in one action,
+      // vs. typing entries in one at a time.
+      if (importedCount > CROWDED_ENTRY_THRESHOLD) {
+        toast.warning(t("tooManyEntriesWarning"));
+      }
     } catch {
       setImportError(t("importError"));
     }
   }
 
+  // Shared by both the compact grid (sliced to VISIBLE_ROW_LIMIT) and the
+  // expanded full-table view (all rows) — only the row list passed in
+  // differs; everything else (columns shown, update/clear handlers,
+  // color popover) is identical between the two.
+  function renderTable(
+    catRows: typeof categoricalRows,
+    boxRows: typeof boxWhiskerRows,
+    options?: { scrollable?: boolean },
+  ): ReactNode {
+    return (
+      <div
+        className={`overflow-x-auto rounded-md border ${options?.scrollable ? "max-h-[420px] overflow-y-auto" : ""}`}
+      >
+        {/* table-fixed + explicit percentage widths on the header row —
+            NOT the native `size` attribute + auto layout this replaced.
+            That approach let the Label column collapse to ~0 width in
+            practice: a table cell's <input> doesn't reliably report its
+            "size"-driven intrinsic width to the browser's column-width
+            calculation, especially before any text is typed. Fixed
+            percentages guarantee every column keeps a real, visible
+            width regardless of content. Ratio is 5:2:3 for
+            Label:Value:Color (45%/18%/27%), with Remove as a small
+            fixed remainder (10%) outside the ratio — matches explicit
+            feedback on the input-area proportions. */}
+        <table className="w-full table-fixed border-collapse text-sm">
+          <thead>
+            <tr className="bg-muted/50">
+              <th
+                className="border-b p-1.5 text-left text-xs font-medium text-muted-foreground"
+                style={{ width: isBoxWhisker ? "25%" : "45%" }}
+              >
+                {t("label")}
+              </th>
+              {isBoxWhisker ? (
+                <>
+                  <th
+                    className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                    style={{ width: "13%" }}
+                  >
+                    {t("min")}
+                  </th>
+                  <th
+                    className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                    style={{ width: "13%" }}
+                  >
+                    {t("q1")}
+                  </th>
+                  <th
+                    className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                    style={{ width: "13%" }}
+                  >
+                    {t("median")}
+                  </th>
+                  <th
+                    className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                    style={{ width: "13%" }}
+                  >
+                    {t("q3")}
+                  </th>
+                  <th
+                    className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                    style={{ width: "13%" }}
+                  >
+                    {t("max")}
+                  </th>
+                </>
+              ) : (
+                <th
+                  className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                  style={{ width: "18%" }}
+                >
+                  {t("value")}
+                </th>
+              )}
+              {isBoxWhisker ? null : (
+                <th className="border-b border-l p-1.5" style={{ width: "27%" }} />
+              )}
+              <th className="border-b border-l p-1.5" style={{ width: "10%" }} />
+            </tr>
+          </thead>
+          <tbody>
+            {isBoxWhisker
+              ? boxRows.map(({ entry, index }) => (
+                  <tr key={index}>
+                    <td className="border-b p-0">
+                      <input
+                        className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                        onChange={(event) => updateBoxWhiskerEntry(index, { label: event.target.value })}
+                        value={entry.label}
+                      />
+                    </td>
+                    <td className="border-b border-l p-0">
+                      <input
+                        className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                        onChange={(event) =>
+                          updateBoxWhiskerEntry(index, { min: parseNumericInput(event.target.value) })
+                        }
+                        type="number"
+                        value={numericInputValue(entry.min)}
+                      />
+                    </td>
+                    <td className="border-b border-l p-0">
+                      <input
+                        className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                        onChange={(event) =>
+                          updateBoxWhiskerEntry(index, { q1: parseNumericInput(event.target.value) })
+                        }
+                        type="number"
+                        value={numericInputValue(entry.q1)}
+                      />
+                    </td>
+                    <td className="border-b border-l p-0">
+                      <input
+                        className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                        onChange={(event) =>
+                          updateBoxWhiskerEntry(index, {
+                            median: parseNumericInput(event.target.value),
+                          })
+                        }
+                        type="number"
+                        value={numericInputValue(entry.median)}
+                      />
+                    </td>
+                    <td className="border-b border-l p-0">
+                      <input
+                        className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                        onChange={(event) =>
+                          updateBoxWhiskerEntry(index, { q3: parseNumericInput(event.target.value) })
+                        }
+                        type="number"
+                        value={numericInputValue(entry.q3)}
+                      />
+                    </td>
+                    <td className="border-b border-l p-0">
+                      <input
+                        className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                        onChange={(event) =>
+                          updateBoxWhiskerEntry(index, { max: parseNumericInput(event.target.value) })
+                        }
+                        type="number"
+                        value={numericInputValue(entry.max)}
+                      />
+                    </td>
+                    <td className="border-b border-l p-1 text-center">
+                      <button
+                        aria-label={t("clearEntry")}
+                        className="text-muted-foreground hover:text-foreground"
+                        onClick={() => clearEntry(index)}
+                        type="button"
+                      >
+                        ×
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              : catRows.map(({ entry, index }) => (
+                  <tr key={index}>
+                    <td className="border-b p-0">
+                      <input
+                        className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                        onChange={(event) => updateCategoricalEntry(index, { label: event.target.value })}
+                        value={entry.label}
+                      />
+                    </td>
+                    <td className="border-b border-l p-0">
+                      <input
+                        className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                        onChange={(event) =>
+                          updateCategoricalEntry(index, {
+                            value: parseNumericInput(event.target.value),
+                          })
+                        }
+                        type="number"
+                        value={numericInputValue(entry.value)}
+                      />
+                    </td>
+                    <td className="border-b border-l p-0">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            aria-label={t("entryColor")}
+                            className="flex w-full items-center gap-1.5 px-2 py-1.5 hover:bg-accent"
+                            onMouseDown={(event) => event.stopPropagation()}
+                            type="button"
+                          >
+                            <span
+                              className="size-4 shrink-0 rounded-sm border"
+                              style={{ backgroundColor: entry.color ?? defaultEntryColor(index) }}
+                            />
+                            <span className="truncate font-mono text-xs text-muted-foreground">
+                              {entry.color ?? defaultEntryColor(index)}
+                            </span>
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-64" onMouseDown={(event) => event.stopPropagation()}>
+                          <ColorPicker
+                            className="gap-3"
+                            onChange={(rgba) => {
+                              const [r, g, b] = rgba as [number, number, number, number];
+                              const hex = `#${[r, g, b]
+                                .map((c) => Math.round(c).toString(16).padStart(2, "0"))
+                                .join("")}`;
+                              updateCategoricalEntry(index, { color: hex });
+                            }}
+                            value={entry.color ?? defaultEntryColor(index)}
+                          >
+                            <ColorPickerSelection className="h-32" />
+                            <ColorPickerHue />
+                            <div className="flex items-center gap-2">
+                              <ColorPickerEyeDropper />
+                              <ColorPickerOutput />
+                            </div>
+                            <ColorPickerFormat />
+                          </ColorPicker>
+                        </PopoverContent>
+                      </Popover>
+                    </td>
+                    <td className="border-b border-l p-1 text-center">
+                      <button
+                        aria-label={t("clearEntry")}
+                        className="text-muted-foreground hover:text-foreground"
+                        onClick={() => clearEntry(index)}
+                        type="button"
+                      >
+                        ×
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
   return (
-    <DialogContent className="sm:max-w-3xl">
+    <DialogContent className="sm:max-w-5xl">
       <DialogHeader>
         <DialogTitle>{t("dialogTitle")}</DialogTitle>
       </DialogHeader>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      {showAllRows ? (
+        // Expanded full-table view: replaces the normal two-column layout
+        // (grid + chart preview) with a single scrollable table showing
+        // EVERY row, not just VISIBLE_ROW_LIMIT — a fixed max-height with
+        // its own scrollbar keeps the modal itself from growing to fit
+        // potentially MAX_ENTRIES (20) rows. "Back" returns to the normal
+        // compact view; Save/Cancel stay available in the footer below,
+        // unchanged.
         <div className="flex flex-col gap-3">
-          <div className="flex items-end gap-4">
-            <div className="flex-1 space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground" htmlFor="stats-chart-type">
-                {t("chartType")}
-              </label>
-              <Select
-                onValueChange={(value) => {
-                  const group = value as ChartTypeGroup;
-                  if (group === "bar") {
-                    // Defaults to vertical (column) for a freshly-selected
-                    // bar-chart group; preserves the existing orientation if
-                    // the group was already active (switching pie -> bar and
-                    // bar(horizontal) -> pie -> bar should restore horizontal).
-                    setChartTypeRaw((prev) => (prev === "bar" || prev === "column" ? prev : "column"));
-                  } else {
-                    setChartTypeRaw(group);
-                  }
-                }}
-                value={chartTypeGroup(chartType)}
-              >
-                <SelectTrigger id="stats-chart-type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CHART_TYPE_GROUPS.map((group) => (
-                    <SelectItem key={group} value={group}>
-                      {t(`chartTypes.${group}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {chartTypeGroup(chartType) === "bar" ? (
-              <label className="flex items-center gap-2 pb-2 text-sm">
-                <Switch
-                  checked={chartType === "bar"}
-                  onCheckedChange={(checked) => setChartTypeRaw(checked ? "bar" : "column")}
-                />
-                {t("horizontal")}
-              </label>
-            ) : null}
-            <Button
-              className="mb-0.5"
-              onClick={() => fileInputRef.current?.click()}
-              size="sm"
+          <div className="flex items-center gap-2">
+            <button
+              aria-label={t("backToChart")}
+              className="flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+              onClick={() => setShowAllRows(false)}
               type="button"
+            >
+              <ArrowLeft className="size-4" />
+            </button>
+            <div>
+              <p className="text-sm font-medium">{t("dataViewTitle")}</p>
+              <p className="text-xs text-muted-foreground">
+                {importedFileName ?? t("manualEntryLabel")}
+              </p>
+            </div>
+          </div>
+          {renderTable(categoricalRows, boxWhiskerRows, { scrollable: true })}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-end gap-4">
+              <div className="flex-1 space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground" htmlFor="stats-chart-type">
+                  {t("chartType")}
+                </label>
+                <Select
+                  onValueChange={(value) => {
+                    const group = value as ChartTypeGroup;
+                    if (group === "bar") {
+                      // Defaults to vertical (column) for a freshly-selected
+                      // bar-chart group; preserves the existing orientation if
+                      // the group was already active (switching pie -> bar and
+                      // bar(horizontal) -> pie -> bar should restore horizontal).
+                      setChartTypeRaw((prev) => (prev === "bar" || prev === "column" ? prev : "column"));
+                    } else {
+                      setChartTypeRaw(group);
+                    }
+                  }}
+                  value={chartTypeGroup(chartType)}
+                >
+                  <SelectTrigger id="stats-chart-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CHART_TYPE_GROUPS.map((group) => (
+                      <SelectItem key={group} value={group}>
+                        {t(`chartTypes.${group}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {chartTypeGroup(chartType) === "bar" ? (
+                <label className="flex items-center gap-2 pb-2 text-sm">
+                  <Switch
+                    checked={chartType === "bar"}
+                    onCheckedChange={(checked) => setChartTypeRaw(checked ? "bar" : "column")}
+                  />
+                  {t("horizontal")}
+                </label>
+              ) : null}
+              <Button
+                className="mb-0.5"
+                onClick={() => fileInputRef.current?.click()}
+                size="sm"
+                type="button"
+                variant="outline"
+              >
+                {t("importFile")}
+              </Button>
+              <input
+                accept={SPREADSHEET_IMPORT_ACCEPT}
+                className="hidden"
+                onChange={handleImportFile}
+                ref={fileInputRef}
+                type="file"
+              />
+            </div>
+            {importError ? <p className="text-destructive text-sm">{importError}</p> : null}
+
+            {/* Spreadsheet-style grid (bordered cells, no per-field labels) —
+                replaces an earlier one-Input-per-line layout per explicit
+                feedback that it didn't read as "a place to enter data" the
+                way a familiar table does. Cell inputs are borderless; the
+                <td> borders themselves form the grid lines. */}
+            {renderTable(visibleCategoricalRows, visibleBoxWhiskerRows)}
+
+            {hiddenRowCount > 0 ? (
+              <Button onClick={() => setShowAllRows(true)} size="sm" variant="ghost">
+                {t("showMoreRows", { count: hiddenRowCount })}
+              </Button>
+            ) : null}
+
+            <Button
+              disabled={activeData.length >= MAX_ENTRIES}
+              onClick={addEntry}
+              size="sm"
               variant="outline"
             >
-              {t("importFile")}
+              {activeData.length >= MAX_ENTRIES ? t("entryLimitReached") : t("addEntry")}
             </Button>
-            <input
-              accept={SPREADSHEET_IMPORT_ACCEPT}
-              className="hidden"
-              onChange={handleImportFile}
-              ref={fileInputRef}
-              type="file"
-            />
+
+            {chartType === "pie" ? (
+              <label className="flex items-center gap-2 text-sm">
+                <Switch checked={showLegend} onCheckedChange={setShowLegend} />
+                {t("showLegend")}
+              </label>
+            ) : null}
           </div>
-          {importError ? <p className="text-destructive text-sm">{importError}</p> : null}
-
-          {/* Spreadsheet-style grid (bordered cells, no per-field labels) —
-              replaces an earlier one-Input-per-line layout per explicit
-              feedback that it didn't read as "a place to enter data" the
-              way a familiar table does. Cell inputs are borderless; the
-              <td> borders themselves form the grid lines. */}
-          <div className="overflow-x-auto rounded-md border">
-            {/* table-fixed + explicit percentage widths on the header row —
-                NOT the native `size` attribute + auto layout this replaced.
-                That approach let the Label column collapse to ~0 width in
-                practice: a table cell's <input> doesn't reliably report its
-                "size"-driven intrinsic width to the browser's column-width
-                calculation, especially before any text is typed. Fixed
-                percentages guarantee every column keeps a real, visible
-                width regardless of content. Ratio is 5:2:3 for
-                Label:Value:Color (45%/18%/27%), with Remove as a small
-                fixed remainder (10%) outside the ratio — matches explicit
-                feedback on the input-area proportions. */}
-            <table className="w-full table-fixed border-collapse text-sm">
-              <thead>
-                <tr className="bg-muted/50">
-                  <th
-                    className="border-b p-1.5 text-left text-xs font-medium text-muted-foreground"
-                    style={{ width: isBoxWhisker ? "25%" : "45%" }}
-                  >
-                    {t("label")}
-                  </th>
-                  {isBoxWhisker ? (
-                    <>
-                      <th
-                        className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
-                        style={{ width: "13%" }}
-                      >
-                        {t("min")}
-                      </th>
-                      <th
-                        className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
-                        style={{ width: "13%" }}
-                      >
-                        {t("q1")}
-                      </th>
-                      <th
-                        className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
-                        style={{ width: "13%" }}
-                      >
-                        {t("median")}
-                      </th>
-                      <th
-                        className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
-                        style={{ width: "13%" }}
-                      >
-                        {t("q3")}
-                      </th>
-                      <th
-                        className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
-                        style={{ width: "13%" }}
-                      >
-                        {t("max")}
-                      </th>
-                    </>
-                  ) : (
-                    <th
-                      className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
-                      style={{ width: "18%" }}
-                    >
-                      {t("value")}
-                    </th>
-                  )}
-                  {isBoxWhisker ? null : (
-                    <th className="border-b border-l p-1.5" style={{ width: "27%" }} />
-                  )}
-                  <th className="border-b border-l p-1.5" style={{ width: "10%" }} />
-                </tr>
-              </thead>
-              <tbody>
-                {isBoxWhisker
-                  ? visibleBoxWhiskerRows.map(({ entry, index }) => (
-                      <tr key={index}>
-                        <td className="border-b p-0">
-                          <input
-                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
-                            onChange={(event) =>
-                              updateBoxWhiskerEntry(index, { label: event.target.value })
-                            }
-                            value={entry.label}
-                          />
-                        </td>
-                        <td className="border-b border-l p-0">
-                          <input
-                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
-                            onChange={(event) =>
-                              updateBoxWhiskerEntry(index, { min: parseNumericInput(event.target.value) })
-                            }
-                            type="number"
-                            value={numericInputValue(entry.min)}
-                          />
-                        </td>
-                        <td className="border-b border-l p-0">
-                          <input
-                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
-                            onChange={(event) =>
-                              updateBoxWhiskerEntry(index, { q1: parseNumericInput(event.target.value) })
-                            }
-                            type="number"
-                            value={numericInputValue(entry.q1)}
-                          />
-                        </td>
-                        <td className="border-b border-l p-0">
-                          <input
-                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
-                            onChange={(event) =>
-                              updateBoxWhiskerEntry(index, {
-                                median: parseNumericInput(event.target.value),
-                              })
-                            }
-                            type="number"
-                            value={numericInputValue(entry.median)}
-                          />
-                        </td>
-                        <td className="border-b border-l p-0">
-                          <input
-                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
-                            onChange={(event) =>
-                              updateBoxWhiskerEntry(index, { q3: parseNumericInput(event.target.value) })
-                            }
-                            type="number"
-                            value={numericInputValue(entry.q3)}
-                          />
-                        </td>
-                        <td className="border-b border-l p-0">
-                          <input
-                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
-                            onChange={(event) =>
-                              updateBoxWhiskerEntry(index, { max: parseNumericInput(event.target.value) })
-                            }
-                            type="number"
-                            value={numericInputValue(entry.max)}
-                          />
-                        </td>
-                        <td className="border-b border-l p-1 text-center">
-                          {boxWhiskerData.length > 1 ? (
-                            <button
-                              aria-label={t("removeEntry")}
-                              className="text-muted-foreground hover:text-foreground"
-                              onClick={() => removeEntry(index)}
-                              type="button"
-                            >
-                              ×
-                            </button>
-                          ) : null}
-                        </td>
-                      </tr>
-                    ))
-                  : visibleCategoricalRows.map(({ entry, index }) => (
-                      <tr key={index}>
-                        <td className="border-b p-0">
-                          <input
-                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
-                            onChange={(event) =>
-                              updateCategoricalEntry(index, { label: event.target.value })
-                            }
-                            value={entry.label}
-                          />
-                        </td>
-                        <td className="border-b border-l p-0">
-                          <input
-                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
-                            onChange={(event) =>
-                              updateCategoricalEntry(index, {
-                                value: parseNumericInput(event.target.value),
-                              })
-                            }
-                            type="number"
-                            value={numericInputValue(entry.value)}
-                          />
-                        </td>
-                        <td className="border-b border-l p-0">
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <button
-                                aria-label={t("entryColor")}
-                                className="flex w-full items-center gap-1.5 px-2 py-1.5 hover:bg-accent"
-                                onMouseDown={(event) => event.stopPropagation()}
-                                type="button"
-                              >
-                                <span
-                                  className="size-4 shrink-0 rounded-sm border"
-                                  style={{ backgroundColor: entry.color ?? defaultEntryColor(index) }}
-                                />
-                                <span className="truncate font-mono text-xs text-muted-foreground">
-                                  {entry.color ?? defaultEntryColor(index)}
-                                </span>
-                              </button>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-64"
-                              onMouseDown={(event) => event.stopPropagation()}
-                            >
-                              <ColorPicker
-                                className="gap-3"
-                                onChange={(rgba) => {
-                                  const [r, g, b] = rgba as [number, number, number, number];
-                                  const hex = `#${[r, g, b]
-                                    .map((c) => Math.round(c).toString(16).padStart(2, "0"))
-                                    .join("")}`;
-                                  updateCategoricalEntry(index, { color: hex });
-                                }}
-                                value={entry.color ?? defaultEntryColor(index)}
-                              >
-                                <ColorPickerSelection className="h-32" />
-                                <ColorPickerHue />
-                                <div className="flex items-center gap-2">
-                                  <ColorPickerEyeDropper />
-                                  <ColorPickerOutput />
-                                </div>
-                                <ColorPickerFormat />
-                              </ColorPicker>
-                            </PopoverContent>
-                          </Popover>
-                        </td>
-                        <td className="border-b border-l p-1 text-center">
-                          {categoricalData.length > 1 ? (
-                            <button
-                              aria-label={t("removeEntry")}
-                              className="text-muted-foreground hover:text-foreground"
-                              onClick={() => removeEntry(index)}
-                              type="button"
-                            >
-                              ×
-                            </button>
-                          ) : null}
-                        </td>
-                      </tr>
-                    ))}
-              </tbody>
-            </table>
+          <div className="flex min-h-[420px] flex-col items-center justify-center gap-2 overflow-hidden rounded border p-2">
+            {/* [&_svg]:max-w-full guards against a chart whose intrinsic
+                size (set by anvilnote-charts's own scaledDimension, clamped
+                but still capable of being wider than this pane at many
+                entries) would otherwise overflow this fixed-size preview
+                box — the SVG scales down to fit instead. */}
+            {isPreviewCurrent && previewSvg ? (
+              <div
+                className="[&_svg]:h-auto [&_svg]:max-w-full"
+                dangerouslySetInnerHTML={{ __html: previewSvg }}
+              />
+            ) : hasLabel && loading ? (
+              <span className="text-muted-foreground text-sm">{t("previewLoading")}</span>
+            ) : null}
+            {hasLabel && error ? <p className="text-destructive text-sm">{t("previewError")}</p> : null}
           </div>
-
-          {hiddenRowCount > 0 ? (
-            <Button onClick={() => setShowAllRows(true)} size="sm" variant="ghost">
-              {t("showMoreRows", { count: hiddenRowCount })}
-            </Button>
-          ) : showAllRows && activeData.length > VISIBLE_ROW_LIMIT ? (
-            <Button onClick={() => setShowAllRows(false)} size="sm" variant="ghost">
-              {t("showFewerRows")}
-            </Button>
-          ) : null}
-
-          <Button
-            disabled={activeData.length >= MAX_ENTRIES}
-            onClick={addEntry}
-            size="sm"
-            variant="outline"
-          >
-            {activeData.length >= MAX_ENTRIES ? t("entryLimitReached") : t("addEntry")}
-          </Button>
-
-          {chartType === "pie" ? (
-            <label className="flex items-center gap-2 text-sm">
-              <Switch checked={showLegend} onCheckedChange={setShowLegend} />
-              {t("showLegend")}
-            </label>
-          ) : null}
         </div>
-        <div className="flex min-h-[220px] flex-col items-center justify-center gap-2 rounded border p-2">
-          {isPreviewCurrent && previewSvg ? (
-            <div dangerouslySetInnerHTML={{ __html: previewSvg }} />
-          ) : hasLabel && loading ? (
-            <span className="text-muted-foreground text-sm">{t("previewLoading")}</span>
-          ) : null}
-          {hasLabel && error ? <p className="text-destructive text-sm">{t("previewError")}</p> : null}
-        </div>
-      </div>
+      )}
       <DialogFooter>
         <Button onClick={onCancel} variant="ghost">
           {t("cancel")}

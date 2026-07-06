@@ -11,6 +11,12 @@ export const MAX_ENTRIES = 20;
 // behind a "Show more" toggle — a spreadsheet-style default screenful
 // rather than always rendering up to MAX_ENTRIES rows at once.
 export const VISIBLE_ROW_LIMIT = 10;
+// Matches anvilnote-charts's own MAX_SCALED_DIMENSION/2 (build-typst.ts) —
+// past this many entries, the chart's own size clamp stops growing with
+// entry count and bars/boxes start getting proportionally narrower
+// instead. A warning toast at this exact threshold ties the UI hint to
+// the actual point where crowding starts, not an arbitrary number.
+export const CROWDED_ENTRY_THRESHOLD = 12;
 
 export function defaultEntryColor(index: number): string {
   return DEFAULT_COLOR_CYCLE[index % DEFAULT_COLOR_CYCLE.length];
