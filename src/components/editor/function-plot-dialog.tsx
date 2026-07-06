@@ -368,17 +368,17 @@ function FunctionPlotForm({
             {t("showAxisTicks")}
           </label>
         </div>
-        <div className="flex h-full flex-col items-center justify-end gap-2 overflow-hidden rounded border p-2 [&_svg]:h-auto [&_svg]:max-w-full">
+        <div className="flex h-full flex-col items-center justify-center gap-2 overflow-hidden rounded border p-2 [&_svg]:h-auto [&_svg]:max-w-full">
           {/* Gated on isPreviewCurrent (hasFormula AND renderedFor matches
               the draft on screen), not just previewSvg/error/loading
               directly: this hides a stale render left over from a PREVIOUS
               draft (e.g. mid-debounce after an edit), not just from a
               cleared formula — see the renderedFor comment above.
-              justify-end (not justify-center): the plot's x-axis and its
-              tick labels sit along its own bottom edge, so bottom-aligning
-              the whole SVG within this box keeps that edge flush with the
-              box's bottom instead of floating in the middle with empty
-              space below it. */}
+              Centered both axes: bottom-aligning looked right only when
+              axis tick labels were shown (their baseline lines up with
+              the box's bottom edge) — with showAxisTicks off there's no
+              baseline to align to, so bottom+left anchoring just left a
+              large empty gap at the top/right instead. */}
           {isPreviewCurrent && previewSvg ? (
             <div dangerouslySetInnerHTML={{ __html: previewSvg }} />
           ) : hasFormula && loading ? (
