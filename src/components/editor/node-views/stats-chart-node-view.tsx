@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { Trash2 } from "lucide-react";
@@ -44,6 +44,28 @@ export function StatsChartNodeView({ node, updateAttributes, deleteNode }: NodeV
   // function-plot-node-view.tsx — a new node's only entry has an empty
   // label (see stats-chart.ts's defaultCategoricalData()).
   const [dialogOpen, setDialogOpen] = useState(() => !data[0]?.label);
+
+  // Closing without ever having saved a labeled entry (Cancel, or the
+  // ×/Esc dismiss) removes the node entirely rather than leaving a
+  // blank, useless chart block behind. Tracked via a REF (not by reading
+  // node.attrs.data in the close effect) because updateAttributes'
+  // underlying ProseMirror transaction and React's own state update
+  // (setDialogOpen(false), fired right after it by the dialog's save
+  // wrapper) aren't guaranteed to land in the same render pass — a real
+  // save's onSave→updateAttributes call can still be "in flight" by the
+  // time the close-effect below runs, which would otherwise see STALE
+  // (still-empty) attrs and incorrectly delete a just-saved node. This
+  // was caught by an actual live test (save real data, node vanished
+  // immediately after), not just reasoned about — a ref mutation inside
+  // onSave is synchronous and has no such race, since it doesn't depend
+  // on which render the effect happens to run in.
+  const hasSavedRef = useRef(!!data[0]?.label);
+  useEffect(() => {
+    if (!dialogOpen && !hasSavedRef.current) {
+      deleteNode();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dialogOpen]);
 
   const spec = buildSpec(node);
 
@@ -102,6 +124,7 @@ export function StatsChartNodeView({ node, updateAttributes, deleteNode }: NodeV
         initialSpec={spec}
         onOpenChange={setDialogOpen}
         onSave={(nextSpec, nextSvg) => {
+          hasSavedRef.current = true;
           updateAttributes({ ...nextSpec, svg: nextSvg });
         }}
         open={dialogOpen}

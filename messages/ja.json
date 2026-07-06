@@ -296,7 +296,8 @@
     },
     "functionPlot": {
       "dialogTitle": "関数グラフ",
-      "curveFormula": "数式(例:sin(x))",
+      "curveFormula": "数式",
+      "curveFormulaPlaceholder": "数式を入力",
       "syntaxHelp": "構文リファレンス",
       "curveColor": "色",
       "addCurve": "曲線を追加",
@@ -321,6 +322,10 @@
       "backToChart": "戻る",
       "dataViewTitle": "データ",
       "manualEntryLabel": "手動入力",
+      "selectAll": "すべて選択",
+      "selectRow": "この行を選択",
+      "selectedCount": "{count} 件選択中",
+      "deleteSelected": "選択した項目を削除",
       "chartTypes": {
         "bar": "横棒グラフ",
         "column": "縦棒グラフ",

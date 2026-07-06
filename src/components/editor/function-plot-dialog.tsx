@@ -227,7 +227,7 @@ function FunctionPlotForm({
                     extensions={formulaExtensions}
                     height="32px"
                     onChange={(value) => updateCurve(index, { formula: value })}
-                    placeholder={t("curveFormula")}
+                    placeholder={t("curveFormulaPlaceholder")}
                     theme={resolvedTheme === "dark" ? "dark" : "light"}
                     value={curve.formula}
                   />

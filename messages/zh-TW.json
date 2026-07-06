@@ -296,7 +296,8 @@
     },
     "functionPlot": {
       "dialogTitle": "函數圖",
-      "curveFormula": "公式(例如 sin(x))",
+      "curveFormula": "公式",
+      "curveFormulaPlaceholder": "輸入公式",
       "syntaxHelp": "語法參考",
       "curveColor": "顏色",
       "addCurve": "新增曲線",
@@ -321,6 +322,10 @@
       "backToChart": "返回",
       "dataViewTitle": "資料",
       "manualEntryLabel": "手動輸入",
+      "selectAll": "全選",
+      "selectRow": "選取此列",
+      "selectedCount": "已選 {count} 筆",
+      "deleteSelected": "刪除已選取",
       "chartTypes": {
         "bar": "長條圖",
         "column": "柱狀圖",
