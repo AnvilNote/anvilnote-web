@@ -64,17 +64,19 @@ export const ColorPicker = ({
   className,
   ...props
 }: ColorPickerProps) => {
-  const selectedColor = Color(value)
-  const defaultColor = Color(defaultValue)
+  // Falls back to defaultValue only when no controlled value is given at
+  // all — NOT with `||`, which would treat a legitimate zero component
+  // (e.g. saturation/lightness of an achromatic black/gray/white value) as
+  // "missing" and silently substitute a synthetic non-zero default. That
+  // mismatch between this initial state and the resync effect below (which
+  // correctly reads the real 0) is what caused an infinite render loop the
+  // first time a caller (function-plot-dialog) passed a black/gray default.
+  const initialColor = value ? Color(value) : Color(defaultValue)
 
-  const [hue, setHue] = useState(selectedColor.hue() || defaultColor.hue() || 0)
-  const [saturation, setSaturation] = useState(
-    selectedColor.saturationl() || defaultColor.saturationl() || 100,
-  )
-  const [lightness, setLightness] = useState(
-    selectedColor.lightness() || defaultColor.lightness() || 50,
-  )
-  const [alpha, setAlpha] = useState(selectedColor.alpha() * 100 || defaultColor.alpha() * 100)
+  const [hue, setHue] = useState(() => initialColor.hue())
+  const [saturation, setSaturation] = useState(() => initialColor.saturationl())
+  const [lightness, setLightness] = useState(() => initialColor.lightness())
+  const [alpha, setAlpha] = useState(() => initialColor.alpha() * 100)
   const [mode, setMode] = useState("hex")
 
   // Update color when controlled value changes
@@ -140,14 +142,26 @@ export const ColorPickerSelection = memo(({ className, ...props }: ColorPickerSe
             hsl(${hue}, 100%, 50%)`
   }, [hue])
 
-  const handlePointerMove = useCallback(
-    (event: PointerEvent) => {
-      if (!(isDragging && containerRef.current)) {
+  // Applies a client coordinate to saturation/lightness unconditionally —
+  // deliberately NOT gated on `isDragging`. onPointerDown below calls
+  // setIsDragging(true) and then this in the same synchronous tick; React
+  // state updates aren't visible until the next render, so a version of
+  // this gated on `isDragging` would read the pre-update (false) value from
+  // its closure and bail out, meaning a plain click (pointerdown+pointerup
+  // with no movement in between, e.g. from an automated click or a fast
+  // real click) would never actually change the color — only an explicit
+  // drag would. Splitting the coordinate math out from the isDragging gate
+  // fixes that: the initial click always applies immediately, and the
+  // window-level pointermove listener (only attached while isDragging is
+  // true, via the effect below) continues to update it during a drag.
+  const applyPointerPosition = useCallback(
+    (clientX: number, clientY: number) => {
+      if (!containerRef.current) {
         return
       }
       const rect = containerRef.current.getBoundingClientRect()
-      const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width))
-      const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height))
+      const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
+      const y = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height))
       setPositionX(x)
       setPositionY(y)
       setSaturation(x * 100)
@@ -156,7 +170,14 @@ export const ColorPickerSelection = memo(({ className, ...props }: ColorPickerSe
 
       setLightness(lightness)
     },
-    [isDragging, setSaturation, setLightness],
+    [setSaturation, setLightness],
+  )
+
+  const handlePointerMove = useCallback(
+    (event: PointerEvent) => {
+      applyPointerPosition(event.clientX, event.clientY)
+    },
+    [applyPointerPosition],
   )
 
   useEffect(() => {
@@ -179,7 +200,7 @@ export const ColorPickerSelection = memo(({ className, ...props }: ColorPickerSe
       onPointerDown={e => {
         e.preventDefault()
         setIsDragging(true)
-        handlePointerMove(e.nativeEvent)
+        applyPointerPosition(e.clientX, e.clientY)
       }}
       ref={containerRef}
       style={{
