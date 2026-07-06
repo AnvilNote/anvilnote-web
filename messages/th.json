@@ -296,7 +296,8 @@
     },
     "functionPlot": {
       "dialogTitle": "กราฟฟังก์ชัน",
-      "curveFormula": "สูตร (เช่น sin(x))",
+      "curveFormula": "สูตร",
+      "curveFormulaPlaceholder": "ป้อนสูตร",
       "syntaxHelp": "อ้างอิงไวยากรณ์",
       "curveColor": "สี",
       "addCurve": "เพิ่มเส้นโค้ง",
@@ -321,6 +322,10 @@
       "backToChart": "ย้อนกลับ",
       "dataViewTitle": "ข้อมูล",
       "manualEntryLabel": "ป้อนข้อมูลด้วยตนเอง",
+      "selectAll": "เลือกทั้งหมด",
+      "selectRow": "เลือกแถวนี้",
+      "selectedCount": "เลือกแล้ว {count} รายการ",
+      "deleteSelected": "ลบรายการที่เลือก",
       "chartTypes": {
         "bar": "แท่งแนวนอน",
         "column": "แท่งแนวตั้ง",

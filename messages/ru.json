@@ -296,7 +296,8 @@
     },
     "functionPlot": {
       "dialogTitle": "График функции",
-      "curveFormula": "Формула (напр. sin(x))",
+      "curveFormula": "Формула",
+      "curveFormulaPlaceholder": "Введите формулу",
       "syntaxHelp": "Справочник синтаксиса",
       "curveColor": "Цвет",
       "addCurve": "Добавить кривую",
@@ -321,6 +322,10 @@
       "backToChart": "Назад",
       "dataViewTitle": "Данные",
       "manualEntryLabel": "Введено вручную",
+      "selectAll": "Выбрать все",
+      "selectRow": "Выбрать строку",
+      "selectedCount": "Выбрано: {count}",
+      "deleteSelected": "Удалить выбранное",
       "chartTypes": {
         "bar": "Столбчатая (гориз.)",
         "column": "Столбчатая (верт.)",

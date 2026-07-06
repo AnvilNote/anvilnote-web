@@ -296,7 +296,8 @@
     },
     "functionPlot": {
       "dialogTitle": "Function plot",
-      "curveFormula": "Formula (e.g. sin(x))",
+      "curveFormula": "Formula",
+      "curveFormulaPlaceholder": "Enter a formula",
       "syntaxHelp": "Syntax reference",
       "curveColor": "Color",
       "addCurve": "Add curve",
@@ -321,6 +322,10 @@
       "backToChart": "Back",
       "dataViewTitle": "Data",
       "manualEntryLabel": "Manually entered",
+      "selectAll": "Select all rows",
+      "selectRow": "Select row",
+      "selectedCount": "{count} selected",
+      "deleteSelected": "Delete selected",
       "chartTypes": {
         "bar": "Bar",
         "column": "Column",

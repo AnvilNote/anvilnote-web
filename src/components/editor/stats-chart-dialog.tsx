@@ -125,6 +125,13 @@ function StatsChartForm({
   // showing the first screenful of rows) rather than always rendering up
   // to MAX_ENTRIES (20) at once — "Show more" reveals the rest on demand.
   const [showAllRows, setShowAllRows] = useState(false);
+  // Checkbox-based batch delete — a SEPARATE action from the per-row ×
+  // button (which clears a row's contents in place, not remove it; see
+  // clearEntry's own comment). Indices are into the full
+  // categoricalData/boxWhiskerData array (same convention as
+  // categoricalRows/boxWhiskerRows below), so they still make sense
+  // whichever view (compact/expanded) is currently showing them.
+  const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
   const [importError, setImportError] = useState<string | null>(null);
   // Shown as the expanded full-table view's subtitle — null until the
   // user actually imports a file (manually-entered data has no filename).
@@ -243,6 +250,30 @@ function StatsChartForm({
     }
   }
 
+  function toggleSelected(index: number) {
+    setSelectedIndices((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  }
+
+  // Batch delete actually REMOVES the selected rows (splicing them out of
+  // the array), unlike the per-row × button which only clears a single
+  // row's contents in place — a deliberate, separate action for trimming
+  // down an oversized data set (e.g. after importing 20 rows and wanting
+  // to drop several at once), rather than the "reset one cell" use case
+  // the × button covers.
+  function deleteSelected() {
+    if (isBoxWhisker) {
+      setBoxWhiskerData((prev) => prev.filter((_, i) => !selectedIndices.has(i)));
+    } else {
+      setCategoricalData((prev) => prev.filter((_, i) => !selectedIndices.has(i)));
+    }
+    setSelectedIndices(new Set());
+  }
+
   async function handleImportFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     // Reset immediately (not after the parse) so re-selecting the SAME
@@ -265,6 +296,7 @@ function StatsChartForm({
       setShowAllRows(false);
       setImportError(null);
       setImportedFileName(file.name);
+      setSelectedIndices(new Set());
       // Warn (not block) once the import brings in enough entries that the
       // chart's own size clamp (anvilnote-charts's MAX_SCALED_DIMENSION)
       // starts compressing bar/box width instead of growing with count —
@@ -288,9 +320,10 @@ function StatsChartForm({
     options?: { scrollable?: boolean },
   ): ReactNode {
     return (
-      <div
-        className={`overflow-x-auto rounded-md border ${options?.scrollable ? "max-h-[420px] overflow-y-auto" : ""}`}
-      >
+      <div className="flex flex-col gap-1.5">
+        <div
+          className={`overflow-x-auto ${options?.scrollable ? "max-h-[420px] overflow-y-auto" : ""}`}
+        >
         {/* table-fixed + explicit percentage widths on the header row —
             NOT the native `size` attribute + auto layout this replaced.
             That approach let the Label column collapse to ~0 width in
@@ -305,9 +338,30 @@ function StatsChartForm({
         <table className="w-full table-fixed border-collapse text-sm">
           <thead>
             <tr className="bg-muted/50">
+              <th className="border-b p-1.5 text-center" style={{ width: "6%" }}>
+                <input
+                  aria-label={t("selectAll")}
+                  checked={
+                    (isBoxWhisker ? boxRows.length : catRows.length) > 0 &&
+                    (isBoxWhisker ? boxRows : catRows).every(({ index }) => selectedIndices.has(index))
+                  }
+                  onChange={(event) => {
+                    const rows = isBoxWhisker ? boxRows : catRows;
+                    setSelectedIndices((prev) => {
+                      const next = new Set(prev);
+                      for (const { index } of rows) {
+                        if (event.target.checked) next.add(index);
+                        else next.delete(index);
+                      }
+                      return next;
+                    });
+                  }}
+                  type="checkbox"
+                />
+              </th>
               <th
-                className="border-b p-1.5 text-left text-xs font-medium text-muted-foreground"
-                style={{ width: isBoxWhisker ? "25%" : "45%" }}
+                className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                style={{ width: isBoxWhisker ? "19%" : "39%" }}
               >
                 {t("label")}
               </th>
@@ -362,7 +416,15 @@ function StatsChartForm({
             {isBoxWhisker
               ? boxRows.map(({ entry, index }) => (
                   <tr key={index}>
-                    <td className="border-b p-0">
+                    <td className="border-b p-1.5 text-center">
+                      <input
+                        aria-label={t("selectRow")}
+                        checked={selectedIndices.has(index)}
+                        onChange={() => toggleSelected(index)}
+                        type="checkbox"
+                      />
+                    </td>
+                    <td className="border-b border-l p-0">
                       <input
                         className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
                         onChange={(event) => updateBoxWhiskerEntry(index, { label: event.target.value })}
@@ -435,7 +497,15 @@ function StatsChartForm({
                 ))
               : catRows.map(({ entry, index }) => (
                   <tr key={index}>
-                    <td className="border-b p-0">
+                    <td className="border-b p-1.5 text-center">
+                      <input
+                        aria-label={t("selectRow")}
+                        checked={selectedIndices.has(index)}
+                        onChange={() => toggleSelected(index)}
+                        type="checkbox"
+                      />
+                    </td>
+                    <td className="border-b border-l p-0">
                       <input
                         className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
                         onChange={(event) => updateCategoricalEntry(index, { label: event.target.value })}
@@ -509,6 +579,17 @@ function StatsChartForm({
                 ))}
           </tbody>
         </table>
+        </div>
+        {selectedIndices.size > 0 ? (
+          <div className="flex items-center gap-2 p-1.5">
+            <span className="text-xs text-muted-foreground">
+              {t("selectedCount", { count: selectedIndices.size })}
+            </span>
+            <Button onClick={deleteSelected} size="sm" variant="destructive">
+              {t("deleteSelected")}
+            </Button>
+          </div>
+        ) : null}
       </div>
     );
   }
@@ -556,6 +637,11 @@ function StatsChartForm({
                 <Select
                   onValueChange={(value) => {
                     const group = value as ChartTypeGroup;
+                    // Switching groups can switch which underlying dataset
+                    // is active (categorical vs. box-whisker), so any
+                    // selected row indices from the PREVIOUS dataset no
+                    // longer make sense against the new one.
+                    setSelectedIndices(new Set());
                     if (group === "bar") {
                       // Defaults to vertical (column) for a freshly-selected
                       // bar-chart group; preserves the existing orientation if
