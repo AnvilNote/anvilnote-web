@@ -48,16 +48,20 @@ export const AnvilStatsChart = Node.create({
   addAttributes() {
     return {
       chartType: {
-        default: "bar",
-        parseHTML: (element) => element.getAttribute("data-chart-type") ?? "bar",
-        renderHTML: (attributes) => ({ "data-chart-type": attributes.chartType ?? "bar" }),
+        // "column" (vertical bars), not "bar" (horizontal) — per explicit
+        // feedback, a freshly-inserted bar chart should default to
+        // vertical, with horizontal available via the dialog's orientation
+        // toggle.
+        default: "column",
+        parseHTML: (element) => element.getAttribute("data-chart-type") ?? "column",
+        renderHTML: (attributes) => ({ "data-chart-type": attributes.chartType ?? "column" }),
       },
       data: {
         default: defaultCategoricalData(),
         parseHTML: (element) =>
           parseData(
             element.getAttribute("data-entries"),
-            (element.getAttribute("data-chart-type") as ChartType) ?? "bar",
+            (element.getAttribute("data-chart-type") as ChartType) ?? "column",
           ),
         renderHTML: (attributes) => ({ "data-entries": JSON.stringify(attributes.data ?? []) }),
       },

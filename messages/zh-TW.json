@@ -315,6 +315,8 @@
     "statsChart": {
       "dialogTitle": "統計圖",
       "chartType": "圖表類型",
+      "importFile": "匯入檔案",
+      "importError": "無法讀取檔案——請確認是有效的 CSV/Excel/OpenDocument 試算表。",
       "chartTypes": {
         "bar": "長條圖",
         "column": "柱狀圖",
@@ -330,10 +332,13 @@
       "median": "中位數",
       "q3": "第三四分位數",
       "max": "最大值",
+      "horizontal": "橫向",
       "showLegend": "顯示圖例",
       "addEntry": "新增項目",
       "removeEntry": "移除",
       "entryLimitReached": "最多 20 個項目",
+      "showMoreRows": "顯示更多 {count} 筆",
+      "showFewerRows": "顯示較少",
       "previewLoading": "編譯中…",
       "previewError": "無法渲染——請檢查數值。",
       "save": "儲存",

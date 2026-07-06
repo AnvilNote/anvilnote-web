@@ -315,6 +315,8 @@
     "statsChart": {
       "dialogTitle": "통계 차트",
       "chartType": "차트 종류",
+      "importFile": "파일 가져오기",
+      "importError": "파일을 읽을 수 없습니다 — 올바른 CSV/Excel/OpenDocument 스프레드시트인지 확인하세요.",
       "chartTypes": {
         "bar": "가로 막대",
         "column": "세로 막대",
@@ -330,10 +332,13 @@
       "median": "중앙값",
       "q3": "제3사분위수",
       "max": "최댓값",
+      "horizontal": "가로",
       "showLegend": "범례 표시",
       "addEntry": "항목 추가",
       "removeEntry": "제거",
       "entryLimitReached": "최대 20개 항목",
+      "showMoreRows": "{count}개 더 보기",
+      "showFewerRows": "간략히 보기",
       "previewLoading": "렌더링 중…",
       "previewError": "렌더링할 수 없습니다 — 값을 확인하세요.",
       "save": "저장",

@@ -315,6 +315,8 @@
     "statsChart": {
       "dialogTitle": "Stats chart",
       "chartType": "Chart type",
+      "importFile": "Import file",
+      "importError": "Couldn't read that file — check it's a valid CSV/Excel/OpenDocument spreadsheet.",
       "chartTypes": {
         "bar": "Bar",
         "column": "Column",
@@ -330,10 +332,13 @@
       "median": "Median",
       "q3": "Q3",
       "max": "Max",
+      "horizontal": "Horizontal",
       "showLegend": "Show legend",
       "addEntry": "Add entry",
       "removeEntry": "Remove",
       "entryLimitReached": "Up to 20 entries",
+      "showMoreRows": "Show {count} more",
+      "showFewerRows": "Show fewer",
       "previewLoading": "Rendering…",
       "previewError": "Couldn’t render — check the values.",
       "save": "Save",

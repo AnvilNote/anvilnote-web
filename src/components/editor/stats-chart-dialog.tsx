@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useTranslations } from "next-intl";
 import {
   Dialog,
@@ -28,7 +28,20 @@ import {
   ColorPickerFormat,
 } from "@/components/ui/color-picker";
 import { renderStatsChart } from "@/lib/stats-chart-render";
-import { CHART_TYPES, MAX_ENTRIES, defaultEntryColor, type ChartType } from "@/lib/stats-chart-defaults";
+import {
+  CHART_TYPE_GROUPS,
+  MAX_ENTRIES,
+  VISIBLE_ROW_LIMIT,
+  chartTypeGroup,
+  defaultEntryColor,
+  type ChartType,
+  type ChartTypeGroup,
+} from "@/lib/stats-chart-defaults";
+import {
+  SPREADSHEET_IMPORT_ACCEPT,
+  parseBoxWhiskerSpreadsheet,
+  parseCategoricalSpreadsheet,
+} from "@/lib/stats-chart-import";
 import type { BoxWhiskerEntry, CategoricalEntry, StatsChartSpec } from "@/lib/tiptap/stats-chart";
 
 export type StatsChartDialogProps = {
@@ -96,6 +109,12 @@ function StatsChartForm({
   const [showLegend, setShowLegend] = useState(
     initialSpec.chartType === "pie" ? initialSpec.showLegend : true,
   );
+  // Caps the visible rows at VISIBLE_ROW_LIMIT (matches a spreadsheet
+  // showing the first screenful of rows) rather than always rendering up
+  // to MAX_ENTRIES (20) at once — "Show more" reveals the rest on demand.
+  const [showAllRows, setShowAllRows] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewSvg, setPreviewSvg] = useState<string | null>(null);
   // Tracks which spec previewSvg was actually rendered for, as a JSON key —
   // NOT just whether a render happened. Without this, switching chart type
@@ -116,6 +135,18 @@ function StatsChartForm({
   // until the user has actually typed something, gate the display on this
   // (not effect-cleared state) — see that file's own comment for why.
   const hasLabel = activeData.some((entry) => entry.label.trim());
+
+  // Pairs each entry with its ORIGINAL array index before slicing to the
+  // visible-row limit, so update/removeEntry (which index into the full
+  // categoricalData/boxWhiskerData arrays) still target the right row once
+  // rows beyond VISIBLE_ROW_LIMIT are hidden.
+  const categoricalRows = categoricalData.map((entry, index) => ({ entry, index }));
+  const boxWhiskerRows = boxWhiskerData.map((entry, index) => ({ entry, index }));
+  const visibleCategoricalRows = showAllRows
+    ? categoricalRows
+    : categoricalRows.slice(0, VISIBLE_ROW_LIMIT);
+  const visibleBoxWhiskerRows = showAllRows ? boxWhiskerRows : boxWhiskerRows.slice(0, VISIBLE_ROW_LIMIT);
+  const hiddenRowCount = activeData.length - Math.min(activeData.length, VISIBLE_ROW_LIMIT);
 
   function buildSpec(): StatsChartSpec {
     if (chartType === "boxwhisker") return { chartType, data: boxWhiskerData };
@@ -178,6 +209,29 @@ function StatsChartForm({
     }
   }
 
+  async function handleImportFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    // Reset immediately (not after the parse) so re-selecting the SAME
+    // file still fires onChange next time — the browser only fires it on
+    // a value change, and without this a second pick of the same path
+    // would otherwise silently do nothing.
+    event.target.value = "";
+    if (!file) return;
+    try {
+      if (isBoxWhisker) {
+        const entries = await parseBoxWhiskerSpreadsheet(file);
+        setBoxWhiskerData(entries.length > 0 ? entries : [defaultBoxWhiskerEntry()]);
+      } else {
+        const entries = await parseCategoricalSpreadsheet(file);
+        setCategoricalData(entries.length > 0 ? entries : [defaultCategoricalEntry(0)]);
+      }
+      setShowAllRows(false);
+      setImportError(null);
+    } catch {
+      setImportError(t("importError"));
+    }
+  }
+
   return (
     <DialogContent className="sm:max-w-3xl">
       <DialogHeader>
@@ -185,23 +239,65 @@ function StatsChartForm({
       </DialogHeader>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-3">
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground" htmlFor="stats-chart-type">
-              {t("chartType")}
-            </label>
-            <Select onValueChange={(value) => setChartTypeRaw(value as ChartType)} value={chartType}>
-              <SelectTrigger id="stats-chart-type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {CHART_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {t(`chartTypes.${type}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex items-end gap-4">
+            <div className="flex-1 space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground" htmlFor="stats-chart-type">
+                {t("chartType")}
+              </label>
+              <Select
+                onValueChange={(value) => {
+                  const group = value as ChartTypeGroup;
+                  if (group === "bar") {
+                    // Defaults to vertical (column) for a freshly-selected
+                    // bar-chart group; preserves the existing orientation if
+                    // the group was already active (switching pie -> bar and
+                    // bar(horizontal) -> pie -> bar should restore horizontal).
+                    setChartTypeRaw((prev) => (prev === "bar" || prev === "column" ? prev : "column"));
+                  } else {
+                    setChartTypeRaw(group);
+                  }
+                }}
+                value={chartTypeGroup(chartType)}
+              >
+                <SelectTrigger id="stats-chart-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CHART_TYPE_GROUPS.map((group) => (
+                    <SelectItem key={group} value={group}>
+                      {t(`chartTypes.${group}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {chartTypeGroup(chartType) === "bar" ? (
+              <label className="flex items-center gap-2 pb-2 text-sm">
+                <Switch
+                  checked={chartType === "bar"}
+                  onCheckedChange={(checked) => setChartTypeRaw(checked ? "bar" : "column")}
+                />
+                {t("horizontal")}
+              </label>
+            ) : null}
+            <Button
+              className="mb-0.5"
+              onClick={() => fileInputRef.current?.click()}
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              {t("importFile")}
+            </Button>
+            <input
+              accept={SPREADSHEET_IMPORT_ACCEPT}
+              className="hidden"
+              onChange={handleImportFile}
+              ref={fileInputRef}
+              type="file"
+            />
           </div>
+          {importError ? <p className="text-destructive text-sm">{importError}</p> : null}
 
           {/* Spreadsheet-style grid (bordered cells, no per-field labels) —
               replaces an earlier one-Input-per-line layout per explicit
@@ -209,42 +305,76 @@ function StatsChartForm({
               way a familiar table does. Cell inputs are borderless; the
               <td> borders themselves form the grid lines. */}
           <div className="overflow-x-auto rounded-md border">
-            <table className="w-full border-collapse text-sm">
+            {/* table-fixed + explicit percentage widths on the header row —
+                NOT the native `size` attribute + auto layout this replaced.
+                That approach let the Label column collapse to ~0 width in
+                practice: a table cell's <input> doesn't reliably report its
+                "size"-driven intrinsic width to the browser's column-width
+                calculation, especially before any text is typed. Fixed
+                percentages guarantee every column keeps a real, visible
+                width regardless of content. Ratio is 5:2:3 for
+                Label:Value:Color (45%/18%/27%), with Remove as a small
+                fixed remainder (10%) outside the ratio — matches explicit
+                feedback on the input-area proportions. */}
+            <table className="w-full table-fixed border-collapse text-sm">
               <thead>
                 <tr className="bg-muted/50">
-                  <th className="border-b p-1.5 text-left text-xs font-medium text-muted-foreground">
+                  <th
+                    className="border-b p-1.5 text-left text-xs font-medium text-muted-foreground"
+                    style={{ width: isBoxWhisker ? "25%" : "45%" }}
+                  >
                     {t("label")}
                   </th>
                   {isBoxWhisker ? (
                     <>
-                      <th className="w-20 border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground">
+                      <th
+                        className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                        style={{ width: "13%" }}
+                      >
                         {t("min")}
                       </th>
-                      <th className="w-20 border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground">
+                      <th
+                        className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                        style={{ width: "13%" }}
+                      >
                         {t("q1")}
                       </th>
-                      <th className="w-20 border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground">
+                      <th
+                        className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                        style={{ width: "13%" }}
+                      >
                         {t("median")}
                       </th>
-                      <th className="w-20 border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground">
+                      <th
+                        className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                        style={{ width: "13%" }}
+                      >
                         {t("q3")}
                       </th>
-                      <th className="w-20 border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground">
+                      <th
+                        className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                        style={{ width: "13%" }}
+                      >
                         {t("max")}
                       </th>
                     </>
                   ) : (
-                    <th className="w-20 border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground">
+                    <th
+                      className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                      style={{ width: "18%" }}
+                    >
                       {t("value")}
                     </th>
                   )}
-                  {isBoxWhisker ? null : <th className="w-10 border-b border-l p-1.5" />}
-                  <th className="w-8 border-b border-l p-1.5" />
+                  {isBoxWhisker ? null : (
+                    <th className="border-b border-l p-1.5" style={{ width: "27%" }} />
+                  )}
+                  <th className="border-b border-l p-1.5" style={{ width: "10%" }} />
                 </tr>
               </thead>
               <tbody>
                 {isBoxWhisker
-                  ? boxWhiskerData.map((entry, index) => (
+                  ? visibleBoxWhiskerRows.map(({ entry, index }) => (
                       <tr key={index}>
                         <td className="border-b p-0">
                           <input
@@ -319,7 +449,7 @@ function StatsChartForm({
                         </td>
                       </tr>
                     ))
-                  : categoricalData.map((entry, index) => (
+                  : visibleCategoricalRows.map(({ entry, index }) => (
                       <tr key={index}>
                         <td className="border-b p-0">
                           <input
@@ -340,16 +470,23 @@ function StatsChartForm({
                             value={entry.value}
                           />
                         </td>
-                        <td className="border-b border-l p-1 text-center">
+                        <td className="border-b border-l p-0">
                           <Popover>
                             <PopoverTrigger asChild>
                               <button
                                 aria-label={t("entryColor")}
-                                className="mx-auto size-5 shrink-0 rounded border"
+                                className="flex w-full items-center gap-1.5 px-2 py-1.5 hover:bg-accent"
                                 onMouseDown={(event) => event.stopPropagation()}
-                                style={{ backgroundColor: entry.color ?? defaultEntryColor(index) }}
                                 type="button"
-                              />
+                              >
+                                <span
+                                  className="size-4 shrink-0 rounded-sm border"
+                                  style={{ backgroundColor: entry.color ?? defaultEntryColor(index) }}
+                                />
+                                <span className="truncate font-mono text-xs text-muted-foreground">
+                                  {entry.color ?? defaultEntryColor(index)}
+                                </span>
+                              </button>
                             </PopoverTrigger>
                             <PopoverContent
                               className="w-64"
@@ -394,6 +531,16 @@ function StatsChartForm({
               </tbody>
             </table>
           </div>
+
+          {hiddenRowCount > 0 ? (
+            <Button onClick={() => setShowAllRows(true)} size="sm" variant="ghost">
+              {t("showMoreRows", { count: hiddenRowCount })}
+            </Button>
+          ) : showAllRows && activeData.length > VISIBLE_ROW_LIMIT ? (
+            <Button onClick={() => setShowAllRows(false)} size="sm" variant="ghost">
+              {t("showFewerRows")}
+            </Button>
+          ) : null}
 
           <Button
             disabled={activeData.length >= MAX_ENTRIES}

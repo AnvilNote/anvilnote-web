@@ -315,6 +315,8 @@
     "statsChart": {
       "dialogTitle": "Статистическая диаграмма",
       "chartType": "Тип диаграммы",
+      "importFile": "Импортировать файл",
+      "importError": "Не удалось прочитать файл — убедитесь, что это допустимая таблица CSV/Excel/OpenDocument.",
       "chartTypes": {
         "bar": "Столбчатая (гориз.)",
         "column": "Столбчатая (верт.)",
@@ -330,10 +332,13 @@
       "median": "Медиана",
       "q3": "Q3",
       "max": "Макс.",
+      "horizontal": "Горизонтально",
       "showLegend": "Показать легенду",
       "addEntry": "Добавить запись",
       "removeEntry": "Удалить",
       "entryLimitReached": "Максимум 20 записей",
+      "showMoreRows": "Показать ещё {count}",
+      "showFewerRows": "Свернуть",
       "previewLoading": "Рендеринг…",
       "previewError": "Не удалось отрендерить — проверьте значения.",
       "save": "Сохранить",

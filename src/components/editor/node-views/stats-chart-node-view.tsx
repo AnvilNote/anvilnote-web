@@ -21,7 +21,7 @@ function buildSpec(node: NodeViewProps["node"]): StatsChartSpec {
     };
   }
   const knownCategorical = ["bar", "column", "pyramid"] as const;
-  const resolvedType = knownCategorical.includes(chartType) ? chartType : "bar";
+  const resolvedType = knownCategorical.includes(chartType) ? chartType : "column";
   return { chartType: resolvedType, data: data as CategoricalEntry[] };
 }
 
