@@ -187,7 +187,8 @@
         "proof": "証明ブロック",
         "mermaid": "mermaid ブロック",
         "imageRow": "並列画像ブロック",
-        "functionPlot": "関数グラフブロック"
+        "functionPlot": "関数グラフブロック",
+        "statsChart": "統計グラフブロック"
       },
       "color": "文字色",
       "colors": {
@@ -232,7 +233,8 @@
       "tableAlignCenter": "表を中央揃え",
       "tableAlignRight": "表を右揃え",
       "mermaid": "Mermaid 図",
-      "functionPlot": "関数グラフ"
+      "functionPlot": "関数グラフ",
+      "statsChart": "統計グラフ"
     },
     "slash": {
       "text": "テキスト",
@@ -255,7 +257,9 @@
       "mermaid": "Mermaid 図",
       "imageRow": "並列画像",
       "functionPlot": "関数グラフ",
-      "functionPlotHint": "y = f(x) の曲線を描画"
+      "functionPlotHint": "y = f(x) の曲線を描画",
+      "statsChart": "統計グラフ",
+      "statsChartHint": "棒グラフ、円グラフ、ピラミッド図、箱ひげ図"
     },
     "image": {
       "figure": "図",
@@ -305,6 +309,33 @@
       "preview": "プレビュー",
       "previewLoading": "レンダリング中…",
       "previewError": "描画できません — 数式の構文を確認してください。",
+      "save": "保存",
+      "cancel": "キャンセル"
+    },
+    "statsChart": {
+      "dialogTitle": "統計グラフ",
+      "chartType": "グラフの種類",
+      "chartTypes": {
+        "bar": "横棒グラフ",
+        "column": "縦棒グラフ",
+        "pie": "円グラフ",
+        "pyramid": "ピラミッド図",
+        "boxwhisker": "箱ひげ図"
+      },
+      "label": "ラベル",
+      "value": "値",
+      "entryColor": "色",
+      "min": "最小値",
+      "q1": "第1四分位数",
+      "median": "中央値",
+      "q3": "第3四分位数",
+      "max": "最大値",
+      "showLegend": "凡例を表示",
+      "addEntry": "項目を追加",
+      "removeEntry": "削除",
+      "entryLimitReached": "項目は最大20個まで",
+      "previewLoading": "レンダリング中…",
+      "previewError": "描画できません — 値を確認してください。",
       "save": "保存",
       "cancel": "キャンセル"
     },

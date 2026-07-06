@@ -187,7 +187,8 @@
         "proof": "proof block",
         "mermaid": "mermaid block",
         "imageRow": "image row block",
-        "functionPlot": "function plot block"
+        "functionPlot": "function plot block",
+        "statsChart": "stats chart block"
       },
       "color": "Text color",
       "colors": {
@@ -232,7 +233,8 @@
       "tableAlignCenter": "Align table center",
       "tableAlignRight": "Align table right",
       "mermaid": "Mermaid diagram",
-      "functionPlot": "Function plot"
+      "functionPlot": "Function plot",
+      "statsChart": "Stats chart"
     },
     "slash": {
       "text": "Text",
@@ -255,7 +257,9 @@
       "mermaid": "Mermaid diagram",
       "imageRow": "Side-by-side images",
       "functionPlot": "Function plot",
-      "functionPlotHint": "Plot y = f(x) curves"
+      "functionPlotHint": "Plot y = f(x) curves",
+      "statsChart": "Stats chart",
+      "statsChartHint": "Bar, column, pie, pyramid, or box chart"
     },
     "image": {
       "figure": "Figure",
@@ -305,6 +309,33 @@
       "preview": "Preview",
       "previewLoading": "Rendering…",
       "previewError": "Couldn’t render — check the formula syntax.",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "statsChart": {
+      "dialogTitle": "Stats chart",
+      "chartType": "Chart type",
+      "chartTypes": {
+        "bar": "Bar",
+        "column": "Column",
+        "pie": "Pie",
+        "pyramid": "Pyramid",
+        "boxwhisker": "Box & whisker"
+      },
+      "label": "Label",
+      "value": "Value",
+      "entryColor": "Color",
+      "min": "Min",
+      "q1": "Q1",
+      "median": "Median",
+      "q3": "Q3",
+      "max": "Max",
+      "showLegend": "Show legend",
+      "addEntry": "Add entry",
+      "removeEntry": "Remove",
+      "entryLimitReached": "Up to 20 entries",
+      "previewLoading": "Rendering…",
+      "previewError": "Couldn’t render — check the values.",
       "save": "Save",
       "cancel": "Cancel"
     },

@@ -20,6 +20,7 @@ import { AnvilCallout } from "@/lib/tiptap/callout";
 import { AnvilProof } from "@/lib/tiptap/proof";
 import { AnvilMermaid } from "@/lib/tiptap/mermaid";
 import { AnvilFunctionPlot } from "./function-plot";
+import { AnvilStatsChart } from "./stats-chart";
 import { AnvilImageRow } from "@/lib/tiptap/image-row";
 import { CrossRef, CrossRefTargetIds } from "@/lib/tiptap/cross-ref";
 import { CrossRefSuggestion } from "@/components/editor/cross-ref-suggestion";
@@ -357,6 +358,7 @@ export function buildExtensions({
     AnvilProof,
     AnvilMermaid,
     AnvilFunctionPlot,
+    AnvilStatsChart,
     AnvilImageRow,
     AnvilImage.configure({
       HTMLAttributes: {

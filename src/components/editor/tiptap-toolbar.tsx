@@ -8,6 +8,7 @@ import {
   AlignCenter,
   AlignLeft,
   AlignRight,
+  BarChart3,
   Bold,
   Check,
   ChevronDown,
@@ -54,6 +55,7 @@ import { pickAndInsertImage } from "@/lib/tiptap/image";
 import { insertCallout } from "@/lib/tiptap/callout";
 import { insertMermaid } from "@/lib/tiptap/mermaid";
 import { insertFunctionPlot } from "@/lib/tiptap/function-plot";
+import { insertStatsChart } from "@/lib/tiptap/stats-chart";
 import { DEFAULT_CALLOUT_KIND } from "@/config/callouts";
 import type {
   MathClickMode,
@@ -280,6 +282,7 @@ export function TiptapToolbar({
       callout: e.isActive("callout"),
       mermaid: e.isActive("mermaid"),
       functionPlot: e.isActive("functionPlot"),
+      statsChart: e.isActive("statsChart"),
       codeBlock: e.isActive("codeBlock"),
       link: e.isActive("link"),
       inlineMath: e.isActive("inlineMath"),
@@ -399,6 +402,12 @@ export function TiptapToolbar({
           label={t("functionPlot")}
           active={s.functionPlot}
           onClick={() => insertFunctionPlot(editor)}
+        />
+        <ToolbarButton
+          icon={BarChart3}
+          label={t("statsChart")}
+          active={s.statsChart}
+          onClick={() => insertStatsChart(editor)}
         />
         <ToolbarButton
           icon={Code2}

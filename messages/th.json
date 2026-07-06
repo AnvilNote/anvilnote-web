@@ -187,7 +187,8 @@
         "proof": "บล็อกการพิสูจน์",
         "mermaid": "บล็อก mermaid",
         "imageRow": "บล็อกแถวรูปภาพ",
-        "functionPlot": "บล็อกกราฟฟังก์ชัน"
+        "functionPlot": "บล็อกกราฟฟังก์ชัน",
+        "statsChart": "บล็อกแผนภูมิสถิติ"
       },
       "color": "สีข้อความ",
       "colors": {
@@ -232,7 +233,8 @@
       "tableAlignCenter": "จัดตารางกึ่งกลาง",
       "tableAlignRight": "จัดตารางชิดขวา",
       "mermaid": "แผนภาพ Mermaid",
-      "functionPlot": "กราฟฟังก์ชัน"
+      "functionPlot": "กราฟฟังก์ชัน",
+      "statsChart": "แผนภูมิสถิติ"
     },
     "slash": {
       "text": "ข้อความ",
@@ -255,7 +257,9 @@
       "mermaid": "แผนภาพ Mermaid",
       "imageRow": "รูปภาพเรียงกัน",
       "functionPlot": "กราฟฟังก์ชัน",
-      "functionPlotHint": "วาดเส้นโค้ง y = f(x)"
+      "functionPlotHint": "วาดเส้นโค้ง y = f(x)",
+      "statsChart": "แผนภูมิสถิติ",
+      "statsChartHint": "แผนภูมิแท่ง วงกลม พีระมิด หรือกล่องและหนวด"
     },
     "image": {
       "figure": "ภาพ",
@@ -305,6 +309,33 @@
       "preview": "ตัวอย่าง",
       "previewLoading": "กำลังเรนเดอร์…",
       "previewError": "ไม่สามารถเรนเดอร์ได้ — โปรดตรวจสอบไวยากรณ์สูตร.",
+      "save": "บันทึก",
+      "cancel": "ยกเลิก"
+    },
+    "statsChart": {
+      "dialogTitle": "แผนภูมิสถิติ",
+      "chartType": "ประเภทแผนภูมิ",
+      "chartTypes": {
+        "bar": "แท่งแนวนอน",
+        "column": "แท่งแนวตั้ง",
+        "pie": "วงกลม",
+        "pyramid": "พีระมิด",
+        "boxwhisker": "กล่องและหนวด"
+      },
+      "label": "ป้ายกำกับ",
+      "value": "ค่า",
+      "entryColor": "สี",
+      "min": "ต่ำสุด",
+      "q1": "ควอร์ไทล์ที่ 1",
+      "median": "มัธยฐาน",
+      "q3": "ควอร์ไทล์ที่ 3",
+      "max": "สูงสุด",
+      "showLegend": "แสดงคำอธิบายสัญลักษณ์",
+      "addEntry": "เพิ่มรายการ",
+      "removeEntry": "ลบ",
+      "entryLimitReached": "สูงสุด 20 รายการ",
+      "previewLoading": "กำลังเรนเดอร์…",
+      "previewError": "ไม่สามารถเรนเดอร์ได้ — โปรดตรวจสอบค่า.",
       "save": "บันทึก",
       "cancel": "ยกเลิก"
     },

@@ -187,7 +187,8 @@
         "proof": "блок доказательства",
         "mermaid": "блок mermaid",
         "imageRow": "блок ряда изображений",
-        "functionPlot": "блок графика функции"
+        "functionPlot": "блок графика функции",
+        "statsChart": "блок статистической диаграммы"
       },
       "color": "Цвет текста",
       "colors": {
@@ -232,7 +233,8 @@
       "tableAlignCenter": "Выровнять таблицу по центру",
       "tableAlignRight": "Выровнять таблицу по правому краю",
       "mermaid": "Диаграмма Mermaid",
-      "functionPlot": "График функции"
+      "functionPlot": "График функции",
+      "statsChart": "Статистическая диаграмма"
     },
     "slash": {
       "text": "Текст",
@@ -255,7 +257,9 @@
       "mermaid": "Диаграмма Mermaid",
       "imageRow": "Изображения рядом",
       "functionPlot": "График функции",
-      "functionPlotHint": "Построить кривые y = f(x)"
+      "functionPlotHint": "Построить кривые y = f(x)",
+      "statsChart": "Статистическая диаграмма",
+      "statsChartHint": "Столбчатая, круговая, пирамидальная диаграмма или ящик с усами"
     },
     "image": {
       "figure": "Рисунок",
@@ -305,6 +309,33 @@
       "preview": "Предпросмотр",
       "previewLoading": "Рендеринг…",
       "previewError": "Не удалось отрендерить — проверьте синтаксис формулы.",
+      "save": "Сохранить",
+      "cancel": "Отмена"
+    },
+    "statsChart": {
+      "dialogTitle": "Статистическая диаграмма",
+      "chartType": "Тип диаграммы",
+      "chartTypes": {
+        "bar": "Столбчатая (гориз.)",
+        "column": "Столбчатая (верт.)",
+        "pie": "Круговая",
+        "pyramid": "Пирамида",
+        "boxwhisker": "Ящик с усами"
+      },
+      "label": "Подпись",
+      "value": "Значение",
+      "entryColor": "Цвет",
+      "min": "Мин.",
+      "q1": "Q1",
+      "median": "Медиана",
+      "q3": "Q3",
+      "max": "Макс.",
+      "showLegend": "Показать легенду",
+      "addEntry": "Добавить запись",
+      "removeEntry": "Удалить",
+      "entryLimitReached": "Максимум 20 записей",
+      "previewLoading": "Рендеринг…",
+      "previewError": "Не удалось отрендерить — проверьте значения.",
       "save": "Сохранить",
       "cancel": "Отмена"
     },
