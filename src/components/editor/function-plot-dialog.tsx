@@ -24,7 +24,7 @@ import {
   ColorPickerFormat,
 } from "@/components/ui/color-picker";
 import { renderFunctionPlot } from "@/lib/function-plot-render";
-import { defaultCurveStyle, MAX_CURVES } from "@/lib/function-plot-defaults";
+import { CURVE_PREVIEW_LIMIT, defaultCurveStyle, MAX_CURVES } from "@/lib/function-plot-defaults";
 import { parseNumericInput, numericInputValue } from "@/lib/numeric-input";
 import type { FunctionPlotCurve, FunctionPlotSpec } from "@/lib/tiptap/function-plot";
 
@@ -80,6 +80,11 @@ function FunctionPlotForm({
   const [renderedFor, setRenderedFor] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  // Caps the visible curve rows at CURVE_PREVIEW_LIMIT (matches
+  // stats-chart-dialog.tsx's VISIBLE_ROW_LIMIT pattern) — "Show N more"
+  // reveals the rest in a scrollable list rather than growing the modal
+  // unbounded up to MAX_CURVES (6).
+  const [showAllCurves, setShowAllCurves] = useState(false);
   // A freshly-inserted node's only curve starts with formula: "" (see
   // function-plot.ts's defaultCurves()) — derived fresh every render (not
   // effect-set state) so the "nothing typed yet" display below doesn't
@@ -180,103 +185,94 @@ function FunctionPlotForm({
     setDraft((prev) => ({ ...prev, curves: prev.curves.filter((_, i) => i !== index) }));
   }
 
+  const visibleCurves = showAllCurves ? draft.curves : draft.curves.slice(0, CURVE_PREVIEW_LIMIT);
+  const hiddenCurveCount = draft.curves.length - visibleCurves.length;
+
+  function curveRow(curve: FunctionPlotCurve, index: number) {
+    return (
+      // items-end, not items-center: the formula field has a label above
+      // it (taller than the bare remove button), so centering the row
+      // misaligns the button upward relative to the input. Aligning to
+      // the bottom edge instead lines up the input and remove button
+      // (size-8) on the same row.
+      <div className="flex items-end gap-2" key={index}>
+        <div className="flex-1 space-y-1.5">
+          <div className="flex items-center justify-between">
+            <label
+              className="text-xs font-medium text-muted-foreground"
+              htmlFor={`curve-formula-${index}`}
+            >
+              {t("curveFormula")}
+            </label>
+            {index === 0 ? (
+              <a
+                className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                href="https://typst.app/docs/reference/foundations/calc/"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                {t("syntaxHelp")}
+              </a>
+            ) : null}
+          </div>
+          <div
+            className="overflow-hidden rounded-md border text-sm [&_.cm-editor]:rounded-md [&_.cm-scroller]:font-mono"
+            id={`curve-formula-${index}`}
+          >
+            <CodeMirror
+              basicSetup={{
+                lineNumbers: false,
+                foldGutter: false,
+                highlightActiveLine: false,
+              }}
+              extensions={formulaExtensions}
+              height="48px"
+              onChange={(value) => updateCurve(index, { formula: value })}
+              placeholder={t("curveFormulaPlaceholder")}
+              theme={resolvedTheme === "dark" ? "dark" : "light"}
+              value={curve.formula}
+            />
+          </div>
+        </div>
+        {draft.curves.length > 1 ? (
+          <Button
+            aria-label={t("removeCurve")}
+            onClick={() => removeCurve(index)}
+            size="icon"
+            variant="ghost"
+          >
+            ×
+          </Button>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
-    <DialogContent className="sm:max-w-3xl">
+    <DialogContent className="sm:max-w-5xl">
       <DialogHeader>
         <DialogTitle>{t("dialogTitle")}</DialogTitle>
       </DialogHeader>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-3">
-          {draft.curves.map((curve, index) => (
-            // items-end, not items-center: the formula field has a label
-            // above it (taller than the bare color swatch/remove button),
-            // so centering the row misaligns the swatch upward relative to
-            // the input. Aligning to the bottom edge instead lines up the
-            // input, swatch (size-8), and remove button (also size-8) on
-            // the same row, since they're all 32px tall.
-            <div className="flex items-end gap-2" key={index}>
-              <div className="flex-1 space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label
-                    className="text-xs font-medium text-muted-foreground"
-                    htmlFor={`curve-formula-${index}`}
-                  >
-                    {t("curveFormula")}
-                  </label>
-                  {index === 0 ? (
-                    <a
-                      className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
-                      href="https://typst.app/docs/reference/foundations/calc/"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      {t("syntaxHelp")}
-                    </a>
-                  ) : null}
-                </div>
-                <div
-                  className="overflow-hidden rounded-md border text-sm [&_.cm-editor]:rounded-md [&_.cm-scroller]:font-mono"
-                  id={`curve-formula-${index}`}
-                >
-                  <CodeMirror
-                    basicSetup={{
-                      lineNumbers: false,
-                      foldGutter: false,
-                      highlightActiveLine: false,
-                    }}
-                    extensions={formulaExtensions}
-                    height="32px"
-                    onChange={(value) => updateCurve(index, { formula: value })}
-                    placeholder={t("curveFormulaPlaceholder")}
-                    theme={resolvedTheme === "dark" ? "dark" : "light"}
-                    value={curve.formula}
-                  />
-                </div>
-              </div>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    aria-label={t("curveColor")}
-                    className="size-8 shrink-0 rounded border"
-                    onMouseDown={(event) => event.stopPropagation()}
-                    style={{ backgroundColor: curve.color }}
-                    type="button"
-                  />
-                </PopoverTrigger>
-                <PopoverContent className="w-64" onMouseDown={(event) => event.stopPropagation()}>
-                  <ColorPicker
-                    className="gap-3"
-                    onChange={(rgba) => {
-                      const [r, g, b] = rgba as [number, number, number, number];
-                      const hex = `#${[r, g, b]
-                        .map((c) => Math.round(c).toString(16).padStart(2, "0"))
-                        .join("")}`;
-                      updateCurve(index, { color: hex });
-                    }}
-                    value={curve.color}
-                  >
-                    <ColorPickerSelection className="h-32" />
-                    <ColorPickerHue />
-                    <div className="flex items-center gap-2">
-                      <ColorPickerEyeDropper />
-                      <ColorPickerOutput />
-                    </div>
-                    <ColorPickerFormat />
-                  </ColorPicker>
-                </PopoverContent>
-              </Popover>
-              {draft.curves.length > 1 ? (
-                <Button
-                  aria-label={t("removeCurve")}
-                  onClick={() => removeCurve(index)}
-                  size="icon"
-                  variant="ghost"
-                >
-                  ×
-                </Button>
-              ) : null}
-            </div>
-          ))}
+          {/* Scrollable only once expanded past CURVE_PREVIEW_LIMIT — a
+              fixed max-height keeps the modal itself from growing to fit
+              up to MAX_CURVES (6) rows at once, matching
+              stats-chart-dialog.tsx's expanded-table scroll pattern. */}
+          <div
+            className={showAllCurves ? "flex max-h-[280px] flex-col gap-3 overflow-y-auto" : "flex flex-col gap-3"}
+          >
+            {visibleCurves.map((curve, index) => curveRow(curve, index))}
+          </div>
+          {hiddenCurveCount > 0 ? (
+            <Button onClick={() => setShowAllCurves(true)} size="sm" variant="ghost">
+              {t("showMoreCurves", { count: hiddenCurveCount })}
+            </Button>
+          ) : showAllCurves && draft.curves.length > CURVE_PREVIEW_LIMIT ? (
+            <Button onClick={() => setShowAllCurves(false)} size="sm" variant="ghost">
+              {t("showFewerCurves")}
+            </Button>
+          ) : null}
           <Button
             disabled={draft.curves.length >= MAX_CURVES}
             onClick={addCurve}
@@ -321,6 +317,58 @@ function FunctionPlotForm({
               />
             </div>
           </div>
+          <div className="space-y-1.5">
+            <span className="text-xs font-medium text-muted-foreground">{t("curveColor")}</span>
+            <div className="flex flex-col gap-1.5">
+              {draft.curves.map((curve, index) => (
+                <div className="flex items-center gap-2" key={index}>
+                  <span className="w-16 shrink-0 text-xs text-muted-foreground">
+                    {t("curveLabel", { number: index + 1 })}
+                  </span>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        aria-label={t("curveColor")}
+                        className="flex flex-1 items-center gap-2 rounded border px-2 py-1.5 hover:bg-accent"
+                        onMouseDown={(event) => event.stopPropagation()}
+                        type="button"
+                      >
+                        <span
+                          className="size-4 shrink-0 rounded-sm border"
+                          style={{ backgroundColor: curve.color }}
+                        />
+                        <span className="font-mono text-xs text-muted-foreground">{curve.color}</span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-64"
+                      onMouseDown={(event) => event.stopPropagation()}
+                    >
+                      <ColorPicker
+                        className="gap-3"
+                        onChange={(rgba) => {
+                          const [r, g, b] = rgba as [number, number, number, number];
+                          const hex = `#${[r, g, b]
+                            .map((c) => Math.round(c).toString(16).padStart(2, "0"))
+                            .join("")}`;
+                          updateCurve(index, { color: hex });
+                        }}
+                        value={curve.color}
+                      >
+                        <ColorPickerSelection className="h-32" />
+                        <ColorPickerHue />
+                        <div className="flex items-center gap-2">
+                          <ColorPickerEyeDropper />
+                          <ColorPickerOutput />
+                        </div>
+                        <ColorPickerFormat />
+                      </ColorPicker>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              ))}
+            </div>
+          </div>
           <label className="flex items-center gap-2 text-sm">
             <Switch
               checked={draft.showGridlines}
@@ -336,12 +384,17 @@ function FunctionPlotForm({
             {t("showAxisTicks")}
           </label>
         </div>
-        <div className="flex min-h-[220px] flex-col items-center justify-center gap-2 rounded border p-2">
+        <div className="flex min-h-[380px] flex-col items-center justify-end gap-2 overflow-hidden rounded border p-2 [&_svg]:h-auto [&_svg]:max-w-full">
           {/* Gated on isPreviewCurrent (hasFormula AND renderedFor matches
               the draft on screen), not just previewSvg/error/loading
               directly: this hides a stale render left over from a PREVIOUS
               draft (e.g. mid-debounce after an edit), not just from a
-              cleared formula — see the renderedFor comment above. */}
+              cleared formula — see the renderedFor comment above.
+              justify-end (not justify-center): the plot's x-axis and its
+              tick labels sit along its own bottom edge, so bottom-aligning
+              the whole SVG within this box keeps that edge flush with the
+              box's bottom instead of floating in the middle with empty
+              space below it. */}
           {isPreviewCurrent && previewSvg ? (
             <div dangerouslySetInnerHTML={{ __html: previewSvg }} />
           ) : hasFormula && loading ? (
