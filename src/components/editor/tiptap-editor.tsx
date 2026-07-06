@@ -13,6 +13,7 @@ import {
   Heading3,
   ImagePlus as ImageIcon,
   Images,
+  LineChart,
   List,
   ListOrdered,
   MessageSquareWarning,
@@ -54,6 +55,7 @@ import { pickAndInsertImage, pickAndInsertImageRow } from "@/lib/tiptap/image";
 import { insertCallout } from "@/lib/tiptap/callout";
 import { insertProof } from "@/lib/tiptap/proof";
 import { insertMermaid } from "@/lib/tiptap/mermaid";
+import { insertFunctionPlot } from "@/lib/tiptap/function-plot";
 import { DEFAULT_CALLOUT_KIND } from "@/config/callouts";
 import { migratedDocIds } from "@/lib/tiptap/serialization";
 import { emptyTiptapContent } from "@/lib/tiptap/default-content";
@@ -222,6 +224,16 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         run: ({ editor, range }) => {
           editor.chain().focus().deleteRange(range).run();
           insertMermaid(editor);
+        },
+      },
+      {
+        title: tt("functionPlot"),
+        subtitle: tt("functionPlotHint"),
+        icon: LineChart,
+        aliases: ["function", "plot", "graph", "函數圖", "函數"],
+        run: ({ editor, range }) => {
+          editor.chain().focus().deleteRange(range).run();
+          insertFunctionPlot(editor);
         },
       },
       {
