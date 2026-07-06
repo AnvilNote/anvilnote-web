@@ -397,12 +397,20 @@ export function TiptapToolbar({
           active={s.mermaid}
           onClick={() => insertMermaid(editor)}
         />
+        {/* Hidden per explicit request: several math functions (ln, sqrt,
+            log) crash the render when the default/a wide x-range includes
+            values outside their domain, and the error surfaced to the user
+            is unhelpfully generic ("check the formula syntax") rather than
+            explaining the actual domain issue. Node type, dialog, and
+            slash-command entry are all still intact — only these two entry
+            points are removed — so this can be quickly re-enabled once
+            that error messaging is improved.
         <ToolbarButton
           icon={LineChart}
           label={t("functionPlot")}
           active={s.functionPlot}
           onClick={() => insertFunctionPlot(editor)}
-        />
+        /> */}
         <ToolbarButton
           icon={BarChart3}
           label={t("statsChart")}

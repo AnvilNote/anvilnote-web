@@ -228,16 +228,18 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
           insertMermaid(editor);
         },
       },
-      {
-        title: tt("functionPlot"),
-        subtitle: tt("functionPlotHint"),
-        icon: LineChart,
-        aliases: ["function", "plot", "graph", "函數圖", "函數"],
-        run: ({ editor, range }) => {
-          editor.chain().focus().deleteRange(range).run();
-          insertFunctionPlot(editor);
-        },
-      },
+      // Hidden per explicit request alongside the toolbar button — see
+      // tiptap-toolbar.tsx's matching comment for why.
+      // {
+      //   title: tt("functionPlot"),
+      //   subtitle: tt("functionPlotHint"),
+      //   icon: LineChart,
+      //   aliases: ["function", "plot", "graph", "函數圖", "函數"],
+      //   run: ({ editor, range }) => {
+      //     editor.chain().focus().deleteRange(range).run();
+      //     insertFunctionPlot(editor);
+      //   },
+      // },
       {
         title: tt("statsChart"),
         subtitle: tt("statsChartHint"),
