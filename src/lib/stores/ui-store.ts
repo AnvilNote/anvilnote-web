@@ -44,3 +44,30 @@ export const useRightPanelTabStore = create<RightPanelTabState>()(
     },
   ),
 );
+
+const LAST_ROUTE_STORAGE_KEY = "anvilnote.last-route";
+
+type LastRouteState = {
+  path: string | null;
+  setPath: (path: string) => void;
+};
+
+// Desktop always cold-boots at a fixed "/documents" URL (see
+// anvilnote-desktop/src/main/main.ts) instead of remembering where the
+// window was left, unlike a browser tab. AppShell records the current
+// route here on every navigation and, on that fixed boot route, replaces
+// it with whatever was last recorded — so quitting mid-document and
+// reopening lands back on that document instead of the documents list.
+export const useLastRouteStore = create<LastRouteState>()(
+  persist(
+    (set) => ({
+      path: null,
+      setPath: (path) => set({ path }),
+    }),
+    {
+      name: LAST_ROUTE_STORAGE_KEY,
+      storage: createJSONStorage(() => localStorage),
+      skipHydration: true,
+    },
+  ),
+);
