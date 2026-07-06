@@ -10,7 +10,15 @@ export async function renderFunctionPlot(
   const response = await fetch(`${getApiBaseUrl()}/api/charts/render`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(spec),
+    // "kind" tags which member of the API's discriminated request-body
+    // union this is — it's a wire-protocol detail, not part of the node's
+    // own persisted content, so it's added here rather than stored on
+    // FunctionPlotSpec/the Tiptap node itself. Required, not optional:
+    // the API's z.discriminatedUnion routes on this field by reading it
+    // directly off the raw request body — a request missing it entirely
+    // fails with "No matching discriminator" regardless of any per-branch
+    // schema default.
+    body: JSON.stringify({ ...spec, kind: "functionPlot" }),
     signal,
   });
   let body: unknown;
