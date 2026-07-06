@@ -301,6 +301,7 @@
       "syntaxHelp": "อ้างอิงไวยากรณ์",
       "curveColor": "สี",
       "curveThickness": "ความหนาของเส้น",
+      "thicknessOutOfRange": "ความหนาของเส้นต้องอยู่ระหว่าง {min} ถึง {max}",
       "curveDash": "รูปแบบเส้น",
       "dashStyles": {
         "solid": "เส้นทึบ",

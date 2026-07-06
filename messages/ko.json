@@ -301,6 +301,7 @@
       "syntaxHelp": "문법 참고",
       "curveColor": "색상",
       "curveThickness": "선 굵기",
+      "thicknessOutOfRange": "선 굵기는 {min}에서 {max} 사이여야 합니다",
       "curveDash": "선 스타일",
       "dashStyles": {
         "solid": "실선",

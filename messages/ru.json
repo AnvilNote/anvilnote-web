@@ -301,6 +301,7 @@
       "syntaxHelp": "Справочник синтаксиса",
       "curveColor": "Цвет",
       "curveThickness": "Толщина линии",
+      "thicknessOutOfRange": "Толщина линии должна быть от {min} до {max}",
       "curveDash": "Стиль линии",
       "dashStyles": {
         "solid": "Сплошная",
