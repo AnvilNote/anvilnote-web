@@ -301,6 +301,7 @@
       "syntaxHelp": "語法參考",
       "curveColor": "顏色",
       "curveThickness": "線條粗細",
+      "thicknessOutOfRange": "線條粗細必須介於 {min} 到 {max} 之間",
       "curveDash": "線條樣式",
       "dashStyles": {
         "solid": "實線",

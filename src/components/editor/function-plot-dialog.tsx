@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
+import { toast } from "sonner";
 import CodeMirror, { keymap, Prec } from "@uiw/react-codemirror";
 import {
   Dialog,
@@ -165,6 +166,12 @@ function FunctionPlotForm({
         .catch((err: unknown) => {
           if (err instanceof Error && err.name !== "AbortError") {
             setError(err.message);
+            // Only fires once per debounced settle (not per keystroke) —
+            // the 500ms timer above already gates this whole branch, so
+            // a user still actively typing an in-progress formula won't
+            // get a toast on every character, only once they pause on an
+            // invalid one (e.g. a function name calc doesn't support).
+            toast.warning(t("previewError"));
           }
         })
         .finally(() => setLoading(false));
@@ -183,6 +190,29 @@ function FunctionPlotForm({
       ...prev,
       curves: prev.curves.map((curve, i) => (i === index ? { ...curve, ...patch } : curve)),
     }));
+  }
+
+  // Clamps to [MIN_THICKNESS, MAX_THICKNESS] with a toast, rather than
+  // just relying on the <input>'s min/max attributes — those only affect
+  // the spinner buttons' step range, not a value typed directly, so
+  // typing e.g. "10" would otherwise silently pass through ungated (the
+  // anvilnote-charts schema clamp would reject it server-side, but only
+  // surfacing that as the generic "Couldn't render" error is a much
+  // less specific signal than telling the user the actual valid range).
+  // NaN (an in-progress empty field, see numeric-input.ts) passes through
+  // unclamped so the user can still clear the field to type a new value.
+  function updateThickness(index: number, raw: string) {
+    const parsed = parseNumericInput(raw);
+    if (Number.isNaN(parsed)) {
+      updateCurve(index, { thickness: parsed });
+      return;
+    }
+    if (parsed < MIN_THICKNESS || parsed > MAX_THICKNESS) {
+      toast.warning(t("thicknessOutOfRange", { min: MIN_THICKNESS, max: MAX_THICKNESS }));
+      updateCurve(index, { thickness: Math.min(Math.max(parsed, MIN_THICKNESS), MAX_THICKNESS) });
+      return;
+    }
+    updateCurve(index, { thickness: parsed });
   }
 
   function addCurve() {
@@ -291,9 +321,7 @@ function FunctionPlotForm({
           className="h-8 w-16 shrink-0 px-2 text-xs"
           max={MAX_THICKNESS}
           min={MIN_THICKNESS}
-          onChange={(event) =>
-            updateCurve(index, { thickness: parseNumericInput(event.target.value) })
-          }
+          onChange={(event) => updateThickness(index, event.target.value)}
           step={0.1}
           type="number"
           value={numericInputValue(curve.thickness)}
@@ -332,7 +360,7 @@ function FunctionPlotForm({
   }
 
   return (
-    <DialogContent className="sm:max-w-5xl">
+    <DialogContent className="sm:max-w-6xl">
       <DialogHeader>
         <DialogTitle>{t("dialogTitle")}</DialogTitle>
       </DialogHeader>
@@ -414,7 +442,7 @@ function FunctionPlotForm({
             {t("showAxisTicks")}
           </label>
         </div>
-        <div className="flex h-full flex-col items-center justify-center gap-2 overflow-hidden rounded border p-2 [&_svg]:h-auto [&_svg]:max-w-full">
+        <div className="flex h-full flex-col items-center justify-center gap-2 overflow-hidden rounded border p-2 [&_svg]:h-full [&_svg]:w-full">
           {/* Gated on isPreviewCurrent (hasFormula AND renderedFor matches
               the draft on screen), not just previewSvg/error/loading
               directly: this hides a stale render left over from a PREVIOUS
@@ -426,7 +454,7 @@ function FunctionPlotForm({
               baseline to align to, so bottom+left anchoring just left a
               large empty gap at the top/right instead. */}
           {isPreviewCurrent && previewSvg ? (
-            <div dangerouslySetInnerHTML={{ __html: previewSvg }} />
+            <div className="min-h-0 w-full flex-1" dangerouslySetInnerHTML={{ __html: previewSvg }} />
           ) : hasFormula && loading ? (
             <span className="text-muted-foreground text-sm">{t("previewLoading")}</span>
           ) : null}

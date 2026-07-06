@@ -301,6 +301,7 @@
       "syntaxHelp": "Syntax reference",
       "curveColor": "Color",
       "curveThickness": "Line thickness",
+      "thicknessOutOfRange": "Line thickness must be between {min} and {max}",
       "curveDash": "Line style",
       "dashStyles": {
         "solid": "Solid",

@@ -301,6 +301,7 @@
       "syntaxHelp": "構文リファレンス",
       "curveColor": "色",
       "curveThickness": "線の太さ",
+      "thicknessOutOfRange": "線の太さは {min} から {max} の間で指定してください",
       "curveDash": "線のスタイル",
       "dashStyles": {
         "solid": "実線",
