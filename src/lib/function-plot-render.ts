@@ -13,9 +13,17 @@ export async function renderFunctionPlot(
     body: JSON.stringify(spec),
     signal,
   });
-  const body = await response.json();
-  if (!response.ok) {
-    throw new Error(body?.error?.message ?? `Function plot render failed (${response.status})`);
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch {
+    throw new Error(`Function plot render failed (${response.status})`);
   }
-  return body.svg as string;
+  if (!response.ok) {
+    throw new Error(
+      (body as { error?: { message?: string } })?.error?.message ??
+        `Function plot render failed (${response.status})`,
+    );
+  }
+  return (body as { svg: string }).svg;
 }
