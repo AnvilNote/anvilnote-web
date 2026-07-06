@@ -69,6 +69,14 @@ function FunctionPlotForm({
   const { resolvedTheme } = useTheme();
   const [draft, setDraft] = useState<FunctionPlotSpec>(initialSpec);
   const [previewSvg, setPreviewSvg] = useState<string | null>(null);
+  // Tracks which draft previewSvg was actually rendered for, as a JSON key.
+  // Without this, editing a formula/curve and clicking Save inside the
+  // 500ms debounce window (or before the in-flight request resolves) would
+  // save the CURRENT draft paired with the PREVIOUS draft's rendered SVG —
+  // a mismatch that then round-trips silently into the document and PDF
+  // export, since both the NodeView and the renderer trust the cached svg
+  // attr unconditionally.
+  const [renderedFor, setRenderedFor] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   // A freshly-inserted node's only curve starts with formula: "" (see
@@ -77,6 +85,8 @@ function FunctionPlotForm({
   // depend on clearing previewSvg/error from inside an effect, which
   // react-hooks/set-state-in-effect flags as a cascading-render risk.
   const hasFormula = draft.curves.some((curve) => curve.formula.trim());
+  const currentDraftKey = JSON.stringify(draft);
+  const isPreviewCurrent = hasFormula && renderedFor === currentDraftKey;
 
   // A formula is one expression, not a document — block Enter/Shift-Enter
   // from inserting a newline (CodeMirror's default) so a stray keystroke
@@ -122,11 +132,13 @@ function FunctionPlotForm({
     // be cancelled and could resolve after a newer one, overwriting the
     // fresher preview with stale data.
     const controller = new AbortController();
+    const draftKeyAtRequestTime = currentDraftKey;
     const timer = setTimeout(() => {
       setLoading(true);
       renderFunctionPlot(draft, controller.signal)
         .then((svg) => {
           setPreviewSvg(svg);
+          setRenderedFor(draftKeyAtRequestTime);
           setError(null);
         })
         .catch((err: unknown) => {
@@ -143,7 +155,7 @@ function FunctionPlotForm({
     // Re-run whenever the draft's actual content changes; JSON.stringify
     // keeps this a single dependency instead of enumerating every field.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(draft)]);
+  }, [currentDraftKey]);
 
   function updateCurve(index: number, patch: Partial<FunctionPlotCurve>) {
     setDraft((prev) => ({
@@ -320,11 +332,12 @@ function FunctionPlotForm({
           </label>
         </div>
         <div className="flex min-h-[220px] flex-col items-center justify-center gap-2 rounded border p-2">
-          {/* Gated on hasFormula, not just previewSvg/error/loading directly:
-              once a curve's formula is cleared back to empty, this hides
-              whatever preview/error was left over from before, without
-              needing to clear that state from inside the render effect. */}
-          {hasFormula && previewSvg ? (
+          {/* Gated on isPreviewCurrent (hasFormula AND renderedFor matches
+              the draft on screen), not just previewSvg/error/loading
+              directly: this hides a stale render left over from a PREVIOUS
+              draft (e.g. mid-debounce after an edit), not just from a
+              cleared formula — see the renderedFor comment above. */}
+          {isPreviewCurrent && previewSvg ? (
             <div dangerouslySetInnerHTML={{ __html: previewSvg }} />
           ) : hasFormula && loading ? (
             <span className="text-muted-foreground text-sm">{t("previewLoading")}</span>
@@ -337,8 +350,8 @@ function FunctionPlotForm({
           {t("cancel")}
         </Button>
         <Button
-          disabled={!hasFormula || !previewSvg}
-          onClick={() => hasFormula && previewSvg && onSave(draft, previewSvg)}
+          disabled={!isPreviewCurrent || !previewSvg}
+          onClick={() => isPreviewCurrent && previewSvg && onSave(draft, previewSvg)}
         >
           {t("save")}
         </Button>
