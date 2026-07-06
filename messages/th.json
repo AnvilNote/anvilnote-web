@@ -231,7 +231,8 @@
       "tableAlignLeft": "จัดตารางชิดซ้าย",
       "tableAlignCenter": "จัดตารางกึ่งกลาง",
       "tableAlignRight": "จัดตารางชิดขวา",
-      "mermaid": "แผนภาพ Mermaid"
+      "mermaid": "แผนภาพ Mermaid",
+      "functionPlot": "กราฟฟังก์ชัน"
     },
     "slash": {
       "text": "ข้อความ",
@@ -292,6 +293,7 @@
     "functionPlot": {
       "dialogTitle": "กราฟฟังก์ชัน",
       "curveFormula": "สูตร (เช่น sin(x))",
+      "syntaxHelp": "อ้างอิงไวยากรณ์",
       "curveColor": "สี",
       "addCurve": "เพิ่มเส้นโค้ง",
       "removeCurve": "ลบ",
@@ -299,6 +301,7 @@
       "xRangeMin": "x ต่ำสุด",
       "xRangeMax": "x สูงสุด",
       "showGridlines": "แสดงเส้นกริด",
+      "showAxisTicks": "แสดงตัวเลขบนแกน",
       "preview": "ตัวอย่าง",
       "previewLoading": "กำลังเรนเดอร์…",
       "previewError": "ไม่สามารถเรนเดอร์ได้ — โปรดตรวจสอบไวยากรณ์สูตร.",

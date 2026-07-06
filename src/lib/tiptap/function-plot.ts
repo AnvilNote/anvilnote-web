@@ -10,6 +10,7 @@ export type FunctionPlotSpec = {
   xMin: number;
   xMax: number;
   showGridlines: boolean;
+  showAxisTicks: boolean;
 };
 
 function defaultCurves(): FunctionPlotCurve[] {
@@ -54,6 +55,13 @@ export const AnvilFunctionPlot = Node.create({
         parseHTML: (element) => element.getAttribute("data-show-gridlines") !== "false",
         renderHTML: (attributes) => ({
           "data-show-gridlines": String(attributes.showGridlines ?? true),
+        }),
+      },
+      showAxisTicks: {
+        default: true,
+        parseHTML: (element) => element.getAttribute("data-show-axis-ticks") !== "false",
+        renderHTML: (attributes) => ({
+          "data-show-axis-ticks": String(attributes.showAxisTicks ?? true),
         }),
       },
       svg: {

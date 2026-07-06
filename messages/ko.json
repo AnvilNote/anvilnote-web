@@ -231,7 +231,8 @@
       "tableAlignLeft": "표 왼쪽 정렬",
       "tableAlignCenter": "표 가운데 정렬",
       "tableAlignRight": "표 오른쪽 정렬",
-      "mermaid": "Mermaid 다이어그램"
+      "mermaid": "Mermaid 다이어그램",
+      "functionPlot": "함수 그래프"
     },
     "slash": {
       "text": "텍스트",
@@ -292,6 +293,7 @@
     "functionPlot": {
       "dialogTitle": "함수 그래프",
       "curveFormula": "수식(예: sin(x))",
+      "syntaxHelp": "문법 참고",
       "curveColor": "색상",
       "addCurve": "곡선 추가",
       "removeCurve": "제거",
@@ -299,6 +301,7 @@
       "xRangeMin": "x 최솟값",
       "xRangeMax": "x 최댓값",
       "showGridlines": "격자선 표시",
+      "showAxisTicks": "축 눈금 표시",
       "preview": "미리보기",
       "previewLoading": "렌더링 중…",
       "previewError": "렌더링할 수 없습니다 — 수식 구문을 확인하세요.",
