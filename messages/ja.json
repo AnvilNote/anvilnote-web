@@ -315,6 +315,8 @@
     "statsChart": {
       "dialogTitle": "統計グラフ",
       "chartType": "グラフの種類",
+      "importFile": "ファイルを読み込む",
+      "importError": "ファイルを読み込めません — 有効な CSV/Excel/OpenDocument 形式か確認してください。",
       "chartTypes": {
         "bar": "横棒グラフ",
         "column": "縦棒グラフ",
@@ -330,10 +332,13 @@
       "median": "中央値",
       "q3": "第3四分位数",
       "max": "最大値",
+      "horizontal": "横向き",
       "showLegend": "凡例を表示",
       "addEntry": "項目を追加",
       "removeEntry": "削除",
       "entryLimitReached": "項目は最大20個まで",
+      "showMoreRows": "他 {count} 件を表示",
+      "showFewerRows": "表示を減らす",
       "previewLoading": "レンダリング中…",
       "previewError": "描画できません — 値を確認してください。",
       "save": "保存",

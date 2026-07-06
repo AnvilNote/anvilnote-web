@@ -315,6 +315,8 @@
     "statsChart": {
       "dialogTitle": "แผนภูมิสถิติ",
       "chartType": "ประเภทแผนภูมิ",
+      "importFile": "นำเข้าไฟล์",
+      "importError": "ไม่สามารถอ่านไฟล์ได้ — โปรดตรวจสอบว่าเป็นไฟล์ CSV/Excel/OpenDocument ที่ถูกต้อง",
       "chartTypes": {
         "bar": "แท่งแนวนอน",
         "column": "แท่งแนวตั้ง",
@@ -330,10 +332,13 @@
       "median": "มัธยฐาน",
       "q3": "ควอร์ไทล์ที่ 3",
       "max": "สูงสุด",
+      "horizontal": "แนวนอน",
       "showLegend": "แสดงคำอธิบายสัญลักษณ์",
       "addEntry": "เพิ่มรายการ",
       "removeEntry": "ลบ",
       "entryLimitReached": "สูงสุด 20 รายการ",
+      "showMoreRows": "แสดงเพิ่มอีก {count} รายการ",
+      "showFewerRows": "แสดงน้อยลง",
       "previewLoading": "กำลังเรนเดอร์…",
       "previewError": "ไม่สามารถเรนเดอร์ได้ — โปรดตรวจสอบค่า.",
       "save": "บันทึก",
