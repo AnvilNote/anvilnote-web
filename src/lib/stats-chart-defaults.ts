@@ -8,10 +8,11 @@
 // cycle is untouched — this palette change is scoped to stats charts only.
 export const DEFAULT_COLOR_CYCLE = ["#E3120B", "#0D0D0D", "#999999", "#FF6B6B", "#BBBBBB", "#FF9999"];
 export const MAX_ENTRIES = 20;
-// Matches anvilnote-charts's own SCATTER_MAX_ENTRIES — scatter data is
-// commonly a larger sample than categorical's 20-entry cap, and a trend
-// line needs enough points to be meaningful.
-export const SCATTER_MAX_ENTRIES = 200;
+// Matches anvilnote-charts's own SCATTER_MAX_ENTRIES — see that repo's
+// schema.ts for the empirical compile-time measurement behind 5000
+// (~7.6s at 5000 points real-compiled via Typst 0.14.2/cetz 0.4.0;
+// 10000 exceeded the compiler's own 8s timeout).
+export const SCATTER_MAX_ENTRIES = 5000;
 export const MAX_SERIES = 6;
 // Data-entry grid shows at most this many rows before collapsing the rest
 // behind a "Show more" toggle — a spreadsheet-style default screenful
