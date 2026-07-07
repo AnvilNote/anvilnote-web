@@ -581,10 +581,26 @@
   margin-top: 0.5rem;
   display: flex;
   align-items: center;
+  /* nowrap (the flexbox default, but stated explicitly since it's load-
+     bearing here): without it, shrinking the image/table narrow enough
+     wraps the label ("圖 1"/"表 1") onto two lines mid-word, since a flex
+     item's own text can still reflow independently of the container's
+     flex-wrap. flex-shrink: 0 on the label below is what actually keeps
+     it a single unbreakable unit; this just documents the intent. */
+  flex-wrap: nowrap;
   gap: 0.35rem;
   font-size: 0.875rem;
   line-height: 1.5;
   color: var(--muted-foreground);
+}
+
+.anvil-image__caption-label,
+.anvil-table__caption-label {
+  /* Never shrinks/wraps — "圖 1"/"表 1" stays one unbreakable unit
+     regardless of how narrow the image/table is resized; the caption
+     INPUT text (a sibling flex item) is what shrinks/wraps instead. */
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .anvil-image[data-align="center"] .anvil-image__caption {
