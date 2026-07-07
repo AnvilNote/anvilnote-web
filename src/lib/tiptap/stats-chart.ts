@@ -13,11 +13,22 @@ export type BoxWhiskerEntry = {
   max: number;
 };
 
+// Where (if at all) a pie's slice percentages are shown — mirrors
+// anvilnote-charts's own schema enum. "onSlice" renders the percentage
+// directly on the slice; "beside" appends it to the label text next to
+// the slice; "none" shows neither.
+export type PercentagePlacement = "none" | "onSlice" | "beside";
+
 export type StatsChartSpec =
-  | { chartType: "bar"; data: CategoricalEntry[] }
-  | { chartType: "column"; data: CategoricalEntry[] }
+  | { chartType: "bar"; data: CategoricalEntry[]; showValues: boolean }
+  | { chartType: "column"; data: CategoricalEntry[]; showValues: boolean }
   | { chartType: "pyramid"; data: CategoricalEntry[] }
-  | { chartType: "pie"; data: CategoricalEntry[]; showLegend: boolean }
+  | {
+      chartType: "pie";
+      data: CategoricalEntry[];
+      showLegend: boolean;
+      showPercentage: PercentagePlacement;
+    }
   | { chartType: "boxwhisker"; data: BoxWhiskerEntry[] };
 
 // Starts a freshly-inserted node with VISIBLE_ROW_LIMIT (10) empty rows,
@@ -87,6 +98,23 @@ export const AnvilStatsChart = Node.create({
         parseHTML: (element) => element.getAttribute("data-show-legend") !== "false",
         renderHTML: (attributes) => ({
           "data-show-legend": String(attributes.showLegend ?? true),
+        }),
+      },
+      // bar/column only — prints each bar's own value above/beside it.
+      showValues: {
+        default: false,
+        parseHTML: (element) => element.getAttribute("data-show-values") === "true",
+        renderHTML: (attributes) => ({
+          "data-show-values": String(attributes.showValues ?? false),
+        }),
+      },
+      // pie only — where (if at all) slice percentages are shown; see
+      // PercentagePlacement above.
+      showPercentage: {
+        default: "none",
+        parseHTML: (element) => element.getAttribute("data-show-percentage") ?? "none",
+        renderHTML: (attributes) => ({
+          "data-show-percentage": attributes.showPercentage ?? "none",
         }),
       },
       svg: {

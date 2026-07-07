@@ -369,6 +369,13 @@
       "max": "Макс.",
       "horizontal": "Горизонтально",
       "showLegend": "Показать легенду",
+      "showPercentage": "Показать проценты",
+      "percentagePlacement": {
+        "none": "Не показывать",
+        "onSlice": "На сегменте",
+        "beside": "Рядом с подписью"
+      },
+      "showValues": "Показать значения",
       "addEntry": "Добавить запись",
       "clearEntry": "Очистить",
       "entryLimitReached": "Максимум 20 записей",

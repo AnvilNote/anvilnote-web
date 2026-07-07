@@ -369,6 +369,13 @@
       "max": "最大値",
       "horizontal": "横向き",
       "showLegend": "凡例を表示",
+      "showPercentage": "割合を表示",
+      "percentagePlacement": {
+        "none": "表示しない",
+        "onSlice": "扇形の上に表示",
+        "beside": "ラベルの横に表示"
+      },
+      "showValues": "数値を表示",
       "addEntry": "項目を追加",
       "clearEntry": "クリア",
       "entryLimitReached": "項目は最大20個まで",
