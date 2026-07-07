@@ -10,6 +10,7 @@ import type {
   AxisLabelFields,
   BoxWhiskerEntry,
   CategoricalEntry,
+  CustomSizeFields,
   FontFamily,
   PercentagePlacement,
   ScatterEntry,
@@ -30,12 +31,19 @@ function axisLabelFields(node: NodeViewProps["node"]): AxisLabelFields {
   };
 }
 
+function customSizeFields(node: NodeViewProps["node"]): CustomSizeFields {
+  return {
+    width: typeof node.attrs.width === "number" ? node.attrs.width : undefined,
+    height: typeof node.attrs.height === "number" ? node.attrs.height : undefined,
+  };
+}
+
 function buildSpec(node: NodeViewProps["node"]): StatsChartSpec {
   const chartType = node.attrs.chartType;
   const data = Array.isArray(node.attrs.data) ? node.attrs.data : [];
   const fontFamily: FontFamily = node.attrs.fontFamily === "serif" ? "serif" : "sans";
   if (chartType === "boxwhisker") {
-    return { chartType: "boxwhisker", data: data as BoxWhiskerEntry[], fontFamily };
+    return { chartType: "boxwhisker", data: data as BoxWhiskerEntry[], fontFamily, ...customSizeFields(node) };
   }
   if (chartType === "pie") {
     const showPercentage: PercentagePlacement = PERCENTAGE_PLACEMENTS.includes(
@@ -49,6 +57,7 @@ function buildSpec(node: NodeViewProps["node"]): StatsChartSpec {
       showLegend: node.attrs.showLegend !== false,
       showPercentage,
       fontFamily,
+      ...customSizeFields(node),
     };
   }
   if (chartType === "scatter") {
@@ -65,10 +74,17 @@ function buildSpec(node: NodeViewProps["node"]): StatsChartSpec {
       trendLineColor,
       showGridLines: node.attrs.showGridLines !== false,
       ...axisLabelFields(node),
+      ...customSizeFields(node),
     };
   }
   if (chartType === "line") {
-    return { chartType: "line", data: data as CategoricalEntry[], fontFamily, ...axisLabelFields(node) };
+    return {
+      chartType: "line",
+      data: data as CategoricalEntry[],
+      fontFamily,
+      ...axisLabelFields(node),
+      ...customSizeFields(node),
+    };
   }
   if (chartType === "stackedBar" || chartType === "stackedColumn") {
     return {
@@ -81,6 +97,7 @@ function buildSpec(node: NodeViewProps["node"]): StatsChartSpec {
       showBorder: node.attrs.showBorder !== false,
       fontFamily,
       ...axisLabelFields(node),
+      ...customSizeFields(node),
     };
   }
   const resolvedType = chartType === "bar" ? "bar" : "column";
@@ -92,6 +109,7 @@ function buildSpec(node: NodeViewProps["node"]): StatsChartSpec {
     showBorder: node.attrs.showBorder !== false,
     fontFamily,
     ...axisLabelFields(node),
+    ...customSizeFields(node),
   };
 }
 

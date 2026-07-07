@@ -244,6 +244,21 @@ function StatsChartForm({
       ? initialSpec.showBorder
       : true,
   );
+  // Draft strings (not numbers) — same "blank means unset, not some
+  // sentinel number" pattern as scatter's own draft entries: an empty
+  // input means "auto" (no override sent), not 0. Every chart type's
+  // spec now carries width/height (CustomSizeFields spread into the
+  // whole StatsChartSpec union), so no chartType narrowing is needed
+  // here unlike most other per-type state above.
+  const [widthDraft, setWidthDraft] = useState(initialSpec.width !== undefined ? String(initialSpec.width) : "");
+  const [heightDraft, setHeightDraft] = useState(
+    initialSpec.height !== undefined ? String(initialSpec.height) : "",
+  );
+  // Lock-aspect-ratio is a dialog-local UI convenience (which number
+  // input the OTHER one follows when edited), not persisted to the
+  // spec — same "ephemeral, UI-only" category as trendLineColorOpen's
+  // popover-open state above.
+  const [lockAspectRatio, setLockAspectRatio] = useState(false);
   const hasAxisLabelFields =
     initialSpec.chartType === "bar" ||
     initialSpec.chartType === "column" ||
@@ -340,6 +355,19 @@ function StatsChartForm({
     ? scatterData.length - Math.min(scatterData.length, VISIBLE_ROW_LIMIT)
     : activeData.length - Math.min(activeData.length, VISIBLE_ROW_LIMIT);
 
+  // Blank draft = "auto" (no override sent) — the schema's own
+  // width/height are optional, so `undefined` here means the field is
+  // simply omitted from the spec, letting anvilnote-charts fall back to
+  // its usual auto-computed dimension for that axis.
+  function customSize(): { width?: number; height?: number } {
+    const width = widthDraft.trim() ? Number(widthDraft) : undefined;
+    const height = heightDraft.trim() ? Number(heightDraft) : undefined;
+    return {
+      width: width !== undefined && Number.isFinite(width) ? width : undefined,
+      height: height !== undefined && Number.isFinite(height) ? height : undefined,
+    };
+  }
+
   function buildSpec(): StatsChartSpec {
     // Rows with a blank label are filtered out here, not just left in —
     // a freshly-inserted node starts with VISIBLE_ROW_LIMIT (5) empty
@@ -348,7 +376,12 @@ function StatsChartForm({
     // non-empty label, so any trailing unfilled rows would otherwise fail
     // validation the moment the user has typed into even one earlier row.
     if (chartType === "boxwhisker") {
-      return { chartType, data: boxWhiskerData.filter((entry) => entry.label.trim()), fontFamily };
+      return {
+        chartType,
+        data: boxWhiskerData.filter((entry) => entry.label.trim()),
+        fontFamily,
+        ...customSize(),
+      };
     }
     if (chartType === "scatter") {
       const scatterPoints = scatterData
@@ -364,6 +397,7 @@ function StatsChartForm({
         xLabel,
         yLabel,
         yLabelRotated,
+        ...customSize(),
       };
     }
     if (chartType === "stackedBar" || chartType === "stackedColumn") {
@@ -386,14 +420,15 @@ function StatsChartForm({
         xLabel,
         yLabel,
         yLabelRotated,
+        ...customSize(),
       };
     }
     const filteredData = categoricalData.filter((entry) => entry.label.trim());
     if (chartType === "pie") {
-      return { chartType, data: filteredData, showLegend, showPercentage, fontFamily };
+      return { chartType, data: filteredData, showLegend, showPercentage, fontFamily, ...customSize() };
     }
     if (chartType === "line") {
-      return { chartType, data: filteredData, fontFamily, xLabel, yLabel, yLabelRotated };
+      return { chartType, data: filteredData, fontFamily, xLabel, yLabel, yLabelRotated, ...customSize() };
     }
     return {
       chartType,
@@ -405,6 +440,7 @@ function StatsChartForm({
       xLabel,
       yLabel,
       yLabelRotated,
+      ...customSize(),
     };
   }
 
@@ -468,6 +504,54 @@ function StatsChartForm({
 
   function updateSeriesLabel(index: number, label: string) {
     setSeriesLabels((prev) => prev.map((existing, i) => (i === index ? label : existing)));
+  }
+
+  // Mirrors anvilnote-charts's own customSizeFields clamp (1-50cm) — kept
+  // as a local constant here since the dialog needs it for the toast
+  // check below, not just schema validation after the fact.
+  const CUSTOM_SIZE_MIN = 1;
+  const CUSTOM_SIZE_MAX = 50;
+  // No fixed convention for "the" aspect ratio, so this is an arbitrary
+  // but reasonable default (4:3) — only used the FIRST time lock is
+  // engaged with nothing to base a ratio on yet (both fields blank);
+  // once one real pair of values exists, later edits preserve THAT
+  // ratio instead (see the oldWidth/oldHeight branch below).
+  const DEFAULT_ASPECT_RATIO = 4 / 3;
+
+  function warnIfOutOfRange(value: number) {
+    if (value < CUSTOM_SIZE_MIN || value > CUSTOM_SIZE_MAX) {
+      toast.warning(t("customSizeRangeWarning", { min: CUSTOM_SIZE_MIN, max: CUSTOM_SIZE_MAX }));
+    }
+  }
+
+  // When lock is on, the OTHER field always follows: if a real ratio
+  // already exists (both old values are valid positive numbers), that
+  // ratio is preserved; otherwise (first use, one or both fields still
+  // blank) DEFAULT_ASPECT_RATIO is applied instead of leaving the other
+  // field untouched — "填寫其中一個就會自動填寫其他的" per explicit
+  // feedback, not just a no-op when there's nothing to preserve yet.
+  function handleWidthChange(value: string) {
+    setWidthDraft(value);
+    const newWidth = Number(value);
+    if (!value.trim() || !Number.isFinite(newWidth)) return;
+    warnIfOutOfRange(newWidth);
+    if (!lockAspectRatio) return;
+    const oldWidth = Number(widthDraft);
+    const oldHeight = Number(heightDraft);
+    const ratio = oldWidth > 0 && oldHeight > 0 ? oldHeight / oldWidth : 1 / DEFAULT_ASPECT_RATIO;
+    setHeightDraft(String(Math.round(newWidth * ratio * 10) / 10));
+  }
+
+  function handleHeightChange(value: string) {
+    setHeightDraft(value);
+    const newHeight = Number(value);
+    if (!value.trim() || !Number.isFinite(newHeight)) return;
+    warnIfOutOfRange(newHeight);
+    if (!lockAspectRatio) return;
+    const oldWidth = Number(widthDraft);
+    const oldHeight = Number(heightDraft);
+    const ratio = oldWidth > 0 && oldHeight > 0 ? oldWidth / oldHeight : DEFAULT_ASPECT_RATIO;
+    setWidthDraft(String(Math.round(newHeight * ratio * 10) / 10));
   }
 
   function updateSeriesColor(index: number, color: string) {
@@ -1467,6 +1551,29 @@ function StatsChartForm({
               <span className="text-muted-foreground text-sm">{t("previewLoading")}</span>
             ) : null}
             {hasLabel && error ? <p className="text-destructive text-sm">{t("previewError")}</p> : null}
+            <div className="absolute right-2 bottom-2 z-10 flex items-center gap-1.5 rounded border bg-background/90 px-2 py-1 text-xs">
+              <Switch checked={lockAspectRatio} onCheckedChange={setLockAspectRatio} className="scale-90" />
+              <span className="text-muted-foreground">{t("lockAspectRatio")}</span>
+              <input
+                aria-label={t("customWidth")}
+                className="w-12 rounded-lg border bg-transparent px-1 py-0.5 text-center text-xs outline-none focus:bg-accent"
+                onChange={(event) => handleWidthChange(event.target.value)}
+                placeholder={t("auto")}
+                type="number"
+                value={widthDraft}
+              />
+              <span className="text-muted-foreground">cm</span>
+              <InlineMathText text="$\times$" />
+              <input
+                aria-label={t("customHeight")}
+                className="w-12 rounded-lg border bg-transparent px-1 py-0.5 text-center text-xs outline-none focus:bg-accent"
+                onChange={(event) => handleHeightChange(event.target.value)}
+                placeholder={t("auto")}
+                type="number"
+                value={heightDraft}
+              />
+              <span className="text-muted-foreground">cm</span>
+            </div>
           </div>
         </div>
       )}
