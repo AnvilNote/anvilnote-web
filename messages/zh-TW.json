@@ -378,8 +378,8 @@
       "showPercentage": "顯示百分比",
       "percentagePlacement": {
         "none": "不顯示",
-        "onSlice": "顯示在圓餅上",
-        "beside": "顯示在文字旁"
+        "onSlice": "圓餅上",
+        "beside": "文字旁"
       },
       "showValues": "顯示數值",
       "showGridLines": "顯示格線",

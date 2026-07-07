@@ -378,8 +378,8 @@
       "showPercentage": "แสดงเปอร์เซ็นต์",
       "percentagePlacement": {
         "none": "ไม่แสดง",
-        "onSlice": "แสดงบนชิ้นส่วน",
-        "beside": "แสดงข้างป้ายกำกับ"
+        "onSlice": "บนชิ้นส่วน",
+        "beside": "ข้างป้ายกำกับ"
       },
       "showValues": "แสดงค่าตัวเลข",
       "showGridLines": "แสดงเส้นกริด",

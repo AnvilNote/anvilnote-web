@@ -1559,6 +1559,7 @@ function StatsChartForm({
                       <label className="flex items-center gap-1">
                         <input
                           checked={showPercentage === "onSlice"}
+                          className="size-3 accent-black"
                           name="percentagePlacement"
                           onChange={() => setShowPercentage("onSlice")}
                           type="radio"
@@ -1568,6 +1569,7 @@ function StatsChartForm({
                       <label className="flex items-center gap-1">
                         <input
                           checked={showPercentage === "beside"}
+                          className="size-3 accent-black"
                           name="percentagePlacement"
                           onChange={() => setShowPercentage("beside")}
                           type="radio"
