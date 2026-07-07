@@ -989,6 +989,25 @@ function StatsChartForm({
                     </td>
                   </tr>
                 ))}
+              {/* Merged "Add entry" row — replaces the standalone Button
+                  that used to sit below the whole table, per explicit
+                  feedback putting it inside the grid itself as one more
+                  (colspan) row right after the visible ones. Column count
+                  differs: boxwhisker has 8 (checkbox/label/min/q1/median/
+                  q3/max/remove), categorical has 5 (checkbox/label/value/
+                  color/remove). */}
+              <tr>
+                <td className="border-b p-0" colSpan={isBoxWhisker ? 8 : 5}>
+                  <button
+                    className="w-full px-2 py-1.5 text-center text-muted-foreground hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                    disabled={activeData.length >= MAX_ENTRIES}
+                    onClick={addEntry}
+                    type="button"
+                  >
+                    {activeData.length >= MAX_ENTRIES ? t("entryLimitReached") : t("addEntry")}
+                  </button>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -1065,6 +1084,20 @@ function StatsChartForm({
                 </td>
               </tr>
             ))}
+            {/* Merged "Add entry" row — see renderTable's own comment on
+                this same pattern. Scatter's own 3 columns: x/y/remove. */}
+            <tr>
+              <td className="border-b p-0" colSpan={3}>
+                <button
+                  className="w-full px-2 py-1.5 text-center text-muted-foreground hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                  disabled={scatterData.length >= SCATTER_MAX_ENTRIES}
+                  onClick={addEntry}
+                  type="button"
+                >
+                  {scatterData.length >= SCATTER_MAX_ENTRIES ? t("entryLimitReached") : t("addEntry")}
+                </button>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -1212,6 +1245,21 @@ function StatsChartForm({
                   </td>
                 </tr>
               ))}
+              {/* Merged "Add entry" row — see renderTable's own comment on
+                  this same pattern. Stacked's column count is dynamic:
+                  checkbox + label + one per series + remove. */}
+              <tr>
+                <td className="border-b p-0" colSpan={seriesLabels.length + 3}>
+                  <button
+                    className="w-full px-2 py-1.5 text-center text-muted-foreground hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                    disabled={activeData.length >= MAX_ENTRIES}
+                    onClick={addEntry}
+                    type="button"
+                  >
+                    {activeData.length >= MAX_ENTRIES ? t("entryLimitReached") : t("addEntry")}
+                  </button>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -1366,19 +1414,6 @@ function StatsChartForm({
                 {t("showMoreRows", { count: hiddenRowCount })}
               </Button>
             ) : null}
-
-            <Button
-              disabled={
-                isScatter ? scatterData.length >= SCATTER_MAX_ENTRIES : activeData.length >= MAX_ENTRIES
-              }
-              onClick={addEntry}
-              size="sm"
-              variant="outline"
-            >
-              {(isScatter ? scatterData.length >= SCATTER_MAX_ENTRIES : activeData.length >= MAX_ENTRIES)
-                ? t("entryLimitReached")
-                : t("addEntry")}
-            </Button>
 
             {chartType === "scatter" ? (
               // Trend line + its color picker get their own row (scatter
