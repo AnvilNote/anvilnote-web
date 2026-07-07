@@ -357,6 +357,7 @@
         "column": "柱狀圖",
         "pie": "圓餅圖",
         "pyramid": "金字塔圖",
+        "line": "折線圖",
         "boxwhisker": "箱形圖"
       },
       "label": "標籤",
@@ -376,6 +377,10 @@
         "beside": "顯示在文字旁"
       },
       "showValues": "顯示數值",
+      "fontFamilies": {
+        "sans": "無襯線體",
+        "serif": "襯線體"
+      },
       "addEntry": "新增項目",
       "clearEntry": "清空",
       "entryLimitReached": "最多 20 個項目",

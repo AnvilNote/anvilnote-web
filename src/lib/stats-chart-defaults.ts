@@ -22,7 +22,7 @@ export function defaultEntryColor(index: number): string {
   return DEFAULT_COLOR_CYCLE[index % DEFAULT_COLOR_CYCLE.length];
 }
 
-export const CHART_TYPES = ["bar", "column", "pie", "pyramid", "boxwhisker"] as const;
+export const CHART_TYPES = ["bar", "column", "pie", "pyramid", "line", "boxwhisker"] as const;
 export type ChartType = (typeof CHART_TYPES)[number];
 
 // UI-level grouping for the chart-type picker: "bar" and "column" are the
@@ -30,9 +30,15 @@ export type ChartType = (typeof CHART_TYPES)[number];
 // share one dropdown entry — "長條圖"/"Bar chart" — with a separate
 // orientation toggle shown only for that group, rather than two separate
 // entries a user has to already know differ only in orientation.
-export const CHART_TYPE_GROUPS = ["bar", "pie", "pyramid", "boxwhisker"] as const;
+export const CHART_TYPE_GROUPS = ["bar", "pie", "pyramid", "line", "boxwhisker"] as const;
 export type ChartTypeGroup = (typeof CHART_TYPE_GROUPS)[number];
 
 export function chartTypeGroup(chartType: ChartType): ChartTypeGroup {
   return chartType === "column" ? "bar" : chartType;
 }
+
+// Chart-wide text font — mirrors anvilnote-charts's own fontFamilySchema
+// (sans/serif preset roles, matching anvilnote-renderer's title/body
+// fonts). Applies to all chart types.
+export const FONT_FAMILIES = ["sans", "serif"] as const;
+export type FontFamily = (typeof FONT_FAMILIES)[number];

@@ -19,17 +19,22 @@ export type BoxWhiskerEntry = {
 // the slice; "none" shows neither.
 export type PercentagePlacement = "none" | "onSlice" | "beside";
 
+// Chart-wide text font — mirrors anvilnote-charts's own fontFamilySchema.
+export type FontFamily = "sans" | "serif";
+
 export type StatsChartSpec =
-  | { chartType: "bar"; data: CategoricalEntry[]; showValues: boolean }
-  | { chartType: "column"; data: CategoricalEntry[]; showValues: boolean }
-  | { chartType: "pyramid"; data: CategoricalEntry[] }
+  | { chartType: "bar"; data: CategoricalEntry[]; showValues: boolean; fontFamily: FontFamily }
+  | { chartType: "column"; data: CategoricalEntry[]; showValues: boolean; fontFamily: FontFamily }
+  | { chartType: "pyramid"; data: CategoricalEntry[]; fontFamily: FontFamily }
+  | { chartType: "line"; data: CategoricalEntry[]; fontFamily: FontFamily }
   | {
       chartType: "pie";
       data: CategoricalEntry[];
       showLegend: boolean;
       showPercentage: PercentagePlacement;
+      fontFamily: FontFamily;
     }
-  | { chartType: "boxwhisker"; data: BoxWhiskerEntry[] };
+  | { chartType: "boxwhisker"; data: BoxWhiskerEntry[]; fontFamily: FontFamily };
 
 // Starts a freshly-inserted node with VISIBLE_ROW_LIMIT (10) empty rows,
 // not just 1 — per explicit feedback, so a user filling in several
@@ -115,6 +120,14 @@ export const AnvilStatsChart = Node.create({
         parseHTML: (element) => element.getAttribute("data-show-percentage") ?? "none",
         renderHTML: (attributes) => ({
           "data-show-percentage": attributes.showPercentage ?? "none",
+        }),
+      },
+      // Chart-wide; see FontFamily above.
+      fontFamily: {
+        default: "sans",
+        parseHTML: (element) => element.getAttribute("data-font-family") ?? "sans",
+        renderHTML: (attributes) => ({
+          "data-font-family": attributes.fontFamily ?? "sans",
         }),
       },
       svg: {

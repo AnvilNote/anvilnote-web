@@ -49,6 +49,7 @@ import { parseNumericInput, numericInputValue } from "@/lib/numeric-input";
 import type {
   BoxWhiskerEntry,
   CategoricalEntry,
+  FontFamily,
   PercentagePlacement,
   StatsChartSpec,
 } from "@/lib/tiptap/stats-chart";
@@ -134,6 +135,7 @@ function StatsChartForm({
       ? initialSpec.showValues
       : false,
   );
+  const [fontFamily, setFontFamily] = useState<FontFamily>(initialSpec.fontFamily);
   // Caps the visible rows at VISIBLE_ROW_LIMIT (matches a spreadsheet
   // showing the first screenful of rows) rather than always rendering up
   // to MAX_ENTRIES (20) at once — "Show more" reveals the rest on demand.
@@ -200,12 +202,16 @@ function StatsChartForm({
     // non-empty label, so any trailing unfilled rows would otherwise fail
     // validation the moment the user has typed into even one earlier row.
     if (chartType === "boxwhisker") {
-      return { chartType, data: boxWhiskerData.filter((entry) => entry.label.trim()) };
+      return { chartType, data: boxWhiskerData.filter((entry) => entry.label.trim()), fontFamily };
     }
     const filteredData = categoricalData.filter((entry) => entry.label.trim());
-    if (chartType === "pie") return { chartType, data: filteredData, showLegend, showPercentage };
-    if (chartType === "pyramid") return { chartType, data: filteredData };
-    return { chartType, data: filteredData, showValues };
+    if (chartType === "pie") {
+      return { chartType, data: filteredData, showLegend, showPercentage, fontFamily };
+    }
+    if (chartType === "pyramid" || chartType === "line") {
+      return { chartType, data: filteredData, fontFamily };
+    }
+    return { chartType, data: filteredData, showValues, fontFamily };
   }
 
   const currentSpecKey = JSON.stringify(buildSpec());
@@ -773,7 +779,16 @@ function StatsChartForm({
               </label>
             ) : null}
           </div>
-          <div className="flex min-h-[420px] flex-col items-center justify-center gap-2 overflow-hidden rounded border p-2">
+          <div className="relative flex min-h-[420px] flex-col items-center justify-center gap-2 overflow-hidden rounded border p-2">
+            <Select onValueChange={(value) => setFontFamily(value as FontFamily)} value={fontFamily}>
+              <SelectTrigger className="absolute top-2 right-2 z-10 h-7 w-28 text-xs" size="sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="sans">{t("fontFamilies.sans")}</SelectItem>
+                <SelectItem value="serif">{t("fontFamilies.serif")}</SelectItem>
+              </SelectContent>
+            </Select>
             {/* [&_svg]:max-w-full guards against a chart whose intrinsic
                 size (set by anvilnote-charts's own scaledDimension, clamped
                 but still capable of being wider than this pane at many

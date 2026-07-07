@@ -357,6 +357,7 @@
         "column": "Column",
         "pie": "Pie",
         "pyramid": "Pyramid",
+        "line": "Line",
         "boxwhisker": "Box & whisker"
       },
       "label": "Label",
@@ -376,6 +377,10 @@
         "beside": "Next to the label"
       },
       "showValues": "Show values",
+      "fontFamilies": {
+        "sans": "Sans-serif",
+        "serif": "Serif"
+      },
       "addEntry": "Add entry",
       "clearEntry": "Clear",
       "entryLimitReached": "Up to 20 entries",
