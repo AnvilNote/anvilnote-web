@@ -13,6 +13,7 @@ import type {
   FontFamily,
   PercentagePlacement,
   ScatterEntry,
+  StackedEntry,
   StatsChartSpec,
   TrendLine,
 } from "@/lib/tiptap/stats-chart";
@@ -69,12 +70,26 @@ function buildSpec(node: NodeViewProps["node"]): StatsChartSpec {
   if (chartType === "line") {
     return { chartType: "line", data: data as CategoricalEntry[], fontFamily, ...axisLabelFields(node) };
   }
+  if (chartType === "stackedBar" || chartType === "stackedColumn") {
+    return {
+      chartType,
+      data: data as StackedEntry[],
+      seriesLabels: Array.isArray(node.attrs.seriesLabels) ? node.attrs.seriesLabels : [],
+      seriesColors: Array.isArray(node.attrs.seriesColors) ? node.attrs.seriesColors : undefined,
+      showLegend: node.attrs.showLegend !== false,
+      showGridLines: node.attrs.showGridLines !== false,
+      showBorder: node.attrs.showBorder !== false,
+      fontFamily,
+      ...axisLabelFields(node),
+    };
+  }
   const resolvedType = chartType === "bar" ? "bar" : "column";
   return {
     chartType: resolvedType,
     data: data as CategoricalEntry[],
     showValues: node.attrs.showValues === true,
     showGridLines: node.attrs.showGridLines !== false,
+    showBorder: node.attrs.showBorder !== false,
     fontFamily,
     ...axisLabelFields(node),
   };
