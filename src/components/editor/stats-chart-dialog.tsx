@@ -34,6 +34,7 @@ import {
   CHART_TYPE_GROUPS,
   CROWDED_ENTRY_THRESHOLD,
   MAX_ENTRIES,
+  SCATTER_MAX_ENTRIES,
   VISIBLE_ROW_LIMIT,
   chartTypeGroup,
   defaultEntryColor,
@@ -52,6 +53,7 @@ import type {
   FontFamily,
   PercentagePlacement,
   StatsChartSpec,
+  TrendLine,
 } from "@/lib/tiptap/stats-chart";
 
 export type StatsChartDialogProps = {
@@ -91,6 +93,46 @@ function defaultBoxWhiskerEntry(): BoxWhiskerEntry {
   return { label: "", min: 0, q1: 0, median: 0, q3: 0, max: 0 };
 }
 
+// Scatter rows are tracked as DRAFT STRINGS (not numbers) — same
+// NaN-as-empty-sentinel-adjacent pattern used elsewhere for numeric
+// inputs, but here the string itself IS the state, not a parsed number,
+// because scatter has no label to detect a "blank" row by: (0, 0) is a
+// legitimate real data point, so emptiness must be tracked by the input
+// text being blank, not by the parsed value being some sentinel number.
+type ScatterDraftEntry = { x: string; y: string };
+
+function defaultScatterEntry(): ScatterDraftEntry {
+  return { x: "", y: "" };
+}
+
+// Pads an existing (already-saved) chart's data up to VISIBLE_ROW_LIMIT
+// (10) blank rows when reopened with fewer — same "don't make the user
+// click Add entry repeatedly" rationale as the fresh-node default, but
+// this also applies to a chart that already HAS data: reopening a
+// 2-entry chart should still show 10 rows (2 filled + 8 blank), not just
+// the 2 that were saved, per explicit feedback. Never truncates — a
+// chart with more than 10 entries keeps all of them (visible via "Show
+// more", not touched here).
+function padCategoricalData(data: CategoricalEntry[]): CategoricalEntry[] {
+  if (data.length >= VISIBLE_ROW_LIMIT) return data;
+  const padding = Array.from({ length: VISIBLE_ROW_LIMIT - data.length }, (_, i) =>
+    defaultCategoricalEntry(data.length + i),
+  );
+  return [...data, ...padding];
+}
+
+function padBoxWhiskerData(data: BoxWhiskerEntry[]): BoxWhiskerEntry[] {
+  if (data.length >= VISIBLE_ROW_LIMIT) return data;
+  const padding = Array.from({ length: VISIBLE_ROW_LIMIT - data.length }, () => defaultBoxWhiskerEntry());
+  return [...data, ...padding];
+}
+
+function padScatterData(data: ScatterDraftEntry[]): ScatterDraftEntry[] {
+  if (data.length >= VISIBLE_ROW_LIMIT) return data;
+  const padding = Array.from({ length: VISIBLE_ROW_LIMIT - data.length }, () => defaultScatterEntry());
+  return [...data, ...padding];
+}
+
 function StatsChartForm({
   initialSpec,
   onCancel,
@@ -115,14 +157,19 @@ function StatsChartForm({
   // time in this session) — same "don't make the user click Add entry
   // repeatedly" rationale as stats-chart.ts's own node-level defaults.
   const [categoricalData, setCategoricalData] = useState<CategoricalEntry[]>(
-    initialSpec.chartType === "boxwhisker"
+    initialSpec.chartType === "boxwhisker" || initialSpec.chartType === "scatter"
       ? Array.from({ length: VISIBLE_ROW_LIMIT }, (_, index) => defaultCategoricalEntry(index))
-      : initialSpec.data,
+      : padCategoricalData(initialSpec.data),
   );
   const [boxWhiskerData, setBoxWhiskerData] = useState<BoxWhiskerEntry[]>(
     initialSpec.chartType === "boxwhisker"
-      ? initialSpec.data
+      ? padBoxWhiskerData(initialSpec.data)
       : Array.from({ length: VISIBLE_ROW_LIMIT }, () => defaultBoxWhiskerEntry()),
+  );
+  const [scatterData, setScatterData] = useState<ScatterDraftEntry[]>(
+    initialSpec.chartType === "scatter"
+      ? padScatterData(initialSpec.data.map((p) => ({ x: String(p.x), y: String(p.y) })))
+      : Array.from({ length: VISIBLE_ROW_LIMIT }, () => defaultScatterEntry()),
   );
   const [showLegend, setShowLegend] = useState(
     initialSpec.chartType === "pie" ? initialSpec.showLegend : true,
@@ -134,6 +181,24 @@ function StatsChartForm({
     initialSpec.chartType === "bar" || initialSpec.chartType === "column"
       ? initialSpec.showValues
       : false,
+  );
+  const [showGridLines, setShowGridLines] = useState(
+    initialSpec.chartType === "bar" || initialSpec.chartType === "column"
+      ? initialSpec.showGridLines
+      : true,
+  );
+  const hasAxisLabelFields =
+    initialSpec.chartType === "bar" ||
+    initialSpec.chartType === "column" ||
+    initialSpec.chartType === "line" ||
+    initialSpec.chartType === "scatter";
+  const [xLabel, setXLabel] = useState(hasAxisLabelFields ? initialSpec.xLabel : "");
+  const [yLabel, setYLabel] = useState(hasAxisLabelFields ? initialSpec.yLabel : "");
+  const [yLabelRotated, setYLabelRotated] = useState(
+    hasAxisLabelFields ? initialSpec.yLabelRotated : true,
+  );
+  const [trendLine, setTrendLine] = useState<TrendLine>(
+    initialSpec.chartType === "scatter" ? initialSpec.trendLine : "none",
   );
   const [fontFamily, setFontFamily] = useState<FontFamily>(initialSpec.fontFamily);
   // Caps the visible rows at VISIBLE_ROW_LIMIT (matches a spreadsheet
@@ -176,11 +241,18 @@ function StatsChartForm({
   const [loading, setLoading] = useState(false);
 
   const isBoxWhisker = chartType === "boxwhisker";
+  const isScatter = chartType === "scatter";
   const activeData = isBoxWhisker ? boxWhiskerData : categoricalData;
   // Same rationale as function-plot-dialog's hasFormula: skip rendering
   // until the user has actually typed something, gate the display on this
   // (not effect-cleared state) — see that file's own comment for why.
-  const hasLabel = activeData.some((entry) => entry.label.trim());
+  // Scatter has no label field to check — a row counts once BOTH its x
+  // and y draft strings are non-empty (see ScatterDraftEntry's own
+  // comment for why (0, 0) can't be told apart from "blank" any other
+  // way).
+  const hasLabel = isScatter
+    ? scatterData.some((entry) => entry.x.trim() && entry.y.trim())
+    : activeData.some((entry) => entry.label.trim());
 
   // Pairs each entry with its ORIGINAL array index before slicing to the
   // visible-row limit, so update/clearEntry (which index into the full
@@ -204,14 +276,20 @@ function StatsChartForm({
     if (chartType === "boxwhisker") {
       return { chartType, data: boxWhiskerData.filter((entry) => entry.label.trim()), fontFamily };
     }
+    if (chartType === "scatter") {
+      const scatterPoints = scatterData
+        .filter((entry) => entry.x.trim() && entry.y.trim())
+        .map((entry) => ({ x: Number(entry.x), y: Number(entry.y) }));
+      return { chartType, data: scatterPoints, fontFamily, trendLine, xLabel, yLabel, yLabelRotated };
+    }
     const filteredData = categoricalData.filter((entry) => entry.label.trim());
     if (chartType === "pie") {
       return { chartType, data: filteredData, showLegend, showPercentage, fontFamily };
     }
-    if (chartType === "pyramid" || chartType === "line") {
-      return { chartType, data: filteredData, fontFamily };
+    if (chartType === "line") {
+      return { chartType, data: filteredData, fontFamily, xLabel, yLabel, yLabelRotated };
     }
-    return { chartType, data: filteredData, showValues, fontFamily };
+    return { chartType, data: filteredData, showValues, showGridLines, fontFamily, xLabel, yLabel, yLabelRotated };
   }
 
   const currentSpecKey = JSON.stringify(buildSpec());
@@ -251,9 +329,17 @@ function StatsChartForm({
     setBoxWhiskerData((prev) => prev.map((entry, i) => (i === index ? { ...entry, ...patch } : entry)));
   }
 
+  function updateScatterEntry(index: number, patch: Partial<ScatterDraftEntry>) {
+    setScatterData((prev) => prev.map((entry, i) => (i === index ? { ...entry, ...patch } : entry)));
+  }
+
   function addEntry() {
     if (isBoxWhisker) {
       setBoxWhiskerData((prev) => (prev.length >= MAX_ENTRIES ? prev : [...prev, defaultBoxWhiskerEntry()]));
+    } else if (isScatter) {
+      setScatterData((prev) =>
+        prev.length >= SCATTER_MAX_ENTRIES ? prev : [...prev, defaultScatterEntry()],
+      );
     } else {
       setCategoricalData((prev) =>
         prev.length >= MAX_ENTRIES ? prev : [...prev, defaultCategoricalEntry(prev.length)],
@@ -272,6 +358,8 @@ function StatsChartForm({
       setBoxWhiskerData((prev) =>
         prev.map((entry, i) => (i === index ? defaultBoxWhiskerEntry() : entry)),
       );
+    } else if (isScatter) {
+      setScatterData((prev) => prev.map((entry, i) => (i === index ? defaultScatterEntry() : entry)));
     } else {
       setCategoricalData((prev) =>
         prev.map((entry, i) => (i === index ? defaultCategoricalEntry(index) : entry)),
@@ -730,23 +818,132 @@ function StatsChartForm({
                 replaces an earlier one-Input-per-line layout per explicit
                 feedback that it didn't read as "a place to enter data" the
                 way a familiar table does. Cell inputs are borderless; the
-                <td> borders themselves form the grid lines. */}
-            {renderTable(visibleCategoricalRows, visibleBoxWhiskerRows)}
+                <td> borders themselves form the grid lines. Scatter gets
+                its own simpler x/y-only table (no color/checkbox columns —
+                a scatter point has neither a per-point color override nor
+                a batch-select use case the other chart types' larger row
+                counts justify). */}
+            {isScatter ? (
+              <div className="overflow-x-auto">
+                <table className="w-full table-fixed border-collapse text-sm">
+                  <thead>
+                    <tr className="bg-muted/50">
+                      <th className="border-b p-1.5 text-left text-xs font-medium text-muted-foreground">
+                        x
+                      </th>
+                      <th className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground">
+                        y
+                      </th>
+                      <th className="border-b border-l p-1.5" style={{ width: "10%" }} />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {scatterData.map((entry, index) => (
+                      <tr key={index}>
+                        <td className="border-b p-0">
+                          <input
+                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                            onChange={(event) => updateScatterEntry(index, { x: event.target.value })}
+                            type="number"
+                            value={entry.x}
+                          />
+                        </td>
+                        <td className="border-b border-l p-0">
+                          <input
+                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                            onChange={(event) => updateScatterEntry(index, { y: event.target.value })}
+                            type="number"
+                            value={entry.y}
+                          />
+                        </td>
+                        <td className="border-b border-l p-1.5 text-center">
+                          <button
+                            aria-label={t("clearEntry")}
+                            className="text-muted-foreground hover:text-foreground"
+                            onClick={() => clearEntry(index)}
+                            type="button"
+                          >
+                            ×
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              renderTable(visibleCategoricalRows, visibleBoxWhiskerRows)
+            )}
 
-            {hiddenRowCount > 0 ? (
+            {!isScatter && hiddenRowCount > 0 ? (
               <Button onClick={() => setShowAllRows(true)} size="sm" variant="ghost">
                 {t("showMoreRows", { count: hiddenRowCount })}
               </Button>
             ) : null}
 
             <Button
-              disabled={activeData.length >= MAX_ENTRIES}
+              disabled={
+                isScatter ? scatterData.length >= SCATTER_MAX_ENTRIES : activeData.length >= MAX_ENTRIES
+              }
               onClick={addEntry}
               size="sm"
               variant="outline"
             >
-              {activeData.length >= MAX_ENTRIES ? t("entryLimitReached") : t("addEntry")}
+              {(isScatter ? scatterData.length >= SCATTER_MAX_ENTRIES : activeData.length >= MAX_ENTRIES)
+                ? t("entryLimitReached")
+                : t("addEntry")}
             </Button>
+
+            {chartType === "scatter" ? (
+              <div className="flex items-center gap-2 text-sm">
+                <span>{t("trendLine")}</span>
+                <Select onValueChange={(value) => setTrendLine(value as TrendLine)} value={trendLine}>
+                  <SelectTrigger className="h-8 w-40 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{t("trendLineKinds.none")}</SelectItem>
+                    <SelectItem value="linear">{t("trendLineKinds.linear")}</SelectItem>
+                    <SelectItem value="lowess">{t("trendLineKinds.lowess")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
+
+            {chartType === "bar" ||
+            chartType === "column" ||
+            chartType === "line" ||
+            chartType === "scatter" ? (
+              <>
+                <label className="flex items-center gap-1.5 text-sm">
+                  <span className="w-20 shrink-0 text-xs text-muted-foreground">{t("xLabel")}</span>
+                  <input
+                    className="flex-1 rounded border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
+                    onChange={(event) => setXLabel(event.target.value)}
+                    value={xLabel}
+                  />
+                </label>
+                <label className="flex items-center gap-1.5 text-sm">
+                  <span className="w-20 shrink-0 text-xs text-muted-foreground">{t("yLabel")}</span>
+                  <input
+                    className="flex-1 rounded border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
+                    onChange={(event) => setYLabel(event.target.value)}
+                    value={yLabel}
+                  />
+                </label>
+                <label className="flex items-center gap-2 text-sm">
+                  <Switch checked={yLabelRotated} onCheckedChange={setYLabelRotated} />
+                  {t("yLabelRotated")}
+                </label>
+              </>
+            ) : null}
+
+            {chartType === "bar" || chartType === "column" ? (
+              <label className="flex items-center gap-2 text-sm">
+                <Switch checked={showGridLines} onCheckedChange={setShowGridLines} />
+                {t("showGridLines")}
+              </label>
+            ) : null}
 
             {chartType === "pie" ? (
               <>

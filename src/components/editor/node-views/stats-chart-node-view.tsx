@@ -6,15 +6,27 @@ import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { Trash2 } from "lucide-react";
 import { StatsChartDialog } from "@/components/editor/stats-chart-dialog";
 import type {
+  AxisLabelFields,
   BoxWhiskerEntry,
   CategoricalEntry,
   FontFamily,
   PercentagePlacement,
+  ScatterEntry,
   StatsChartSpec,
+  TrendLine,
 } from "@/lib/tiptap/stats-chart";
 
 const PREVIEW_ENTRY_LIMIT = 3;
 const PERCENTAGE_PLACEMENTS = ["none", "onSlice", "beside"] as const;
+const TREND_LINES = ["none", "linear", "lowess"] as const;
+
+function axisLabelFields(node: NodeViewProps["node"]): AxisLabelFields {
+  return {
+    xLabel: typeof node.attrs.xLabel === "string" ? node.attrs.xLabel : "",
+    yLabel: typeof node.attrs.yLabel === "string" ? node.attrs.yLabel : "",
+    yLabelRotated: node.attrs.yLabelRotated !== false,
+  };
+}
 
 function buildSpec(node: NodeViewProps["node"]): StatsChartSpec {
   const chartType = node.attrs.chartType;
@@ -37,15 +49,29 @@ function buildSpec(node: NodeViewProps["node"]): StatsChartSpec {
       fontFamily,
     };
   }
-  if (chartType === "pyramid" || chartType === "line") {
-    return { chartType, data: data as CategoricalEntry[], fontFamily };
+  if (chartType === "scatter") {
+    const trendLine: TrendLine = TREND_LINES.includes(node.attrs.trendLine)
+      ? node.attrs.trendLine
+      : "none";
+    return {
+      chartType: "scatter",
+      data: data as ScatterEntry[],
+      fontFamily,
+      trendLine,
+      ...axisLabelFields(node),
+    };
+  }
+  if (chartType === "line") {
+    return { chartType: "line", data: data as CategoricalEntry[], fontFamily, ...axisLabelFields(node) };
   }
   const resolvedType = chartType === "bar" ? "bar" : "column";
   return {
     chartType: resolvedType,
     data: data as CategoricalEntry[],
     showValues: node.attrs.showValues === true,
+    showGridLines: node.attrs.showGridLines !== false,
     fontFamily,
+    ...axisLabelFields(node),
   };
 }
 
@@ -59,29 +85,32 @@ function entryDisplayValue(entry: CategoricalEntry | BoxWhiskerEntry): number {
 export function StatsChartNodeView({ node, updateAttributes, deleteNode }: NodeViewProps) {
   const t = useTranslations("editor.block");
   const svg = typeof node.attrs.svg === "string" ? node.attrs.svg : null;
-  const data: (CategoricalEntry | BoxWhiskerEntry)[] = Array.isArray(node.attrs.data)
+  const data: (CategoricalEntry | BoxWhiskerEntry | ScatterEntry)[] = Array.isArray(node.attrs.data)
     ? node.attrs.data
     : [];
   // Same "auto-open on a freshly-inserted, still-empty node" pattern as
-  // function-plot-node-view.tsx — a new node's only entry has an empty
-  // label (see stats-chart.ts's defaultCategoricalData()).
-  const [dialogOpen, setDialogOpen] = useState(() => !data[0]?.label);
+  // function-plot-node-view.tsx. Keyed on `svg` (only ever set by a
+  // successful save), NOT a data-shape-specific field like "label" —
+  // scatter's own entries have no label field at all, so a label-based
+  // check would treat every scatter chart (even one already saved with
+  // real data) as "empty" and wrongly auto-reopen/auto-delete it.
+  const [dialogOpen, setDialogOpen] = useState(() => !svg);
 
-  // Closing without ever having saved a labeled entry (Cancel, or the
-  // ×/Esc dismiss) removes the node entirely rather than leaving a
-  // blank, useless chart block behind. Tracked via a REF (not by reading
-  // node.attrs.data in the close effect) because updateAttributes'
-  // underlying ProseMirror transaction and React's own state update
-  // (setDialogOpen(false), fired right after it by the dialog's save
-  // wrapper) aren't guaranteed to land in the same render pass — a real
-  // save's onSave→updateAttributes call can still be "in flight" by the
-  // time the close-effect below runs, which would otherwise see STALE
-  // (still-empty) attrs and incorrectly delete a just-saved node. This
-  // was caught by an actual live test (save real data, node vanished
+  // Closing without ever having saved (Cancel, or the ×/Esc dismiss)
+  // removes the node entirely rather than leaving a blank, useless chart
+  // block behind. Tracked via a REF (not by reading node.attrs.data in
+  // the close effect) because updateAttributes' underlying ProseMirror
+  // transaction and React's own state update (setDialogOpen(false),
+  // fired right after it by the dialog's save wrapper) aren't guaranteed
+  // to land in the same render pass — a real save's onSave→
+  // updateAttributes call can still be "in flight" by the time the
+  // close-effect below runs, which would otherwise see STALE (still-
+  // empty) attrs and incorrectly delete a just-saved node. This was
+  // caught by an actual live test (save real data, node vanished
   // immediately after), not just reasoned about — a ref mutation inside
   // onSave is synchronous and has no such race, since it doesn't depend
   // on which render the effect happens to run in.
-  const hasSavedRef = useRef(!!data[0]?.label);
+  const hasSavedRef = useRef(!!svg);
   useEffect(() => {
     if (!dialogOpen && !hasSavedRef.current) {
       deleteNode();
@@ -95,8 +124,12 @@ export function StatsChartNodeView({ node, updateAttributes, deleteNode }: NodeV
   // summary — a freshly-inserted node starts with several blank default
   // rows (see stats-chart.ts's defaultCategoricalData/
   // defaultBoxWhiskerData), and those aren't "data" yet from the user's
-  // perspective.
-  const filledEntries = data.filter((entry) => entry.label?.trim());
+  // perspective. Scatter entries have no label field at all, so this
+  // naturally (and correctly) never shows a quick-glance list for them —
+  // scatter has no per-point label to show one for.
+  const filledEntries: (CategoricalEntry | BoxWhiskerEntry)[] = data.filter(
+    (entry): entry is CategoricalEntry | BoxWhiskerEntry => "label" in entry && !!entry.label?.trim(),
+  );
   const previewEntries = filledEntries.slice(0, PREVIEW_ENTRY_LIMIT);
   const hiddenEntryCount = filledEntries.length - previewEntries.length;
 

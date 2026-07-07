@@ -356,8 +356,8 @@
         "bar": "แท่งแนวนอน",
         "column": "แท่งแนวตั้ง",
         "pie": "วงกลม",
-        "pyramid": "พีระมิด",
         "line": "กราฟเส้น",
+        "scatter": "แผนภาพการกระจาย",
         "boxwhisker": "กล่องและหนวด"
       },
       "label": "ป้ายกำกับ",
@@ -377,6 +377,16 @@
         "beside": "แสดงข้างป้ายกำกับ"
       },
       "showValues": "แสดงค่าตัวเลข",
+      "showGridLines": "แสดงเส้นกริด",
+      "xLabel": "ป้ายกำกับแกน X",
+      "yLabel": "ป้ายกำกับแกน Y",
+      "yLabelRotated": "หมุนป้ายกำกับแกน Y",
+      "trendLine": "เส้นแนวโน้ม",
+      "trendLineKinds": {
+        "none": "ไม่มี",
+        "linear": "เส้นตรง",
+        "lowess": "เส้นโค้ง Lowess"
+      },
       "fontFamilies": {
         "sans": "ไม่มีเชิง",
         "serif": "มีเชิง"

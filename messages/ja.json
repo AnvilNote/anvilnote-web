@@ -356,8 +356,8 @@
         "bar": "横棒グラフ",
         "column": "縦棒グラフ",
         "pie": "円グラフ",
-        "pyramid": "ピラミッド図",
         "line": "折れ線グラフ",
+        "scatter": "散布図",
         "boxwhisker": "箱ひげ図"
       },
       "label": "ラベル",
@@ -377,6 +377,16 @@
         "beside": "ラベルの横に表示"
       },
       "showValues": "数値を表示",
+      "showGridLines": "目盛線を表示",
+      "xLabel": "X軸ラベル",
+      "yLabel": "Y軸ラベル",
+      "yLabelRotated": "Y軸ラベルを回転",
+      "trendLine": "近似線",
+      "trendLineKinds": {
+        "none": "なし",
+        "linear": "直線",
+        "lowess": "Lowess曲線"
+      },
       "fontFamilies": {
         "sans": "ゴシック体",
         "serif": "明朝体"

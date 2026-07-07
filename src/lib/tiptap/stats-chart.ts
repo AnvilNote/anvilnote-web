@@ -12,6 +12,10 @@ export type BoxWhiskerEntry = {
   q3: number;
   max: number;
 };
+// Scatter's own point shape — a genuine numeric (x, y) pair, NOT
+// categorical's (label, value); see anvilnote-charts's own
+// scatterEntrySchema comment.
+export type ScatterEntry = { x: number; y: number };
 
 // Where (if at all) a pie's slice percentages are shown — mirrors
 // anvilnote-charts's own schema enum. "onSlice" renders the percentage
@@ -22,11 +26,19 @@ export type PercentagePlacement = "none" | "onSlice" | "beside";
 // Chart-wide text font — mirrors anvilnote-charts's own fontFamilySchema.
 export type FontFamily = "sans" | "serif";
 
+// Custom axis label text + rotation, shared by bar/column/line/scatter —
+// mirrors anvilnote-charts's own axisLabelFields.
+export type AxisLabelFields = { xLabel: string; yLabel: string; yLabelRotated: boolean };
+
+// Where (if at all) a scatter plot's trend line is drawn — mirrors
+// anvilnote-charts's own TREND_LINE_KINDS.
+export type TrendLine = "none" | "linear" | "lowess";
+
 export type StatsChartSpec =
-  | { chartType: "bar"; data: CategoricalEntry[]; showValues: boolean; fontFamily: FontFamily }
-  | { chartType: "column"; data: CategoricalEntry[]; showValues: boolean; fontFamily: FontFamily }
-  | { chartType: "pyramid"; data: CategoricalEntry[]; fontFamily: FontFamily }
-  | { chartType: "line"; data: CategoricalEntry[]; fontFamily: FontFamily }
+  | ({ chartType: "bar"; data: CategoricalEntry[]; showValues: boolean; showGridLines: boolean; fontFamily: FontFamily } & AxisLabelFields)
+  | ({ chartType: "column"; data: CategoricalEntry[]; showValues: boolean; showGridLines: boolean; fontFamily: FontFamily } & AxisLabelFields)
+  | ({ chartType: "line"; data: CategoricalEntry[]; fontFamily: FontFamily } & AxisLabelFields)
+  | ({ chartType: "scatter"; data: ScatterEntry[]; fontFamily: FontFamily; trendLine: TrendLine } & AxisLabelFields)
   | {
       chartType: "pie";
       data: CategoricalEntry[];
@@ -61,8 +73,24 @@ function defaultBoxWhiskerData(): BoxWhiskerEntry[] {
   }));
 }
 
-function parseData(value: string | null, chartType: ChartType): CategoricalEntry[] | BoxWhiskerEntry[] {
-  const fallback = chartType === "boxwhisker" ? defaultBoxWhiskerData() : defaultCategoricalData();
+// Scatter has no per-entry label, so a "blank" row is just a (0, 0)
+// point rather than an empty-string sentinel — see stats-chart-dialog.tsx's
+// own hasLabel-equivalent gating for scatter (checks entry count, not
+// blank labels, since there's no label to check).
+function defaultScatterData(): ScatterEntry[] {
+  return Array.from({ length: VISIBLE_ROW_LIMIT }, () => ({ x: 0, y: 0 }));
+}
+
+function parseData(
+  value: string | null,
+  chartType: ChartType,
+): CategoricalEntry[] | BoxWhiskerEntry[] | ScatterEntry[] {
+  const fallback =
+    chartType === "boxwhisker"
+      ? defaultBoxWhiskerData()
+      : chartType === "scatter"
+        ? defaultScatterData()
+        : defaultCategoricalData();
   if (!value) return fallback;
   try {
     const parsed = JSON.parse(value);
@@ -121,6 +149,38 @@ export const AnvilStatsChart = Node.create({
         renderHTML: (attributes) => ({
           "data-show-percentage": attributes.showPercentage ?? "none",
         }),
+      },
+      // bar/column only — the value axis's own reference gridlines.
+      showGridLines: {
+        default: true,
+        parseHTML: (element) => element.getAttribute("data-show-grid-lines") !== "false",
+        renderHTML: (attributes) => ({
+          "data-show-grid-lines": String(attributes.showGridLines ?? true),
+        }),
+      },
+      // bar/column/line/scatter only; see AxisLabelFields above.
+      xLabel: {
+        default: "",
+        parseHTML: (element) => element.getAttribute("data-x-label") ?? "",
+        renderHTML: (attributes) => ({ "data-x-label": attributes.xLabel ?? "" }),
+      },
+      yLabel: {
+        default: "",
+        parseHTML: (element) => element.getAttribute("data-y-label") ?? "",
+        renderHTML: (attributes) => ({ "data-y-label": attributes.yLabel ?? "" }),
+      },
+      yLabelRotated: {
+        default: true,
+        parseHTML: (element) => element.getAttribute("data-y-label-rotated") !== "false",
+        renderHTML: (attributes) => ({
+          "data-y-label-rotated": String(attributes.yLabelRotated ?? true),
+        }),
+      },
+      // scatter only; see TrendLine above.
+      trendLine: {
+        default: "none",
+        parseHTML: (element) => element.getAttribute("data-trend-line") ?? "none",
+        renderHTML: (attributes) => ({ "data-trend-line": attributes.trendLine ?? "none" }),
       },
       // Chart-wide; see FontFamily above.
       fontFamily: {
