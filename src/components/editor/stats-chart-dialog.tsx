@@ -1544,11 +1544,10 @@ function StatsChartForm({
               <span className="text-muted-foreground text-sm">{t("previewLoading")}</span>
             ) : null}
             {hasLabel && error ? <p className="text-destructive text-sm">{t("previewError")}</p> : null}
-            <div className="absolute right-2 bottom-2 z-10 flex items-center gap-1.5 rounded border bg-background/90 px-2 py-1 text-xs">
-              <span className="text-muted-foreground">{t("customWidthRatio")}</span>
+            <div className="absolute right-2 bottom-2 z-10 flex items-center gap-1 bg-background/90 px-1 py-0.5 text-xs">
               <input
                 aria-label={t("customWidthRatio")}
-                className="w-12 rounded-lg border bg-transparent px-1 py-0.5 text-center text-xs outline-none focus:bg-accent"
+                className="w-12 rounded-lg bg-transparent px-1 py-0.5 text-center text-xs outline-none focus:bg-accent"
                 onChange={(event) => handleWidthRatioChange(event.target.value)}
                 placeholder={t("auto")}
                 type="number"
