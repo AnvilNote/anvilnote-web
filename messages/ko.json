@@ -391,7 +391,8 @@
       "captionPlaceholder": "차트 캡션 입력",
       "xLabel": "X축 레이블",
       "yLabel": "Y축 레이블",
-      "yLabelRotated": "$y$축 레이블 회전",
+      "yLabelRotated": "세로축 회전",
+      "useSerifFont": "세리프",
       "trendLine": "추세선",
       "trendLineColor": "추세선 색상",
       "trendLineKinds": {

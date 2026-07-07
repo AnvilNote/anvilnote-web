@@ -391,7 +391,8 @@
       "captionPlaceholder": "輸入圖表標題",
       "xLabel": "X 軸標籤",
       "yLabel": "Y 軸標籤",
-      "yLabelRotated": "旋轉 $y$ 軸標籤",
+      "yLabelRotated": "旋轉縱軸",
+      "useSerifFont": "襯線",
       "trendLine": "趨勢線",
       "trendLineColor": "趨勢線顏色",
       "trendLineKinds": {

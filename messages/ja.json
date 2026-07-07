@@ -391,7 +391,8 @@
       "captionPlaceholder": "図のキャプションを入力",
       "xLabel": "X軸ラベル",
       "yLabel": "Y軸ラベル",
-      "yLabelRotated": "$y$軸ラベルを回転",
+      "yLabelRotated": "縦軸を回転",
+      "useSerifFont": "セリフ体",
       "trendLine": "近似線",
       "trendLineColor": "近似線の色",
       "trendLineKinds": {
