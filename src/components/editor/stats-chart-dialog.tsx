@@ -30,6 +30,7 @@ import {
   ColorPickerFormat,
 } from "@/components/ui/color-picker";
 import { renderStatsChart } from "@/lib/stats-chart-render";
+import { InlineMathText } from "@/components/editor/inline-math-text";
 import {
   CHART_TYPE_GROUPS,
   CROWDED_ENTRY_THRESHOLD,
@@ -235,6 +236,14 @@ function StatsChartForm({
       ? initialSpec.showGridLines
       : true,
   );
+  const [showBorder, setShowBorder] = useState(
+    initialSpec.chartType === "bar" ||
+      initialSpec.chartType === "column" ||
+      initialSpec.chartType === "stackedBar" ||
+      initialSpec.chartType === "stackedColumn"
+      ? initialSpec.showBorder
+      : true,
+  );
   const hasAxisLabelFields =
     initialSpec.chartType === "bar" ||
     initialSpec.chartType === "column" ||
@@ -372,6 +381,7 @@ function StatsChartForm({
         seriesColors: cleanSeriesColors,
         showLegend,
         showGridLines,
+        showBorder,
         fontFamily,
         xLabel,
         yLabel,
@@ -385,7 +395,17 @@ function StatsChartForm({
     if (chartType === "line") {
       return { chartType, data: filteredData, fontFamily, xLabel, yLabel, yLabelRotated };
     }
-    return { chartType, data: filteredData, showValues, showGridLines, fontFamily, xLabel, yLabel, yLabelRotated };
+    return {
+      chartType,
+      data: filteredData,
+      showValues,
+      showGridLines,
+      showBorder,
+      fontFamily,
+      xLabel,
+      yLabel,
+      yLabelRotated,
+    };
   }
 
   const currentSpecKey = JSON.stringify(buildSpec());
@@ -554,7 +574,7 @@ function StatsChartForm({
       if (isBoxWhisker) {
         const entries = await parseBoxWhiskerSpreadsheet(file);
         importedCount = entries.length;
-        setBoxWhiskerData(entries.length > 0 ? entries : [defaultBoxWhiskerEntry()]);
+        setBoxWhiskerData(padBoxWhiskerData(entries.length > 0 ? entries : [defaultBoxWhiskerEntry()]));
       } else if (isScatter) {
         const points = await parseScatterSpreadsheet(file);
         importedCount = points.length;
@@ -569,14 +589,15 @@ function StatsChartForm({
         setSeriesLabels(imported.seriesLabels);
         setSeriesColors(imported.seriesLabels.map((_, index) => defaultEntryColor(index)));
         setStackedData(
-          imported.data.length > 0
-            ? imported.data
-            : [defaultStackedEntry(imported.seriesLabels.length)],
+          padStackedData(
+            imported.data.length > 0 ? imported.data : [defaultStackedEntry(imported.seriesLabels.length)],
+            imported.seriesLabels.length,
+          ),
         );
       } else {
         const entries = await parseCategoricalSpreadsheet(file);
         importedCount = entries.length;
-        setCategoricalData(entries.length > 0 ? entries : [defaultCategoricalEntry(0)]);
+        setCategoricalData(padCategoricalData(entries.length > 0 ? entries : [defaultCategoricalEntry(0)]));
       }
       setShowAllRows(false);
       setImportError(null);
@@ -666,7 +687,7 @@ function StatsChartForm({
                     className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
                     style={{ width: "13%" }}
                   >
-                    {t("q1")}
+                    <InlineMathText text={t("q1")} />
                   </th>
                   <th
                     className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
@@ -678,7 +699,7 @@ function StatsChartForm({
                     className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
                     style={{ width: "13%" }}
                   >
-                    {t("q3")}
+                    <InlineMathText text={t("q3")} />
                   </th>
                   <th
                     className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
@@ -1351,14 +1372,17 @@ function StatsChartForm({
             chartType === "stackedColumn" ||
             chartType === "line" ||
             chartType === "scatter" ? (
-              // Rotate Y label + Show gridlines share one row — gridlines
-              // only applies to bar/column/scatter (line has no gridline
-              // concept of its own), so it's conditionally rendered
-              // alongside the rotate toggle rather than as its own row.
-              <div className="flex items-center gap-4 text-sm">
+              // Rotate Y label + Show gridlines + Show border + Show values
+              // all share one row — per explicit feedback, bar/column's
+              // own full set of these toggles belongs on a single line;
+              // each toggle still only renders for the chart types it
+              // actually applies to (gridlines: bar/column/stacked/
+              // scatter; border: bar/column/stacked; values: bar/column
+              // only — line/scatter have neither).
+              <div className="flex flex-wrap items-center gap-4 text-sm">
                 <label className="flex items-center gap-2">
                   <Switch checked={yLabelRotated} onCheckedChange={setYLabelRotated} />
-                  {t("yLabelRotated")}
+                  <InlineMathText text={t("yLabelRotated")} />
                 </label>
                 {chartType === "bar" ||
                 chartType === "column" ||
@@ -1370,13 +1394,28 @@ function StatsChartForm({
                     {t("showGridLines")}
                   </label>
                 ) : null}
+                {chartType === "bar" ||
+                chartType === "column" ||
+                chartType === "stackedBar" ||
+                chartType === "stackedColumn" ? (
+                  <label className="flex items-center gap-2">
+                    <Switch checked={showBorder} onCheckedChange={setShowBorder} />
+                    {t("showBorder")}
+                  </label>
+                ) : null}
+                {chartType === "bar" || chartType === "column" ? (
+                  <label className="flex items-center gap-2">
+                    <Switch checked={showValues} onCheckedChange={setShowValues} />
+                    {t("showValues")}
+                  </label>
+                ) : null}
+                {chartType === "stackedBar" || chartType === "stackedColumn" ? (
+                  <label className="flex items-center gap-2">
+                    <Switch checked={showLegend} onCheckedChange={setShowLegend} />
+                    {t("showLegend")}
+                  </label>
+                ) : null}
               </div>
-            ) : null}
-            {chartType === "stackedBar" || chartType === "stackedColumn" ? (
-              <label className="flex items-center gap-2 text-sm">
-                <Switch checked={showLegend} onCheckedChange={setShowLegend} />
-                {t("showLegend")}
-              </label>
             ) : null}
 
             {chartType === "pie" ? (
@@ -1402,12 +1441,6 @@ function StatsChartForm({
                   </Select>
                 </div>
               </>
-            ) : null}
-            {chartType === "bar" || chartType === "column" ? (
-              <label className="flex items-center gap-2 text-sm">
-                <Switch checked={showValues} onCheckedChange={setShowValues} />
-                {t("showValues")}
-              </label>
             ) : null}
           </div>
           <div className="relative flex min-h-[420px] flex-col items-center justify-center gap-2 overflow-hidden rounded border p-2">

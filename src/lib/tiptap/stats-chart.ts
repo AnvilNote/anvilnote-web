@@ -36,8 +36,22 @@ export type AxisLabelFields = { xLabel: string; yLabel: string; yLabelRotated: b
 export type TrendLine = "none" | "linear" | "lowess";
 
 export type StatsChartSpec =
-  | ({ chartType: "bar"; data: CategoricalEntry[]; showValues: boolean; showGridLines: boolean; fontFamily: FontFamily } & AxisLabelFields)
-  | ({ chartType: "column"; data: CategoricalEntry[]; showValues: boolean; showGridLines: boolean; fontFamily: FontFamily } & AxisLabelFields)
+  | ({
+      chartType: "bar";
+      data: CategoricalEntry[];
+      showValues: boolean;
+      showGridLines: boolean;
+      showBorder: boolean;
+      fontFamily: FontFamily;
+    } & AxisLabelFields)
+  | ({
+      chartType: "column";
+      data: CategoricalEntry[];
+      showValues: boolean;
+      showGridLines: boolean;
+      showBorder: boolean;
+      fontFamily: FontFamily;
+    } & AxisLabelFields)
   | ({
       chartType: "stackedBar" | "stackedColumn";
       data: StackedEntry[];
@@ -45,6 +59,7 @@ export type StatsChartSpec =
       seriesColors?: string[];
       showLegend: boolean;
       showGridLines: boolean;
+      showBorder: boolean;
       fontFamily: FontFamily;
     } & AxisLabelFields)
   | ({ chartType: "line"; data: CategoricalEntry[]; fontFamily: FontFamily } & AxisLabelFields)
@@ -149,6 +164,45 @@ export const AnvilStatsChart = Node.create({
           ),
         renderHTML: (attributes) => ({ "data-entries": JSON.stringify(attributes.data ?? []) }),
       },
+      // stackedBar/stackedColumn only — real bug fix: this had no
+      // parseHTML/renderHTML of its own, so updateAttributes's spread of
+      // the full spec set it in-memory for the current editor session
+      // only; a saved document's HTML never carried it, silently losing
+      // every stacked chart's own series names on reload.
+      seriesLabels: {
+        default: [],
+        parseHTML: (element) => {
+          try {
+            const parsed = JSON.parse(element.getAttribute("data-series-labels") ?? "[]");
+            return Array.isArray(parsed) ? parsed : [];
+          } catch {
+            return [];
+          }
+        },
+        renderHTML: (attributes) => ({
+          "data-series-labels": JSON.stringify(attributes.seriesLabels ?? []),
+        }),
+      },
+      // stackedBar/stackedColumn only, optional — same persistence bug as
+      // seriesLabels above. Omitted entirely (no data-series-colors
+      // attribute rendered) when unset, matching build-typst.ts's own
+      // "falls back to the default color cycle" behavior for an absent
+      // seriesColors.
+      seriesColors: {
+        default: undefined,
+        parseHTML: (element) => {
+          const raw = element.getAttribute("data-series-colors");
+          if (!raw) return undefined;
+          try {
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : undefined;
+          } catch {
+            return undefined;
+          }
+        },
+        renderHTML: (attributes) =>
+          attributes.seriesColors ? { "data-series-colors": JSON.stringify(attributes.seriesColors) } : {},
+      },
       showLegend: {
         default: true,
         parseHTML: (element) => element.getAttribute("data-show-legend") !== "false",
@@ -179,6 +233,14 @@ export const AnvilStatsChart = Node.create({
         parseHTML: (element) => element.getAttribute("data-show-grid-lines") !== "false",
         renderHTML: (attributes) => ({
           "data-show-grid-lines": String(attributes.showGridLines ?? true),
+        }),
+      },
+      // bar/column/stacked only — each bar/segment's own outline stroke.
+      showBorder: {
+        default: true,
+        parseHTML: (element) => element.getAttribute("data-show-border") !== "false",
+        renderHTML: (attributes) => ({
+          "data-show-border": String(attributes.showBorder ?? true),
         }),
       },
       // bar/column/line/scatter only; see AxisLabelFields above.
