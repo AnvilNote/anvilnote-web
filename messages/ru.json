@@ -391,7 +391,7 @@
       "captionPlaceholder": "Введите подпись диаграммы",
       "xLabel": "Подпись оси X",
       "yLabel": "Подпись оси Y",
-      "yLabelRotated": "Повернуть вертикальную ось",
+      "yLabelRotated": "Повернуть подпись оси Y",
       "useSerifFont": "Засечки",
       "trendLine": "Линия тренда",
       "trendLineColor": "Цвет линии тренда",
