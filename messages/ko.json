@@ -357,6 +357,7 @@
         "column": "세로 막대",
         "pie": "파이",
         "pyramid": "피라미드",
+        "line": "꺾은선형",
         "boxwhisker": "상자수염 그림"
       },
       "label": "레이블",
@@ -376,6 +377,10 @@
         "beside": "레이블 옆에 표시"
       },
       "showValues": "값 표시",
+      "fontFamilies": {
+        "sans": "고딕체",
+        "serif": "명조체"
+      },
       "addEntry": "항목 추가",
       "clearEntry": "지우기",
       "entryLimitReached": "최대 20개 항목",

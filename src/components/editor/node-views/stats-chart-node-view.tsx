@@ -8,6 +8,7 @@ import { StatsChartDialog } from "@/components/editor/stats-chart-dialog";
 import type {
   BoxWhiskerEntry,
   CategoricalEntry,
+  FontFamily,
   PercentagePlacement,
   StatsChartSpec,
 } from "@/lib/tiptap/stats-chart";
@@ -18,8 +19,9 @@ const PERCENTAGE_PLACEMENTS = ["none", "onSlice", "beside"] as const;
 function buildSpec(node: NodeViewProps["node"]): StatsChartSpec {
   const chartType = node.attrs.chartType;
   const data = Array.isArray(node.attrs.data) ? node.attrs.data : [];
+  const fontFamily: FontFamily = node.attrs.fontFamily === "serif" ? "serif" : "sans";
   if (chartType === "boxwhisker") {
-    return { chartType: "boxwhisker", data: data as BoxWhiskerEntry[] };
+    return { chartType: "boxwhisker", data: data as BoxWhiskerEntry[], fontFamily };
   }
   if (chartType === "pie") {
     const showPercentage: PercentagePlacement = PERCENTAGE_PLACEMENTS.includes(
@@ -32,16 +34,18 @@ function buildSpec(node: NodeViewProps["node"]): StatsChartSpec {
       data: data as CategoricalEntry[],
       showLegend: node.attrs.showLegend !== false,
       showPercentage,
+      fontFamily,
     };
   }
-  if (chartType === "pyramid") {
-    return { chartType: "pyramid", data: data as CategoricalEntry[] };
+  if (chartType === "pyramid" || chartType === "line") {
+    return { chartType, data: data as CategoricalEntry[], fontFamily };
   }
   const resolvedType = chartType === "bar" ? "bar" : "column";
   return {
     chartType: resolvedType,
     data: data as CategoricalEntry[],
     showValues: node.attrs.showValues === true,
+    fontFamily,
   };
 }
 
