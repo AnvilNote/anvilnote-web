@@ -951,13 +951,10 @@ function StatsChartForm({
             </Button>
 
             {chartType === "scatter" ? (
-              // Trend line + its color picker + x/y axis label inputs all
-              // share one row here (scatter only) — per explicit feedback
-              // that the x/y label inputs should sit to the right of the
-              // trend-line select rather than on their own separate rows
-              // below (bar/column/line still get their own rows via the
-              // generic block further down, since only scatter's layout
-              // was called out).
+              // Trend line + its color picker get their own row (scatter
+              // only) — separate from the x/y-label row and the rotate/
+              // gridline row below, per explicit feedback reverting an
+              // earlier "everything on one row" layout.
               <div className="flex flex-wrap items-center gap-2 text-sm">
                 <span>{t("trendLine")}</span>
                 <Select onValueChange={(value) => setTrendLine(value as TrendLine)} value={trendLine}>
@@ -975,7 +972,7 @@ function StatsChartForm({
                     <PopoverTrigger asChild>
                       <button
                         aria-label={t("trendLineColor")}
-                        className="flex items-center gap-1.5 rounded border px-2 py-1 hover:bg-accent"
+                        className="flex items-center gap-1.5 rounded-lg border px-2 py-1 hover:bg-accent"
                         type="button"
                       >
                         <span
@@ -1008,10 +1005,19 @@ function StatsChartForm({
                     </PopoverContent>
                   </Popover>
                 ) : null}
+              </div>
+            ) : null}
+
+            {chartType === "bar" ||
+            chartType === "column" ||
+            chartType === "line" ||
+            chartType === "scatter" ? (
+              // X label + Y label share one row.
+              <div className="flex flex-wrap items-center gap-3 text-sm">
                 <label className="flex items-center gap-1.5">
                   <span className="text-xs text-muted-foreground">{t("xLabel")}</span>
                   <input
-                    className="w-28 rounded-lg border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
+                    className="w-32 rounded-lg border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
                     onChange={(event) => setXLabel(event.target.value)}
                     value={xLabel}
                   />
@@ -1019,48 +1025,34 @@ function StatsChartForm({
                 <label className="flex items-center gap-1.5">
                   <span className="text-xs text-muted-foreground">{t("yLabel")}</span>
                   <input
-                    className="w-28 rounded-lg border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
+                    className="w-32 rounded-lg border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
                     onChange={(event) => setYLabel(event.target.value)}
                     value={yLabel}
                   />
-                </label>
-                <label className="flex items-center gap-2">
-                  <Switch checked={yLabelRotated} onCheckedChange={setYLabelRotated} />
-                  {t("yLabelRotated")}
                 </label>
               </div>
             ) : null}
 
-            {chartType === "bar" || chartType === "column" || chartType === "line" ? (
-              <>
-                <label className="flex items-center gap-1.5 text-sm">
-                  <span className="w-20 shrink-0 text-xs text-muted-foreground">{t("xLabel")}</span>
-                  <input
-                    className="flex-1 rounded-lg border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
-                    onChange={(event) => setXLabel(event.target.value)}
-                    value={xLabel}
-                  />
-                </label>
-                <label className="flex items-center gap-1.5 text-sm">
-                  <span className="w-20 shrink-0 text-xs text-muted-foreground">{t("yLabel")}</span>
-                  <input
-                    className="flex-1 rounded-lg border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
-                    onChange={(event) => setYLabel(event.target.value)}
-                    value={yLabel}
-                  />
-                </label>
-                <label className="flex items-center gap-2 text-sm">
+            {chartType === "bar" ||
+            chartType === "column" ||
+            chartType === "line" ||
+            chartType === "scatter" ? (
+              // Rotate Y label + Show gridlines share one row — gridlines
+              // only applies to bar/column/scatter (line has no gridline
+              // concept of its own), so it's conditionally rendered
+              // alongside the rotate toggle rather than as its own row.
+              <div className="flex items-center gap-4 text-sm">
+                <label className="flex items-center gap-2">
                   <Switch checked={yLabelRotated} onCheckedChange={setYLabelRotated} />
                   {t("yLabelRotated")}
                 </label>
-              </>
-            ) : null}
-
-            {chartType === "bar" || chartType === "column" || chartType === "scatter" ? (
-              <label className="flex items-center gap-2 text-sm">
-                <Switch checked={showGridLines} onCheckedChange={setShowGridLines} />
-                {t("showGridLines")}
-              </label>
+                {chartType === "bar" || chartType === "column" || chartType === "scatter" ? (
+                  <label className="flex items-center gap-2">
+                    <Switch checked={showGridLines} onCheckedChange={setShowGridLines} />
+                    {t("showGridLines")}
+                  </label>
+                ) : null}
+              </div>
             ) : null}
 
             {chartType === "pie" ? (
