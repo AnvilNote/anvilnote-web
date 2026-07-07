@@ -166,48 +166,56 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
     return [
       {
         title: tt("text"),
+        subtitle: tt("textHint"),
         icon: Type,
         aliases: ["paragraph", "p", "text"],
         run: run((c) => c.setParagraph().run()),
       },
       {
         title: tt("heading1"),
+        subtitle: tt("heading1Hint"),
         icon: Heading1,
         aliases: ["h1", "title"],
         run: run((c) => c.toggleHeading({ level: 1 }).run()),
       },
       {
         title: tt("heading2"),
+        subtitle: tt("heading2Hint"),
         icon: Heading2,
         aliases: ["h2"],
         run: run((c) => c.toggleHeading({ level: 2 }).run()),
       },
       {
         title: tt("heading3"),
+        subtitle: tt("heading3Hint"),
         icon: Heading3,
         aliases: ["h3"],
         run: run((c) => c.toggleHeading({ level: 3 }).run()),
       },
       {
         title: tt("bulletList"),
+        subtitle: tt("bulletListHint"),
         icon: List,
         aliases: ["ul", "bullet", "list"],
         run: run((c) => c.toggleBulletList().run()),
       },
       {
         title: tt("orderedList"),
+        subtitle: tt("orderedListHint"),
         icon: ListOrdered,
         aliases: ["ol", "ordered", "number"],
         run: run((c) => c.toggleOrderedList().run()),
       },
       {
         title: tt("quote"),
+        subtitle: tt("quoteHint"),
         icon: Quote,
         aliases: ["blockquote", "quote"],
         run: run((c) => c.toggleBlockquote().run()),
       },
       {
         title: tt("callout"),
+        subtitle: tt("calloutHint"),
         icon: MessageSquareWarning,
         aliases: ["callout", "admonition", "note", "warning"],
         run: ({ editor, range }) => {
@@ -221,6 +229,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
       },
       {
         title: tt("mermaid"),
+        subtitle: tt("mermaidHint"),
         icon: Workflow,
         aliases: ["mermaid", "diagram", "flowchart", "圖表"],
         run: ({ editor, range }) => {
@@ -252,6 +261,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
       },
       {
         title: tt("proof"),
+        subtitle: tt("proofHint"),
         icon: Square,
         aliases: ["proof", "qed", "證明"],
         run: ({ editor, range }) => {
@@ -261,12 +271,14 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
       },
       {
         title: tt("codeBlock"),
+        subtitle: tt("codeBlockHint"),
         icon: Code2,
         aliases: ["code", "codeblock", "pre", "程式碼"],
         run: run((c) => c.toggleCodeBlock().run()),
       },
       {
         title: tt("table"),
+        subtitle: tt("tableHint"),
         icon: TableIcon,
         aliases: ["table", "grid"],
         run: ({ editor, range }) => {
@@ -276,6 +288,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
       },
       {
         title: tt("image"),
+        subtitle: tt("imageHint"),
         icon: ImageIcon,
         aliases: ["image", "img", "picture", "photo", "圖片"],
         run: ({ editor, range }) => {
@@ -285,6 +298,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
       },
       {
         title: tt("imageRow"),
+        subtitle: tt("imageRowHint"),
         icon: Images,
         aliases: ["imagerow", "sidebyside", "subfigure", "並排圖片", "並排"],
         run: ({ editor, range }) => {

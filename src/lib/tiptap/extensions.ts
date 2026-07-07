@@ -14,6 +14,7 @@ import { TextStyle } from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import { Mathematics } from "@tiptap/extension-mathematics";
 import { BlockMathExit } from "@/lib/tiptap/math";
+import { AnvilBlockquote } from "@/lib/tiptap/blockquote";
 import { AnvilCodeBlock } from "@/lib/tiptap/code-block";
 import { AnvilImage } from "@/lib/tiptap/image";
 import { AnvilCallout } from "@/lib/tiptap/callout";
@@ -338,6 +339,10 @@ export function buildExtensions({
       // Replaced by AnvilDocument below so the footnotes list can live as a
       // trailing sibling of the document's regular content.
       document: false,
+      // Replaced by AnvilBlockquote below, which adds author/source
+      // attribution attrs + a NodeView on top of the same node
+      // name/content/commands/keyboard shortcuts/input rules.
+      blockquote: false,
       link: {
         openOnClick: false,
         autolink: true,
@@ -345,6 +350,7 @@ export function buildExtensions({
       },
     }),
     AnvilDocument,
+    AnvilBlockquote,
     AnvilFootnotes,
     AnvilFootnote,
     FootnoteReference,
