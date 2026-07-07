@@ -961,7 +961,7 @@ function StatsChartForm({
               <div className="flex flex-wrap items-center gap-2 text-sm">
                 <span>{t("trendLine")}</span>
                 <Select onValueChange={(value) => setTrendLine(value as TrendLine)} value={trendLine}>
-                  <SelectTrigger className="h-8 w-40 text-xs">
+                  <SelectTrigger className="h-8 w-28 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1011,7 +1011,7 @@ function StatsChartForm({
                 <label className="flex items-center gap-1.5">
                   <span className="text-xs text-muted-foreground">{t("xLabel")}</span>
                   <input
-                    className="w-28 rounded border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
+                    className="w-28 rounded-lg border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
                     onChange={(event) => setXLabel(event.target.value)}
                     value={xLabel}
                   />
@@ -1019,7 +1019,7 @@ function StatsChartForm({
                 <label className="flex items-center gap-1.5">
                   <span className="text-xs text-muted-foreground">{t("yLabel")}</span>
                   <input
-                    className="w-28 rounded border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
+                    className="w-28 rounded-lg border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
                     onChange={(event) => setYLabel(event.target.value)}
                     value={yLabel}
                   />
@@ -1036,7 +1036,7 @@ function StatsChartForm({
                 <label className="flex items-center gap-1.5 text-sm">
                   <span className="w-20 shrink-0 text-xs text-muted-foreground">{t("xLabel")}</span>
                   <input
-                    className="flex-1 rounded border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
+                    className="flex-1 rounded-lg border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
                     onChange={(event) => setXLabel(event.target.value)}
                     value={xLabel}
                   />
@@ -1044,7 +1044,7 @@ function StatsChartForm({
                 <label className="flex items-center gap-1.5 text-sm">
                   <span className="w-20 shrink-0 text-xs text-muted-foreground">{t("yLabel")}</span>
                   <input
-                    className="flex-1 rounded border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
+                    className="flex-1 rounded-lg border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
                     onChange={(event) => setYLabel(event.target.value)}
                     value={yLabel}
                   />
