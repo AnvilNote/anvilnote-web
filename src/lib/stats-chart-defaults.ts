@@ -11,6 +11,7 @@ export const MAX_ENTRIES = 20;
 // commonly a larger sample than categorical's 20-entry cap, and a trend
 // line needs enough points to be meaningful.
 export const SCATTER_MAX_ENTRIES = 200;
+export const MAX_SERIES = 6;
 // Data-entry grid shows at most this many rows before collapsing the rest
 // behind a "Show more" toggle — a spreadsheet-style default screenful
 // rather than always rendering up to MAX_ENTRIES rows at once. Lowered
@@ -27,7 +28,7 @@ export function defaultEntryColor(index: number): string {
   return DEFAULT_COLOR_CYCLE[index % DEFAULT_COLOR_CYCLE.length];
 }
 
-export const CHART_TYPES = ["bar", "column", "pie", "line", "scatter", "boxwhisker"] as const;
+export const CHART_TYPES = ["bar", "column", "stackedBar", "stackedColumn", "pie", "line", "scatter", "boxwhisker"] as const;
 export type ChartType = (typeof CHART_TYPES)[number];
 
 // UI-level grouping for the chart-type picker: "bar" and "column" are the
@@ -35,10 +36,11 @@ export type ChartType = (typeof CHART_TYPES)[number];
 // share one dropdown entry — "長條圖"/"Bar chart" — with a separate
 // orientation toggle shown only for that group, rather than two separate
 // entries a user has to already know differ only in orientation.
-export const CHART_TYPE_GROUPS = ["bar", "pie", "line", "scatter", "boxwhisker"] as const;
+export const CHART_TYPE_GROUPS = ["bar", "stackedBar", "pie", "line", "scatter", "boxwhisker"] as const;
 export type ChartTypeGroup = (typeof CHART_TYPE_GROUPS)[number];
 
 export function chartTypeGroup(chartType: ChartType): ChartTypeGroup {
+  if (chartType === "stackedColumn") return "stackedBar";
   return chartType === "column" ? "bar" : chartType;
 }
 

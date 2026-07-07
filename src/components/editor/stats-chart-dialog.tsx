@@ -34,6 +34,7 @@ import {
   CHART_TYPE_GROUPS,
   CROWDED_ENTRY_THRESHOLD,
   MAX_ENTRIES,
+  MAX_SERIES,
   SCATTER_MAX_ENTRIES,
   VISIBLE_ROW_LIMIT,
   chartTypeGroup,
@@ -46,6 +47,7 @@ import {
   parseBoxWhiskerSpreadsheet,
   parseCategoricalSpreadsheet,
   parseScatterSpreadsheet,
+  parseStackedSpreadsheet,
 } from "@/lib/stats-chart-import";
 import { parseNumericInput, numericInputValue } from "@/lib/numeric-input";
 import type {
@@ -54,6 +56,7 @@ import type {
   FontFamily,
   PercentagePlacement,
   StatsChartSpec,
+  StackedEntry,
   TrendLine,
 } from "@/lib/tiptap/stats-chart";
 
@@ -106,6 +109,10 @@ function defaultScatterEntry(): ScatterDraftEntry {
   return { x: "", y: "" };
 }
 
+function defaultStackedEntry(seriesCount: number): StackedEntry {
+  return { label: "", values: Array.from({ length: seriesCount }, () => 0) };
+}
+
 // Pads an existing (already-saved) chart's data up to VISIBLE_ROW_LIMIT
 // (5) blank rows when reopened with fewer — same "don't make the user
 // click Add entry repeatedly" rationale as the fresh-node default, but
@@ -134,6 +141,18 @@ function padScatterData(data: ScatterDraftEntry[]): ScatterDraftEntry[] {
   return [...data, ...padding];
 }
 
+function padStackedData(data: StackedEntry[], seriesCount: number): StackedEntry[] {
+  const normalized = data.map((entry) => ({
+    ...entry,
+    values: Array.from({ length: seriesCount }, (_, index) => entry.values[index] ?? 0),
+  }));
+  if (normalized.length >= VISIBLE_ROW_LIMIT) return normalized;
+  const padding = Array.from({ length: VISIBLE_ROW_LIMIT - normalized.length }, () =>
+    defaultStackedEntry(seriesCount),
+  );
+  return [...normalized, ...padding];
+}
+
 function StatsChartForm({
   initialSpec,
   onCancel,
@@ -158,9 +177,12 @@ function StatsChartForm({
   // time in this session) — same "don't make the user click Add entry
   // repeatedly" rationale as stats-chart.ts's own node-level defaults.
   const [categoricalData, setCategoricalData] = useState<CategoricalEntry[]>(
-    initialSpec.chartType === "boxwhisker" || initialSpec.chartType === "scatter"
-      ? Array.from({ length: VISIBLE_ROW_LIMIT }, (_, index) => defaultCategoricalEntry(index))
-      : padCategoricalData(initialSpec.data),
+    initialSpec.chartType === "bar" ||
+      initialSpec.chartType === "column" ||
+      initialSpec.chartType === "pie" ||
+      initialSpec.chartType === "line"
+      ? padCategoricalData(initialSpec.data)
+      : Array.from({ length: VISIBLE_ROW_LIMIT }, (_, index) => defaultCategoricalEntry(index)),
   );
   const [boxWhiskerData, setBoxWhiskerData] = useState<BoxWhiskerEntry[]>(
     initialSpec.chartType === "boxwhisker"
@@ -172,8 +194,29 @@ function StatsChartForm({
       ? padScatterData(initialSpec.data.map((p) => ({ x: String(p.x), y: String(p.y) })))
       : Array.from({ length: VISIBLE_ROW_LIMIT }, () => defaultScatterEntry()),
   );
+  const initialStackedSeriesLabels =
+    initialSpec.chartType === "stackedBar" || initialSpec.chartType === "stackedColumn"
+      ? initialSpec.seriesLabels
+      : ["Series 1", "Series 2"];
+  const [stackedData, setStackedData] = useState<StackedEntry[]>(
+    initialSpec.chartType === "stackedBar" || initialSpec.chartType === "stackedColumn"
+      ? padStackedData(initialSpec.data, initialStackedSeriesLabels.length)
+      : Array.from({ length: VISIBLE_ROW_LIMIT }, () =>
+          defaultStackedEntry(initialStackedSeriesLabels.length),
+        ),
+  );
+  const [seriesLabels, setSeriesLabels] = useState<string[]>(initialStackedSeriesLabels);
+  const [seriesColors, setSeriesColors] = useState<string[]>(
+    initialSpec.chartType === "stackedBar" || initialSpec.chartType === "stackedColumn"
+      ? initialSpec.seriesColors ?? initialStackedSeriesLabels.map((_, index) => defaultEntryColor(index))
+      : initialStackedSeriesLabels.map((_, index) => defaultEntryColor(index)),
+  );
   const [showLegend, setShowLegend] = useState(
-    initialSpec.chartType === "pie" ? initialSpec.showLegend : true,
+    initialSpec.chartType === "pie" ||
+      initialSpec.chartType === "stackedBar" ||
+      initialSpec.chartType === "stackedColumn"
+      ? initialSpec.showLegend
+      : true,
   );
   const [showPercentage, setShowPercentage] = useState<PercentagePlacement>(
     initialSpec.chartType === "pie" ? initialSpec.showPercentage : "none",
@@ -186,6 +229,8 @@ function StatsChartForm({
   const [showGridLines, setShowGridLines] = useState(
     initialSpec.chartType === "bar" ||
       initialSpec.chartType === "column" ||
+      initialSpec.chartType === "stackedBar" ||
+      initialSpec.chartType === "stackedColumn" ||
       initialSpec.chartType === "scatter"
       ? initialSpec.showGridLines
       : true,
@@ -193,6 +238,8 @@ function StatsChartForm({
   const hasAxisLabelFields =
     initialSpec.chartType === "bar" ||
     initialSpec.chartType === "column" ||
+    initialSpec.chartType === "stackedBar" ||
+    initialSpec.chartType === "stackedColumn" ||
     initialSpec.chartType === "line" ||
     initialSpec.chartType === "scatter";
   const [xLabel, setXLabel] = useState(hasAxisLabelFields ? initialSpec.xLabel : "");
@@ -253,7 +300,8 @@ function StatsChartForm({
 
   const isBoxWhisker = chartType === "boxwhisker";
   const isScatter = chartType === "scatter";
-  const activeData = isBoxWhisker ? boxWhiskerData : categoricalData;
+  const isStacked = chartType === "stackedBar" || chartType === "stackedColumn";
+  const activeData = isBoxWhisker ? boxWhiskerData : isStacked ? stackedData : categoricalData;
   // Same rationale as function-plot-dialog's hasFormula: skip rendering
   // until the user has actually typed something, gate the display on this
   // (not effect-cleared state) — see that file's own comment for why.
@@ -272,11 +320,13 @@ function StatsChartForm({
   const categoricalRows = categoricalData.map((entry, index) => ({ entry, index }));
   const boxWhiskerRows = boxWhiskerData.map((entry, index) => ({ entry, index }));
   const scatterRows = scatterData.map((entry, index) => ({ entry, index }));
+  const stackedRows = stackedData.map((entry, index) => ({ entry, index }));
   const visibleCategoricalRows = showAllRows
     ? categoricalRows
     : categoricalRows.slice(0, VISIBLE_ROW_LIMIT);
   const visibleBoxWhiskerRows = showAllRows ? boxWhiskerRows : boxWhiskerRows.slice(0, VISIBLE_ROW_LIMIT);
   const visibleScatterRows = showAllRows ? scatterRows : scatterRows.slice(0, VISIBLE_ROW_LIMIT);
+  const visibleStackedRows = showAllRows ? stackedRows : stackedRows.slice(0, VISIBLE_ROW_LIMIT);
   const hiddenRowCount = isScatter
     ? scatterData.length - Math.min(scatterData.length, VISIBLE_ROW_LIMIT)
     : activeData.length - Math.min(activeData.length, VISIBLE_ROW_LIMIT);
@@ -302,6 +352,27 @@ function StatsChartForm({
         trendLine,
         trendLineColor,
         showGridLines,
+        xLabel,
+        yLabel,
+        yLabelRotated,
+      };
+    }
+    if (chartType === "stackedBar" || chartType === "stackedColumn") {
+      const cleanSeriesLabels = seriesLabels.map((label, index) => label.trim() || `Series ${index + 1}`);
+      const cleanSeriesColors = cleanSeriesLabels.map((_, index) => seriesColors[index] ?? defaultEntryColor(index));
+      return {
+        chartType,
+        data: stackedData
+          .filter((entry) => entry.label.trim())
+          .map((entry) => ({
+            label: entry.label,
+            values: cleanSeriesLabels.map((_, index) => entry.values[index] ?? 0),
+          })),
+        seriesLabels: cleanSeriesLabels,
+        seriesColors: cleanSeriesColors,
+        showLegend,
+        showGridLines,
+        fontFamily,
         xLabel,
         yLabel,
         yLabelRotated,
@@ -358,12 +429,60 @@ function StatsChartForm({
     setScatterData((prev) => prev.map((entry, i) => (i === index ? { ...entry, ...patch } : entry)));
   }
 
+  function updateStackedEntry(index: number, patch: Partial<StackedEntry>) {
+    setStackedData((prev) => prev.map((entry, i) => (i === index ? { ...entry, ...patch } : entry)));
+  }
+
+  function updateStackedValue(rowIndex: number, seriesIndex: number, value: number) {
+    setStackedData((prev) =>
+      prev.map((entry, i) =>
+        i === rowIndex
+          ? {
+              ...entry,
+              values: entry.values.map((existing, j) => (j === seriesIndex ? value : existing)),
+            }
+          : entry,
+      ),
+    );
+  }
+
+  function updateSeriesLabel(index: number, label: string) {
+    setSeriesLabels((prev) => prev.map((existing, i) => (i === index ? label : existing)));
+  }
+
+  function updateSeriesColor(index: number, color: string) {
+    setSeriesColors((prev) => prev.map((existing, i) => (i === index ? color : existing)));
+  }
+
+  function addSeries() {
+    setSeriesLabels((prev) => (prev.length >= MAX_SERIES ? prev : [...prev, `Series ${prev.length + 1}`]));
+    setSeriesColors((prev) => (prev.length >= MAX_SERIES ? prev : [...prev, defaultEntryColor(prev.length)]));
+    setStackedData((prev) =>
+      seriesLabels.length >= MAX_SERIES
+        ? prev
+        : prev.map((entry) => ({ ...entry, values: [...entry.values, 0] })),
+    );
+  }
+
+  function removeSeries(index: number) {
+    if (seriesLabels.length <= 1) return;
+    setSeriesLabels((prev) => prev.filter((_, i) => i !== index));
+    setSeriesColors((prev) => prev.filter((_, i) => i !== index));
+    setStackedData((prev) =>
+      prev.map((entry) => ({ ...entry, values: entry.values.filter((_, i) => i !== index) })),
+    );
+  }
+
   function addEntry() {
     if (isBoxWhisker) {
       setBoxWhiskerData((prev) => (prev.length >= MAX_ENTRIES ? prev : [...prev, defaultBoxWhiskerEntry()]));
     } else if (isScatter) {
       setScatterData((prev) =>
         prev.length >= SCATTER_MAX_ENTRIES ? prev : [...prev, defaultScatterEntry()],
+      );
+    } else if (isStacked) {
+      setStackedData((prev) =>
+        prev.length >= MAX_ENTRIES ? prev : [...prev, defaultStackedEntry(seriesLabels.length)],
       );
     } else {
       setCategoricalData((prev) =>
@@ -385,6 +504,10 @@ function StatsChartForm({
       );
     } else if (isScatter) {
       setScatterData((prev) => prev.map((entry, i) => (i === index ? defaultScatterEntry() : entry)));
+    } else if (isStacked) {
+      setStackedData((prev) =>
+        prev.map((entry, i) => (i === index ? defaultStackedEntry(seriesLabels.length) : entry)),
+      );
     } else {
       setCategoricalData((prev) =>
         prev.map((entry, i) => (i === index ? defaultCategoricalEntry(index) : entry)),
@@ -410,6 +533,8 @@ function StatsChartForm({
   function deleteSelected() {
     if (isBoxWhisker) {
       setBoxWhiskerData((prev) => prev.filter((_, i) => !selectedIndices.has(i)));
+    } else if (isStacked) {
+      setStackedData((prev) => prev.filter((_, i) => !selectedIndices.has(i)));
     } else {
       setCategoricalData((prev) => prev.filter((_, i) => !selectedIndices.has(i)));
     }
@@ -437,6 +562,16 @@ function StatsChartForm({
           points.length > 0
             ? points.map((p) => ({ x: String(p.x), y: String(p.y) }))
             : [defaultScatterEntry()],
+        );
+      } else if (isStacked) {
+        const imported = await parseStackedSpreadsheet(file);
+        importedCount = imported.data.length;
+        setSeriesLabels(imported.seriesLabels);
+        setSeriesColors(imported.seriesLabels.map((_, index) => defaultEntryColor(index)));
+        setStackedData(
+          imported.data.length > 0
+            ? imported.data
+            : [defaultStackedEntry(imported.seriesLabels.length)],
         );
       } else {
         const entries = await parseCategoricalSpreadsheet(file);
@@ -816,6 +951,164 @@ function StatsChartForm({
     );
   }
 
+  function renderStackedTable(rows: typeof stackedRows, options?: { scrollable?: boolean }): ReactNode {
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap gap-2">
+          {seriesLabels.map((label, index) => (
+            <div key={index} className="flex items-center gap-1 rounded border px-2 py-1">
+              <input
+                className="w-24 bg-transparent text-xs outline-none"
+                onChange={(event) => updateSeriesLabel(index, event.target.value)}
+                value={label}
+              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    aria-label={t("seriesColor")}
+                    className="size-4 rounded-sm border"
+                    style={{ backgroundColor: seriesColors[index] ?? defaultEntryColor(index) }}
+                    type="button"
+                  />
+                </PopoverTrigger>
+                <PopoverContent className="w-64">
+                  <ColorPicker
+                    className="gap-3"
+                    onChange={(rgba) => {
+                      const [r, g, b] = rgba as [number, number, number, number];
+                      const hex = `#${[r, g, b]
+                        .map((c) => Math.round(c).toString(16).padStart(2, "0"))
+                        .join("")}`;
+                      updateSeriesColor(index, hex);
+                    }}
+                    value={seriesColors[index] ?? defaultEntryColor(index)}
+                  >
+                    <ColorPickerSelection className="h-32" />
+                    <ColorPickerHue />
+                    <div className="flex items-center gap-2">
+                      <ColorPickerEyeDropper />
+                      <ColorPickerOutput />
+                    </div>
+                    <ColorPickerFormat />
+                  </ColorPicker>
+                </PopoverContent>
+              </Popover>
+              {seriesLabels.length > 1 ? (
+                <button
+                  aria-label={t("removeSeries")}
+                  className="text-muted-foreground hover:text-foreground"
+                  onClick={() => removeSeries(index)}
+                  type="button"
+                >
+                  ×
+                </button>
+              ) : null}
+            </div>
+          ))}
+          <Button
+            disabled={seriesLabels.length >= MAX_SERIES}
+            onClick={addSeries}
+            size="sm"
+            type="button"
+            variant="outline"
+          >
+            {seriesLabels.length >= MAX_SERIES ? t("seriesLimitReached") : t("addSeries")}
+          </Button>
+        </div>
+        <div className={options?.scrollable ? "max-h-[420px] overflow-x-auto overflow-y-auto" : "overflow-x-auto"}>
+          <table className="w-full table-fixed border-collapse text-sm">
+            <thead>
+              <tr className="bg-muted/50">
+                <th className="border-b p-1.5 text-center" style={{ width: "6%" }}>
+                  <input
+                    aria-label={t("selectAll")}
+                    checked={rows.length > 0 && rows.every(({ index }) => selectedIndices.has(index))}
+                    onChange={(event) => {
+                      setSelectedIndices((prev) => {
+                        const next = new Set(prev);
+                        for (const { index } of rows) {
+                          if (event.target.checked) next.add(index);
+                          else next.delete(index);
+                        }
+                        return next;
+                      });
+                    }}
+                    type="checkbox"
+                  />
+                </th>
+                <th className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground">
+                  {t("label")}
+                </th>
+                {seriesLabels.map((label, index) => (
+                  <th
+                    className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                    key={index}
+                  >
+                    {label.trim() || `Series ${index + 1}`}
+                  </th>
+                ))}
+                <th className="border-b border-l p-1.5" style={{ width: "10%" }} />
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(({ entry, index }) => (
+                <tr key={index}>
+                  <td className="border-b p-1.5 text-center">
+                    <input
+                      aria-label={t("selectRow")}
+                      checked={selectedIndices.has(index)}
+                      onChange={() => toggleSelected(index)}
+                      type="checkbox"
+                    />
+                  </td>
+                  <td className="border-b border-l p-0">
+                    <input
+                      className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                      onChange={(event) => updateStackedEntry(index, { label: event.target.value })}
+                      value={entry.label}
+                    />
+                  </td>
+                  {seriesLabels.map((_, seriesIndex) => (
+                    <td className="border-b border-l p-0" key={seriesIndex}>
+                      <input
+                        className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                        onChange={(event) =>
+                          updateStackedValue(index, seriesIndex, parseNumericInput(event.target.value))
+                        }
+                        type="number"
+                        value={numericInputValue(entry.values[seriesIndex] ?? 0)}
+                      />
+                    </td>
+                  ))}
+                  <td className="border-b border-l p-1 text-center">
+                    <button
+                      aria-label={t("clearEntry")}
+                      className="text-muted-foreground hover:text-foreground"
+                      onClick={() => clearEntry(index)}
+                      type="button"
+                    >
+                      ×
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {selectedIndices.size > 0 ? (
+          <div className="flex items-center gap-2 p-1.5">
+            <span className="text-xs text-muted-foreground">
+              {t("selectedCount", { count: selectedIndices.size })}
+            </span>
+            <Button onClick={deleteSelected} size="sm" variant="destructive">
+              {t("deleteSelected")}
+            </Button>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <DialogContent className="sm:max-w-5xl">
       <DialogHeader>
@@ -848,6 +1141,8 @@ function StatsChartForm({
           </div>
           {isScatter
             ? renderScatterTable(scatterRows, { scrollable: true })
+            : isStacked
+              ? renderStackedTable(stackedRows, { scrollable: true })
             : renderTable(categoricalRows, boxWhiskerRows, { scrollable: true })}
         </div>
       ) : (
@@ -872,6 +1167,10 @@ function StatsChartForm({
                       // the group was already active (switching pie -> bar and
                       // bar(horizontal) -> pie -> bar should restore horizontal).
                       setChartTypeRaw((prev) => (prev === "bar" || prev === "column" ? prev : "column"));
+                    } else if (group === "stackedBar") {
+                      setChartTypeRaw((prev) =>
+                        prev === "stackedBar" || prev === "stackedColumn" ? prev : "stackedColumn",
+                      );
                     } else {
                       setChartTypeRaw(group);
                     }
@@ -895,6 +1194,15 @@ function StatsChartForm({
                   <Switch
                     checked={chartType === "bar"}
                     onCheckedChange={(checked) => setChartTypeRaw(checked ? "bar" : "column")}
+                  />
+                  {t("horizontal")}
+                </label>
+              ) : null}
+              {chartTypeGroup(chartType) === "stackedBar" ? (
+                <label className="flex items-center gap-2 pb-2 text-sm">
+                  <Switch
+                    checked={chartType === "stackedBar"}
+                    onCheckedChange={(checked) => setChartTypeRaw(checked ? "stackedBar" : "stackedColumn")}
                   />
                   {t("horizontal")}
                 </label>
@@ -929,6 +1237,8 @@ function StatsChartForm({
                 counts justify). */}
             {isScatter
               ? renderScatterTable(visibleScatterRows)
+              : isStacked
+                ? renderStackedTable(visibleStackedRows)
               : renderTable(visibleCategoricalRows, visibleBoxWhiskerRows)}
 
             {hiddenRowCount > 0 ? (
@@ -1010,6 +1320,8 @@ function StatsChartForm({
 
             {chartType === "bar" ||
             chartType === "column" ||
+            chartType === "stackedBar" ||
+            chartType === "stackedColumn" ||
             chartType === "line" ||
             chartType === "scatter" ? (
               // X label + Y label share one row.
@@ -1035,6 +1347,8 @@ function StatsChartForm({
 
             {chartType === "bar" ||
             chartType === "column" ||
+            chartType === "stackedBar" ||
+            chartType === "stackedColumn" ||
             chartType === "line" ||
             chartType === "scatter" ? (
               // Rotate Y label + Show gridlines share one row — gridlines
@@ -1046,13 +1360,23 @@ function StatsChartForm({
                   <Switch checked={yLabelRotated} onCheckedChange={setYLabelRotated} />
                   {t("yLabelRotated")}
                 </label>
-                {chartType === "bar" || chartType === "column" || chartType === "scatter" ? (
+                {chartType === "bar" ||
+                chartType === "column" ||
+                chartType === "stackedBar" ||
+                chartType === "stackedColumn" ||
+                chartType === "scatter" ? (
                   <label className="flex items-center gap-2">
                     <Switch checked={showGridLines} onCheckedChange={setShowGridLines} />
                     {t("showGridLines")}
                   </label>
                 ) : null}
               </div>
+            ) : null}
+            {chartType === "stackedBar" || chartType === "stackedColumn" ? (
+              <label className="flex items-center gap-2 text-sm">
+                <Switch checked={showLegend} onCheckedChange={setShowLegend} />
+                {t("showLegend")}
+              </label>
             ) : null}
 
             {chartType === "pie" ? (

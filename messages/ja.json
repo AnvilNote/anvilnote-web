@@ -273,7 +273,7 @@
       "functionPlot": "関数グラフ",
       "functionPlotHint": "y = f(x) の曲線を描画",
       "statsChart": "統計グラフ",
-      "statsChartHint": "棒グラフ、円グラフ、折れ線グラフ、散布図、箱ひげ図"
+      "statsChartHint": "棒グラフ、積み上げ棒グラフ、円グラフ、折れ線グラフ、散布図、箱ひげ図"
     },
     "image": {
       "figure": "図",
@@ -355,6 +355,7 @@
       "chartTypes": {
         "bar": "横棒グラフ",
         "column": "縦棒グラフ",
+        "stackedBar": "積み上げ棒グラフ",
         "pie": "円グラフ",
         "line": "折れ線グラフ",
         "scatter": "散布図",
@@ -363,6 +364,10 @@
       "label": "ラベル",
       "value": "値",
       "entryColor": "色",
+      "addSeries": "系列を追加",
+      "removeSeries": "系列を削除",
+      "seriesColor": "系列の色",
+      "seriesLimitReached": "最大6系列",
       "min": "最小値",
       "q1": "第1四分位数",
       "median": "中央値",
