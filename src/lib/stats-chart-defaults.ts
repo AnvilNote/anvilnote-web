@@ -1,11 +1,12 @@
-// Same grayscale rationale as function-plot-defaults.ts: AnvilNote's design
-// system has zero color hues, so new categorical entries default to shades
-// of gray (matching anvilnote-charts's own DEFAULT_COLOR_CYCLE) instead of
-// introducing hues. Kept as a separate constant (not shared/imported from
-// anvilnote-charts) since these are two different repos with no shared
-// package — same duplication convention already used for the render-spec
-// schemas themselves.
-export const DEFAULT_COLOR_CYCLE = ["#000000", "#404040", "#737373", "#a6a6a6", "#d9d9d9"];
+// Economist-style default cycle (matching anvilnote-charts's own
+// DEFAULT_COLOR_CYCLE — see build-typst.ts's comment for the full
+// rationale and source link) — per explicit feedback replacing the
+// earlier grayscale cycle. Kept as a separate constant (not shared/
+// imported from anvilnote-charts) since these are two different repos
+// with no shared package — same duplication convention already used for
+// the render-spec schemas themselves. function-plot-defaults.ts's own
+// cycle is untouched — this palette change is scoped to stats charts only.
+export const DEFAULT_COLOR_CYCLE = ["#E3120B", "#0D0D0D", "#999999", "#FF6B6B", "#BBBBBB", "#FF9999"];
 export const MAX_ENTRIES = 20;
 // Matches anvilnote-charts's own SCATTER_MAX_ENTRIES — scatter data is
 // commonly a larger sample than categorical's 20-entry cap, and a trend
