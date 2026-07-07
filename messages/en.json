@@ -798,6 +798,13 @@
       "intervalHint": "A snapshot is only created when content has actually changed, so it never wastes space.",
       "off": "Off",
       "every": "Every {minutes} minutes"
+    },
+    "documentDefaults": {
+      "title": "Document Defaults",
+      "description": "Starting values automatically filled into new documents. You can still change them per-document afterwards.",
+      "author": "Default author",
+      "authorHint": "Filled into a new document's Author field, for templates that have one.",
+      "authorPlaceholder": "Your name"
     }
   },
   "command": {

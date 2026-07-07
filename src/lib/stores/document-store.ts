@@ -242,6 +242,21 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
     ) {
       metadata.title = title;
     }
+    // Same pattern for `author`: seeded from Settings' defaultAuthor (a
+    // starting value only — never re-applied to an already-saved
+    // document, and always freely editable per-document afterwards).
+    // Empty defaultAuthor (the common case for a user who hasn't set one)
+    // intentionally leaves the field at its own seedValue default instead
+    // of overwriting it with "".
+    const defaultAuthor = useSettingsStore.getState().defaultAuthor.trim();
+    if (
+      defaultAuthor &&
+      template?.fields.some(
+        (field) => field.scope === "metadata" && field.key === "author",
+      )
+    ) {
+      metadata.author = defaultAuthor;
+    }
     const document = await createDocumentRequest({
       title,
       content: buildDefaultContent(seed?.heading, seed?.body),
