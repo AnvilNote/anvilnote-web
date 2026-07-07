@@ -1,7 +1,15 @@
 "use client";
 
-import { useFormatter, useTranslations } from "next-intl";
-import { CalendarIcon, RotateCcw } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { CalendarIcon, ChevronDown, RotateCcw } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { DATE_FORMATS, formatIsoDate } from "@/lib/date-format";
+import { useSettingsStore } from "@/lib/stores/settings-store";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -65,7 +73,8 @@ function toIsoDate(date: Date): string {
 export function MetadataForm({ documentId }: { documentId: string }) {
   const t = useTranslations();
   const tt = useTranslations("templates");
-  const format = useFormatter();
+  const dateFormat = useSettingsStore((s) => s.dateFormat);
+  const setDateFormat = useSettingsStore((s) => s.setDateFormat);
   const doc = useDocumentStore((s) =>
     s.documents.find((d) => d.id === documentId),
   );
@@ -179,31 +188,57 @@ export function MetadataForm({ documentId }: { documentId: string }) {
             )}
 
             {field.type === "date" && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    id={`meta-${field.key}`}
-                    type="button"
-                    variant="outline"
-                    className="w-full justify-start gap-2 font-normal"
-                  >
-                    <CalendarIcon className="size-4 text-muted-foreground" />
-                    {stringValue && parseIsoDate(stringValue) ? (
-                      format.dateTime(parseIsoDate(stringValue)!, { dateStyle: "long" })
-                    ) : (
-                      <span className="text-muted-foreground">{field.placeholder}</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={parseIsoDate(stringValue)}
-                    onSelect={(date) => date && writeValue(field, toIsoDate(date))}
-                    autoFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <div className="flex w-full items-stretch rounded-md border">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id={`meta-${field.key}`}
+                      type="button"
+                      variant="ghost"
+                      className="flex-1 justify-start gap-2 rounded-r-none border-0 font-normal"
+                    >
+                      <CalendarIcon className="size-4 text-muted-foreground" />
+                      {stringValue && parseIsoDate(stringValue) ? (
+                        formatIsoDate(stringValue, dateFormat)
+                      ) : (
+                        <span className="text-muted-foreground">{field.placeholder}</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={parseIsoDate(stringValue)}
+                      onSelect={(date) => date && writeValue(field, toIsoDate(date))}
+                      autoFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <div className="w-px shrink-0 bg-border" />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      aria-label={t("panel.dateFormat")}
+                      title={t("panel.dateFormat")}
+                      className="rounded-l-none border-0 px-2"
+                    >
+                      <ChevronDown className="size-4 text-muted-foreground" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {DATE_FORMATS.map((option) => (
+                      <DropdownMenuItem key={option} onSelect={() => setDateFormat(option)}>
+                        {option}
+                        {option === dateFormat ? (
+                          <span className="ml-auto text-muted-foreground">✓</span>
+                        ) : null}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             )}
 
             {field.type === "select" && (

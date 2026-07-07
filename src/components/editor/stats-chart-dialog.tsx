@@ -132,6 +132,15 @@ function StatsChartForm({
   // categoricalRows/boxWhiskerRows below), so they still make sense
   // whichever view (compact/expanded) is currently showing them.
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
+  // Which row's color popover is open, by its stable data-array index (not
+  // its position within a possibly-sliced view — see categoricalRows/
+  // boxWhiskerRows below) — null when none is. Controlled/mutually
+  // exclusive across every row's Popover: two independent uncontrolled
+  // Popovers don't close each other, so clicking a second row's color
+  // swatch while an earlier row's was still open left both visibly open
+  // at once, overlapping (same bug class as blockquote-node-view.tsx's
+  // author/source popovers, fixed the same way there).
+  const [openColorRow, setOpenColorRow] = useState<number | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   // Shown as the expanded full-table view's subtitle — null until the
   // user actually imports a file (manually-entered data has no filename).
@@ -525,7 +534,10 @@ function StatsChartForm({
                       />
                     </td>
                     <td className="border-b border-l p-0">
-                      <Popover>
+                      <Popover
+                        onOpenChange={(open) => setOpenColorRow(open ? index : null)}
+                        open={openColorRow === index}
+                      >
                         <PopoverTrigger asChild>
                           <button
                             aria-label={t("entryColor")}

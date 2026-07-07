@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { ExportFontPreset, ExportPageSize } from "@/types/export";
+import { DEFAULT_DATE_FORMAT, type DateFormat } from "@/lib/date-format";
 
 const STORAGE_KEY = "anvilnote.settings";
 
@@ -31,6 +32,12 @@ type SettingsState = {
   // Editable per-document afterwards; this only supplies the starting
   // value, never overwrites an already-saved document.
   defaultAuthor: string;
+  // Display format for every "date"-type metadata field, app-wide — not
+  // per-document/per-field. Applied both in the metadata panel's picker
+  // button and to the value actually sent to the renderer/exported PDF
+  // (see export.ts); the underlying stored value stays a plain "YYYY-MM-DD"
+  // string regardless, so switching formats is always lossless.
+  dateFormat: DateFormat;
   setAutosave: (v: boolean) => void;
   setSpellcheck: (v: boolean) => void;
   setExportPageSize: (v: ExportPageSize) => void;
@@ -38,6 +45,7 @@ type SettingsState = {
   setExportStorageLocation: (v: string) => void;
   setVersionSnapshotIntervalMinutes: (v: VersionSnapshotIntervalMinutes) => void;
   setDefaultAuthor: (v: string) => void;
+  setDateFormat: (v: DateFormat) => void;
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -50,6 +58,7 @@ export const useSettingsStore = create<SettingsState>()(
       exportStorageLocation: DEFAULT_STORAGE_LOCATION,
       versionSnapshotIntervalMinutes: 15,
       defaultAuthor: "",
+      dateFormat: DEFAULT_DATE_FORMAT,
       setAutosave: (v) => set({ autosave: v }),
       setSpellcheck: (v) => set({ spellcheck: v }),
       setExportPageSize: (v) => set({ exportPageSize: v }),
@@ -57,6 +66,7 @@ export const useSettingsStore = create<SettingsState>()(
       setExportStorageLocation: (v) => set({ exportStorageLocation: v }),
       setVersionSnapshotIntervalMinutes: (v) => set({ versionSnapshotIntervalMinutes: v }),
       setDefaultAuthor: (v) => set({ defaultAuthor: v }),
+      setDateFormat: (v) => set({ dateFormat: v }),
     }),
     {
       name: STORAGE_KEY,
