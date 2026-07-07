@@ -5,9 +5,15 @@ import { useTranslations } from "next-intl";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { Trash2 } from "lucide-react";
 import { StatsChartDialog } from "@/components/editor/stats-chart-dialog";
-import type { BoxWhiskerEntry, CategoricalEntry, StatsChartSpec } from "@/lib/tiptap/stats-chart";
+import type {
+  BoxWhiskerEntry,
+  CategoricalEntry,
+  PercentagePlacement,
+  StatsChartSpec,
+} from "@/lib/tiptap/stats-chart";
 
 const PREVIEW_ENTRY_LIMIT = 3;
+const PERCENTAGE_PLACEMENTS = ["none", "onSlice", "beside"] as const;
 
 function buildSpec(node: NodeViewProps["node"]): StatsChartSpec {
   const chartType = node.attrs.chartType;
@@ -16,15 +22,27 @@ function buildSpec(node: NodeViewProps["node"]): StatsChartSpec {
     return { chartType: "boxwhisker", data: data as BoxWhiskerEntry[] };
   }
   if (chartType === "pie") {
+    const showPercentage: PercentagePlacement = PERCENTAGE_PLACEMENTS.includes(
+      node.attrs.showPercentage,
+    )
+      ? node.attrs.showPercentage
+      : "none";
     return {
       chartType: "pie",
       data: data as CategoricalEntry[],
       showLegend: node.attrs.showLegend !== false,
+      showPercentage,
     };
   }
-  const knownCategorical = ["bar", "column", "pyramid"] as const;
-  const resolvedType = knownCategorical.includes(chartType) ? chartType : "column";
-  return { chartType: resolvedType, data: data as CategoricalEntry[] };
+  if (chartType === "pyramid") {
+    return { chartType: "pyramid", data: data as CategoricalEntry[] };
+  }
+  const resolvedType = chartType === "bar" ? "bar" : "column";
+  return {
+    chartType: resolvedType,
+    data: data as CategoricalEntry[],
+    showValues: node.attrs.showValues === true,
+  };
 }
 
 // The read-only quick-glance value shown next to each label: categorical

@@ -369,6 +369,13 @@
       "max": "Max",
       "horizontal": "Horizontal",
       "showLegend": "Show legend",
+      "showPercentage": "Show percentage",
+      "percentagePlacement": {
+        "none": "None",
+        "onSlice": "On the slice",
+        "beside": "Next to the label"
+      },
+      "showValues": "Show values",
       "addEntry": "Add entry",
       "clearEntry": "Clear",
       "entryLimitReached": "Up to 20 entries",

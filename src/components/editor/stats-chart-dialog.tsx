@@ -46,7 +46,12 @@ import {
   parseCategoricalSpreadsheet,
 } from "@/lib/stats-chart-import";
 import { parseNumericInput, numericInputValue } from "@/lib/numeric-input";
-import type { BoxWhiskerEntry, CategoricalEntry, StatsChartSpec } from "@/lib/tiptap/stats-chart";
+import type {
+  BoxWhiskerEntry,
+  CategoricalEntry,
+  PercentagePlacement,
+  StatsChartSpec,
+} from "@/lib/tiptap/stats-chart";
 
 export type StatsChartDialogProps = {
   open: boolean;
@@ -121,6 +126,14 @@ function StatsChartForm({
   const [showLegend, setShowLegend] = useState(
     initialSpec.chartType === "pie" ? initialSpec.showLegend : true,
   );
+  const [showPercentage, setShowPercentage] = useState<PercentagePlacement>(
+    initialSpec.chartType === "pie" ? initialSpec.showPercentage : "none",
+  );
+  const [showValues, setShowValues] = useState(
+    initialSpec.chartType === "bar" || initialSpec.chartType === "column"
+      ? initialSpec.showValues
+      : false,
+  );
   // Caps the visible rows at VISIBLE_ROW_LIMIT (matches a spreadsheet
   // showing the first screenful of rows) rather than always rendering up
   // to MAX_ENTRIES (20) at once — "Show more" reveals the rest on demand.
@@ -190,8 +203,9 @@ function StatsChartForm({
       return { chartType, data: boxWhiskerData.filter((entry) => entry.label.trim()) };
     }
     const filteredData = categoricalData.filter((entry) => entry.label.trim());
-    if (chartType === "pie") return { chartType, data: filteredData, showLegend };
-    return { chartType, data: filteredData };
+    if (chartType === "pie") return { chartType, data: filteredData, showLegend, showPercentage };
+    if (chartType === "pyramid") return { chartType, data: filteredData };
+    return { chartType, data: filteredData, showValues };
   }
 
   const currentSpecKey = JSON.stringify(buildSpec());
@@ -729,9 +743,33 @@ function StatsChartForm({
             </Button>
 
             {chartType === "pie" ? (
+              <>
+                <label className="flex items-center gap-2 text-sm">
+                  <Switch checked={showLegend} onCheckedChange={setShowLegend} />
+                  {t("showLegend")}
+                </label>
+                <div className="flex items-center gap-2 text-sm">
+                  <span>{t("showPercentage")}</span>
+                  <Select
+                    onValueChange={(value) => setShowPercentage(value as PercentagePlacement)}
+                    value={showPercentage}
+                  >
+                    <SelectTrigger className="h-8 w-40 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{t("percentagePlacement.none")}</SelectItem>
+                      <SelectItem value="onSlice">{t("percentagePlacement.onSlice")}</SelectItem>
+                      <SelectItem value="beside">{t("percentagePlacement.beside")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            ) : null}
+            {chartType === "bar" || chartType === "column" ? (
               <label className="flex items-center gap-2 text-sm">
-                <Switch checked={showLegend} onCheckedChange={setShowLegend} />
-                {t("showLegend")}
+                <Switch checked={showValues} onCheckedChange={setShowValues} />
+                {t("showValues")}
               </label>
             ) : null}
           </div>

@@ -369,6 +369,13 @@
       "max": "最大值",
       "horizontal": "橫向",
       "showLegend": "顯示圖例",
+      "showPercentage": "顯示百分比",
+      "percentagePlacement": {
+        "none": "不顯示",
+        "onSlice": "顯示在圓餅上",
+        "beside": "顯示在文字旁"
+      },
+      "showValues": "顯示數值",
       "addEntry": "新增項目",
       "clearEntry": "清空",
       "entryLimitReached": "最多 20 個項目",

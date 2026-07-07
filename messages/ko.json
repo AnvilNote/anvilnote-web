@@ -369,6 +369,13 @@
       "max": "최댓값",
       "horizontal": "가로",
       "showLegend": "범례 표시",
+      "showPercentage": "비율 표시",
+      "percentagePlacement": {
+        "none": "표시 안 함",
+        "onSlice": "조각 위에 표시",
+        "beside": "레이블 옆에 표시"
+      },
+      "showValues": "값 표시",
       "addEntry": "항목 추가",
       "clearEntry": "지우기",
       "entryLimitReached": "최대 20개 항목",
