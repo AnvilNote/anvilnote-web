@@ -301,12 +301,14 @@ export const AnvilStatsChart = Node.create({
         parseHTML: (element) => element.getAttribute("data-trend-line") ?? "none",
         renderHTML: (attributes) => ({ "data-trend-line": attributes.trendLine ?? "none" }),
       },
-      // scatter only — mirrors anvilnote-charts's own default gray.
+      // scatter only — mirrors anvilnote-charts's own default (Economist
+      // red, swapped from gray per explicit feedback alongside the
+      // scatter points' own default moving to near-black).
       trendLineColor: {
-        default: "#737373",
-        parseHTML: (element) => element.getAttribute("data-trend-line-color") ?? "#737373",
+        default: "#E3120B",
+        parseHTML: (element) => element.getAttribute("data-trend-line-color") ?? "#E3120B",
         renderHTML: (attributes) => ({
-          "data-trend-line-color": attributes.trendLineColor ?? "#737373",
+          "data-trend-line-color": attributes.trendLineColor ?? "#E3120B",
         }),
       },
       // Chart-wide; see FontFamily above.

@@ -317,7 +317,7 @@ function StatsChartForm({
     initialSpec.chartType === "scatter" ? initialSpec.trendLine : "none",
   );
   const [trendLineColor, setTrendLineColor] = useState(
-    initialSpec.chartType === "scatter" ? initialSpec.trendLineColor : "#737373",
+    initialSpec.chartType === "scatter" ? initialSpec.trendLineColor : "#E3120B",
   );
   // Trend-line color has just one Popover (not per-row like the entry
   // color pickers below), so a simple boolean is enough — no shared
@@ -1496,19 +1496,19 @@ function StatsChartForm({
                 whichever chart types have axis labels at all). */}
             <div className="absolute inset-x-2 top-2 z-10 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
               {chartType === "bar" ||
-              chartType === "column" ||
-              chartType === "stackedBar" ||
-              chartType === "stackedColumn" ||
-              chartType === "scatter" ? (
+                chartType === "column" ||
+                chartType === "stackedBar" ||
+                chartType === "stackedColumn" ||
+                chartType === "scatter" ? (
                 <label className="flex items-center gap-1.5">
                   <Switch checked={showGridLines} onCheckedChange={setShowGridLines} className="scale-90" />
                   {t("showGridLines")}
                 </label>
               ) : null}
               {chartType === "bar" ||
-              chartType === "column" ||
-              chartType === "stackedBar" ||
-              chartType === "stackedColumn" ? (
+                chartType === "column" ||
+                chartType === "stackedBar" ||
+                chartType === "stackedColumn" ? (
                 <label className="flex items-center gap-1.5">
                   <Switch checked={showBorder} onCheckedChange={setShowBorder} className="scale-90" />
                   {t("showBorder")}
@@ -1601,7 +1601,7 @@ function StatsChartForm({
                 // min-h-[420px] isn't a DEFINITE height — a percentage
                 // height on this child wouldn't resolve against a
                 // min-height parent, silently falling back to auto.
-                className="flex max-h-[300px] w-full max-w-[80%] items-center justify-center [&_svg]:h-auto [&_svg]:max-h-[260px] [&_svg]:w-auto [&_svg]:max-w-full [&_svg]:object-contain"
+                className="flex max-h-[330px] w-full max-w-[100%] items-center justify-center [&_svg]:h-auto [&_svg]:max-h-[330px] [&_svg]:w-auto [&_svg]:max-w-full [&_svg]:object-contain"
                 dangerouslySetInnerHTML={{ __html: previewSvg }}
               />
             ) : hasLabel && loading ? (

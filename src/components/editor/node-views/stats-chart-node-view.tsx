@@ -65,7 +65,7 @@ function buildSpec(node: NodeViewProps["node"]): StatsChartSpec {
       ? node.attrs.trendLine
       : "none";
     const trendLineColor =
-      typeof node.attrs.trendLineColor === "string" ? node.attrs.trendLineColor : "#737373";
+      typeof node.attrs.trendLineColor === "string" ? node.attrs.trendLineColor : "#E3120B";
     return {
       chartType: "scatter",
       data: data as ScatterEntry[],
