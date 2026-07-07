@@ -25,12 +25,19 @@ type SettingsState = {
   exportFontPreset: ExportFontPreset;
   exportStorageLocation: string;
   versionSnapshotIntervalMinutes: VersionSnapshotIntervalMinutes;
+  // Auto-filled into a new document's `author` metadata field (only for
+  // templates that expose one — see document-store.ts's createDocument,
+  // same "seed if the field exists" pattern already used for `title`).
+  // Editable per-document afterwards; this only supplies the starting
+  // value, never overwrites an already-saved document.
+  defaultAuthor: string;
   setAutosave: (v: boolean) => void;
   setSpellcheck: (v: boolean) => void;
   setExportPageSize: (v: ExportPageSize) => void;
   setExportFontPreset: (v: ExportFontPreset) => void;
   setExportStorageLocation: (v: string) => void;
   setVersionSnapshotIntervalMinutes: (v: VersionSnapshotIntervalMinutes) => void;
+  setDefaultAuthor: (v: string) => void;
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -42,12 +49,14 @@ export const useSettingsStore = create<SettingsState>()(
       exportFontPreset: "serif",
       exportStorageLocation: DEFAULT_STORAGE_LOCATION,
       versionSnapshotIntervalMinutes: 15,
+      defaultAuthor: "",
       setAutosave: (v) => set({ autosave: v }),
       setSpellcheck: (v) => set({ spellcheck: v }),
       setExportPageSize: (v) => set({ exportPageSize: v }),
       setExportFontPreset: (v) => set({ exportFontPreset: v }),
       setExportStorageLocation: (v) => set({ exportStorageLocation: v }),
       setVersionSnapshotIntervalMinutes: (v) => set({ versionSnapshotIntervalMinutes: v }),
+      setDefaultAuthor: (v) => set({ defaultAuthor: v }),
     }),
     {
       name: STORAGE_KEY,

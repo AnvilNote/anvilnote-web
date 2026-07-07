@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { DatabaseBackup, Loader2, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
@@ -130,6 +131,24 @@ export default function SettingsPage() {
           <SettingsRow
             label={t("settings.language.label")}
             control={<LocaleSwitcher />}
+          />
+        </SettingsSection>
+
+        <SettingsSection
+          title={t("settings.documentDefaults.title")}
+          description={t("settings.documentDefaults.description")}
+        >
+          <SettingsRow
+            label={t("settings.documentDefaults.author")}
+            hint={t("settings.documentDefaults.authorHint")}
+            control={
+              <Input
+                className="w-56"
+                onChange={(event) => settings.setDefaultAuthor(event.target.value)}
+                placeholder={t("settings.documentDefaults.authorPlaceholder")}
+                value={settings.defaultAuthor}
+              />
+            }
           />
         </SettingsSection>
 

@@ -798,6 +798,13 @@
       "intervalHint": "内容に実際に変更があった場合のみスナップショットが作成されるため、無駄な容量を使いません。",
       "off": "オフ",
       "every": "{minutes} 分ごと"
+    },
+    "documentDefaults": {
+      "title": "文書の初期値",
+      "description": "新しい文書に自動的に入力される初期値です。文書ごとに後から変更できます。",
+      "author": "デフォルトの著者",
+      "authorHint": "「著者」欄がある範本で、新しい文書に自動入力されます。",
+      "authorPlaceholder": "あなたの名前"
     }
   },
   "command": {

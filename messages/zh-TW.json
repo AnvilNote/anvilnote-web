@@ -798,6 +798,13 @@
       "intervalHint": "只有在內容真的有變動時才會建立快照，不會浪費空間。",
       "off": "關閉",
       "every": "每 {minutes} 分鐘"
+    },
+    "documentDefaults": {
+      "title": "文件預設值",
+      "description": "自動帶入新文件的起始值，之後仍可依文件個別修改。",
+      "author": "預設作者",
+      "authorHint": "帶入新文件的「作者」欄位（限有該欄位的範本）。",
+      "authorPlaceholder": "你的名字"
     }
   },
   "command": {
