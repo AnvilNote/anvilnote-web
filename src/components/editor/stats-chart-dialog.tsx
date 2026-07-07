@@ -1416,83 +1416,18 @@ function StatsChartForm({
               </div>
             ) : null}
 
-            {chartType === "bar" ||
-              chartType === "column" ||
-              chartType === "stackedBar" ||
-              chartType === "stackedColumn" ||
-              chartType === "line" ||
-              chartType === "scatter" ? (
-              // X label + Y label share one row.
-              <div className="flex flex-wrap items-center gap-3 text-sm">
-                <label className="flex items-center gap-1.5">
-                  <span className="text-xs text-muted-foreground">{t("xLabel")}</span>
-                  <input
-                    className="w-32 rounded-lg border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
-                    onChange={(event) => setXLabel(event.target.value)}
-                    value={xLabel}
-                  />
-                </label>
-                <label className="flex items-center gap-1.5">
-                  <span className="text-xs text-muted-foreground">{t("yLabel")}</span>
-                  <input
-                    className="w-32 rounded-lg border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
-                    onChange={(event) => setYLabel(event.target.value)}
-                    value={yLabel}
-                  />
-                </label>
-              </div>
-            ) : null}
-
-            {chartType === "bar" ||
-              chartType === "column" ||
-              chartType === "stackedBar" ||
-              chartType === "stackedColumn" ||
-              chartType === "line" ||
-              chartType === "scatter" ? (
-              // Rotate Y label + Show gridlines + Show border + Show values
-              // all share one row — per explicit feedback, bar/column's
-              // own full set of these toggles belongs on a single line;
-              // each toggle still only renders for the chart types it
-              // actually applies to (gridlines: bar/column/stacked/
-              // scatter; border: bar/column/stacked; values: bar/column
-              // only — line/scatter have neither).
-              <div className="flex flex-wrap items-center gap-4 text-sm">
-                <label className="flex items-center gap-2">
-                  <Switch checked={yLabelRotated} onCheckedChange={setYLabelRotated} />
-                  <InlineMathText text={t("yLabelRotated")} />
-                </label>
-                {chartType === "bar" ||
-                  chartType === "column" ||
-                  chartType === "stackedBar" ||
-                  chartType === "stackedColumn" ||
-                  chartType === "scatter" ? (
-                  <label className="flex items-center gap-2">
-                    <Switch checked={showGridLines} onCheckedChange={setShowGridLines} />
-                    {t("showGridLines")}
-                  </label>
-                ) : null}
-                {chartType === "bar" ||
-                  chartType === "column" ||
-                  chartType === "stackedBar" ||
-                  chartType === "stackedColumn" ? (
-                  <label className="flex items-center gap-2">
-                    <Switch checked={showBorder} onCheckedChange={setShowBorder} />
-                    {t("showBorder")}
-                  </label>
-                ) : null}
-                {chartType === "bar" || chartType === "column" ? (
-                  <label className="flex items-center gap-2">
-                    <Switch checked={showValues} onCheckedChange={setShowValues} />
-                    {t("showValues")}
-                  </label>
-                ) : null}
-                {chartType === "stackedBar" || chartType === "stackedColumn" ? (
-                  <label className="flex items-center gap-2">
-                    <Switch checked={showLegend} onCheckedChange={setShowLegend} />
-                    {t("showLegend")}
-                  </label>
-                ) : null}
-              </div>
+            {chartType === "stackedBar" || chartType === "stackedColumn" ? (
+              // showLegend is the only one of this group's former
+              // row-mates that STAYS in the left panel — showGridLines/
+              // showBorder/showValues moved into the preview pane's own
+              // top bar, and xLabel/yLabel/yLabelRotated moved into its
+              // bottom bar (see the preview pane JSX below), per explicit
+              // feedback consolidating those controls next to the chart
+              // they affect instead of a generic settings list.
+              <label className="flex items-center gap-2 text-sm">
+                <Switch checked={showLegend} onCheckedChange={setShowLegend} />
+                {t("showLegend")}
+              </label>
             ) : null}
 
             {chartType === "pie" ? (
@@ -1521,15 +1456,52 @@ function StatsChartForm({
             ) : null}
           </div>
           <div className="relative flex min-h-[420px] flex-col items-center justify-center gap-2 overflow-hidden rounded border p-2">
-            <Select onValueChange={(value) => setFontFamily(value as FontFamily)} value={fontFamily}>
-              <SelectTrigger className="absolute top-2 right-2 z-10 h-7 w-28 text-xs" size="sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="sans">{t("fontFamilies.sans")}</SelectItem>
-                <SelectItem value="serif">{t("fontFamilies.serif")}</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Top bar: showGridLines/showBorder/showValues (moved here
+                from the left panel, per explicit feedback grouping
+                render-affecting toggles next to the chart itself) sit to
+                the LEFT of the font-family select, sharing one row —
+                each toggle still only renders for the chart types it
+                actually applies to (gridlines: bar/column/stacked/
+                scatter; border: bar/column/stacked; values: bar/column
+                only). */}
+            <div className="absolute inset-x-2 top-2 z-10 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-3 text-xs">
+                {chartType === "bar" ||
+                chartType === "column" ||
+                chartType === "stackedBar" ||
+                chartType === "stackedColumn" ||
+                chartType === "scatter" ? (
+                  <label className="flex items-center gap-1.5">
+                    <Switch checked={showGridLines} onCheckedChange={setShowGridLines} className="scale-90" />
+                    {t("showGridLines")}
+                  </label>
+                ) : null}
+                {chartType === "bar" ||
+                chartType === "column" ||
+                chartType === "stackedBar" ||
+                chartType === "stackedColumn" ? (
+                  <label className="flex items-center gap-1.5">
+                    <Switch checked={showBorder} onCheckedChange={setShowBorder} className="scale-90" />
+                    {t("showBorder")}
+                  </label>
+                ) : null}
+                {chartType === "bar" || chartType === "column" ? (
+                  <label className="flex items-center gap-1.5">
+                    <Switch checked={showValues} onCheckedChange={setShowValues} className="scale-90" />
+                    {t("showValues")}
+                  </label>
+                ) : null}
+              </div>
+              <Select onValueChange={(value) => setFontFamily(value as FontFamily)} value={fontFamily}>
+                <SelectTrigger className="h-7 w-28 text-xs" size="sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sans">{t("fontFamilies.sans")}</SelectItem>
+                  <SelectItem value="serif">{t("fontFamilies.serif")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             {/* Deliberately shrunk well below the pane's own available
                 space (70%/260px, not just barely-under-100%) — per
                 explicit feedback that an earlier, more conservative crop
@@ -1551,16 +1523,51 @@ function StatsChartForm({
               <span className="text-muted-foreground text-sm">{t("previewLoading")}</span>
             ) : null}
             {hasLabel && error ? <p className="text-destructive text-sm">{t("previewError")}</p> : null}
-            <div className="absolute right-2 bottom-2 z-10 flex items-center gap-1.5 bg-background/90 px-2 py-1 text-xs">
-              <input
-                aria-label={t("customWidthRatio")}
-                className="w-12 rounded-lg border bg-transparent px-1 py-0.5 text-center text-xs outline-none focus:bg-accent"
-                onChange={(event) => handleWidthRatioChange(event.target.value)}
-                placeholder={t("auto")}
-                type="number"
-                value={widthRatioDraft}
-              />
-              <span className="text-muted-foreground">%</span>
+            {/* Bottom bar: xLabel/yLabel/yLabelRotated (moved here from
+                the left panel) share one row with the width ratio input,
+                at the same height — per explicit feedback. Order left to
+                right: X label, Y label, Rotate Y label, then the ratio
+                input stays rightmost (justify-between keeps it pinned
+                there regardless of how many of the left-hand fields
+                render for the current chart type). */}
+            <div className="absolute inset-x-2 bottom-2 z-10 flex items-center justify-between gap-2 text-xs">
+              <div className="flex flex-wrap items-center gap-2">
+                {hasAxisLabelFields ? (
+                  <>
+                    <label className="flex items-center gap-1">
+                      <span className="text-muted-foreground">{t("xLabel")}</span>
+                      <input
+                        className="w-20 rounded-lg border bg-transparent px-1.5 py-0.5 text-xs outline-none focus:bg-accent"
+                        onChange={(event) => setXLabel(event.target.value)}
+                        value={xLabel}
+                      />
+                    </label>
+                    <label className="flex items-center gap-1">
+                      <span className="text-muted-foreground">{t("yLabel")}</span>
+                      <input
+                        className="w-20 rounded-lg border bg-transparent px-1.5 py-0.5 text-xs outline-none focus:bg-accent"
+                        onChange={(event) => setYLabel(event.target.value)}
+                        value={yLabel}
+                      />
+                    </label>
+                    <label className="flex items-center gap-1">
+                      <Switch checked={yLabelRotated} onCheckedChange={setYLabelRotated} className="scale-90" />
+                      <InlineMathText text={t("yLabelRotated")} />
+                    </label>
+                  </>
+                ) : null}
+              </div>
+              <div className="flex items-center gap-1.5 bg-background/90 px-2 py-1">
+                <input
+                  aria-label={t("customWidthRatio")}
+                  className="w-12 rounded-lg border bg-transparent px-1 py-0.5 text-center text-xs outline-none focus:bg-accent"
+                  onChange={(event) => handleWidthRatioChange(event.target.value)}
+                  placeholder={t("auto")}
+                  type="number"
+                  value={widthRatioDraft}
+                />
+                <span className="text-muted-foreground">%</span>
+              </div>
             </div>
           </div>
         </div>
