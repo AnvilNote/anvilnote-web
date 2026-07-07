@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx";
-import { MAX_ENTRIES, defaultEntryColor } from "@/lib/stats-chart-defaults";
-import type { BoxWhiskerEntry, CategoricalEntry } from "@/lib/tiptap/stats-chart";
+import { MAX_ENTRIES, SCATTER_MAX_ENTRIES, defaultEntryColor } from "@/lib/stats-chart-defaults";
+import type { BoxWhiskerEntry, CategoricalEntry, ScatterEntry } from "@/lib/tiptap/stats-chart";
 
 // SheetJS (xlsx package) reads .csv/.xls/.xlsx/.ods all through the same
 // XLSX.read() entry point — it sniffs the format from the file content,
@@ -46,6 +46,21 @@ export async function parseCategoricalSpreadsheet(file: File): Promise<Categoric
     label: toLabel(row[0]),
     value: toNumber(row[1]),
     color: defaultEntryColor(index),
+  }));
+}
+
+// Scatter's own two-column (x, y) shape — both numeric, unlike
+// categorical's (label, value). isHeaderRow's own heuristic (second cell
+// doesn't parse as a number) still correctly detects a "x,y" header row
+// here: the header text "y" is itself non-numeric, same as "Value"/"Min"
+// would be for the other shapes.
+export async function parseScatterSpreadsheet(file: File): Promise<ScatterEntry[]> {
+  const buffer = await file.arrayBuffer();
+  const rows = readSheetRows(buffer);
+  const dataRows = rows.length > 0 && isHeaderRow(rows[0]) ? rows.slice(1) : rows;
+  return dataRows.slice(0, SCATTER_MAX_ENTRIES).map((row) => ({
+    x: toNumber(row[0]),
+    y: toNumber(row[1]),
   }));
 }
 

@@ -241,6 +241,37 @@
   counter-increment: anvil-figure;
 }
 
+/* Stats chart's caption reuses the SAME anvil-figure counter + caption
+   classes as .anvil-image (see stats-chart-node-view.tsx's own comment)
+   — charts and images share one interleaved "Figure N" sequence. Unlike
+   .anvil-image, a chart has no data-align attribute of its own (no left/
+   right variant), so its caption is unconditionally centered here rather
+   than relying on the `.anvil-image[data-align="center"] .anvil-image__
+   caption` selector, which wouldn't ever match a `.anvil-stats-chart`
+   ancestor. */
+.anvil-stats-chart {
+  counter-increment: anvil-figure;
+}
+
+.anvil-stats-chart .anvil-image__caption {
+  /* Unlike .anvil-image's own figcaption (a child of a width-constrained
+     image frame, whose caption naturally spans that same narrower
+     width and is recentered via data-align + justify-content),
+     .anvil-stats-chart's figcaption is a direct sibling of the chart box
+     with no data-align concept of its own — `justify-content: center`
+     alone has no visible effect on a flex container that's already
+     shrunk to its own content width. Using width: fit-content +
+     margin-inline: auto instead (same mechanism as the .landing-demo-
+     scoped caption rule already uses) centers the caption as a compact
+     block regardless of the chart's own width, and needs no data-align
+     attribute to key off. Confirmed via a real browser check. */
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+  text-align: center;
+  justify-content: center;
+}
+
 .anvil-image[data-align="left"] {
   justify-content: flex-start;
 }

@@ -273,7 +273,7 @@
       "functionPlot": "函數圖",
       "functionPlotHint": "繪製 y = f(x) 曲線",
       "statsChart": "統計圖",
-      "statsChartHint": "長條圖、圓餅圖、金字塔圖或箱形圖"
+      "statsChartHint": "長條圖、圓餅圖、折線圖、散佈圖或箱形圖"
     },
     "image": {
       "figure": "圖",
@@ -378,6 +378,8 @@
       },
       "showValues": "顯示數值",
       "showGridLines": "顯示格線",
+      "figure": "圖",
+      "captionPlaceholder": "輸入圖表標題",
       "xLabel": "X 軸標籤",
       "yLabel": "Y 軸標籤",
       "yLabelRotated": "旋轉 Y 軸標籤",

@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { Trash2 } from "lucide-react";
 import { StatsChartDialog } from "@/components/editor/stats-chart-dialog";
+import { CaptionInput } from "@/components/editor/caption-input";
 import type {
   AxisLabelFields,
   BoxWhiskerEntry,
@@ -84,7 +85,9 @@ function entryDisplayValue(entry: CategoricalEntry | BoxWhiskerEntry): number {
 
 export function StatsChartNodeView({ node, updateAttributes, deleteNode }: NodeViewProps) {
   const t = useTranslations("editor.block");
+  const tChart = useTranslations("editor.statsChart");
   const svg = typeof node.attrs.svg === "string" ? node.attrs.svg : null;
+  const caption = typeof node.attrs.caption === "string" ? node.attrs.caption : "";
   const data: (CategoricalEntry | BoxWhiskerEntry | ScatterEntry)[] = Array.isArray(node.attrs.data)
     ? node.attrs.data
     : [];
@@ -134,7 +137,7 @@ export function StatsChartNodeView({ node, updateAttributes, deleteNode }: NodeV
   const hiddenEntryCount = filledEntries.length - previewEntries.length;
 
   return (
-    <NodeViewWrapper className="relative my-2" contentEditable={false}>
+    <NodeViewWrapper className="anvil-stats-chart relative my-2" contentEditable={false}>
       <div
         className="group relative flex min-h-[80px] cursor-pointer gap-3 overflow-hidden rounded border p-2"
         onClick={() => setDialogOpen(true)}
@@ -175,6 +178,19 @@ export function StatsChartNodeView({ node, updateAttributes, deleteNode }: NodeV
           </button>
         </div>
       </div>
+      {/* Mirrors image-node-view.tsx's own figcaption exactly (same
+          anvil-image__caption* classes) so a chart participates in the
+          SAME anvil-figure counter images use — charts and images share
+          one interleaved "Figure N" sequence in document order. */}
+      <figcaption className="anvil-image__caption" contentEditable={false}>
+        <span className="anvil-image__caption-label" data-label={tChart("figure")} />
+        <CaptionInput
+          value={caption}
+          placeholder={tChart("captionPlaceholder")}
+          onChange={(value) => updateAttributes({ caption: value })}
+          className="anvil-caption-input"
+        />
+      </figcaption>
       <StatsChartDialog
         initialSpec={spec}
         onOpenChange={setDialogOpen}

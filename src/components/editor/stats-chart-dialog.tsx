@@ -45,6 +45,7 @@ import {
   SPREADSHEET_IMPORT_ACCEPT,
   parseBoxWhiskerSpreadsheet,
   parseCategoricalSpreadsheet,
+  parseScatterSpreadsheet,
 } from "@/lib/stats-chart-import";
 import { parseNumericInput, numericInputValue } from "@/lib/numeric-input";
 import type {
@@ -260,11 +261,15 @@ function StatsChartForm({
   // rows beyond VISIBLE_ROW_LIMIT are hidden.
   const categoricalRows = categoricalData.map((entry, index) => ({ entry, index }));
   const boxWhiskerRows = boxWhiskerData.map((entry, index) => ({ entry, index }));
+  const scatterRows = scatterData.map((entry, index) => ({ entry, index }));
   const visibleCategoricalRows = showAllRows
     ? categoricalRows
     : categoricalRows.slice(0, VISIBLE_ROW_LIMIT);
   const visibleBoxWhiskerRows = showAllRows ? boxWhiskerRows : boxWhiskerRows.slice(0, VISIBLE_ROW_LIMIT);
-  const hiddenRowCount = activeData.length - Math.min(activeData.length, VISIBLE_ROW_LIMIT);
+  const visibleScatterRows = showAllRows ? scatterRows : scatterRows.slice(0, VISIBLE_ROW_LIMIT);
+  const hiddenRowCount = isScatter
+    ? scatterData.length - Math.min(scatterData.length, VISIBLE_ROW_LIMIT)
+    : activeData.length - Math.min(activeData.length, VISIBLE_ROW_LIMIT);
 
   function buildSpec(): StatsChartSpec {
     // Rows with a blank label are filtered out here, not just left in —
@@ -405,6 +410,14 @@ function StatsChartForm({
         const entries = await parseBoxWhiskerSpreadsheet(file);
         importedCount = entries.length;
         setBoxWhiskerData(entries.length > 0 ? entries : [defaultBoxWhiskerEntry()]);
+      } else if (isScatter) {
+        const points = await parseScatterSpreadsheet(file);
+        importedCount = points.length;
+        setScatterData(
+          points.length > 0
+            ? points.map((p) => ({ x: String(p.x), y: String(p.y) }))
+            : [defaultScatterEntry()],
+        );
       } else {
         const entries = await parseCategoricalSpreadsheet(file);
         importedCount = entries.length;
@@ -418,8 +431,12 @@ function StatsChartForm({
       // chart's own size clamp (anvilnote-charts's MAX_SCALED_DIMENSION)
       // starts compressing bar/box width instead of growing with count —
       // an import is the realistic path for crossing this in one action,
-      // vs. typing entries in one at a time.
-      if (importedCount > CROWDED_ENTRY_THRESHOLD) {
+      // vs. typing entries in one at a time. Doesn't apply to scatter:
+      // points don't get proportionally narrower/compressed the way
+      // bars/boxes do, and a large point count (up to SCATTER_MAX_ENTRIES,
+      // 200) is the NORMAL expected use case for a real data sample, not
+      // a crowding problem worth warning about.
+      if (!isScatter && importedCount > CROWDED_ENTRY_THRESHOLD) {
         toast.warning(t("tooManyEntriesWarning"));
       }
     } catch {
@@ -828,17 +845,21 @@ function StatsChartForm({
                 <table className="w-full table-fixed border-collapse text-sm">
                   <thead>
                     <tr className="bg-muted/50">
+                      {/* Header text mirrors the xLabel/yLabel fields below
+                          (falling back to plain "x"/"y" when empty) — so
+                          renaming an axis there is immediately reflected
+                          here too, per explicit feedback. */}
                       <th className="border-b p-1.5 text-left text-xs font-medium text-muted-foreground">
-                        x
+                        {xLabel.trim() || "x"}
                       </th>
                       <th className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground">
-                        y
+                        {yLabel.trim() || "y"}
                       </th>
                       <th className="border-b border-l p-1.5" style={{ width: "10%" }} />
                     </tr>
                   </thead>
                   <tbody>
-                    {scatterData.map((entry, index) => (
+                    {visibleScatterRows.map(({ entry, index }) => (
                       <tr key={index}>
                         <td className="border-b p-0">
                           <input
@@ -875,7 +896,7 @@ function StatsChartForm({
               renderTable(visibleCategoricalRows, visibleBoxWhiskerRows)
             )}
 
-            {!isScatter && hiddenRowCount > 0 ? (
+            {hiddenRowCount > 0 ? (
               <Button onClick={() => setShowAllRows(true)} size="sm" variant="ghost">
                 {t("showMoreRows", { count: hiddenRowCount })}
               </Button>
