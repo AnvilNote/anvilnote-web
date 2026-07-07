@@ -378,8 +378,8 @@
       "showPercentage": "Show percentage",
       "percentagePlacement": {
         "none": "None",
-        "onSlice": "On the slice",
-        "beside": "Next to the label"
+        "onSlice": "On slice",
+        "beside": "By label"
       },
       "showValues": "Show values",
       "showGridLines": "Show gridlines",

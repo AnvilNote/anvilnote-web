@@ -379,7 +379,7 @@
       "percentagePlacement": {
         "none": "Не показывать",
         "onSlice": "На сегменте",
-        "beside": "Рядом с подписью"
+        "beside": "У подписи"
       },
       "showValues": "Показать значения",
       "showGridLines": "Показать сетку",

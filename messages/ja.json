@@ -378,8 +378,8 @@
       "showPercentage": "割合を表示",
       "percentagePlacement": {
         "none": "表示しない",
-        "onSlice": "扇形の上に表示",
-        "beside": "ラベルの横に表示"
+        "onSlice": "扇形の上",
+        "beside": "ラベルの横"
       },
       "showValues": "数値を表示",
       "showGridLines": "目盛線を表示",

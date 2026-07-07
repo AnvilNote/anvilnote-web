@@ -378,8 +378,8 @@
       "showPercentage": "비율 표시",
       "percentagePlacement": {
         "none": "표시 안 함",
-        "onSlice": "조각 위에 표시",
-        "beside": "레이블 옆에 표시"
+        "onSlice": "조각 위",
+        "beside": "레이블 옆"
       },
       "showValues": "값 표시",
       "showGridLines": "격자선 표시",
