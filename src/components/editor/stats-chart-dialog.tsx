@@ -264,23 +264,21 @@ function StatsChartForm({
   );
   const textWidthCm = activeTemplate?.textWidthCm ?? 16;
 
-  // Draft strings (not numbers) — same "blank means unset, not some
+  // Draft string (not a number) — same "blank means unset, not some
   // sentinel number" pattern as scatter's own draft entries: an empty
   // input means "auto" (no override sent), not 0. Every chart type's
-  // spec now carries width/height (CustomSizeFields spread into the
-  // whole StatsChartSpec union), so no chartType narrowing is needed
-  // here unlike most other per-type state above.
+  // spec now carries width (CustomSizeFields spread into the whole
+  // StatsChartSpec union), so no chartType narrowing is needed here
+  // unlike most other per-type state above.
+  //
+  // height is intentionally NOT a user-facing field at all (per explicit
+  // feedback simplifying this down to one control) — it's left unset in
+  // the spec, so anvilnote-charts's own auto-computed height (scaled to
+  // entry count, matching its existing non-custom-size behavior) applies
+  // regardless of what width ratio is chosen.
   const [widthRatioDraft, setWidthRatioDraft] = useState(
     initialSpec.width !== undefined ? String(Math.round((initialSpec.width / textWidthCm) * 100)) : "",
   );
-  const [heightDraft, setHeightDraft] = useState(
-    initialSpec.height !== undefined ? String(initialSpec.height) : "",
-  );
-  // Lock-aspect-ratio is a dialog-local UI convenience (which number
-  // input the OTHER one follows when edited), not persisted to the
-  // spec — same "ephemeral, UI-only" category as trendLineColorOpen's
-  // popover-open state above.
-  const [lockAspectRatio, setLockAspectRatio] = useState(false);
   const hasAxisLabelFields =
     initialSpec.chartType === "bar" ||
     initialSpec.chartType === "column" ||
@@ -377,26 +375,23 @@ function StatsChartForm({
     ? scatterData.length - Math.min(scatterData.length, VISIBLE_ROW_LIMIT)
     : activeData.length - Math.min(activeData.length, VISIBLE_ROW_LIMIT);
 
-  // Blank draft = "auto" (no override sent) — the schema's own
-  // width/height are optional, so `undefined` here means the field is
-  // simply omitted from the spec, letting anvilnote-charts fall back to
-  // its usual auto-computed dimension for that axis. width is stored as a
-  // PERCENTAGE of the template's own textWidthCm (see widthRatioDraft's
-  // own comment above) and converted to an absolute cm value here, right
-  // before it goes into the spec — anvilnote-charts/anvilnote-api's own
-  // schemas are unchanged, still plain cm; the ratio is a web-only input
-  // mode.
-  function customSize(): { width?: number; height?: number } {
+  // Blank draft = "auto" (no override sent) — the schema's own width is
+  // optional, so `undefined` here means the field is simply omitted from
+  // the spec, letting anvilnote-charts fall back to its usual
+  // auto-computed dimension. width is stored as a PERCENTAGE of the
+  // template's own textWidthCm (see widthRatioDraft's own comment above)
+  // and converted to an absolute cm value here, right before it goes
+  // into the spec — anvilnote-charts/anvilnote-api's own schemas are
+  // unchanged, still plain cm; the ratio is a web-only input mode.
+  // height is never set from here at all — see widthRatioDraft's comment
+  // on why it's not a user-facing field.
+  function customSize(): { width?: number } {
     const widthRatio = widthRatioDraft.trim() ? Number(widthRatioDraft) : undefined;
-    const height = heightDraft.trim() ? Number(heightDraft) : undefined;
     const width =
       widthRatio !== undefined && Number.isFinite(widthRatio)
         ? Math.round(((widthRatio / 100) * textWidthCm) * 100) / 100
         : undefined;
-    return {
-      width,
-      height: height !== undefined && Number.isFinite(height) ? height : undefined,
-    };
+    return { width };
   }
 
   function buildSpec(): StatsChartSpec {
@@ -537,66 +532,19 @@ function StatsChartForm({
     setSeriesLabels((prev) => prev.map((existing, i) => (i === index ? label : existing)));
   }
 
-  // Mirrors anvilnote-charts's own customSizeFields clamp (1-50cm) — kept
-  // as a local constant here since the dialog needs it for the toast
-  // check below, not just schema validation after the fact.
+  // Mirrors anvilnote-charts's own customSizeFields clamp (1-50cm) — the
+  // RESOLVED cm value (ratio% × textWidthCm) is checked against this,
+  // even though the user only ever types a percentage.
   const CUSTOM_SIZE_MIN = 1;
   const CUSTOM_SIZE_MAX = 50;
-  // No fixed convention for "the" aspect ratio, so this is an arbitrary
-  // but reasonable default (4:3) — only used the FIRST time lock is
-  // engaged with nothing to base a ratio on yet (both fields blank);
-  // once one real pair of values exists, later edits preserve THAT
-  // ratio instead (see the oldWidth/oldHeight branch below).
-  const DEFAULT_ASPECT_RATIO = 4 / 3;
 
-  function warnIfOutOfRange(value: number) {
-    if (value < CUSTOM_SIZE_MIN || value > CUSTOM_SIZE_MAX) {
-      toast.warning(t("customSizeRangeWarning", { min: CUSTOM_SIZE_MIN, max: CUSTOM_SIZE_MAX }));
-    }
-  }
-
-  // width's own ratio-draft (percentage of textWidthCm) resolved to an
-  // absolute cm value — shared by the range check and the aspect-ratio
-  // math below, both of which need to compare against height in the same
-  // (cm) unit.
-  function widthCmFrom(ratioDraft: string): number {
-    return (Number(ratioDraft) / 100) * textWidthCm;
-  }
-
-  // When lock is on, the OTHER field always follows: if a real ratio
-  // already exists (both old values are valid positive numbers), that
-  // ratio is preserved; otherwise (first use, one or both fields still
-  // blank) DEFAULT_ASPECT_RATIO is applied instead of leaving the other
-  // field untouched — "填寫其中一個就會自動填寫其他的" per explicit
-  // feedback, not just a no-op when there's nothing to preserve yet.
   function handleWidthRatioChange(value: string) {
     setWidthRatioDraft(value);
     if (!value.trim() || !Number.isFinite(Number(value))) return;
-    // No cm-range toast here (unlike height) — width is now typed as a
-    // PERCENTAGE, not cm, so a "must be between 1 and 50cm" message
-    // would be talking about a unit the user never typed. The schema's
-    // own 1-50cm clamp still applies to the RESOLVED value at save time;
-    // it just isn't surfaced as an immediate keystroke-level warning
-    // here anymore.
-    const newWidthCm = widthCmFrom(value);
-    if (!lockAspectRatio) return;
-    const oldWidthCm = widthCmFrom(widthRatioDraft);
-    const oldHeight = Number(heightDraft);
-    const ratio = oldWidthCm > 0 && oldHeight > 0 ? oldHeight / oldWidthCm : 1 / DEFAULT_ASPECT_RATIO;
-    setHeightDraft(String(Math.round(newWidthCm * ratio * 10) / 10));
-  }
-
-  function handleHeightChange(value: string) {
-    setHeightDraft(value);
-    const newHeight = Number(value);
-    if (!value.trim() || !Number.isFinite(newHeight)) return;
-    warnIfOutOfRange(newHeight);
-    if (!lockAspectRatio) return;
-    const oldWidthCm = widthCmFrom(widthRatioDraft);
-    const oldHeight = Number(heightDraft);
-    const ratio = oldWidthCm > 0 && oldHeight > 0 ? oldWidthCm / oldHeight : DEFAULT_ASPECT_RATIO;
-    const newWidthCm = newHeight * ratio;
-    setWidthRatioDraft(String(Math.round((newWidthCm / textWidthCm) * 100)));
+    const resolvedCm = (Number(value) / 100) * textWidthCm;
+    if (resolvedCm < CUSTOM_SIZE_MIN || resolvedCm > CUSTOM_SIZE_MAX) {
+      toast.warning(t("customSizeRangeWarning", { min: CUSTOM_SIZE_MIN, max: CUSTOM_SIZE_MAX }));
+    }
   }
 
   function updateSeriesColor(index: number, color: string) {
@@ -1597,8 +1545,7 @@ function StatsChartForm({
             ) : null}
             {hasLabel && error ? <p className="text-destructive text-sm">{t("previewError")}</p> : null}
             <div className="absolute right-2 bottom-2 z-10 flex items-center gap-1.5 rounded border bg-background/90 px-2 py-1 text-xs">
-              <Switch checked={lockAspectRatio} onCheckedChange={setLockAspectRatio} className="scale-90" />
-              <span className="text-muted-foreground">{t("lockAspectRatio")}</span>
+              <span className="text-muted-foreground">{t("customWidthRatio")}</span>
               <input
                 aria-label={t("customWidthRatio")}
                 className="w-12 rounded-lg border bg-transparent px-1 py-0.5 text-center text-xs outline-none focus:bg-accent"
@@ -1608,16 +1555,6 @@ function StatsChartForm({
                 value={widthRatioDraft}
               />
               <span className="text-muted-foreground">%</span>
-              <InlineMathText text="$\times$" />
-              <input
-                aria-label={t("customHeight")}
-                className="w-12 rounded-lg border bg-transparent px-1 py-0.5 text-center text-xs outline-none focus:bg-accent"
-                onChange={(event) => handleHeightChange(event.target.value)}
-                placeholder={t("auto")}
-                type="number"
-                value={heightDraft}
-              />
-              <span className="text-muted-foreground">cm</span>
             </div>
           </div>
         </div>
