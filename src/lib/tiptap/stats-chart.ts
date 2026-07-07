@@ -38,7 +38,14 @@ export type StatsChartSpec =
   | ({ chartType: "bar"; data: CategoricalEntry[]; showValues: boolean; showGridLines: boolean; fontFamily: FontFamily } & AxisLabelFields)
   | ({ chartType: "column"; data: CategoricalEntry[]; showValues: boolean; showGridLines: boolean; fontFamily: FontFamily } & AxisLabelFields)
   | ({ chartType: "line"; data: CategoricalEntry[]; fontFamily: FontFamily } & AxisLabelFields)
-  | ({ chartType: "scatter"; data: ScatterEntry[]; fontFamily: FontFamily; trendLine: TrendLine } & AxisLabelFields)
+  | ({
+      chartType: "scatter";
+      data: ScatterEntry[];
+      fontFamily: FontFamily;
+      trendLine: TrendLine;
+      trendLineColor: string;
+      showGridLines: boolean;
+    } & AxisLabelFields)
   | {
       chartType: "pie";
       data: CategoricalEntry[];
@@ -181,6 +188,14 @@ export const AnvilStatsChart = Node.create({
         default: "none",
         parseHTML: (element) => element.getAttribute("data-trend-line") ?? "none",
         renderHTML: (attributes) => ({ "data-trend-line": attributes.trendLine ?? "none" }),
+      },
+      // scatter only — mirrors anvilnote-charts's own default gray.
+      trendLineColor: {
+        default: "#737373",
+        parseHTML: (element) => element.getAttribute("data-trend-line-color") ?? "#737373",
+        renderHTML: (attributes) => ({
+          "data-trend-line-color": attributes.trendLineColor ?? "#737373",
+        }),
       },
       // Chart-wide; see FontFamily above.
       fontFamily: {

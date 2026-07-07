@@ -384,6 +384,7 @@
       "yLabel": "Подпись оси Y",
       "yLabelRotated": "Повернуть подпись Y",
       "trendLine": "Линия тренда",
+      "trendLineColor": "Цвет линии тренда",
       "trendLineKinds": {
         "none": "Нет",
         "linear": "Линейная",

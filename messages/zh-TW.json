@@ -384,6 +384,7 @@
       "yLabel": "Y 軸標籤",
       "yLabelRotated": "旋轉 Y 軸標籤",
       "trendLine": "趨勢線",
+      "trendLineColor": "趨勢線顏色",
       "trendLineKinds": {
         "none": "無",
         "linear": "直線",

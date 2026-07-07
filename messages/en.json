@@ -384,6 +384,7 @@
       "yLabel": "Y label",
       "yLabelRotated": "Rotate Y label",
       "trendLine": "Trend line",
+      "trendLineColor": "Trend line color",
       "trendLineKinds": {
         "none": "None",
         "linear": "Linear",
