@@ -48,7 +48,7 @@ export type StatsChartSpec =
     }
   | { chartType: "boxwhisker"; data: BoxWhiskerEntry[]; fontFamily: FontFamily };
 
-// Starts a freshly-inserted node with VISIBLE_ROW_LIMIT (10) empty rows,
+// Starts a freshly-inserted node with VISIBLE_ROW_LIMIT (5) empty rows,
 // not just 1 — per explicit feedback, so a user filling in several
 // entries doesn't have to click "Add entry" repeatedly first. Blank
 // rows left over are filtered out by the dialog before saving/rendering

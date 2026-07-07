@@ -106,13 +106,13 @@ function defaultScatterEntry(): ScatterDraftEntry {
 }
 
 // Pads an existing (already-saved) chart's data up to VISIBLE_ROW_LIMIT
-// (10) blank rows when reopened with fewer — same "don't make the user
+// (5) blank rows when reopened with fewer — same "don't make the user
 // click Add entry repeatedly" rationale as the fresh-node default, but
 // this also applies to a chart that already HAS data: reopening a
-// 2-entry chart should still show 10 rows (2 filled + 8 blank), not just
+// 2-entry chart should still show 5 rows (2 filled + 3 blank), not just
 // the 2 that were saved, per explicit feedback. Never truncates — a
-// chart with more than 10 entries keeps all of them (visible via "Show
-// more", not touched here).
+// chart with more entries than the limit keeps all of them (visible via
+// "Show more", not touched here).
 function padCategoricalData(data: CategoricalEntry[]): CategoricalEntry[] {
   if (data.length >= VISIBLE_ROW_LIMIT) return data;
   const padding = Array.from({ length: VISIBLE_ROW_LIMIT - data.length }, (_, i) =>
@@ -152,7 +152,7 @@ function StatsChartForm({
   // and forth doesn't lose already-entered data. The actual discriminated
   // StatsChartSpec is only assembled (via buildSpec below) at the two
   // points that actually need it: the render effect and onSave.
-  // Starts with VISIBLE_ROW_LIMIT (10) empty rows when there's no prior
+  // Starts with VISIBLE_ROW_LIMIT (5) empty rows when there's no prior
   // data for that shape yet (e.g. switching to box-whisker for the first
   // time in this session) — same "don't make the user click Add entry
   // repeatedly" rationale as stats-chart.ts's own node-level defaults.
@@ -268,7 +268,7 @@ function StatsChartForm({
 
   function buildSpec(): StatsChartSpec {
     // Rows with a blank label are filtered out here, not just left in —
-    // a freshly-inserted node starts with VISIBLE_ROW_LIMIT (10) empty
+    // a freshly-inserted node starts with VISIBLE_ROW_LIMIT (5) empty
     // rows (see stats-chart.ts's defaultCategoricalData/
     // defaultBoxWhiskerData), and the API's per-entry schema requires a
     // non-empty label, so any trailing unfilled rows would otherwise fail
