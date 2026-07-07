@@ -332,14 +332,33 @@ export const ColorPickerOutput = ({ className, ...props }: ColorPickerOutputProp
   )
 }
 
-type PercentageInputProps = ComponentProps<typeof Input>
+type PercentageInputProps = Omit<ComponentProps<typeof Input>, "value" | "onChange"> & {
+  value: number
+  onChange?: (value: number) => void
+}
 
-const PercentageInput = ({ className, ...props }: PercentageInputProps) => {
+const PercentageInput = ({ className, value, onChange, ...props }: PercentageInputProps) => {
+  const [draft, setDraft] = useState(String(value))
+  useEffect(() => setDraft(String(value)), [value])
+
   return (
     <div className="relative">
       <Input
-        readOnly
+        readOnly={!onChange}
         type="text"
+        value={draft}
+        onChange={
+          onChange
+            ? e => {
+                const next = e.target.value
+                setDraft(next)
+                const parsed = Number(next)
+                if (next !== "" && Number.isFinite(parsed) && parsed >= 0 && parsed <= 100) {
+                  onChange(parsed)
+                }
+              }
+            : undefined
+        }
         {...(props as any)}
         className={cn(
           "h-8 w-[3.25rem] rounded-l-none bg-secondary px-2 text-xs shadow-none",
@@ -355,13 +374,55 @@ const PercentageInput = ({ className, ...props }: PercentageInputProps) => {
 
 export type ColorPickerFormatProps = HTMLAttributes<HTMLDivElement>
 
+// Every mode's inputs were `readOnly` — the hue/saturation square and hue
+// slider were the ONLY way to change a color, typing a hex/rgb/css/hsl
+// value directly did nothing. Fixed by making each mode's input(s)
+// editable, parsing back into the shared hue/saturation/lightness state.
+//
+// Each input tracks its own local "draft" string, separate from the
+// derived display value: parsing happens on every keystroke, but an
+// in-progress value that doesn't parse yet (e.g. "#12", or a partially
+// erased number) must not be forced back to the last-valid formatted
+// string mid-edit — that would fight the user's cursor and make deleting
+// characters feel broken (same class of bug as this session's earlier
+// NaN-as-empty-sentinel fix for plain number inputs, adapted here to
+// "invalid parses don't overwrite the draft, only valid ones update the
+// picker's real color state"). Draft state resyncs from the derived value
+// via useEffect whenever the color changes through some OTHER means (the
+// saturation square, the hue/alpha sliders, an eyedropper pick) so those
+// still visibly update these fields.
 export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProps) => {
-  const { hue, saturation, lightness, alpha, mode } = useColorPicker()
+  const { hue, saturation, lightness, alpha, mode, setHue, setSaturation, setLightness, setAlpha } =
+    useColorPicker()
   const color = Color.hsl(hue, saturation, lightness, alpha / 100)
 
-  if (mode === "hex") {
-    const hex = color.hex()
+  const applyColor = useCallback(
+    (next: ReturnType<typeof Color>) => {
+      const [h, s, l] = next.hsl().array()
+      setHue(h)
+      setSaturation(s)
+      setLightness(l)
+    },
+    [setHue, setSaturation, setLightness],
+  )
 
+  const hex = color.hex()
+  const [hexDraft, setHexDraft] = useState(hex)
+  useEffect(() => setHexDraft(hex), [hex])
+
+  const rgb = color.rgb().array().map(value => Math.round(value))
+  const [rgbDraft, setRgbDraft] = useState(rgb.map(String))
+  useEffect(() => setRgbDraft(rgb.map(String)), [rgb.join(",")])
+
+  const cssValue = `rgba(${rgb.join(", ")}, ${alpha}%)`
+  const [cssDraft, setCssDraft] = useState(cssValue)
+  useEffect(() => setCssDraft(cssValue), [cssValue])
+
+  const hsl = color.hsl().array().map(value => Math.round(value))
+  const [hslDraft, setHslDraft] = useState(hsl.map(String))
+  useEffect(() => setHslDraft(hsl.map(String)), [hsl.join(",")])
+
+  if (mode === "hex") {
     return (
       <div
         className={cn(
@@ -372,27 +433,31 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
       >
         <Input
           className="h-8 rounded-r-none bg-secondary px-2 text-xs shadow-none"
-          readOnly
+          onChange={e => {
+            const next = e.target.value
+            setHexDraft(next)
+            try {
+              applyColor(Color(next.startsWith("#") ? next : `#${next}`))
+            } catch {
+              // Incomplete/invalid hex while typing — keep the draft, don't
+              // touch the picker's real color yet.
+            }
+          }}
           type="text"
-          value={hex}
+          value={hexDraft}
         />
-        <PercentageInput value={alpha} />
+        <PercentageInput value={alpha} onChange={setAlpha} />
       </div>
     )
   }
 
   if (mode === "rgb") {
-    const rgb = color
-      .rgb()
-      .array()
-      .map(value => Math.round(value))
-
     return (
       <div
         className={cn("-space-x-px flex items-center rounded-md shadow-sm", className)}
         {...(props as any)}
       >
-        {rgb.map((value, index) => (
+        {rgbDraft.map((value, index) => (
           <Input
             className={cn(
               "h-8 rounded-r-none bg-secondary px-2 text-xs shadow-none",
@@ -400,29 +465,42 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
               className,
             )}
             key={index}
-            readOnly
+            onChange={e => {
+              const next = [...rgbDraft]
+              next[index] = e.target.value
+              setRgbDraft(next)
+              const parsed = next.map(Number)
+              if (parsed.every(n => Number.isFinite(n) && n >= 0 && n <= 255)) {
+                applyColor(Color.rgb(parsed[0], parsed[1], parsed[2]).alpha(alpha / 100))
+              }
+            }}
             type="text"
             value={value}
           />
         ))}
-        <PercentageInput value={alpha} />
+        <PercentageInput value={alpha} onChange={setAlpha} />
       </div>
     )
   }
 
   if (mode === "css") {
-    const rgb = color
-      .rgb()
-      .array()
-      .map(value => Math.round(value))
-
     return (
       <div className={cn("w-full rounded-md shadow-sm", className)} {...(props as any)}>
         <Input
           className="h-8 w-full bg-secondary px-2 text-xs shadow-none"
-          readOnly
+          onChange={e => {
+            const next = e.target.value
+            setCssDraft(next)
+            try {
+              const parsed = Color(next)
+              applyColor(parsed)
+              setAlpha(parsed.alpha() * 100)
+            } catch {
+              // Incomplete/invalid css string while typing.
+            }
+          }}
           type="text"
-          value={`rgba(${rgb.join(", ")}, ${alpha}%)`}
+          value={cssDraft}
           {...(props as any)}
         />
       </div>
@@ -430,17 +508,12 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
   }
 
   if (mode === "hsl") {
-    const hsl = color
-      .hsl()
-      .array()
-      .map(value => Math.round(value))
-
     return (
       <div
         className={cn("-space-x-px flex items-center rounded-md shadow-sm", className)}
         {...(props as any)}
       >
-        {hsl.map((value, index) => (
+        {hslDraft.map((value, index) => (
           <Input
             className={cn(
               "h-8 rounded-r-none bg-secondary px-2 text-xs shadow-none",
@@ -448,12 +521,23 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
               className,
             )}
             key={index}
-            readOnly
+            onChange={e => {
+              const next = [...hslDraft]
+              next[index] = e.target.value
+              setHslDraft(next)
+              const parsed = next.map(Number)
+              const maxes = [360, 100, 100]
+              if (parsed.every((n, i) => Number.isFinite(n) && n >= 0 && n <= maxes[i])) {
+                setHue(parsed[0])
+                setSaturation(parsed[1])
+                setLightness(parsed[2])
+              }
+            }}
             type="text"
             value={value}
           />
         ))}
-        <PercentageInput value={alpha} />
+        <PercentageInput value={alpha} onChange={setAlpha} />
       </div>
     )
   }

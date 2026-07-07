@@ -706,6 +706,7 @@
     "outlineDocument": "文件",
     "metadataEmpty": "此範本沒有可填寫的欄位。",
     "metadataHint": "這些欄位會依範本變更，選填欄位可留空。",
+    "dateFormat": "日期格式",
     "history": "歷史",
     "historyEmpty": "還沒有版本快照。",
     "historyEmptyOff": "版本快照目前已關閉，可以在設定中開啟。",

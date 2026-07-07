@@ -101,6 +101,14 @@ function FunctionPlotForm({
   // reveals the rest in a scrollable list rather than growing the modal
   // unbounded up to MAX_CURVES (6).
   const [showAllCurves, setShowAllCurves] = useState(false);
+  // Which curve's color popover is open, by index — null when none is.
+  // Controlled/mutually exclusive across every curve's Popover: two
+  // independent uncontrolled Popovers don't close each other, so clicking
+  // a second curve's color swatch while an earlier one's was still open
+  // left both visibly open at once, overlapping (same bug class as
+  // blockquote-node-view.tsx's author/source popovers and stats-chart-
+  // dialog.tsx's per-row color popovers, fixed the same way in both).
+  const [openColorCurve, setOpenColorCurve] = useState<number | null>(null);
   // A freshly-inserted node's only curve starts with formula: "" (see
   // function-plot.ts's defaultCurves()) — derived fresh every render (not
   // effect-set state) so the "nothing typed yet" display below doesn't
@@ -279,7 +287,10 @@ function FunctionPlotForm({
             />
           </div>
         </div>
-        <Popover>
+        <Popover
+          onOpenChange={(open) => setOpenColorCurve(open ? index : null)}
+          open={openColorCurve === index}
+        >
           <PopoverTrigger asChild>
             <button
               aria-label={t("curveColor")}

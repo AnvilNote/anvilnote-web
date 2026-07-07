@@ -706,6 +706,7 @@
     "outlineDocument": "Document",
     "metadataEmpty": "This template has no fields to fill in.",
     "metadataHint": "These fields come from the template; optional ones can be left blank.",
+    "dateFormat": "Date format",
     "history": "History",
     "historyEmpty": "No version snapshots yet.",
     "historyEmptyOff": "Version snapshots are currently off — turn them on in Settings.",

@@ -706,6 +706,7 @@
     "outlineDocument": "문서",
     "metadataEmpty": "이 템플릿에는 입력할 항목이 없습니다.",
     "metadataHint": "항목은 템플릿에 따라 달라집니다. 선택 항목은 비워 둘 수 있습니다.",
+    "dateFormat": "날짜 형식",
     "history": "기록",
     "historyEmpty": "아직 버전 스냅샷이 없습니다.",
     "historyEmptyOff": "버전 스냅샷이 현재 꺼져 있습니다. 설정에서 켤 수 있습니다.",

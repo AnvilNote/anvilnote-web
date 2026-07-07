@@ -706,6 +706,7 @@
     "outlineDocument": "ドキュメント",
     "metadataEmpty": "このテンプレートには入力できる項目がありません。",
     "metadataHint": "テンプレートに応じた項目。任意は空欄可。",
+    "dateFormat": "日付形式",
     "history": "履歴",
     "historyEmpty": "まだバージョンスナップショットがありません。",
     "historyEmptyOff": "バージョンスナップショットは現在オフです。設定でオンにできます。",
