@@ -31,6 +31,14 @@ export type FontFamily = "sans" | "serif";
 // mirrors anvilnote-charts's own axisLabelFields.
 export type AxisLabelFields = { xLabel: string; yLabel: string; yLabelRotated: boolean };
 
+// User-overridable chart dimensions (cm) — mirrors anvilnote-charts's own
+// customSizeFields. Both optional and independent: either can be set
+// without the other (the unset axis keeps its auto-computed size).
+// Spread into every chart type's own spec shape below, including pie
+// (maps to radius server-side) and boxwhisker (no AxisLabelFields, but
+// still gets its own size).
+export type CustomSizeFields = { width?: number; height?: number };
+
 // Where (if at all) a scatter plot's trend line is drawn — mirrors
 // anvilnote-charts's own TREND_LINE_KINDS.
 export type TrendLine = "none" | "linear" | "lowess";
@@ -43,7 +51,8 @@ export type StatsChartSpec =
       showGridLines: boolean;
       showBorder: boolean;
       fontFamily: FontFamily;
-    } & AxisLabelFields)
+    } & AxisLabelFields &
+      CustomSizeFields)
   | ({
       chartType: "column";
       data: CategoricalEntry[];
@@ -51,7 +60,8 @@ export type StatsChartSpec =
       showGridLines: boolean;
       showBorder: boolean;
       fontFamily: FontFamily;
-    } & AxisLabelFields)
+    } & AxisLabelFields &
+      CustomSizeFields)
   | ({
       chartType: "stackedBar" | "stackedColumn";
       data: StackedEntry[];
@@ -61,8 +71,9 @@ export type StatsChartSpec =
       showGridLines: boolean;
       showBorder: boolean;
       fontFamily: FontFamily;
-    } & AxisLabelFields)
-  | ({ chartType: "line"; data: CategoricalEntry[]; fontFamily: FontFamily } & AxisLabelFields)
+    } & AxisLabelFields &
+      CustomSizeFields)
+  | ({ chartType: "line"; data: CategoricalEntry[]; fontFamily: FontFamily } & AxisLabelFields & CustomSizeFields)
   | ({
       chartType: "scatter";
       data: ScatterEntry[];
@@ -70,15 +81,16 @@ export type StatsChartSpec =
       trendLine: TrendLine;
       trendLineColor: string;
       showGridLines: boolean;
-    } & AxisLabelFields)
-  | {
+    } & AxisLabelFields &
+      CustomSizeFields)
+  | ({
       chartType: "pie";
       data: CategoricalEntry[];
       showLegend: boolean;
       showPercentage: PercentagePlacement;
       fontFamily: FontFamily;
-    }
-  | { chartType: "boxwhisker"; data: BoxWhiskerEntry[]; fontFamily: FontFamily };
+    } & CustomSizeFields)
+  | ({ chartType: "boxwhisker"; data: BoxWhiskerEntry[]; fontFamily: FontFamily } & CustomSizeFields);
 
 // Starts a freshly-inserted node with VISIBLE_ROW_LIMIT (5) empty rows,
 // not just 1 — per explicit feedback, so a user filling in several
@@ -242,6 +254,28 @@ export const AnvilStatsChart = Node.create({
         renderHTML: (attributes) => ({
           "data-show-border": String(attributes.showBorder ?? true),
         }),
+      },
+      // All chart types; see CustomSizeFields above. Undefined (not a
+      // sentinel number) means "auto" — parseHTML must distinguish a
+      // missing attribute from an explicit 0, so it checks for null
+      // rather than falling back with `??`.
+      width: {
+        default: undefined,
+        parseHTML: (element) => {
+          const raw = element.getAttribute("data-width");
+          return raw === null ? undefined : Number(raw);
+        },
+        renderHTML: (attributes) =>
+          typeof attributes.width === "number" ? { "data-width": String(attributes.width) } : {},
+      },
+      height: {
+        default: undefined,
+        parseHTML: (element) => {
+          const raw = element.getAttribute("data-height");
+          return raw === null ? undefined : Number(raw);
+        },
+        renderHTML: (attributes) =>
+          typeof attributes.height === "number" ? { "data-height": String(attributes.height) } : {},
       },
       // bar/column/line/scatter only; see AxisLabelFields above.
       xLabel: {
