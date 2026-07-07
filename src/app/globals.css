@@ -200,7 +200,11 @@
 .ProseMirror blockquote {
   border-left: 3px solid var(--border);
   padding-left: 1rem;
-  color: var(--muted-foreground);
+  /* !important: forces gray even when the block-handle's per-block text
+     color (TextStyle mark, rendered as an inline style="color:..." span)
+     has been applied to text inside a quote — an inline style otherwise
+     outranks this class selector's specificity regardless of source order. */
+  color: var(--muted-foreground) !important;
   margin: 0.75rem 0;
 }
 
