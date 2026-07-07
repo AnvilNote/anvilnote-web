@@ -1473,29 +1473,10 @@ function StatsChartForm({
               </div>
             ) : null}
 
-            {/* showLegend (both pie and stacked) moved into the preview
-                pane's own top bar, left of the serif toggle — see below.
-                Pie's own percentage-placement select stays here; it has
-                no equivalent "next to the chart" grouping the way a
-                simple toggle does. */}
-            {chartType === "pie" ? (
-              <div className="flex items-center gap-2 text-sm">
-                <span>{t("showPercentage")}</span>
-                <Select
-                  onValueChange={(value) => setShowPercentage(value as PercentagePlacement)}
-                  value={showPercentage}
-                >
-                  <SelectTrigger className="h-8 w-40 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">{t("percentagePlacement.none")}</SelectItem>
-                    <SelectItem value="onSlice">{t("percentagePlacement.onSlice")}</SelectItem>
-                    <SelectItem value="beside">{t("percentagePlacement.beside")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            ) : null}
+            {/* showLegend AND showPercentage (pie only, both moved here
+                from the left panel) now live in the preview pane's own
+                top bar — see below. Nothing pie-specific left in the
+                left panel anymore. */}
           </div>
           <div className="relative flex min-h-[420px] flex-col items-center justify-center gap-2 overflow-hidden rounded border p-2">
             {/* Top bar: showGridLines/showBorder/showValues/serif toggle/
@@ -1553,6 +1534,50 @@ function StatsChartForm({
                 />
                 {t("useSerifFont")}
               </label>
+              {chartType === "pie" ? (
+                <>
+                  {/* Switch (not checkbox) — corrected per explicit
+                      feedback. checked = showPercentage !== "none".
+                      Checking ON defaults to "onSlice" (arbitrary but
+                      reasonable — matches the radio group's own first
+                      option); unchecking snaps back to "none" outright
+                      rather than remembering the prior placement. */}
+                  <label className="flex items-center gap-1.5">
+                    <Switch
+                      checked={showPercentage !== "none"}
+                      onCheckedChange={(checked) => setShowPercentage(checked ? "onSlice" : "none")}
+                      className="scale-90"
+                    />
+                    {t("showPercentage")}
+                  </label>
+                  {/* Round radio buttons (not a Select dropdown) for the
+                      onSlice/beside choice — corrected per explicit
+                      feedback ("圓形的 checkbox" = radio). Native <input
+                      type="radio"> renders as a circle by default. */}
+                  {showPercentage !== "none" ? (
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-1">
+                        <input
+                          checked={showPercentage === "onSlice"}
+                          name="percentagePlacement"
+                          onChange={() => setShowPercentage("onSlice")}
+                          type="radio"
+                        />
+                        {t("percentagePlacement.onSlice")}
+                      </label>
+                      <label className="flex items-center gap-1">
+                        <input
+                          checked={showPercentage === "beside"}
+                          name="percentagePlacement"
+                          onChange={() => setShowPercentage("beside")}
+                          type="radio"
+                        />
+                        {t("percentagePlacement.beside")}
+                      </label>
+                    </div>
+                  ) : null}
+                </>
+              ) : null}
               {hasAxisLabelFields ? (
                 <label className="flex items-center gap-1.5">
                   <Switch checked={yLabelRotated} onCheckedChange={setYLabelRotated} className="scale-90" />
