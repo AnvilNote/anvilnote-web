@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx";
-import { MAX_ENTRIES, SCATTER_MAX_ENTRIES, defaultEntryColor } from "@/lib/stats-chart-defaults";
-import type { BoxWhiskerEntry, CategoricalEntry, ScatterEntry } from "@/lib/tiptap/stats-chart";
+import { MAX_ENTRIES, MAX_SERIES, SCATTER_MAX_ENTRIES, defaultEntryColor } from "@/lib/stats-chart-defaults";
+import type { BoxWhiskerEntry, CategoricalEntry, ScatterEntry, StackedEntry } from "@/lib/tiptap/stats-chart";
 
 // SheetJS (xlsx package) reads .csv/.xls/.xlsx/.ods all through the same
 // XLSX.read() entry point — it sniffs the format from the file content,
@@ -76,4 +76,30 @@ export async function parseBoxWhiskerSpreadsheet(file: File): Promise<BoxWhisker
     q3: toNumber(row[4]),
     max: toNumber(row[5]),
   }));
+}
+
+export async function parseStackedSpreadsheet(
+  file: File,
+): Promise<{ data: StackedEntry[]; seriesLabels: string[] }> {
+  const buffer = await file.arrayBuffer();
+  const rows = readSheetRows(buffer);
+  const hasHeader = rows.length > 0 && isHeaderRow(rows[0]);
+  const headerRow = hasHeader ? rows[0] : [];
+  const dataRows = hasHeader ? rows.slice(1) : rows;
+  const seriesCount = Math.max(
+    1,
+    Math.min(
+      MAX_SERIES,
+      Math.max(...dataRows.map((row) => Math.max(0, row.length - 1)), headerRow.length - 1),
+    ),
+  );
+  const seriesLabels = Array.from({ length: seriesCount }, (_, index) => {
+    const header = toLabel(headerRow[index + 1]);
+    return header || `Series ${index + 1}`;
+  });
+  const data = dataRows.slice(0, MAX_ENTRIES).map((row) => ({
+    label: toLabel(row[0]),
+    values: Array.from({ length: seriesCount }, (_, index) => toNumber(row[index + 1])),
+  }));
+  return { data, seriesLabels };
 }

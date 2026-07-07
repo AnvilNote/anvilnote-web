@@ -273,7 +273,7 @@
       "functionPlot": "함수 그래프",
       "functionPlotHint": "y = f(x) 곡선 그리기",
       "statsChart": "통계 차트",
-      "statsChartHint": "막대, 파이, 꺾은선형, 분산형, 상자수염 그림"
+      "statsChartHint": "막대, 누적 막대, 파이, 꺾은선형, 분산형, 상자수염 그림"
     },
     "image": {
       "figure": "그림",
@@ -355,6 +355,7 @@
       "chartTypes": {
         "bar": "가로 막대",
         "column": "세로 막대",
+        "stackedBar": "누적 막대",
         "pie": "파이",
         "line": "꺾은선형",
         "scatter": "분산형",
@@ -363,6 +364,10 @@
       "label": "레이블",
       "value": "값",
       "entryColor": "색상",
+      "addSeries": "계열 추가",
+      "removeSeries": "계열 제거",
+      "seriesColor": "계열 색상",
+      "seriesLimitReached": "최대 6개 계열",
       "min": "최솟값",
       "q1": "제1사분위수",
       "median": "중앙값",

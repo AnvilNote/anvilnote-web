@@ -16,6 +16,7 @@ export type BoxWhiskerEntry = {
 // categorical's (label, value); see anvilnote-charts's own
 // scatterEntrySchema comment.
 export type ScatterEntry = { x: number; y: number };
+export type StackedEntry = { label: string; values: number[] };
 
 // Where (if at all) a pie's slice percentages are shown — mirrors
 // anvilnote-charts's own schema enum. "onSlice" renders the percentage
@@ -37,6 +38,15 @@ export type TrendLine = "none" | "linear" | "lowess";
 export type StatsChartSpec =
   | ({ chartType: "bar"; data: CategoricalEntry[]; showValues: boolean; showGridLines: boolean; fontFamily: FontFamily } & AxisLabelFields)
   | ({ chartType: "column"; data: CategoricalEntry[]; showValues: boolean; showGridLines: boolean; fontFamily: FontFamily } & AxisLabelFields)
+  | ({
+      chartType: "stackedBar" | "stackedColumn";
+      data: StackedEntry[];
+      seriesLabels: string[];
+      seriesColors?: string[];
+      showLegend: boolean;
+      showGridLines: boolean;
+      fontFamily: FontFamily;
+    } & AxisLabelFields)
   | ({ chartType: "line"; data: CategoricalEntry[]; fontFamily: FontFamily } & AxisLabelFields)
   | ({
       chartType: "scatter";
@@ -88,16 +98,22 @@ function defaultScatterData(): ScatterEntry[] {
   return Array.from({ length: VISIBLE_ROW_LIMIT }, () => ({ x: 0, y: 0 }));
 }
 
+function defaultStackedData(): StackedEntry[] {
+  return Array.from({ length: VISIBLE_ROW_LIMIT }, () => ({ label: "", values: [0, 0] }));
+}
+
 function parseData(
   value: string | null,
   chartType: ChartType,
-): CategoricalEntry[] | BoxWhiskerEntry[] | ScatterEntry[] {
+): CategoricalEntry[] | BoxWhiskerEntry[] | ScatterEntry[] | StackedEntry[] {
   const fallback =
     chartType === "boxwhisker"
       ? defaultBoxWhiskerData()
       : chartType === "scatter"
         ? defaultScatterData()
-        : defaultCategoricalData();
+        : chartType === "stackedBar" || chartType === "stackedColumn"
+          ? defaultStackedData()
+          : defaultCategoricalData();
   if (!value) return fallback;
   try {
     const parsed = JSON.parse(value);

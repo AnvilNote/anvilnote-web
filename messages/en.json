@@ -273,7 +273,7 @@
       "functionPlot": "Function plot",
       "functionPlotHint": "Plot y = f(x) curves",
       "statsChart": "Stats chart",
-      "statsChartHint": "Bar, column, pie, line, scatter, or box chart"
+      "statsChartHint": "Bar, stacked bar, pie, line, scatter, or box chart"
     },
     "image": {
       "figure": "Figure",
@@ -355,6 +355,7 @@
       "chartTypes": {
         "bar": "Bar",
         "column": "Column",
+        "stackedBar": "Stacked bar",
         "pie": "Pie",
         "line": "Line",
         "scatter": "Scatter",
@@ -363,6 +364,10 @@
       "label": "Label",
       "value": "Value",
       "entryColor": "Color",
+      "addSeries": "Add series",
+      "removeSeries": "Remove series",
+      "seriesColor": "Series color",
+      "seriesLimitReached": "Up to 6 series",
       "min": "Min",
       "q1": "Q1",
       "median": "Median",

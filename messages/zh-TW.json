@@ -273,7 +273,7 @@
       "functionPlot": "函數圖",
       "functionPlotHint": "繪製 y = f(x) 曲線",
       "statsChart": "統計圖",
-      "statsChartHint": "長條圖、圓餅圖、折線圖、散佈圖或箱形圖"
+      "statsChartHint": "長條圖、堆疊長條圖、圓餅圖、折線圖、散佈圖或箱形圖"
     },
     "image": {
       "figure": "圖",
@@ -355,6 +355,7 @@
       "chartTypes": {
         "bar": "長條圖",
         "column": "柱狀圖",
+        "stackedBar": "堆疊長條圖",
         "pie": "圓餅圖",
         "line": "折線圖",
         "scatter": "散佈圖",
@@ -363,6 +364,10 @@
       "label": "標籤",
       "value": "數值",
       "entryColor": "顏色",
+      "addSeries": "新增系列",
+      "removeSeries": "移除系列",
+      "seriesColor": "系列顏色",
+      "seriesLimitReached": "最多 6 個系列",
       "min": "最小值",
       "q1": "第一四分位數",
       "median": "中位數",
