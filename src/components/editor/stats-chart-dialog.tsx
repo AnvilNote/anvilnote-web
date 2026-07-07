@@ -168,6 +168,18 @@ function StatsChartForm({
 }) {
   const t = useTranslations("editor.statsChart");
   const [chartType, setChartTypeRaw] = useState<ChartType>(initialSpec.chartType);
+  // LIVE version (tracks chartType state, recomputed every render) — used
+  // by JSX conditions further down so switching chart type mid-session
+  // (e.g. bar -> pie) immediately hides/shows the right fields. See
+  // hadAxisLabelFieldsAtMount below for the separate frozen-at-mount
+  // version state initializers need instead.
+  const hasAxisLabelFields =
+    chartType === "bar" ||
+    chartType === "column" ||
+    chartType === "stackedBar" ||
+    chartType === "stackedColumn" ||
+    chartType === "line" ||
+    chartType === "scatter";
   // Two independent data slices (rather than fighting StatsChartSpec's
   // discriminated union through every keystroke) — switching chart type
   // between bar/column/pie/pyramid keeps categoricalData as-is (same
@@ -279,17 +291,27 @@ function StatsChartForm({
   const [widthRatioDraft, setWidthRatioDraft] = useState(
     initialSpec.width !== undefined ? String(Math.round((initialSpec.width / textWidthCm) * 100)) : "",
   );
-  const hasAxisLabelFields =
+  // Deliberately reads initialSpec here (frozen at mount), NOT the live
+  // chartType state below — these three useState initializers only run
+  // once, at mount, so they only ever need "was axis-label data present
+  // in the spec this dialog opened with". The JSX conditions further
+  // down need the LIVE version instead (see hasAxisLabelFields), since a
+  // user switching chart type mid-session (e.g. bar -> pie) must
+  // immediately stop seeing bar-only fields like "Rotate vertical axis" —
+  // confirmed as a real bug via a live screenshot: switching to Pie kept
+  // showing Rotate vertical axis because this used to be one shared
+  // frozen boolean for both purposes.
+  const hadAxisLabelFieldsAtMount =
     initialSpec.chartType === "bar" ||
     initialSpec.chartType === "column" ||
     initialSpec.chartType === "stackedBar" ||
     initialSpec.chartType === "stackedColumn" ||
     initialSpec.chartType === "line" ||
     initialSpec.chartType === "scatter";
-  const [xLabel, setXLabel] = useState(hasAxisLabelFields ? initialSpec.xLabel : "");
-  const [yLabel, setYLabel] = useState(hasAxisLabelFields ? initialSpec.yLabel : "");
+  const [xLabel, setXLabel] = useState(hadAxisLabelFieldsAtMount ? initialSpec.xLabel : "");
+  const [yLabel, setYLabel] = useState(hadAxisLabelFieldsAtMount ? initialSpec.yLabel : "");
   const [yLabelRotated, setYLabelRotated] = useState(
-    hasAxisLabelFields ? initialSpec.yLabelRotated : true,
+    hadAxisLabelFieldsAtMount ? initialSpec.yLabelRotated : true,
   );
   const [trendLine, setTrendLine] = useState<TrendLine>(
     initialSpec.chartType === "scatter" ? initialSpec.trendLine : "none",
@@ -1416,43 +1438,28 @@ function StatsChartForm({
               </div>
             ) : null}
 
-            {chartType === "stackedBar" || chartType === "stackedColumn" ? (
-              // showLegend is the only one of this group's former
-              // row-mates that STAYS in the left panel — showGridLines/
-              // showBorder/showValues moved into the preview pane's own
-              // top bar, and xLabel/yLabel/yLabelRotated moved into its
-              // bottom bar (see the preview pane JSX below), per explicit
-              // feedback consolidating those controls next to the chart
-              // they affect instead of a generic settings list.
-              <label className="flex items-center gap-2 text-sm">
-                <Switch checked={showLegend} onCheckedChange={setShowLegend} />
-                {t("showLegend")}
-              </label>
-            ) : null}
-
+            {/* showLegend (both pie and stacked) moved into the preview
+                pane's own top bar, left of the serif toggle — see below.
+                Pie's own percentage-placement select stays here; it has
+                no equivalent "next to the chart" grouping the way a
+                simple toggle does. */}
             {chartType === "pie" ? (
-              <>
-                <label className="flex items-center gap-2 text-sm">
-                  <Switch checked={showLegend} onCheckedChange={setShowLegend} />
-                  {t("showLegend")}
-                </label>
-                <div className="flex items-center gap-2 text-sm">
-                  <span>{t("showPercentage")}</span>
-                  <Select
-                    onValueChange={(value) => setShowPercentage(value as PercentagePlacement)}
-                    value={showPercentage}
-                  >
-                    <SelectTrigger className="h-8 w-40 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">{t("percentagePlacement.none")}</SelectItem>
-                      <SelectItem value="onSlice">{t("percentagePlacement.onSlice")}</SelectItem>
-                      <SelectItem value="beside">{t("percentagePlacement.beside")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
+              <div className="flex items-center gap-2 text-sm">
+                <span>{t("showPercentage")}</span>
+                <Select
+                  onValueChange={(value) => setShowPercentage(value as PercentagePlacement)}
+                  value={showPercentage}
+                >
+                  <SelectTrigger className="h-8 w-40 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{t("percentagePlacement.none")}</SelectItem>
+                    <SelectItem value="onSlice">{t("percentagePlacement.onSlice")}</SelectItem>
+                    <SelectItem value="beside">{t("percentagePlacement.beside")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             ) : null}
           </div>
           <div className="relative flex min-h-[420px] flex-col items-center justify-center gap-2 overflow-hidden rounded border p-2">
@@ -1495,6 +1502,12 @@ function StatsChartForm({
                 <label className="flex items-center gap-1.5">
                   <Switch checked={showValues} onCheckedChange={setShowValues} className="scale-90" />
                   {t("showValues")}
+                </label>
+              ) : null}
+              {chartType === "pie" || chartType === "stackedBar" || chartType === "stackedColumn" ? (
+                <label className="flex items-center gap-1.5">
+                  <Switch checked={showLegend} onCheckedChange={setShowLegend} className="scale-90" />
+                  {t("showLegend")}
                 </label>
               ) : null}
               <label className="flex items-center gap-1.5">
