@@ -1456,58 +1456,61 @@ function StatsChartForm({
             ) : null}
           </div>
           <div className="relative flex min-h-[420px] flex-col items-center justify-center gap-2 overflow-hidden rounded border p-2">
-            {/* Top bar: showGridLines/showBorder/showValues (moved here
-                from the left panel, per explicit feedback grouping
-                render-affecting toggles next to the chart itself) sit to
-                the LEFT of the font-family select, sharing one row —
-                each toggle still only renders for the chart types it
-                actually applies to (gridlines: bar/column/stacked/
-                scatter; border: bar/column/stacked; values: bar/column
-                only). */}
-            <div className="absolute inset-x-2 top-2 z-10 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-3 text-xs">
-                {chartType === "bar" ||
-                chartType === "column" ||
-                chartType === "stackedBar" ||
-                chartType === "stackedColumn" ||
-                chartType === "scatter" ? (
-                  <label className="flex items-center gap-1.5">
-                    <Switch checked={showGridLines} onCheckedChange={setShowGridLines} className="scale-90" />
-                    {t("showGridLines")}
-                  </label>
-                ) : null}
-                {chartType === "bar" ||
-                chartType === "column" ||
-                chartType === "stackedBar" ||
-                chartType === "stackedColumn" ? (
-                  <label className="flex items-center gap-1.5">
-                    <Switch checked={showBorder} onCheckedChange={setShowBorder} className="scale-90" />
-                    {t("showBorder")}
-                  </label>
-                ) : null}
-                {chartType === "bar" || chartType === "column" ? (
-                  <label className="flex items-center gap-1.5">
-                    <Switch checked={showValues} onCheckedChange={setShowValues} className="scale-90" />
-                    {t("showValues")}
-                  </label>
-                ) : null}
-              </div>
-              <div className="flex items-center gap-3 text-xs">
+            {/* Top bar: showGridLines/showBorder/showValues/serif toggle/
+                yLabelRotated are all one bundled group now — per
+                explicit feedback, NOT split left/right (that earlier
+                justify-between layout implied two unrelated groups when
+                they're really all the same kind of "chart display
+                toggle"). All left-aligned, flex-wrap so it degrades to
+                multiple lines on a narrower dialog instead of
+                overflowing — applies equally regardless of how many of
+                these render for the current chart type (fewer toggles
+                just means a shorter first line, still left-aligned, not
+                re-centered or spread out). Each toggle still only
+                renders for the chart types it actually applies to
+                (gridlines: bar/column/stacked/scatter; border: bar/
+                column/stacked; values: bar/column only; yLabelRotated:
+                whichever chart types have axis labels at all). */}
+            <div className="absolute inset-x-2 top-2 z-10 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+              {chartType === "bar" ||
+              chartType === "column" ||
+              chartType === "stackedBar" ||
+              chartType === "stackedColumn" ||
+              chartType === "scatter" ? (
                 <label className="flex items-center gap-1.5">
-                  <Switch
-                    checked={fontFamily === "serif"}
-                    onCheckedChange={(checked) => setFontFamily(checked ? "serif" : "sans")}
-                    className="scale-90"
-                  />
-                  {t("useSerifFont")}
+                  <Switch checked={showGridLines} onCheckedChange={setShowGridLines} className="scale-90" />
+                  {t("showGridLines")}
                 </label>
-                {hasAxisLabelFields ? (
-                  <label className="flex items-center gap-1.5">
-                    <Switch checked={yLabelRotated} onCheckedChange={setYLabelRotated} className="scale-90" />
-                    {t("yLabelRotated")}
-                  </label>
-                ) : null}
-              </div>
+              ) : null}
+              {chartType === "bar" ||
+              chartType === "column" ||
+              chartType === "stackedBar" ||
+              chartType === "stackedColumn" ? (
+                <label className="flex items-center gap-1.5">
+                  <Switch checked={showBorder} onCheckedChange={setShowBorder} className="scale-90" />
+                  {t("showBorder")}
+                </label>
+              ) : null}
+              {chartType === "bar" || chartType === "column" ? (
+                <label className="flex items-center gap-1.5">
+                  <Switch checked={showValues} onCheckedChange={setShowValues} className="scale-90" />
+                  {t("showValues")}
+                </label>
+              ) : null}
+              <label className="flex items-center gap-1.5">
+                <Switch
+                  checked={fontFamily === "serif"}
+                  onCheckedChange={(checked) => setFontFamily(checked ? "serif" : "sans")}
+                  className="scale-90"
+                />
+                {t("useSerifFont")}
+              </label>
+              {hasAxisLabelFields ? (
+                <label className="flex items-center gap-1.5">
+                  <Switch checked={yLabelRotated} onCheckedChange={setYLabelRotated} className="scale-90" />
+                  {t("yLabelRotated")}
+                </label>
+              ) : null}
             </div>
             {/* Deliberately shrunk well below the pane's own available
                 space (70%/260px, not just barely-under-100%) — per
