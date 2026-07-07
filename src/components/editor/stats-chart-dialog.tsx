@@ -206,8 +206,8 @@ function StatsChartForm({
     initialSpec.chartType === "stackedBar" || initialSpec.chartType === "stackedColumn"
       ? padStackedData(initialSpec.data, initialStackedSeriesLabels.length)
       : Array.from({ length: VISIBLE_ROW_LIMIT }, () =>
-          defaultStackedEntry(initialStackedSeriesLabels.length),
-        ),
+        defaultStackedEntry(initialStackedSeriesLabels.length),
+      ),
   );
   const [seriesLabels, setSeriesLabels] = useState<string[]>(initialStackedSeriesLabels);
   const [seriesColors, setSeriesColors] = useState<string[]>(
@@ -520,9 +520,9 @@ function StatsChartForm({
       prev.map((entry, i) =>
         i === rowIndex
           ? {
-              ...entry,
-              values: entry.values.map((existing, j) => (j === seriesIndex ? value : existing)),
-            }
+            ...entry,
+            values: entry.values.map((existing, j) => (j === seriesIndex ? value : existing)),
+          }
           : entry,
       ),
     );
@@ -711,7 +711,7 @@ function StatsChartForm({
         <div
           className={`overflow-x-auto ${options?.scrollable ? "max-h-[420px] overflow-y-auto" : ""}`}
         >
-        {/* table-fixed + explicit percentage widths on the header row —
+          {/* table-fixed + explicit percentage widths on the header row —
             NOT the native `size` attribute + auto layout this replaced.
             That approach let the Label column collapse to ~0 width in
             practice: a table cell's <input> doesn't reliably report its
@@ -722,86 +722,86 @@ function StatsChartForm({
             Label:Value:Color (45%/18%/27%), with Remove as a small
             fixed remainder (10%) outside the ratio — matches explicit
             feedback on the input-area proportions. */}
-        <table className="w-full table-fixed border-collapse text-sm">
-          <thead>
-            <tr className="bg-muted/50">
-              <th className="border-b p-1.5 text-center" style={{ width: "6%" }}>
-                <input
-                  aria-label={t("selectAll")}
-                  checked={
-                    (isBoxWhisker ? boxRows.length : catRows.length) > 0 &&
-                    (isBoxWhisker ? boxRows : catRows).every(({ index }) => selectedIndices.has(index))
-                  }
-                  onChange={(event) => {
-                    const rows = isBoxWhisker ? boxRows : catRows;
-                    setSelectedIndices((prev) => {
-                      const next = new Set(prev);
-                      for (const { index } of rows) {
-                        if (event.target.checked) next.add(index);
-                        else next.delete(index);
-                      }
-                      return next;
-                    });
-                  }}
-                  type="checkbox"
-                />
-              </th>
-              <th
-                className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
-                style={{ width: isBoxWhisker ? "19%" : "39%" }}
-              >
-                {t("label")}
-              </th>
-              {isBoxWhisker ? (
-                <>
-                  <th
-                    className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
-                    style={{ width: "13%" }}
-                  >
-                    {t("min")}
-                  </th>
-                  <th
-                    className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
-                    style={{ width: "13%" }}
-                  >
-                    <InlineMathText text={t("q1")} />
-                  </th>
-                  <th
-                    className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
-                    style={{ width: "13%" }}
-                  >
-                    {t("median")}
-                  </th>
-                  <th
-                    className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
-                    style={{ width: "13%" }}
-                  >
-                    <InlineMathText text={t("q3")} />
-                  </th>
-                  <th
-                    className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
-                    style={{ width: "13%" }}
-                  >
-                    {t("max")}
-                  </th>
-                </>
-              ) : (
+          <table className="w-full table-fixed border-collapse text-sm">
+            <thead>
+              <tr className="bg-muted/50">
+                <th className="border-b p-1.5 text-center" style={{ width: "6%" }}>
+                  <input
+                    aria-label={t("selectAll")}
+                    checked={
+                      (isBoxWhisker ? boxRows.length : catRows.length) > 0 &&
+                      (isBoxWhisker ? boxRows : catRows).every(({ index }) => selectedIndices.has(index))
+                    }
+                    onChange={(event) => {
+                      const rows = isBoxWhisker ? boxRows : catRows;
+                      setSelectedIndices((prev) => {
+                        const next = new Set(prev);
+                        for (const { index } of rows) {
+                          if (event.target.checked) next.add(index);
+                          else next.delete(index);
+                        }
+                        return next;
+                      });
+                    }}
+                    type="checkbox"
+                  />
+                </th>
                 <th
                   className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
-                  style={{ width: "18%" }}
+                  style={{ width: isBoxWhisker ? "19%" : "39%" }}
                 >
-                  {t("value")}
+                  {t("label")}
                 </th>
-              )}
-              {isBoxWhisker ? null : (
-                <th className="border-b border-l p-1.5" style={{ width: "27%" }} />
-              )}
-              <th className="border-b border-l p-1.5" style={{ width: "10%" }} />
-            </tr>
-          </thead>
-          <tbody>
-            {isBoxWhisker
-              ? boxRows.map(({ entry, index }) => (
+                {isBoxWhisker ? (
+                  <>
+                    <th
+                      className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                      style={{ width: "13%" }}
+                    >
+                      {t("min")}
+                    </th>
+                    <th
+                      className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                      style={{ width: "13%" }}
+                    >
+                      <InlineMathText text={t("q1")} />
+                    </th>
+                    <th
+                      className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                      style={{ width: "13%" }}
+                    >
+                      {t("median")}
+                    </th>
+                    <th
+                      className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                      style={{ width: "13%" }}
+                    >
+                      <InlineMathText text={t("q3")} />
+                    </th>
+                    <th
+                      className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                      style={{ width: "13%" }}
+                    >
+                      {t("max")}
+                    </th>
+                  </>
+                ) : (
+                  <th
+                    className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground"
+                    style={{ width: "18%" }}
+                  >
+                    {t("value")}
+                  </th>
+                )}
+                {isBoxWhisker ? null : (
+                  <th className="border-b border-l p-1.5" style={{ width: "27%" }} />
+                )}
+                <th className="border-b border-l p-1.5" style={{ width: "10%" }} />
+              </tr>
+            </thead>
+            <tbody>
+              {isBoxWhisker
+                ? boxRows.map(({ entry, index }) => (
                   <tr key={index}>
                     <td className="border-b p-1.5 text-center">
                       <input
@@ -882,7 +882,7 @@ function StatsChartForm({
                     </td>
                   </tr>
                 ))
-              : catRows.map(({ entry, index }) => (
+                : catRows.map(({ entry, index }) => (
                   <tr key={index}>
                     <td className="border-b p-1.5 text-center">
                       <input
@@ -967,8 +967,8 @@ function StatsChartForm({
                     </td>
                   </tr>
                 ))}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
         </div>
         {selectedIndices.size > 0 ? (
           <div className="flex items-center gap-2 p-1.5">
@@ -1241,7 +1241,7 @@ function StatsChartForm({
             ? renderScatterTable(scatterRows, { scrollable: true })
             : isStacked
               ? renderStackedTable(stackedRows, { scrollable: true })
-            : renderTable(categoricalRows, boxWhiskerRows, { scrollable: true })}
+              : renderTable(categoricalRows, boxWhiskerRows, { scrollable: true })}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -1337,7 +1337,7 @@ function StatsChartForm({
               ? renderScatterTable(visibleScatterRows)
               : isStacked
                 ? renderStackedTable(visibleStackedRows)
-              : renderTable(visibleCategoricalRows, visibleBoxWhiskerRows)}
+                : renderTable(visibleCategoricalRows, visibleBoxWhiskerRows)}
 
             {hiddenRowCount > 0 ? (
               <Button onClick={() => setShowAllRows(true)} size="sm" variant="ghost">
@@ -1417,11 +1417,11 @@ function StatsChartForm({
             ) : null}
 
             {chartType === "bar" ||
-            chartType === "column" ||
-            chartType === "stackedBar" ||
-            chartType === "stackedColumn" ||
-            chartType === "line" ||
-            chartType === "scatter" ? (
+              chartType === "column" ||
+              chartType === "stackedBar" ||
+              chartType === "stackedColumn" ||
+              chartType === "line" ||
+              chartType === "scatter" ? (
               // X label + Y label share one row.
               <div className="flex flex-wrap items-center gap-3 text-sm">
                 <label className="flex items-center gap-1.5">
@@ -1444,11 +1444,11 @@ function StatsChartForm({
             ) : null}
 
             {chartType === "bar" ||
-            chartType === "column" ||
-            chartType === "stackedBar" ||
-            chartType === "stackedColumn" ||
-            chartType === "line" ||
-            chartType === "scatter" ? (
+              chartType === "column" ||
+              chartType === "stackedBar" ||
+              chartType === "stackedColumn" ||
+              chartType === "line" ||
+              chartType === "scatter" ? (
               // Rotate Y label + Show gridlines + Show border + Show values
               // all share one row — per explicit feedback, bar/column's
               // own full set of these toggles belongs on a single line;
@@ -1462,19 +1462,19 @@ function StatsChartForm({
                   <InlineMathText text={t("yLabelRotated")} />
                 </label>
                 {chartType === "bar" ||
-                chartType === "column" ||
-                chartType === "stackedBar" ||
-                chartType === "stackedColumn" ||
-                chartType === "scatter" ? (
+                  chartType === "column" ||
+                  chartType === "stackedBar" ||
+                  chartType === "stackedColumn" ||
+                  chartType === "scatter" ? (
                   <label className="flex items-center gap-2">
                     <Switch checked={showGridLines} onCheckedChange={setShowGridLines} />
                     {t("showGridLines")}
                   </label>
                 ) : null}
                 {chartType === "bar" ||
-                chartType === "column" ||
-                chartType === "stackedBar" ||
-                chartType === "stackedColumn" ? (
+                  chartType === "column" ||
+                  chartType === "stackedBar" ||
+                  chartType === "stackedColumn" ? (
                   <label className="flex items-center gap-2">
                     <Switch checked={showBorder} onCheckedChange={setShowBorder} />
                     {t("showBorder")}
@@ -1530,14 +1530,21 @@ function StatsChartForm({
                 <SelectItem value="serif">{t("fontFamilies.serif")}</SelectItem>
               </SelectContent>
             </Select>
-            {/* [&_svg]:max-w-full guards against a chart whose intrinsic
-                size (set by anvilnote-charts's own scaledDimension, clamped
-                but still capable of being wider than this pane at many
-                entries) would otherwise overflow this fixed-size preview
-                box — the SVG scales down to fit instead. */}
+            {/* Deliberately shrunk well below the pane's own available
+                space (70%/260px, not just barely-under-100%) — per
+                explicit feedback that an earlier, more conservative crop
+                (90%) still looked "just as big". object-contain scales
+                the SVG down to fit BOTH axes while preserving its own
+                aspect ratio; the flex parent's own items-center/
+                justify-center centers this box both ways once it's no
+                longer forced to stretch full-width. */}
             {isPreviewCurrent && previewSvg ? (
               <div
-                className="[&_svg]:h-auto [&_svg]:max-w-full"
+                // Fixed px max-height (not a %) since the pane's own
+                // min-h-[420px] isn't a DEFINITE height — a percentage
+                // height on this child wouldn't resolve against a
+                // min-height parent, silently falling back to auto.
+                className="flex max-h-[300px] w-full max-w-[80%] items-center justify-center [&_svg]:h-auto [&_svg]:max-h-[260px] [&_svg]:w-auto [&_svg]:max-w-full [&_svg]:object-contain"
                 dangerouslySetInnerHTML={{ __html: previewSvg }}
               />
             ) : hasLabel && loading ? (
