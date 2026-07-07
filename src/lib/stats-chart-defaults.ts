@@ -16,9 +16,10 @@ export const SCATTER_MAX_ENTRIES = 5000;
 export const MAX_SERIES = 6;
 // Data-entry grid shows at most this many rows before collapsing the rest
 // behind a "Show more" toggle — a spreadsheet-style default screenful
-// rather than always rendering up to MAX_ENTRIES rows at once. Lowered
-// from 10 to 5 per explicit feedback that the dialog felt too tall.
-export const VISIBLE_ROW_LIMIT = 5;
+// rather than always rendering up to MAX_ENTRIES rows at once. Raised
+// from 5 to 8 per explicit feedback (the merged "Add entry" row below
+// the grid is now row 9, right after these 8).
+export const VISIBLE_ROW_LIMIT = 8;
 // Matches anvilnote-charts's own MAX_SCALED_DIMENSION/2 (build-typst.ts) —
 // past this many entries, the chart's own size clamp stops growing with
 // entry count and bars/boxes start getting proportionally narrower
