@@ -356,8 +356,8 @@
         "bar": "長條圖",
         "column": "柱狀圖",
         "pie": "圓餅圖",
-        "pyramid": "金字塔圖",
         "line": "折線圖",
+        "scatter": "散佈圖",
         "boxwhisker": "箱形圖"
       },
       "label": "標籤",
@@ -377,6 +377,16 @@
         "beside": "顯示在文字旁"
       },
       "showValues": "顯示數值",
+      "showGridLines": "顯示格線",
+      "xLabel": "X 軸標籤",
+      "yLabel": "Y 軸標籤",
+      "yLabelRotated": "旋轉 Y 軸標籤",
+      "trendLine": "趨勢線",
+      "trendLineKinds": {
+        "none": "無",
+        "linear": "直線",
+        "lowess": "Lowess 曲線"
+      },
       "fontFamilies": {
         "sans": "無襯線體",
         "serif": "襯線體"

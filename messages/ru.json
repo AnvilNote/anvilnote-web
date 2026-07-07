@@ -356,8 +356,8 @@
         "bar": "Столбчатая (гориз.)",
         "column": "Столбчатая (верт.)",
         "pie": "Круговая",
-        "pyramid": "Пирамида",
         "line": "Линейная",
+        "scatter": "Точечная",
         "boxwhisker": "Ящик с усами"
       },
       "label": "Подпись",
@@ -377,6 +377,16 @@
         "beside": "Рядом с подписью"
       },
       "showValues": "Показать значения",
+      "showGridLines": "Показать сетку",
+      "xLabel": "Подпись оси X",
+      "yLabel": "Подпись оси Y",
+      "yLabelRotated": "Повернуть подпись Y",
+      "trendLine": "Линия тренда",
+      "trendLineKinds": {
+        "none": "Нет",
+        "linear": "Линейная",
+        "lowess": "Кривая Lowess"
+      },
       "fontFamilies": {
         "sans": "Без засечек",
         "serif": "С засечками"

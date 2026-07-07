@@ -356,8 +356,8 @@
         "bar": "가로 막대",
         "column": "세로 막대",
         "pie": "파이",
-        "pyramid": "피라미드",
         "line": "꺾은선형",
+        "scatter": "분산형",
         "boxwhisker": "상자수염 그림"
       },
       "label": "레이블",
@@ -377,6 +377,16 @@
         "beside": "레이블 옆에 표시"
       },
       "showValues": "값 표시",
+      "showGridLines": "격자선 표시",
+      "xLabel": "X축 레이블",
+      "yLabel": "Y축 레이블",
+      "yLabelRotated": "Y축 레이블 회전",
+      "trendLine": "추세선",
+      "trendLineKinds": {
+        "none": "없음",
+        "linear": "직선",
+        "lowess": "Lowess 곡선"
+      },
       "fontFamilies": {
         "sans": "고딕체",
         "serif": "명조체"

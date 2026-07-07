@@ -356,8 +356,8 @@
         "bar": "Bar",
         "column": "Column",
         "pie": "Pie",
-        "pyramid": "Pyramid",
         "line": "Line",
+        "scatter": "Scatter",
         "boxwhisker": "Box & whisker"
       },
       "label": "Label",
@@ -377,6 +377,16 @@
         "beside": "Next to the label"
       },
       "showValues": "Show values",
+      "showGridLines": "Show gridlines",
+      "xLabel": "X label",
+      "yLabel": "Y label",
+      "yLabelRotated": "Rotate Y label",
+      "trendLine": "Trend line",
+      "trendLineKinds": {
+        "none": "None",
+        "linear": "Linear",
+        "lowess": "Lowess"
+      },
       "fontFamilies": {
         "sans": "Sans-serif",
         "serif": "Serif"
