@@ -46,6 +46,10 @@ export type AnvilTemplate = {
   category: string;
   tags: string[];
   fields: TemplateField[];
+  // This template's own content/text-column width, in cm — mirrors
+  // anvilnote-api's own TemplateSummary field. Used by stats-chart's
+  // "ratio of text width" custom sizing (see stats-chart-dialog.tsx).
+  textWidthCm: number;
   // Optional: when omitted the preview is derived from `id` by convention.
   preview?: TemplatePreview;
   // Typst Universe page for the wrapped @preview package; absent for

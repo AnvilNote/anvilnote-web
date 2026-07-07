@@ -76,6 +76,7 @@ type ApiTemplate = {
   category?: string;
   tags?: string[];
   fields?: AnvilTemplate["fields"];
+  textWidthCm?: number;
   universeUrl?: string;
 };
 
@@ -189,6 +190,11 @@ function fromApiTemplate(template: ApiTemplate): AnvilTemplate {
     category: template.category ?? "note",
     tags: template.tags ?? [],
     fields: template.fields ?? [],
+    // 16cm matches the most common value across templates (plain-note,
+    // bananote, bubble, ...) — a reasonable fallback for the rare case of
+    // a stale/incomplete API response missing this field entirely, not a
+    // real per-template measurement.
+    textWidthCm: template.textWidthCm ?? 16,
     universeUrl: template.universeUrl,
   };
 }

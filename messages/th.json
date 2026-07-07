@@ -385,7 +385,7 @@
       "showGridLines": "แสดงเส้นกริด",
       "showBorder": "แสดงกรอบ",
       "lockAspectRatio": "ล็อกสัดส่วน",
-      "customWidth": "กำหนดความกว้าง",
+      "customWidthRatio": "ความกว้าง (% ของความกว้างข้อความ)",
       "customHeight": "กำหนดความสูง",
       "auto": "อัตโนมัติ",
       "customSizeRangeWarning": "ขนาดต้องอยู่ระหว่าง {min} ถึง {max} ซม.",

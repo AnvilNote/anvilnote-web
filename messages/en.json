@@ -385,7 +385,7 @@
       "showGridLines": "Show gridlines",
       "showBorder": "Show border",
       "lockAspectRatio": "Lock ratio",
-      "customWidth": "Custom width",
+      "customWidthRatio": "Width (% of text width)",
       "customHeight": "Custom height",
       "auto": "Auto",
       "customSizeRangeWarning": "Size must be between {min} and {max} cm.",

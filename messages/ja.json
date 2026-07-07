@@ -385,7 +385,7 @@
       "showGridLines": "目盛線を表示",
       "showBorder": "枠線を表示",
       "lockAspectRatio": "縦横比を固定",
-      "customWidth": "幅を指定",
+      "customWidthRatio": "幅(テキスト幅に対する割合)",
       "customHeight": "高さを指定",
       "auto": "自動",
       "customSizeRangeWarning": "サイズは{min}〜{max}cmの範囲で指定してください。",

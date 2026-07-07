@@ -385,7 +385,7 @@
       "showGridLines": "Показать сетку",
       "showBorder": "Показать рамку",
       "lockAspectRatio": "Сохранять пропорции",
-      "customWidth": "Своя ширина",
+      "customWidthRatio": "Ширина (% от ширины текста)",
       "customHeight": "Своя высота",
       "auto": "Авто",
       "customSizeRangeWarning": "Размер должен быть от {min} до {max} см.",
