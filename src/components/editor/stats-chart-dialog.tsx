@@ -184,7 +184,9 @@ function StatsChartForm({
       : false,
   );
   const [showGridLines, setShowGridLines] = useState(
-    initialSpec.chartType === "bar" || initialSpec.chartType === "column"
+    initialSpec.chartType === "bar" ||
+      initialSpec.chartType === "column" ||
+      initialSpec.chartType === "scatter"
       ? initialSpec.showGridLines
       : true,
   );
@@ -201,6 +203,14 @@ function StatsChartForm({
   const [trendLine, setTrendLine] = useState<TrendLine>(
     initialSpec.chartType === "scatter" ? initialSpec.trendLine : "none",
   );
+  const [trendLineColor, setTrendLineColor] = useState(
+    initialSpec.chartType === "scatter" ? initialSpec.trendLineColor : "#737373",
+  );
+  // Trend-line color has just one Popover (not per-row like the entry
+  // color pickers below), so a simple boolean is enough — no shared
+  // "which index is open" state needed since there's nothing else to be
+  // mutually exclusive with.
+  const [trendLineColorOpen, setTrendLineColorOpen] = useState(false);
   const [fontFamily, setFontFamily] = useState<FontFamily>(initialSpec.fontFamily);
   // Caps the visible rows at VISIBLE_ROW_LIMIT (matches a spreadsheet
   // showing the first screenful of rows) rather than always rendering up
@@ -285,7 +295,17 @@ function StatsChartForm({
       const scatterPoints = scatterData
         .filter((entry) => entry.x.trim() && entry.y.trim())
         .map((entry) => ({ x: Number(entry.x), y: Number(entry.y) }));
-      return { chartType, data: scatterPoints, fontFamily, trendLine, xLabel, yLabel, yLabelRotated };
+      return {
+        chartType,
+        data: scatterPoints,
+        fontFamily,
+        trendLine,
+        trendLineColor,
+        showGridLines,
+        xLabel,
+        yLabel,
+        yLabelRotated,
+      };
     }
     const filteredData = categoricalData.filter((entry) => entry.label.trim());
     if (chartType === "pie") {
@@ -731,6 +751,71 @@ function StatsChartForm({
     );
   }
 
+  // Scatter's own simpler x/y-only table (no color/checkbox columns — a
+  // scatter point has neither a per-point color override nor a batch-
+  // select use case the other chart types' larger row counts justify).
+  // Shared by both the compact grid and the expanded full-table view,
+  // same "only the row list passed in differs" pattern as renderTable
+  // above — this was previously inlined ONLY in the compact view, so the
+  // expanded "Show more" view fell through to rendering categoricalRows/
+  // boxWhiskerRows instead (irrelevant blank scaffolding for a scatter
+  // chart), making the expanded view look empty. Real bug, caught live.
+  function renderScatterTable(rows: typeof scatterRows, options?: { scrollable?: boolean }): ReactNode {
+    return (
+      <div className={options?.scrollable ? "max-h-[420px] overflow-x-auto overflow-y-auto" : "overflow-x-auto"}>
+        <table className="w-full table-fixed border-collapse text-sm">
+          <thead>
+            <tr className="bg-muted/50">
+              {/* Header text mirrors the xLabel/yLabel fields below
+                  (falling back to plain "x"/"y" when empty) — so renaming
+                  an axis there is immediately reflected here too, per
+                  explicit feedback. */}
+              <th className="border-b p-1.5 text-left text-xs font-medium text-muted-foreground">
+                {xLabel.trim() || "x"}
+              </th>
+              <th className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground">
+                {yLabel.trim() || "y"}
+              </th>
+              <th className="border-b border-l p-1.5" style={{ width: "10%" }} />
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(({ entry, index }) => (
+              <tr key={index}>
+                <td className="border-b p-0">
+                  <input
+                    className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                    onChange={(event) => updateScatterEntry(index, { x: event.target.value })}
+                    type="number"
+                    value={entry.x}
+                  />
+                </td>
+                <td className="border-b border-l p-0">
+                  <input
+                    className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
+                    onChange={(event) => updateScatterEntry(index, { y: event.target.value })}
+                    type="number"
+                    value={entry.y}
+                  />
+                </td>
+                <td className="border-b border-l p-1.5 text-center">
+                  <button
+                    aria-label={t("clearEntry")}
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={() => clearEntry(index)}
+                    type="button"
+                  >
+                    ×
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
   return (
     <DialogContent className="sm:max-w-5xl">
       <DialogHeader>
@@ -761,7 +846,9 @@ function StatsChartForm({
               </p>
             </div>
           </div>
-          {renderTable(categoricalRows, boxWhiskerRows, { scrollable: true })}
+          {isScatter
+            ? renderScatterTable(scatterRows, { scrollable: true })
+            : renderTable(categoricalRows, boxWhiskerRows, { scrollable: true })}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -840,61 +927,9 @@ function StatsChartForm({
                 a scatter point has neither a per-point color override nor
                 a batch-select use case the other chart types' larger row
                 counts justify). */}
-            {isScatter ? (
-              <div className="overflow-x-auto">
-                <table className="w-full table-fixed border-collapse text-sm">
-                  <thead>
-                    <tr className="bg-muted/50">
-                      {/* Header text mirrors the xLabel/yLabel fields below
-                          (falling back to plain "x"/"y" when empty) — so
-                          renaming an axis there is immediately reflected
-                          here too, per explicit feedback. */}
-                      <th className="border-b p-1.5 text-left text-xs font-medium text-muted-foreground">
-                        {xLabel.trim() || "x"}
-                      </th>
-                      <th className="border-b border-l p-1.5 text-left text-xs font-medium text-muted-foreground">
-                        {yLabel.trim() || "y"}
-                      </th>
-                      <th className="border-b border-l p-1.5" style={{ width: "10%" }} />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {visibleScatterRows.map(({ entry, index }) => (
-                      <tr key={index}>
-                        <td className="border-b p-0">
-                          <input
-                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
-                            onChange={(event) => updateScatterEntry(index, { x: event.target.value })}
-                            type="number"
-                            value={entry.x}
-                          />
-                        </td>
-                        <td className="border-b border-l p-0">
-                          <input
-                            className="w-full bg-transparent px-2 py-1.5 outline-none focus:bg-accent"
-                            onChange={(event) => updateScatterEntry(index, { y: event.target.value })}
-                            type="number"
-                            value={entry.y}
-                          />
-                        </td>
-                        <td className="border-b border-l p-1.5 text-center">
-                          <button
-                            aria-label={t("clearEntry")}
-                            className="text-muted-foreground hover:text-foreground"
-                            onClick={() => clearEntry(index)}
-                            type="button"
-                          >
-                            ×
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              renderTable(visibleCategoricalRows, visibleBoxWhiskerRows)
-            )}
+            {isScatter
+              ? renderScatterTable(visibleScatterRows)
+              : renderTable(visibleCategoricalRows, visibleBoxWhiskerRows)}
 
             {hiddenRowCount > 0 ? (
               <Button onClick={() => setShowAllRows(true)} size="sm" variant="ghost">
@@ -916,7 +951,14 @@ function StatsChartForm({
             </Button>
 
             {chartType === "scatter" ? (
-              <div className="flex items-center gap-2 text-sm">
+              // Trend line + its color picker + x/y axis label inputs all
+              // share one row here (scatter only) — per explicit feedback
+              // that the x/y label inputs should sit to the right of the
+              // trend-line select rather than on their own separate rows
+              // below (bar/column/line still get their own rows via the
+              // generic block further down, since only scatter's layout
+              // was called out).
+              <div className="flex flex-wrap items-center gap-2 text-sm">
                 <span>{t("trendLine")}</span>
                 <Select onValueChange={(value) => setTrendLine(value as TrendLine)} value={trendLine}>
                   <SelectTrigger className="h-8 w-40 text-xs">
@@ -928,13 +970,68 @@ function StatsChartForm({
                     <SelectItem value="lowess">{t("trendLineKinds.lowess")}</SelectItem>
                   </SelectContent>
                 </Select>
+                {trendLine !== "none" ? (
+                  <Popover onOpenChange={setTrendLineColorOpen} open={trendLineColorOpen}>
+                    <PopoverTrigger asChild>
+                      <button
+                        aria-label={t("trendLineColor")}
+                        className="flex items-center gap-1.5 rounded border px-2 py-1 hover:bg-accent"
+                        type="button"
+                      >
+                        <span
+                          className="size-4 shrink-0 rounded-sm border"
+                          style={{ backgroundColor: trendLineColor }}
+                        />
+                        <span className="font-mono text-xs text-muted-foreground">{trendLineColor}</span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-64">
+                      <ColorPicker
+                        className="gap-3"
+                        onChange={(rgba) => {
+                          const [r, g, b] = rgba as [number, number, number, number];
+                          const hex = `#${[r, g, b]
+                            .map((c) => Math.round(c).toString(16).padStart(2, "0"))
+                            .join("")}`;
+                          setTrendLineColor(hex);
+                        }}
+                        value={trendLineColor}
+                      >
+                        <ColorPickerSelection className="h-32" />
+                        <ColorPickerHue />
+                        <div className="flex items-center gap-2">
+                          <ColorPickerEyeDropper />
+                          <ColorPickerOutput />
+                        </div>
+                        <ColorPickerFormat />
+                      </ColorPicker>
+                    </PopoverContent>
+                  </Popover>
+                ) : null}
+                <label className="flex items-center gap-1.5">
+                  <span className="text-xs text-muted-foreground">{t("xLabel")}</span>
+                  <input
+                    className="w-28 rounded border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
+                    onChange={(event) => setXLabel(event.target.value)}
+                    value={xLabel}
+                  />
+                </label>
+                <label className="flex items-center gap-1.5">
+                  <span className="text-xs text-muted-foreground">{t("yLabel")}</span>
+                  <input
+                    className="w-28 rounded border bg-transparent px-2 py-1 text-sm outline-none focus:bg-accent"
+                    onChange={(event) => setYLabel(event.target.value)}
+                    value={yLabel}
+                  />
+                </label>
+                <label className="flex items-center gap-2">
+                  <Switch checked={yLabelRotated} onCheckedChange={setYLabelRotated} />
+                  {t("yLabelRotated")}
+                </label>
               </div>
             ) : null}
 
-            {chartType === "bar" ||
-            chartType === "column" ||
-            chartType === "line" ||
-            chartType === "scatter" ? (
+            {chartType === "bar" || chartType === "column" || chartType === "line" ? (
               <>
                 <label className="flex items-center gap-1.5 text-sm">
                   <span className="w-20 shrink-0 text-xs text-muted-foreground">{t("xLabel")}</span>
@@ -959,7 +1056,7 @@ function StatsChartForm({
               </>
             ) : null}
 
-            {chartType === "bar" || chartType === "column" ? (
+            {chartType === "bar" || chartType === "column" || chartType === "scatter" ? (
               <label className="flex items-center gap-2 text-sm">
                 <Switch checked={showGridLines} onCheckedChange={setShowGridLines} />
                 {t("showGridLines")}

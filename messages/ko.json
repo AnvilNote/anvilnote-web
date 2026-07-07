@@ -384,6 +384,7 @@
       "yLabel": "Y축 레이블",
       "yLabelRotated": "Y축 레이블 회전",
       "trendLine": "추세선",
+      "trendLineColor": "추세선 색상",
       "trendLineKinds": {
         "none": "없음",
         "linear": "직선",

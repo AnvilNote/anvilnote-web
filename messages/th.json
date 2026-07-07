@@ -384,6 +384,7 @@
       "yLabel": "ป้ายกำกับแกน Y",
       "yLabelRotated": "หมุนป้ายกำกับแกน Y",
       "trendLine": "เส้นแนวโน้ม",
+      "trendLineColor": "สีเส้นแนวโน้ม",
       "trendLineKinds": {
         "none": "ไม่มี",
         "linear": "เส้นตรง",

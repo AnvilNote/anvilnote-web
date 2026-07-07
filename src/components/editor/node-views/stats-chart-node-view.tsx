@@ -54,11 +54,15 @@ function buildSpec(node: NodeViewProps["node"]): StatsChartSpec {
     const trendLine: TrendLine = TREND_LINES.includes(node.attrs.trendLine)
       ? node.attrs.trendLine
       : "none";
+    const trendLineColor =
+      typeof node.attrs.trendLineColor === "string" ? node.attrs.trendLineColor : "#737373";
     return {
       chartType: "scatter",
       data: data as ScatterEntry[],
       fontFamily,
       trendLine,
+      trendLineColor,
+      showGridLines: node.attrs.showGridLines !== false,
       ...axisLabelFields(node),
     };
   }

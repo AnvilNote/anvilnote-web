@@ -384,6 +384,7 @@
       "yLabel": "Y軸ラベル",
       "yLabelRotated": "Y軸ラベルを回転",
       "trendLine": "近似線",
+      "trendLineColor": "近似線の色",
       "trendLineKinds": {
         "none": "なし",
         "linear": "直線",
