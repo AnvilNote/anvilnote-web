@@ -195,6 +195,18 @@ export const AnvilStatsChart = Node.create({
         parseHTML: (element) => element.getAttribute("data-svg"),
         renderHTML: (attributes) => (attributes.svg ? { "data-svg": attributes.svg } : {}),
       },
+      // Mirrors image.ts's own caption attribute exactly — renderImage in
+      // anvilnote-renderer's tiptap-to-typst.ts already reads
+      // node.attrs.caption generically (not gated to node type "image"),
+      // and the statsChart export case already routes through
+      // renderImage(), so this needs ZERO renderer changes to work —
+      // same "renderer 零新增邏輯" reuse as the export path itself.
+      caption: {
+        default: "",
+        parseHTML: (element) => element.getAttribute("data-caption") ?? "",
+        renderHTML: (attributes) =>
+          attributes.caption ? { "data-caption": attributes.caption } : {},
+      },
     };
   },
 

@@ -273,7 +273,7 @@
       "functionPlot": "Function plot",
       "functionPlotHint": "Plot y = f(x) curves",
       "statsChart": "Stats chart",
-      "statsChartHint": "Bar, column, pie, pyramid, or box chart"
+      "statsChartHint": "Bar, column, pie, line, scatter, or box chart"
     },
     "image": {
       "figure": "Figure",
@@ -378,6 +378,8 @@
       },
       "showValues": "Show values",
       "showGridLines": "Show gridlines",
+      "figure": "Figure",
+      "captionPlaceholder": "Enter a chart caption",
       "xLabel": "X label",
       "yLabel": "Y label",
       "yLabelRotated": "Rotate Y label",

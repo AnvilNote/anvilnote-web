@@ -273,7 +273,7 @@
       "functionPlot": "กราฟฟังก์ชัน",
       "functionPlotHint": "วาดเส้นโค้ง y = f(x)",
       "statsChart": "แผนภูมิสถิติ",
-      "statsChartHint": "แผนภูมิแท่ง วงกลม พีระมิด หรือกล่องและหนวด"
+      "statsChartHint": "แผนภูมิแท่ง วงกลม เส้น กระจาย หรือกล่องและหนวด"
     },
     "image": {
       "figure": "ภาพ",
@@ -378,6 +378,8 @@
       },
       "showValues": "แสดงค่าตัวเลข",
       "showGridLines": "แสดงเส้นกริด",
+      "figure": "รูปที่",
+      "captionPlaceholder": "ใส่คำอธิบายภาพแผนภูมิ",
       "xLabel": "ป้ายกำกับแกน X",
       "yLabel": "ป้ายกำกับแกน Y",
       "yLabelRotated": "หมุนป้ายกำกับแกน Y",

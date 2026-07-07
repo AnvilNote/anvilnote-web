@@ -273,7 +273,7 @@
       "functionPlot": "関数グラフ",
       "functionPlotHint": "y = f(x) の曲線を描画",
       "statsChart": "統計グラフ",
-      "statsChartHint": "棒グラフ、円グラフ、ピラミッド図、箱ひげ図"
+      "statsChartHint": "棒グラフ、円グラフ、折れ線グラフ、散布図、箱ひげ図"
     },
     "image": {
       "figure": "図",
@@ -378,6 +378,8 @@
       },
       "showValues": "数値を表示",
       "showGridLines": "目盛線を表示",
+      "figure": "図",
+      "captionPlaceholder": "図のキャプションを入力",
       "xLabel": "X軸ラベル",
       "yLabel": "Y軸ラベル",
       "yLabelRotated": "Y軸ラベルを回転",
