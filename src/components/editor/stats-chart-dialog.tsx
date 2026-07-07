@@ -972,7 +972,7 @@ function StatsChartForm({
                     <PopoverTrigger asChild>
                       <button
                         aria-label={t("trendLineColor")}
-                        className="flex items-center gap-1.5 rounded-lg border px-2 py-1 hover:bg-accent"
+                        className="flex items-center gap-1.5 rounded-lg px-2 py-1 hover:bg-accent"
                         type="button"
                       >
                         <span
