@@ -391,7 +391,8 @@
       "captionPlaceholder": "Enter a chart caption",
       "xLabel": "X label",
       "yLabel": "Y label",
-      "yLabelRotated": "Rotate $y$ label",
+      "yLabelRotated": "Rotate vertical axis",
+      "useSerifFont": "Serif",
       "trendLine": "Trend line",
       "trendLineColor": "Trend line color",
       "trendLineKinds": {

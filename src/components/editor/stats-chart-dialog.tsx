@@ -1492,15 +1492,22 @@ function StatsChartForm({
                   </label>
                 ) : null}
               </div>
-              <Select onValueChange={(value) => setFontFamily(value as FontFamily)} value={fontFamily}>
-                <SelectTrigger className="h-7 w-28 text-xs" size="sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sans">{t("fontFamilies.sans")}</SelectItem>
-                  <SelectItem value="serif">{t("fontFamilies.serif")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-3 text-xs">
+                <label className="flex items-center gap-1.5">
+                  <Switch
+                    checked={fontFamily === "serif"}
+                    onCheckedChange={(checked) => setFontFamily(checked ? "serif" : "sans")}
+                    className="scale-90"
+                  />
+                  {t("useSerifFont")}
+                </label>
+                {hasAxisLabelFields ? (
+                  <label className="flex items-center gap-1.5">
+                    <Switch checked={yLabelRotated} onCheckedChange={setYLabelRotated} className="scale-90" />
+                    {t("yLabelRotated")}
+                  </label>
+                ) : null}
+              </div>
             </div>
             {/* Deliberately shrunk well below the pane's own available
                 space (70%/260px, not just barely-under-100%) — per
@@ -1523,12 +1530,12 @@ function StatsChartForm({
               <span className="text-muted-foreground text-sm">{t("previewLoading")}</span>
             ) : null}
             {hasLabel && error ? <p className="text-destructive text-sm">{t("previewError")}</p> : null}
-            {/* Bottom bar: xLabel/yLabel/yLabelRotated (moved here from
-                the left panel) share one row with the width ratio input,
-                at the same height — per explicit feedback. Order left to
-                right: X label, Y label, Rotate Y label, then the ratio
-                input stays rightmost (justify-between keeps it pinned
-                there regardless of how many of the left-hand fields
+            {/* Bottom bar: xLabel/yLabel (moved here from the left panel)
+                share one row with the width ratio input, at the same
+                height — per explicit feedback. yLabelRotated moved to
+                the TOP bar instead (next to the serif toggle), not here.
+                The ratio input stays rightmost (justify-between keeps it
+                pinned there regardless of how many left-hand fields
                 render for the current chart type). */}
             <div className="absolute inset-x-2 bottom-2 z-10 flex items-center justify-between gap-2 text-xs">
               <div className="flex flex-wrap items-center gap-2">
@@ -1549,10 +1556,6 @@ function StatsChartForm({
                         onChange={(event) => setYLabel(event.target.value)}
                         value={yLabel}
                       />
-                    </label>
-                    <label className="flex items-center gap-1">
-                      <Switch checked={yLabelRotated} onCheckedChange={setYLabelRotated} className="scale-90" />
-                      <InlineMathText text={t("yLabelRotated")} />
                     </label>
                   </>
                 ) : null}

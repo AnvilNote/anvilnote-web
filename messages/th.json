@@ -391,7 +391,8 @@
       "captionPlaceholder": "ใส่คำอธิบายภาพแผนภูมิ",
       "xLabel": "ป้ายกำกับแกน X",
       "yLabel": "ป้ายกำกับแกน Y",
-      "yLabelRotated": "หมุนป้ายกำกับแกน $y$",
+      "yLabelRotated": "หมุนแกนตั้ง",
+      "useSerifFont": "เซอริฟ",
       "trendLine": "เส้นแนวโน้ม",
       "trendLineColor": "สีเส้นแนวโน้ม",
       "trendLineKinds": {
