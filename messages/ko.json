@@ -385,7 +385,7 @@
       "showGridLines": "격자선 표시",
       "showBorder": "테두리 표시",
       "lockAspectRatio": "비율 고정",
-      "customWidth": "너비 지정",
+      "customWidthRatio": "너비(텍스트 너비 대비 %)",
       "customHeight": "높이 지정",
       "auto": "자동",
       "customSizeRangeWarning": "크기는 {min}~{max}cm 사이여야 합니다.",

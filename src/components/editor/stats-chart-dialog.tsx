@@ -51,6 +51,9 @@ import {
   parseStackedSpreadsheet,
 } from "@/lib/stats-chart-import";
 import { parseNumericInput, numericInputValue } from "@/lib/numeric-input";
+import { useDocumentStore } from "@/lib/stores/document-store";
+import { useTemplatesStore } from "@/lib/stores/templates-store";
+import { DEFAULT_TEMPLATE_ID } from "@/lib/templates/templates";
 import type {
   BoxWhiskerEntry,
   CategoricalEntry,
@@ -244,13 +247,32 @@ function StatsChartForm({
       ? initialSpec.showBorder
       : true,
   );
+  // Width is set as a PERCENTAGE of the current template's own text-column
+  // width (textWidthCm), not a literal cm value — per explicit feedback,
+  // since a fixed cm number means something different on every template
+  // (each has its own page margins/width). Height stays a literal cm
+  // value. Looked up from the currently active document's own template
+  // (Zustand stores, not React context — works the same whether this
+  // dialog is rendered deep inside a NodeView or not); falls back to
+  // DEFAULT_TEMPLATE_ID's own width if no document is active yet (e.g. a
+  // detached/preview render context), and 16cm (the most common template
+  // value) if even that template lookup somehow misses.
+  const activeDocumentId = useDocumentStore((s) => s.activeId);
+  const activeDocument = useDocumentStore((s) => s.documents.find((d) => d.id === activeDocumentId));
+  const activeTemplate = useTemplatesStore((s) =>
+    s.getTemplate(activeDocument?.templateId ?? DEFAULT_TEMPLATE_ID),
+  );
+  const textWidthCm = activeTemplate?.textWidthCm ?? 16;
+
   // Draft strings (not numbers) — same "blank means unset, not some
   // sentinel number" pattern as scatter's own draft entries: an empty
   // input means "auto" (no override sent), not 0. Every chart type's
   // spec now carries width/height (CustomSizeFields spread into the
   // whole StatsChartSpec union), so no chartType narrowing is needed
   // here unlike most other per-type state above.
-  const [widthDraft, setWidthDraft] = useState(initialSpec.width !== undefined ? String(initialSpec.width) : "");
+  const [widthRatioDraft, setWidthRatioDraft] = useState(
+    initialSpec.width !== undefined ? String(Math.round((initialSpec.width / textWidthCm) * 100)) : "",
+  );
   const [heightDraft, setHeightDraft] = useState(
     initialSpec.height !== undefined ? String(initialSpec.height) : "",
   );
@@ -358,12 +380,21 @@ function StatsChartForm({
   // Blank draft = "auto" (no override sent) — the schema's own
   // width/height are optional, so `undefined` here means the field is
   // simply omitted from the spec, letting anvilnote-charts fall back to
-  // its usual auto-computed dimension for that axis.
+  // its usual auto-computed dimension for that axis. width is stored as a
+  // PERCENTAGE of the template's own textWidthCm (see widthRatioDraft's
+  // own comment above) and converted to an absolute cm value here, right
+  // before it goes into the spec — anvilnote-charts/anvilnote-api's own
+  // schemas are unchanged, still plain cm; the ratio is a web-only input
+  // mode.
   function customSize(): { width?: number; height?: number } {
-    const width = widthDraft.trim() ? Number(widthDraft) : undefined;
+    const widthRatio = widthRatioDraft.trim() ? Number(widthRatioDraft) : undefined;
     const height = heightDraft.trim() ? Number(heightDraft) : undefined;
+    const width =
+      widthRatio !== undefined && Number.isFinite(widthRatio)
+        ? Math.round(((widthRatio / 100) * textWidthCm) * 100) / 100
+        : undefined;
     return {
-      width: width !== undefined && Number.isFinite(width) ? width : undefined,
+      width,
       height: height !== undefined && Number.isFinite(height) ? height : undefined,
     };
   }
@@ -524,22 +555,35 @@ function StatsChartForm({
     }
   }
 
+  // width's own ratio-draft (percentage of textWidthCm) resolved to an
+  // absolute cm value — shared by the range check and the aspect-ratio
+  // math below, both of which need to compare against height in the same
+  // (cm) unit.
+  function widthCmFrom(ratioDraft: string): number {
+    return (Number(ratioDraft) / 100) * textWidthCm;
+  }
+
   // When lock is on, the OTHER field always follows: if a real ratio
   // already exists (both old values are valid positive numbers), that
   // ratio is preserved; otherwise (first use, one or both fields still
   // blank) DEFAULT_ASPECT_RATIO is applied instead of leaving the other
   // field untouched — "填寫其中一個就會自動填寫其他的" per explicit
   // feedback, not just a no-op when there's nothing to preserve yet.
-  function handleWidthChange(value: string) {
-    setWidthDraft(value);
-    const newWidth = Number(value);
-    if (!value.trim() || !Number.isFinite(newWidth)) return;
-    warnIfOutOfRange(newWidth);
+  function handleWidthRatioChange(value: string) {
+    setWidthRatioDraft(value);
+    if (!value.trim() || !Number.isFinite(Number(value))) return;
+    // No cm-range toast here (unlike height) — width is now typed as a
+    // PERCENTAGE, not cm, so a "must be between 1 and 50cm" message
+    // would be talking about a unit the user never typed. The schema's
+    // own 1-50cm clamp still applies to the RESOLVED value at save time;
+    // it just isn't surfaced as an immediate keystroke-level warning
+    // here anymore.
+    const newWidthCm = widthCmFrom(value);
     if (!lockAspectRatio) return;
-    const oldWidth = Number(widthDraft);
+    const oldWidthCm = widthCmFrom(widthRatioDraft);
     const oldHeight = Number(heightDraft);
-    const ratio = oldWidth > 0 && oldHeight > 0 ? oldHeight / oldWidth : 1 / DEFAULT_ASPECT_RATIO;
-    setHeightDraft(String(Math.round(newWidth * ratio * 10) / 10));
+    const ratio = oldWidthCm > 0 && oldHeight > 0 ? oldHeight / oldWidthCm : 1 / DEFAULT_ASPECT_RATIO;
+    setHeightDraft(String(Math.round(newWidthCm * ratio * 10) / 10));
   }
 
   function handleHeightChange(value: string) {
@@ -548,10 +592,11 @@ function StatsChartForm({
     if (!value.trim() || !Number.isFinite(newHeight)) return;
     warnIfOutOfRange(newHeight);
     if (!lockAspectRatio) return;
-    const oldWidth = Number(widthDraft);
+    const oldWidthCm = widthCmFrom(widthRatioDraft);
     const oldHeight = Number(heightDraft);
-    const ratio = oldWidth > 0 && oldHeight > 0 ? oldWidth / oldHeight : DEFAULT_ASPECT_RATIO;
-    setWidthDraft(String(Math.round(newHeight * ratio * 10) / 10));
+    const ratio = oldWidthCm > 0 && oldHeight > 0 ? oldWidthCm / oldHeight : DEFAULT_ASPECT_RATIO;
+    const newWidthCm = newHeight * ratio;
+    setWidthRatioDraft(String(Math.round((newWidthCm / textWidthCm) * 100)));
   }
 
   function updateSeriesColor(index: number, color: string) {
@@ -1555,14 +1600,14 @@ function StatsChartForm({
               <Switch checked={lockAspectRatio} onCheckedChange={setLockAspectRatio} className="scale-90" />
               <span className="text-muted-foreground">{t("lockAspectRatio")}</span>
               <input
-                aria-label={t("customWidth")}
+                aria-label={t("customWidthRatio")}
                 className="w-12 rounded-lg border bg-transparent px-1 py-0.5 text-center text-xs outline-none focus:bg-accent"
-                onChange={(event) => handleWidthChange(event.target.value)}
+                onChange={(event) => handleWidthRatioChange(event.target.value)}
                 placeholder={t("auto")}
                 type="number"
-                value={widthDraft}
+                value={widthRatioDraft}
               />
-              <span className="text-muted-foreground">cm</span>
+              <span className="text-muted-foreground">%</span>
               <InlineMathText text="$\times$" />
               <input
                 aria-label={t("customHeight")}
