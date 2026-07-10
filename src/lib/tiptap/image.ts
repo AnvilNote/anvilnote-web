@@ -150,6 +150,67 @@ export function pickAndInsertImage(editor: Editor, onError?: (kind: "unsupported
   input.click();
 }
 
+// Same picker/rasterization logic as pickAndInsertImage above, but
+// inserts by REPLACING an explicit [from, to) range instead of at the
+// current editor selection — used by choice-item-node-view.tsx to swap
+// a specific choiceItem's content to an image regardless of where the
+// user's cursor happens to be at the time.
+export function pickAndInsertImageAt(
+  editor: Editor,
+  from: number,
+  to: number,
+  onError?: (kind: "unsupported" | "pdfRenderFailed") => void,
+) {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = SUPPORTED_IMAGE_MIME_TYPES.join(",");
+  input.onchange = () => {
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (!SUPPORTED_IMAGE_MIME_TYPES.includes(file.type as (typeof SUPPORTED_IMAGE_MIME_TYPES)[number])) {
+      onError?.("unsupported");
+      return;
+    }
+
+    if (file.type === "application/pdf") {
+      Promise.all([renderPdfFirstPageToPng(file), readAsDataUrl(file)])
+        .then(([png, pdfSrc]) => {
+          editor
+            .chain()
+            .focus()
+            .command(({ tr }) => {
+              tr.replaceWith(from, to, editor.schema.nodes.image.create({ src: png, pdfSrc }));
+              return true;
+            })
+            .run();
+        })
+        .catch((error) => {
+          console.error("Failed to rasterize PDF for preview:", error);
+          onError?.("pdfRenderFailed");
+        });
+      return;
+    }
+
+    readAsDataUrl(file)
+      .then((src) => {
+        editor
+          .chain()
+          .focus()
+          .command(({ tr }) => {
+            tr.replaceWith(from, to, editor.schema.nodes.image.create({ src }));
+            return true;
+          })
+          .run();
+      })
+      .catch((error) => {
+        console.error("Failed to read image file:", error);
+        onError?.("unsupported");
+      });
+  };
+  input.click();
+}
+
 // Open a file picker for 2+ images (PNG/JPEG/GIF/WebP/SVG/PDF, same set the
 // single-image picker above supports) and insert them as a single imageRow
 // (side-by-side, each keeping its own caption — see image-row.ts's own
