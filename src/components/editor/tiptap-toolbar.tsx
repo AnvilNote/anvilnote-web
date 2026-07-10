@@ -25,6 +25,7 @@ import {
   Link2,
   List,
   ListOrdered,
+  MessageCircleQuestion,
   MessageSquareWarning,
   Pilcrow,
   Quote,
@@ -53,6 +54,7 @@ import {
 import { TableSizeGrid } from "@/components/editor/table-size-picker";
 import { pickAndInsertImage } from "@/lib/tiptap/image";
 import { insertCallout } from "@/lib/tiptap/callout";
+import { insertQuestion } from "@/lib/tiptap/question";
 import { insertMermaid } from "@/lib/tiptap/mermaid";
 import { insertFunctionPlot } from "@/lib/tiptap/function-plot";
 import { insertStatsChart } from "@/lib/tiptap/stats-chart";
@@ -280,6 +282,7 @@ export function TiptapToolbar({
       orderedList: e.isActive("orderedList"),
       blockquote: e.isActive("blockquote"),
       callout: e.isActive("callout"),
+      question: e.isActive("question"),
       mermaid: e.isActive("mermaid"),
       functionPlot: e.isActive("functionPlot"),
       statsChart: e.isActive("statsChart"),
@@ -390,6 +393,12 @@ export function TiptapToolbar({
               tCallout(`kinds.${DEFAULT_CALLOUT_KIND}` as never),
             )
           }
+        />
+        <ToolbarButton
+          icon={MessageCircleQuestion}
+          label={t("questionBlock")}
+          active={s.question}
+          onClick={() => insertQuestion(editor)}
         />
         <ToolbarButton
           icon={Workflow}
