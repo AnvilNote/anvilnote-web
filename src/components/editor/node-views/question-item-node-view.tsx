@@ -206,7 +206,12 @@ export function QuestionItemNodeView({
           text baseline instead of the box's top edge, matching that
           native behavior regardless of script. No more pt-0.5 nudge
           needed once the alignment is baseline-based. */}
-      <span className="font-medium" contentEditable={false}>
+      {/* text-right — the number sits inside a fixed 1.8em column
+          (grid-cols-[1.8em_1fr]); right-aligning it within that column
+          nudges it closer to the body without moving the body's own
+          start position (column 2's left edge, i.e. gap-x-[1em] away
+          from the number, is untouched either way). */}
+      <span className="text-right font-medium" contentEditable={false}>
         {number}.
       </span>
 
