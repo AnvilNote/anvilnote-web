@@ -22,7 +22,7 @@ import { AnvilProof } from "@/lib/tiptap/proof";
 import { AnvilMermaid } from "@/lib/tiptap/mermaid";
 import { AnvilFunctionPlot } from "./function-plot";
 import { AnvilStatsChart } from "./stats-chart";
-import { AnvilQuestion } from "./question";
+import { AnvilQuestion, AnvilQuestionItem } from "./question";
 import { AnvilImageRow } from "@/lib/tiptap/image-row";
 import { CrossRef, CrossRefTargetIds } from "@/lib/tiptap/cross-ref";
 import { CrossRefSuggestion } from "@/components/editor/cross-ref-suggestion";
@@ -367,6 +367,7 @@ export function buildExtensions({
     AnvilFunctionPlot,
     AnvilStatsChart,
     AnvilQuestion,
+    AnvilQuestionItem,
     AnvilImageRow,
     AnvilImage.configure({
       HTMLAttributes: {
