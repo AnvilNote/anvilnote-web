@@ -43,7 +43,17 @@ export function QuestionNodeView({ deleteNode, editor, getPos }: NodeViewProps) 
         </button>
       </div>
 
-      <NodeViewContent />
+      {/* flex+gap targets [data-node-view-content-react], NOT this div
+          itself — Tiptap's React NodeViewContent renders an extra
+          unstyled wrapper div (that stable data-attribute) between its
+          own contentDOM and the actual questionItem children, so gap-*
+          on the outer div has only ONE flex child (that wrapper) and no
+          visible effect — same wrapper that tripped up the number/body
+          alignment fix earlier (see question-item-node-view.tsx's own
+          comment on that). Each questionItem's own py-* was removed so
+          this gap is the single source of inter-item spacing, not
+          stacked with per-item padding. */}
+      <NodeViewContent className="[&>[data-node-view-content-react]]:flex [&>[data-node-view-content-react]]:flex-col [&>[data-node-view-content-react]]:gap-[1em]" />
 
       <div className="mt-2" contentEditable={false} onMouseDown={(event) => event.stopPropagation()}>
         <QuestionKindMenu

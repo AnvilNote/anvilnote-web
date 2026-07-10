@@ -188,7 +188,7 @@ export function QuestionItemNodeView({
 
   return (
     <NodeViewWrapper
-      className="anvil-question-item relative grid grid-cols-[1.8em_1fr] items-baseline gap-x-[1.2em] gap-y-1 py-1.5"
+      className="anvil-question-item relative grid grid-cols-[1.8em_1fr] items-baseline gap-x-[1em] gap-y-1"
       data-type="question-item"
     >
       {/* items-baseline, not items-start/align-top — a plain top-alignment
@@ -309,7 +309,7 @@ export function QuestionItemNodeView({
               // per explicit feedback, not as a separate control beside
               // the box.
               <div
-                className="relative rounded border border-dashed"
+                className="relative"
                 style={{ height: `${writtenHeightPercent * BLANK_PREVIEW_PX_PER_PERCENT}px` }}
               >
                 <div className="absolute top-1 right-1 flex items-center gap-1">
