@@ -182,7 +182,9 @@ export function QuestionItemNodeView({
     deleteNode();
   }
 
-  const columns = choiceColumns(choices);
+  // Multi-choice always renders one option per line — per explicit
+  // feedback, the 4/2/1 auto-column heuristic is single-choice only.
+  const columns = kind === "multi" ? 1 : choiceColumns(choices);
 
   return (
     <NodeViewWrapper
