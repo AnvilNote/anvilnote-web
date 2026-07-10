@@ -515,6 +515,12 @@
       },
       "bodyPlaceholder": "題目敘述…",
       "choicePlaceholder": "選項 {label}"
+    },
+    "questionBlank": {
+      "broken": "失效的引用",
+      "brokenHint": "找不到引用的題目，可能已被刪除",
+      "pickerEmpty": "目前沒有可引用的題目",
+      "pickerUntitled": "第 {number} 題"
     }
   },
   "documents": {

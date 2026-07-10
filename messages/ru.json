@@ -515,6 +515,12 @@
       },
       "bodyPlaceholder": "Текст вопроса…",
       "choicePlaceholder": "Вариант {label}"
+    },
+    "questionBlank": {
+      "broken": "Неверная ссылка",
+      "brokenHint": "Не удалось найти вопрос, на который указывает ссылка — возможно, он был удалён",
+      "pickerEmpty": "Пока нет вопросов для ссылки",
+      "pickerUntitled": "Вопрос {number}"
     }
   },
   "documents": {

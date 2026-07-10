@@ -515,6 +515,12 @@
       },
       "bodyPlaceholder": "Question text…",
       "choicePlaceholder": "Choice {label}"
+    },
+    "questionBlank": {
+      "broken": "Broken reference",
+      "brokenHint": "The referenced question could not be found — it may have been deleted",
+      "pickerEmpty": "No questions to reference yet",
+      "pickerUntitled": "Question {number}"
     }
   },
   "documents": {

@@ -515,6 +515,12 @@
       },
       "bodyPlaceholder": "เนื้อหาคำถาม…",
       "choicePlaceholder": "ตัวเลือก {label}"
+    },
+    "questionBlank": {
+      "broken": "การอ้างอิงไม่ถูกต้อง",
+      "brokenHint": "ไม่พบคำถามที่อ้างอิง อาจถูกลบไปแล้ว",
+      "pickerEmpty": "ยังไม่มีคำถามให้อ้างอิง",
+      "pickerUntitled": "คำถาม {number}"
     }
   },
   "documents": {

@@ -515,6 +515,12 @@
       },
       "bodyPlaceholder": "問題文…",
       "choicePlaceholder": "選択肢 {label}"
+    },
+    "questionBlank": {
+      "broken": "無効な参照",
+      "brokenHint": "参照先の問題が見つかりません。削除された可能性があります",
+      "pickerEmpty": "参照できる問題がまだありません",
+      "pickerUntitled": "問題 {number}"
     }
   },
   "documents": {
