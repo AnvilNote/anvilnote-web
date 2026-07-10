@@ -185,6 +185,7 @@
         "block": "block",
         "inlineMath": "Inline formula",
         "proof": "proof block",
+        "question": "question block",
         "mermaid": "mermaid block",
         "imageRow": "image row block",
         "functionPlot": "function plot block",
@@ -234,7 +235,8 @@
       "tableAlignRight": "Align table right",
       "mermaid": "Mermaid diagram",
       "functionPlot": "Function plot",
-      "statsChart": "Stats chart"
+      "statsChart": "Stats chart",
+      "questionBlock": "Question block"
     },
     "slash": {
       "text": "Text",
@@ -492,6 +494,12 @@
       "tooFewImages": "Please select at least two images",
       "captionPlaceholder": "Add a caption for the whole group",
       "swap": "Swap order"
+    },
+    "questionBlock": {
+      "addChoice": "Add choice",
+      "removeChoice": "Remove choice",
+      "done": "Done",
+      "edit": "Edit"
     }
   },
   "documents": {

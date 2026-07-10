@@ -185,6 +185,7 @@
         "block": "บล็อก",
         "inlineMath": "สมการในบรรทัด",
         "proof": "บล็อกการพิสูจน์",
+        "question": "บล็อกคำถาม",
         "mermaid": "บล็อก mermaid",
         "imageRow": "บล็อกแถวรูปภาพ",
         "functionPlot": "บล็อกกราฟฟังก์ชัน",
@@ -234,7 +235,8 @@
       "tableAlignRight": "จัดตารางชิดขวา",
       "mermaid": "แผนภาพ Mermaid",
       "functionPlot": "กราฟฟังก์ชัน",
-      "statsChart": "แผนภูมิสถิติ"
+      "statsChart": "แผนภูมิสถิติ",
+      "questionBlock": "บล็อกคำถาม"
     },
     "slash": {
       "text": "ข้อความ",
@@ -492,6 +494,12 @@
       "tooFewImages": "โปรดเลือกรูปภาพอย่างน้อยสองรูป",
       "captionPlaceholder": "เพิ่มคำอธิบายสำหรับทั้งกลุ่ม",
       "swap": "สลับลำดับ"
+    },
+    "questionBlock": {
+      "addChoice": "เพิ่มตัวเลือก",
+      "removeChoice": "ลบตัวเลือก",
+      "done": "เสร็จสิ้น",
+      "edit": "แก้ไข"
     }
   },
   "documents": {

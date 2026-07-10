@@ -185,6 +185,7 @@
         "block": "ブロック",
         "inlineMath": "インライン数式",
         "proof": "証明ブロック",
+        "question": "問題ブロック",
         "mermaid": "mermaid ブロック",
         "imageRow": "並列画像ブロック",
         "functionPlot": "関数グラフブロック",
@@ -234,7 +235,8 @@
       "tableAlignRight": "表を右揃え",
       "mermaid": "Mermaid 図",
       "functionPlot": "関数グラフ",
-      "statsChart": "統計グラフ"
+      "statsChart": "統計グラフ",
+      "questionBlock": "問題ブロック"
     },
     "slash": {
       "text": "テキスト",
@@ -492,6 +494,12 @@
       "tooFewImages": "画像を2枚以上選択してください",
       "captionPlaceholder": "画像グループ全体にキャプションを追加",
       "swap": "順序を入れ替え"
+    },
+    "questionBlock": {
+      "addChoice": "選択肢を追加",
+      "removeChoice": "選択肢を削除",
+      "done": "完了",
+      "edit": "編集"
     }
   },
   "documents": {
