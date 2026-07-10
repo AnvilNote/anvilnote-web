@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { useTranslations } from "next-intl";
 import { NodeViewContent, NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { ImagePlus, Sigma, Trash2, Type } from "lucide-react";
@@ -21,10 +21,30 @@ export function ChoiceItemNodeView({ node, editor, getPos, deleteNode }: NodeVie
   const [mathDraft, setMathDraft] = useState("");
   const [showMathInput, setShowMathInput] = useState(false);
 
+  // Real bug, caught via a live repro: this NodeView only re-renders
+  // when its OWN node/content changes — inserting/removing a SIBLING
+  // choiceItem shifts every following item's absolute document position
+  // without re-rendering them (same stale-NodeView pattern
+  // question-item-node-view.tsx's useQuestionNumber already had to work
+  // around earlier this session). Subscribing to editor "update" and
+  // forcing a re-render keeps the (A)/(B)/... label AND every
+  // position-dependent computation below current, not stuck on a
+  // snapshot from whenever this component last happened to re-render on
+  // its own.
+  const [, forceRerender] = useReducer((n: number) => n + 1, 0);
+  useEffect(() => {
+    const onUpdate = () => forceRerender();
+    editor.on("update", onUpdate);
+    return () => {
+      editor.off("update", onUpdate);
+    };
+  }, [editor]);
+
   // Index within the parent choiceList, for the (A)/(B)/... label —
   // same "count preceding siblings" pattern useQuestionNumber uses,
   // just scoped to this node's own immediate parent instead of the
-  // whole document.
+  // whole document. Recomputed on every render (including the forced
+  // ones above), not cached.
   const pos = getPos();
   let index = 0;
   if (pos !== undefined) {
@@ -38,15 +58,34 @@ export function ChoiceItemNodeView({ node, editor, getPos, deleteNode }: NodeVie
 
   const contentType = node.content.firstChild?.type.name ?? "paragraph";
 
+  // Real bug, caught via a live repro: an earlier version captured
+  // `pos`/`node` ONCE at render time and reused those values inside
+  // async handlers (image file picking in particular, which can stay
+  // open for an arbitrary time while the user browses folders). Any
+  // document edit that happened in the meantime (e.g. typing into the
+  // question body) left that snapshot stale, so the eventual insert
+  // landed at the WRONG position — reproduced live: an image intended
+  // for choice A landed inside the question body paragraph instead.
+  // Fixed by re-deriving the current position/node fresh at the moment
+  // of each mutation (both synchronous handlers below AND
+  // pickAndInsertImageAt's own getRange callback, invoked right before
+  // the actual insert, not when the picker was first opened).
+  function currentRange(): { from: number; to: number } | null {
+    const currentPos = getPos();
+    if (currentPos === undefined) return null;
+    const currentNode = editor.state.doc.nodeAt(currentPos);
+    if (!currentNode) return null;
+    return { from: currentPos + 1, to: currentPos + currentNode.nodeSize - 1 };
+  }
+
   function replaceContentWith(newContentJSON: Record<string, unknown>) {
-    if (pos === undefined) return;
-    const from = pos + 1;
-    const to = pos + node.nodeSize - 1;
+    const range = currentRange();
+    if (!range) return;
     editor
       .chain()
       .focus()
       .command(({ tr }) => {
-        tr.replaceWith(from, to, editor.schema.nodeFromJSON(newContentJSON));
+        tr.replaceWith(range.from, range.to, editor.schema.nodeFromJSON(newContentJSON));
         return true;
       })
       .run();
@@ -58,9 +97,8 @@ export function ChoiceItemNodeView({ node, editor, getPos, deleteNode }: NodeVie
   }
 
   function switchToImage() {
-    if (pos === undefined) return;
     setShowMathInput(false);
-    pickAndInsertImageAt(editor, pos + 1, pos + node.nodeSize - 1);
+    pickAndInsertImageAt(editor, currentRange);
   }
 
   function confirmMath() {

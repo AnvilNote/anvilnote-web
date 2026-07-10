@@ -151,14 +151,32 @@ export function pickAndInsertImage(editor: Editor, onError?: (kind: "unsupported
 }
 
 // Same picker/rasterization logic as pickAndInsertImage above, but
-// inserts by REPLACING an explicit [from, to) range instead of at the
-// current editor selection — used by choice-item-node-view.tsx to swap
-// a specific choiceItem's content to an image regardless of where the
-// user's cursor happens to be at the time.
+// inserts by REPLACING a range instead of at the current editor
+// selection — used by choice-item-node-view.tsx to swap a specific
+// choiceItem's content to an image regardless of where the user's
+// cursor happens to be at the time.
+//
+// `getRange` is a CALLBACK, not a pair of numbers — real bug, caught via
+// a live repro: the native OS file picker (input.click()) is
+// asynchronous and can sit open for an arbitrary amount of time while
+// the user browses folders. If the caller computed from/to ONCE before
+// opening the picker (e.g. from a position captured at render time) and
+// passed static numbers, ANY document edit that happened while the
+// picker was open (typing elsewhere, another NodeView's own edit) would
+// leave those numbers stale — confirmed live: typing into the question
+// body while a choice's image picker was conceptually "open" (same
+// underlying staleness, reproduced via the equivalent race — a
+// component that computed `pos` once at render time and reused it in an
+// async callback) caused the image to insert into the WRONG position
+// (the body paragraph, not the intended choice). `getRange` is
+// re-invoked right before dispatching the actual insert transaction —
+// after the (possibly slow) file read/PDF-rasterize completes — so it
+// always reflects the CURRENT document, not a stale snapshot. Returns
+// null to abort silently if the target position no longer makes sense
+// (e.g. the choiceItem was deleted while the picker was open).
 export function pickAndInsertImageAt(
   editor: Editor,
-  from: number,
-  to: number,
+  getRange: () => { from: number; to: number } | null,
   onError?: (kind: "unsupported" | "pdfRenderFailed") => void,
 ) {
   const input = document.createElement("input");
@@ -176,11 +194,13 @@ export function pickAndInsertImageAt(
     if (file.type === "application/pdf") {
       Promise.all([renderPdfFirstPageToPng(file), readAsDataUrl(file)])
         .then(([png, pdfSrc]) => {
+          const range = getRange();
+          if (!range) return;
           editor
             .chain()
             .focus()
             .command(({ tr }) => {
-              tr.replaceWith(from, to, editor.schema.nodes.image.create({ src: png, pdfSrc }));
+              tr.replaceWith(range.from, range.to, editor.schema.nodes.image.create({ src: png, pdfSrc }));
               return true;
             })
             .run();
@@ -194,11 +214,13 @@ export function pickAndInsertImageAt(
 
     readAsDataUrl(file)
       .then((src) => {
+        const range = getRange();
+        if (!range) return;
         editor
           .chain()
           .focus()
           .command(({ tr }) => {
-            tr.replaceWith(from, to, editor.schema.nodes.image.create({ src }));
+            tr.replaceWith(range.from, range.to, editor.schema.nodes.image.create({ src }));
             return true;
           })
           .run();
