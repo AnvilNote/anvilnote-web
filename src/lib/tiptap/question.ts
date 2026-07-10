@@ -18,6 +18,14 @@ export const AnvilQuestion = Node.create({
   group: "block",
   content: "block+",
   defining: true,
+  // Prevents a question node from being pasted/nested inside another
+  // question node's body: "block+" would otherwise accept "question"
+  // itself (it's in the "block" group). `isolating: true` blocks other
+  // block-group nodes' content model from reaching in and stops
+  // ProseMirror's paste/lift logic from nesting — same fix pattern as
+  // callout.ts. Nesting would double-count in useQuestionNumber and
+  // doesn't match the reference Typst template (no nesting).
+  isolating: true,
 
   addAttributes() {
     return {
