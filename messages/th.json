@@ -751,7 +751,11 @@
     "historyRestore": "คืนค่าเวอร์ชันนี้",
     "historyRestoreDescription": "เนื้อหาปัจจุบันของคุณจะถูกสแนปช็อตไว้ก่อน ดังนั้นคุณจึงสามารถย้อนกลับได้เสมอหากเปลี่ยนใจ",
     "historyRestored": "คืนค่าเวอร์ชันที่เลือกแล้ว",
-    "historyRestoreFailed": "คืนค่าเวอร์ชันล้มเหลว"
+    "historyRestoreFailed": "คืนค่าเวอร์ชันล้มเหลว",
+    "numberedHeadings": {
+      "label": "หมายเลขหัวข้อ",
+      "description": "แสดงหมายเลขรูปแบบ \"1\", \"1.1\" หน้าหัวข้อเมื่อส่งออก PDF"
+    }
   },
   "export": {
     "title": "ส่งออก",

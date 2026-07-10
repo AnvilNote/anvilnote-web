@@ -82,17 +82,41 @@ export function MetadataForm({ documentId }: { documentId: string }) {
   const setTemplateSettingField = useDocumentStore(
     (s) => s.setTemplateSettingField,
   );
+  const setNumberedHeadings = useDocumentStore((s) => s.setNumberedHeadings);
   const template = useTemplatesStore((s) =>
     doc ? s.getTemplate(doc.templateId) : undefined,
   );
 
   if (!doc) return null;
 
+  // Document-level, template-independent — rendered unconditionally, even
+  // when the active template has no manifest fields of its own.
+  const numberedHeadingsToggle = (
+    <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+      <div>
+        <Label htmlFor="numbered-headings" className="text-sm font-normal">
+          {t("panel.numberedHeadings.label")}
+        </Label>
+        <p className="text-xs text-muted-foreground">
+          {t("panel.numberedHeadings.description")}
+        </p>
+      </div>
+      <Switch
+        id="numbered-headings"
+        checked={doc.numberedHeadings}
+        onCheckedChange={(checked) => setNumberedHeadings(doc.id, checked)}
+      />
+    </div>
+  );
+
   if (!template || template.fields.length === 0) {
     return (
-      <p className="px-1 py-2 text-sm text-muted-foreground">
-        {t("panel.metadataEmpty")}
-      </p>
+      <div className="space-y-5">
+        <p className="px-1 py-2 text-sm text-muted-foreground">
+          {t("panel.metadataEmpty")}
+        </p>
+        {numberedHeadingsToggle}
+      </div>
     );
   }
 
@@ -315,6 +339,8 @@ export function MetadataForm({ documentId }: { documentId: string }) {
           </div>
         );
       })}
+
+      {numberedHeadingsToggle}
     </div>
   );
 }
