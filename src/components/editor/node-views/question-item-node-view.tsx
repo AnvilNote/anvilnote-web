@@ -188,10 +188,25 @@ export function QuestionItemNodeView({
 
   return (
     <NodeViewWrapper
-      className="anvil-question-item relative grid grid-cols-[1.8em_1fr] gap-x-2 gap-y-1 py-1.5"
+      className="anvil-question-item relative grid grid-cols-[1.8em_1fr] items-baseline gap-x-2 gap-y-1 py-1.5"
       data-type="question-item"
     >
-      <span className="pt-0.5 font-medium" contentEditable={false}>
+      {/* items-baseline, not items-start/align-top — a plain top-alignment
+          left the number visually higher than a CJK body's first line even
+          though both boxes shared the exact same computed top/line-height
+          (confirmed via getBoundingClientRect + getComputedStyle: 0px
+          diff). Root cause: "1." renders in the Latin font (Geist) while
+          "你好" falls back to the system's CJK font — different glyph
+          ascent/descent metrics within the SAME line-height box produce a
+          few px of visual offset that top-alignment can't see or fix,
+          confirmed by comparing against Tiptap's own native <ol><li>
+          numbering (which uses the browser's built-in ::marker baseline
+          alignment and shows no such offset for identical text).
+          items-baseline aligns this span to the body's actual first-line
+          text baseline instead of the box's top edge, matching that
+          native behavior regardless of script. No more pt-0.5 nudge
+          needed once the alignment is baseline-based. */}
+      <span className="font-medium" contentEditable={false}>
         {number}.
       </span>
 
@@ -212,7 +227,7 @@ export function QuestionItemNodeView({
 
         {kind !== "written" ? (
           editingChoices ? (
-            <div className="mt-1.5 flex flex-col gap-1.5" contentEditable={false}>
+            <div className="mt-1.5 flex flex-col gap-[0.8em]" contentEditable={false}>
               {draft.map((choice, index) => (
                 <div key={index} className="flex items-center gap-1.5">
                   <span className="w-6 shrink-0 text-sm text-muted-foreground">
@@ -250,7 +265,7 @@ export function QuestionItemNodeView({
             </div>
           ) : choices.length > 0 ? (
             <div
-              className={`mt-1.5 grid gap-x-4 gap-y-1.5 ${GRID_COLS_CLASS[columns]}`}
+              className={`mt-1.5 grid gap-x-4 gap-y-[0.8em] ${GRID_COLS_CLASS[columns]}`}
               contentEditable={false}
             >
               {choices.map((choice, index) => (
