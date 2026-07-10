@@ -185,6 +185,7 @@
         "block": "блок",
         "inlineMath": "Встроенная формула",
         "proof": "блок доказательства",
+        "question": "блок вопроса",
         "mermaid": "блок mermaid",
         "imageRow": "блок ряда изображений",
         "functionPlot": "блок графика функции",
@@ -234,7 +235,8 @@
       "tableAlignRight": "Выровнять таблицу по правому краю",
       "mermaid": "Диаграмма Mermaid",
       "functionPlot": "График функции",
-      "statsChart": "Статистическая диаграмма"
+      "statsChart": "Статистическая диаграмма",
+      "questionBlock": "Блок вопроса"
     },
     "slash": {
       "text": "Текст",
@@ -492,6 +494,12 @@
       "tooFewImages": "Выберите не менее двух изображений",
       "captionPlaceholder": "Добавить подпись ко всей группе",
       "swap": "Поменять местами"
+    },
+    "questionBlock": {
+      "addChoice": "Добавить вариант",
+      "removeChoice": "Удалить вариант",
+      "done": "Готово",
+      "edit": "Редактировать"
     }
   },
   "documents": {

@@ -185,6 +185,7 @@
         "block": "區塊",
         "inlineMath": "行內公式",
         "proof": "證明方塊",
+        "question": "問題方塊",
         "mermaid": "mermaid 方塊",
         "imageRow": "並排圖片方塊",
         "functionPlot": "函數圖方塊",
@@ -234,7 +235,8 @@
       "tableAlignRight": "表格置右",
       "mermaid": "Mermaid 圖表",
       "functionPlot": "函數圖",
-      "statsChart": "統計圖"
+      "statsChart": "統計圖",
+      "questionBlock": "問題方塊"
     },
     "slash": {
       "text": "內文",
@@ -492,6 +494,12 @@
       "tooFewImages": "請至少選擇兩張圖片",
       "captionPlaceholder": "為整組圖片新增說明",
       "swap": "交換順序"
+    },
+    "questionBlock": {
+      "addChoice": "新增選項",
+      "removeChoice": "移除選項",
+      "done": "完成",
+      "edit": "編輯"
     }
   },
   "documents": {
