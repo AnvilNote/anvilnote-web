@@ -214,23 +214,27 @@
   margin-top: 0;
 }
 
-/* Every image-type choice within one choiceList renders at this fixed
-   height, width auto — "uniform size" per explicit feedback. 120px is a
-   reasonable on-screen approximation of the PDF export's 3cm fixed
-   height (96 CSS px/in x 3cm / 2.54cm/in ≈ 113px, rounded) — the editor
-   isn't rendered at true print scale, so this isn't meant to be an
-   exact px-for-cm match, just visually consistent and roughly
-   proportionate. Overrides whatever width/height attrs that particular
-   AnvilImage node itself carries (per-image resize, etc. — none of
-   that applies inside a choice). !important because AnvilImage's own
-   NodeView sets width via an inline style="width:...%" attribute on
-   its wrapper/img (same specificity fight .ProseMirror p's own margin
-   already won against a plain class elsewhere on this page — an inline
-   style attribute otherwise always outranks a class selector). */
+/* An image-type choice renders at its own natural size, no forced
+   crop/scale — per explicit feedback reversing the earlier "uniform
+   fixed 120px height" decision (matches anvilnote-renderer's own
+   answer-choice-image(), which dropped its fixed 3cm height the same
+   way). max-width keeps a genuinely oversized image from overflowing
+   its choice column; nothing else is overridden. */
 .anvil-choice-item__image img {
-  height: 120px !important;
-  width: auto !important;
   max-width: 100%;
+}
+
+/* A choice's image reuses the same AnvilImage node/NodeView every other
+   image in the editor uses (image-node-view.tsx) — including its own
+   figure/figcaption "Figure N: [caption]" treatment, which makes no
+   sense for a small inline choice thumbnail (confirmed visually: it
+   pushed a full caption input and cross-ref "Figure 1" label into a
+   compact multiple-choice row). Hiding it here (display:none, not
+   editing image-node-view.tsx itself, which every OTHER image use still
+   needs unchanged) is scoped to just this context via the ancestor
+   selector. */
+.anvil-choice-item__image figcaption {
+  display: none;
 }
 
 /* choiceList's own NodeView (choice-list-node-view.tsx) renders
