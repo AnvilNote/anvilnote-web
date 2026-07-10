@@ -456,7 +456,8 @@
         "table": "表 {number}",
         "equation": "式 ({number})",
         "heading": "{number}",
-        "figureSub": "圖 {number}"
+        "figureSub": "圖 {number}",
+        "question": "第 {number} 題"
       },
       "broken": "已失效的引用",
       "brokenHint": "找不到引用的目標，可能已被刪除",

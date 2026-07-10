@@ -29,6 +29,11 @@ const KIND_ICON = {
   table: Table2,
   equation: Sigma,
   heading: Hash,
+  // Not offered by collectTargets below (questionBlank, not crossRef, is
+  // how a question gets referenced) — present purely so this dictionary
+  // stays exhaustive over CrossRefKind after cross-ref.ts's resolver
+  // started also numbering questionItem nodes.
+  question: Hash,
 } as const;
 
 const KIND_ORDER: CrossRefKind[] = ["heading", "figure", "figureSub", "table", "equation"];

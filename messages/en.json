@@ -456,7 +456,8 @@
         "table": "Table {number}",
         "equation": "Equation ({number})",
         "heading": "{number}",
-        "figureSub": "Figure {number}"
+        "figureSub": "Figure {number}",
+        "question": "Question {number}"
       },
       "broken": "Broken reference",
       "brokenHint": "The referenced target could not be found — it may have been deleted",

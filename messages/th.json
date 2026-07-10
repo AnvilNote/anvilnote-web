@@ -456,7 +456,8 @@
         "table": "ตารางที่ {number}",
         "equation": "สมการ ({number})",
         "heading": "{number}",
-        "figureSub": "รูปที่ {number}"
+        "figureSub": "รูปที่ {number}",
+        "question": "ข้อที่ {number}"
       },
       "broken": "การอ้างอิงที่ใช้งานไม่ได้",
       "brokenHint": "ไม่พบเป้าหมายที่อ้างอิง อาจถูกลบไปแล้ว",

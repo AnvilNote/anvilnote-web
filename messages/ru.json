@@ -456,7 +456,8 @@
         "table": "Табл. {number}",
         "equation": "Ур. ({number})",
         "heading": "{number}",
-        "figureSub": "Рис. {number}"
+        "figureSub": "Рис. {number}",
+        "question": "Вопрос {number}"
       },
       "broken": "Неработающая ссылка",
       "brokenHint": "Не удалось найти объект ссылки — возможно, он был удалён",

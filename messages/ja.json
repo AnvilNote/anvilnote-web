@@ -456,7 +456,8 @@
         "table": "表 {number}",
         "equation": "式 ({number})",
         "heading": "{number}",
-        "figureSub": "図 {number}"
+        "figureSub": "図 {number}",
+        "question": "問 {number}"
       },
       "broken": "無効な参照",
       "brokenHint": "参照先が見つかりません。削除された可能性があります",

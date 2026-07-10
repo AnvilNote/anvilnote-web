@@ -456,7 +456,8 @@
         "table": "표 {number}",
         "equation": "식 ({number})",
         "heading": "{number}",
-        "figureSub": "그림 {number}"
+        "figureSub": "그림 {number}",
+        "question": "문제 {number}"
       },
       "broken": "끊어진 참조",
       "brokenHint": "참조 대상을 찾을 수 없습니다. 삭제되었을 수 있습니다",

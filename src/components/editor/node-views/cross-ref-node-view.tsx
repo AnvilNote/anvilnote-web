@@ -13,6 +13,10 @@ const KIND_ICON: Record<CrossRefKind, typeof FileImage> = {
   table: Table2,
   equation: Sigma,
   heading: Hash,
+  // A crossRef node can never actually resolve to "question" in practice
+  // (questionBlank, not crossRef, references questions) — present purely
+  // so this dictionary stays exhaustive over CrossRefKind.
+  question: Hash,
 };
 
 // Clicking a reference scrolls its TARGET into view — the inverse of

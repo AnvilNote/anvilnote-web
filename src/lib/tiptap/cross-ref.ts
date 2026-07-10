@@ -18,9 +18,16 @@ import { CrossRefNodeView } from "@/components/editor/node-views/cross-ref-node-
 // with plain standalone images (one number for the whole row), while its
 // children get the new "figureSub" kind instead of "figure" — see the
 // numbering pass's own imageRow branch for how that split is computed.
-const TARGET_TYPES = new Set(["image", "table", "blockMath", "heading", "imageRow"]);
+const TARGET_TYPES = new Set([
+  "image",
+  "table",
+  "blockMath",
+  "heading",
+  "imageRow",
+  "questionItem",
+]);
 
-export type CrossRefKind = "figure" | "figureSub" | "table" | "equation" | "heading";
+export type CrossRefKind = "figure" | "figureSub" | "table" | "equation" | "heading" | "question";
 
 // Backfills a stable `id` on every referenceable node (image/table/
 // blockMath/heading), and — the actual cross-referencing logic — resolves
@@ -128,6 +135,7 @@ export const CrossRefTargetIds = Extension.create({
           let figureN = 0;
           let tableN = 0;
           let equationN = 0;
+          let questionN = 0;
           const resolved = new Map<string, { kind: CrossRefKind; value: string }>();
 
           tr.doc.descendants((node, pos, parent) => {
@@ -195,6 +203,9 @@ export const CrossRefTargetIds = Extension.create({
               }
             } else if (node.type.name === "heading") {
               resolved.set(id, { kind: "heading", value: node.textContent });
+            } else if (node.type.name === "questionItem") {
+              questionN += 1;
+              resolved.set(id, { kind: "question", value: String(questionN) });
             }
           });
 
@@ -215,6 +226,27 @@ export const CrossRefTargetIds = Extension.create({
               node.attrs.broken !== nextBroken
             ) {
               tr.setNodeAttribute(pos, "resolvedKind", nextKind);
+              tr.setNodeAttribute(pos, "resolvedValue", nextValue);
+              tr.setNodeAttribute(pos, "broken", nextBroken);
+              changed = true;
+            }
+          });
+
+          // Pass 4b: same as pass 4, but for questionBlank nodes (inline
+          // cloze-style blanks that live-reference a questionItem's
+          // number). Kept as its own walk rather than folded into pass 4's
+          // crossRef walk above since questionBlank only stores
+          // resolvedValue/broken, not resolvedKind — it only ever targets
+          // one kind of thing (a question), so there's no ambiguity to
+          // record.
+          tr.doc.descendants((node, pos) => {
+            if (node.type.name !== "questionBlank") return;
+            const targetId = node.attrs.targetId as string | null;
+            const target = targetId ? resolved.get(targetId) : undefined;
+            const nextValue = target?.value ?? null;
+            const nextBroken = !target;
+
+            if (node.attrs.resolvedValue !== nextValue || node.attrs.broken !== nextBroken) {
               tr.setNodeAttribute(pos, "resolvedValue", nextValue);
               tr.setNodeAttribute(pos, "broken", nextBroken);
               changed = true;
