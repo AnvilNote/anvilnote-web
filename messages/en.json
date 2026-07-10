@@ -751,7 +751,11 @@
     "historyRestore": "Restore this version",
     "historyRestoreDescription": "Your current content is snapshotted first, so you can always undo this if you change your mind.",
     "historyRestored": "Restored the selected version",
-    "historyRestoreFailed": "Failed to restore version"
+    "historyRestoreFailed": "Failed to restore version",
+    "numberedHeadings": {
+      "label": "Numbered headings",
+      "description": "Show \"1\", \"1.1\" style numbers before headings in PDF export."
+    }
   },
   "export": {
     "title": "Export",

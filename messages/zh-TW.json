@@ -751,7 +751,11 @@
     "historyRestore": "回復此版本",
     "historyRestoreDescription": "目前的內容會先自動存成一個版本，之後如果不喜歡回復的結果，還是可以再復原回來。",
     "historyRestored": "已回復到選取的版本",
-    "historyRestoreFailed": "回復版本失敗"
+    "historyRestoreFailed": "回復版本失敗",
+    "numberedHeadings": {
+      "label": "標題編號",
+      "description": "PDF 匯出時是否在標題前顯示「1」「1.1」等編號。"
+    }
   },
   "export": {
     "title": "匯出",
