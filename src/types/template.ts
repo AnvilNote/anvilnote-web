@@ -50,6 +50,15 @@ export type AnvilTemplate = {
   // anvilnote-api's own TemplateSummary field. Used by stats-chart's
   // "ratio of text width" custom sizing (see stats-chart-dialog.tsx).
   textWidthCm: number;
+  // This template's own content/text-column HEIGHT, in cm — sibling to
+  // textWidthCm above, same "page dimension minus this template's own
+  // margins" derivation. Optional: only plain-note has a real measured
+  // value so far (see anvilnote-renderer's templates/plain-note/
+  // manifest.json) — every other template omits it, and question-block's
+  // written-answer "blank space" percent-of-page-height feature simply
+  // isn't available (falls back to null, see question.ts's
+  // writtenHeightCm attr) wherever it's missing.
+  textHeightCm?: number;
   // Optional: when omitted the preview is derived from `id` by convention.
   preview?: TemplatePreview;
   // Typst Universe page for the wrapped @preview package; absent for
