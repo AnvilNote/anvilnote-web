@@ -10,7 +10,6 @@ import { useDocumentStore } from "@/lib/stores/document-store";
 import { useTemplatesStore } from "@/lib/stores/templates-store";
 import { DEFAULT_TEMPLATE_ID } from "@/lib/templates/templates";
 import {
-  QUESTION_KINDS,
   WRITTEN_MODES,
   normalizeQuestionKind,
   normalizeWrittenMode,
@@ -65,7 +64,6 @@ export function QuestionItemNodeView({
   editor,
   getPos,
 }: NodeViewProps) {
-  const t = useTranslations("editor.block");
   const tq = useTranslations("editor.questionBlock");
   const number = useQuestionNumber(editor, getPos);
 
@@ -137,6 +135,34 @@ export function QuestionItemNodeView({
       writtenHeightPercent: nextPercent,
       writtenHeightCm: resolveWrittenHeightCm(nextPercent),
     });
+  }
+
+  // question.ts's schema requires "questionItem+" (at least one child) on
+  // the container — deleting the last remaining item via this button
+  // must remove the whole container instead of leaving a 0-child
+  // "question" node behind (ProseMirror does not auto-prune an empty
+  // required-content parent on its own; ContentMatch-based schemas like
+  // this one just count on callers never producing an invalid doc).
+  function handleDelete() {
+    const pos = getPos();
+    if (pos === undefined) {
+      deleteNode();
+      return;
+    }
+    const $pos = editor.state.doc.resolve(pos);
+    const parent = $pos.parent;
+    if (parent.type.name === "question" && parent.childCount === 1) {
+      const parentPos = $pos.before($pos.depth);
+      editor
+        .chain()
+        .command(({ tr }) => {
+          tr.delete(parentPos, parentPos + parent.nodeSize);
+          return true;
+        })
+        .run();
+      return;
+    }
+    deleteNode();
   }
 
   const columns = choiceColumns(choices);
@@ -288,7 +314,7 @@ export function QuestionItemNodeView({
           type="button"
           aria-label={tq("removeQuestion")}
           title={tq("removeQuestion")}
-          onClick={deleteNode}
+          onClick={handleDelete}
           className="flex size-6 items-center justify-center rounded text-muted-foreground/60 transition-colors hover:text-destructive"
         >
           <Trash2 className="size-3.5" />
