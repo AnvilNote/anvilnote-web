@@ -6,6 +6,9 @@ import { NodeViewContent, NodeViewWrapper, type NodeViewProps } from "@tiptap/re
 import { Check, Minus, Pencil, Plus, Trash2, X } from "lucide-react";
 import { choiceColumns } from "@/lib/question-choices";
 import { QuestionKindMenu } from "@/components/editor/question-kind-menu";
+import { useDocumentStore } from "@/lib/stores/document-store";
+import { useTemplatesStore } from "@/lib/stores/templates-store";
+import { DEFAULT_TEMPLATE_ID } from "@/lib/templates/templates";
 import {
   QUESTION_KINDS,
   WRITTEN_MODES,
@@ -72,6 +75,20 @@ export function QuestionItemNodeView({
   const writtenLines: number = typeof node.attrs.writtenLines === "number" ? node.attrs.writtenLines : 3;
   const writtenHeightPercent: number =
     typeof node.attrs.writtenHeightPercent === "number" ? node.attrs.writtenHeightPercent : 20;
+
+  // Same activeDocument -> templateId -> activeTemplate lookup as
+  // stats-chart-dialog.tsx's own textWidthCm resolution — falls back to
+  // DEFAULT_TEMPLATE_ID if no document is active yet.
+  const activeDocumentId = useDocumentStore((s) => s.activeId);
+  const activeDocument = useDocumentStore((s) => s.documents.find((d) => d.id === activeDocumentId));
+  const activeTemplate = useTemplatesStore((s) =>
+    s.getTemplate(activeDocument?.templateId ?? DEFAULT_TEMPLATE_ID),
+  );
+  const textHeightCm = activeTemplate?.textHeightCm ?? null;
+
+  function resolveWrittenHeightCm(percent: number): number | null {
+    return textHeightCm != null ? Math.round(((percent / 100) * textHeightCm) * 100) / 100 : null;
+  }
 
   const [editingChoices, setEditingChoices] = useState(false);
   const [draft, setDraft] = useState<string[]>(choices);
@@ -279,13 +296,4 @@ export function QuestionItemNodeView({
       </div>
     </NodeViewWrapper>
   );
-}
-
-// Placeholder — Task 9 replaces this with a real hook-backed resolver
-// (reads useTemplatesStore the same way stats-chart-dialog.tsx does).
-// Left as an explicit, obviously-a-stub function (not silently wrong
-// behavior) so Tasks 2-8 typecheck and the choices/kind-switch UI is
-// fully testable before Task 9 wires up the real template lookup.
-function resolveWrittenHeightCm(_percent: number): number | null {
-  return null;
 }
