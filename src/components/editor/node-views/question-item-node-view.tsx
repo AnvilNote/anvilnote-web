@@ -246,7 +246,7 @@ export function QuestionItemNodeView({
                       next[index] = event.target.value;
                       setDraft(next);
                     }}
-                    className="flex-1 rounded border bg-transparent px-2 py-1 text-sm"
+                    className="flex-1 rounded border bg-transparent px-2 py-1"
                   />
                   <button
                     type="button"
@@ -274,7 +274,7 @@ export function QuestionItemNodeView({
               contentEditable={false}
             >
               {choices.map((choice, index) => (
-                <div key={index} className="text-sm">
+                <div key={index}>
                   ({CHOICE_LABELS[index] ?? index + 1}) {choice}
                 </div>
               ))}
