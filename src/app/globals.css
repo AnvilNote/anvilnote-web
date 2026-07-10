@@ -214,6 +214,47 @@
   margin-top: 0;
 }
 
+/* Every image-type choice within one choiceList renders at this fixed
+   height, width auto — "uniform size" per explicit feedback. 120px is a
+   reasonable on-screen approximation of the PDF export's 3cm fixed
+   height (96 CSS px/in x 3cm / 2.54cm/in ≈ 113px, rounded) — the editor
+   isn't rendered at true print scale, so this isn't meant to be an
+   exact px-for-cm match, just visually consistent and roughly
+   proportionate. Overrides whatever width/height attrs that particular
+   AnvilImage node itself carries (per-image resize, etc. — none of
+   that applies inside a choice). !important because AnvilImage's own
+   NodeView sets width via an inline style="width:...%" attribute on
+   its wrapper/img (same specificity fight .ProseMirror p's own margin
+   already won against a plain class elsewhere on this page — an inline
+   style attribute otherwise always outranks a class selector). */
+.anvil-choice-item__image img {
+  height: 120px !important;
+  width: auto !important;
+  max-width: 100%;
+}
+
+/* choiceList's own NodeView (choice-list-node-view.tsx) renders
+   NodeViewContent with className="contents" so its choiceItem children
+   become direct grid items of the outer 1/2/4-column grid — same
+   "display: contents" fix as .anvil-image-row__grid below, but ONE
+   LAYER DEEPER than that case needed: NodeViewContent itself renders
+   <div class="contents"> wrapping a Tiptap-owned
+   [data-node-view-content-react] wrapper (same as image-row), but each
+   choiceItem is ALSO individually mounted via ReactNodeViewRenderer,
+   which wraps its own NodeView output in a further
+   <div class="react-renderer node-choiceItem"> — confirmed via a live
+   DOM dump (grid-template-columns was set correctly on the outer grid,
+   but every choiceItem still rendered as one-per-row, because that
+   react-renderer div — not the .anvil-choice-item content itself — was
+   the actual grid item). All three intermediate wrapper layers need
+   display:contents for the real .anvil-choice-item boxes to reach the
+   grid. */
+.anvil-choice-list > .contents,
+.anvil-choice-list [data-node-view-content-react],
+.anvil-choice-list .react-renderer {
+  display: contents;
+}
+
 .ProseMirror blockquote {
   border-left: 3px solid var(--border);
   padding-left: 1rem;
