@@ -511,7 +511,9 @@
       "writtenModes": {
         "lines": "橫線",
         "blank": "空白區"
-      }
+      },
+      "bodyPlaceholder": "題目敘述…",
+      "choicePlaceholder": "選項 {label}"
     }
   },
   "documents": {

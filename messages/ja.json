@@ -511,7 +511,9 @@
       "writtenModes": {
         "lines": "罫線",
         "blank": "余白"
-      }
+      },
+      "bodyPlaceholder": "問題文…",
+      "choicePlaceholder": "選択肢 {label}"
     }
   },
   "documents": {

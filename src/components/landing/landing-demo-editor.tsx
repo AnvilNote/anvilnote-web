@@ -328,6 +328,8 @@ export function LandingDemoEditor({ copy }: { copy: DemoCopy }) {
         figureCaptionPlaceholder: t("editor.image.captionPlaceholder"),
         tableCaptionPlaceholder: t("editor.table.captionPlaceholder"),
         tableDeleteLabel: t("editor.block.delete", { type: t("editor.block.types.table") }),
+        questionBodyPlaceholder: t("editor.questionBlock.bodyPlaceholder"),
+        choicePlaceholder: (label: string) => t("editor.questionBlock.choicePlaceholder", { label }),
         onMathClick: handleMathClick,
       }),
     [handleMathClick, t],
