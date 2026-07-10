@@ -186,6 +186,7 @@
         "inlineMath": "Inline formula",
         "proof": "proof block",
         "question": "question block",
+        "questionItem": "question",
         "mermaid": "mermaid block",
         "imageRow": "image row block",
         "functionPlot": "function plot block",
@@ -498,8 +499,19 @@
     "questionBlock": {
       "addChoice": "Add choice",
       "removeChoice": "Remove choice",
+      "addQuestion": "Add question",
+      "removeQuestion": "Remove question",
       "done": "Done",
-      "edit": "Edit"
+      "edit": "Edit",
+      "kinds": {
+        "single": "Single choice",
+        "multi": "Multiple choice",
+        "written": "Written answer"
+      },
+      "writtenModes": {
+        "lines": "Lines",
+        "blank": "Blank space"
+      }
     }
   },
   "documents": {

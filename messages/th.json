@@ -186,6 +186,7 @@
         "inlineMath": "สมการในบรรทัด",
         "proof": "บล็อกการพิสูจน์",
         "question": "บล็อกคำถาม",
+        "questionItem": "ข้อย่อย",
         "mermaid": "บล็อก mermaid",
         "imageRow": "บล็อกแถวรูปภาพ",
         "functionPlot": "บล็อกกราฟฟังก์ชัน",
@@ -498,8 +499,19 @@
     "questionBlock": {
       "addChoice": "เพิ่มตัวเลือก",
       "removeChoice": "ลบตัวเลือก",
+      "addQuestion": "เพิ่มคำถาม",
+      "removeQuestion": "ลบคำถาม",
       "done": "เสร็จสิ้น",
-      "edit": "แก้ไข"
+      "edit": "แก้ไข",
+      "kinds": {
+        "single": "เลือกตอบข้อเดียว",
+        "multi": "เลือกตอบหลายข้อ",
+        "written": "เขียนตอบ"
+      },
+      "writtenModes": {
+        "lines": "เส้นบรรทัด",
+        "blank": "พื้นที่ว่าง"
+      }
     }
   },
   "documents": {

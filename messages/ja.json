@@ -186,6 +186,7 @@
         "inlineMath": "インライン数式",
         "proof": "証明ブロック",
         "question": "問題ブロック",
+        "questionItem": "小問",
         "mermaid": "mermaid ブロック",
         "imageRow": "並列画像ブロック",
         "functionPlot": "関数グラフブロック",
@@ -498,8 +499,19 @@
     "questionBlock": {
       "addChoice": "選択肢を追加",
       "removeChoice": "選択肢を削除",
+      "addQuestion": "問題を追加",
+      "removeQuestion": "問題を削除",
       "done": "完了",
-      "edit": "編集"
+      "edit": "編集",
+      "kinds": {
+        "single": "単一選択",
+        "multi": "複数選択",
+        "written": "記述式"
+      },
+      "writtenModes": {
+        "lines": "罫線",
+        "blank": "余白"
+      }
     }
   },
   "documents": {

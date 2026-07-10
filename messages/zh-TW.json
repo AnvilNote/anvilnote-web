@@ -186,6 +186,7 @@
         "inlineMath": "行內公式",
         "proof": "證明方塊",
         "question": "問題方塊",
+        "questionItem": "小題",
         "mermaid": "mermaid 方塊",
         "imageRow": "並排圖片方塊",
         "functionPlot": "函數圖方塊",
@@ -498,8 +499,19 @@
     "questionBlock": {
       "addChoice": "新增選項",
       "removeChoice": "移除選項",
+      "addQuestion": "新增題目",
+      "removeQuestion": "移除題目",
       "done": "完成",
-      "edit": "編輯"
+      "edit": "編輯",
+      "kinds": {
+        "single": "單選",
+        "multi": "多選",
+        "written": "手寫"
+      },
+      "writtenModes": {
+        "lines": "橫線",
+        "blank": "空白區"
+      }
     }
   },
   "documents": {
