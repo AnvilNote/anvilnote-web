@@ -1,6 +1,7 @@
 import type { Editor } from "@tiptap/core";
 import { Node, mergeAttributes } from "@tiptap/core";
 import { DOMParser as PMDOMParser, Fragment } from "@tiptap/pm/model";
+import { TextSelection } from "@tiptap/pm/state";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { QuestionNodeView } from "@/components/editor/node-views/question-node-view";
 import { QuestionItemNodeView } from "@/components/editor/node-views/question-item-node-view";
@@ -277,19 +278,49 @@ function itemContentForKind(kind: QuestionKind) {
 // Inserts a question BLOCK containing one item of the given kind — used
 // by the toolbar button's kind menu. See appendQuestionItem below for
 // the in-block "add question" button's equivalent.
+//
+// Real bug, caught via live testing: Tiptap's insertContent() places the
+// selection at the END of whatever was just inserted by default. Before
+// this feature's choices-rich-content rewrite, a fresh questionItem's
+// content was just a single empty body paragraph, so "end of inserted
+// content" happened to land inside it — the correct spot. Now content
+// also includes a trailing choiceList with several choiceItem
+// paragraphs, so "end of inserted content" instead lands inside the
+// LAST choice's paragraph — the very next keystroke after inserting a
+// question silently typed into choice D instead of the question body.
+//
+// A first fix attempt (insertContent(...).setTextSelection(insertPos+3))
+// ALSO failed — insertPos+3 assumed insertContent() inserts literally at
+// the pre-insert selection.from with no adjustment, but insertContent()
+// has its own "smart" placement logic (e.g. it can split/replace the
+// surrounding empty paragraph rather than insert directly at that exact
+// offset), so the arithmetic didn't match where the node actually
+// landed — confirmed via a live re-test still showing text landing in
+// choice A instead of the body. Fixed by bypassing insertContent()'s
+// smart placement entirely: build the node via schema.nodeFromJSON and
+// insert it with tr.insert(pos, node), which places its start at
+// EXACTLY `pos` with no adjustment — so the body paragraph's position
+// relative to that exact insert point is reliably `pos + 3` (into
+// question, into questionItem, into the body paragraph itself).
 export function insertQuestion(editor: Editor, kind: QuestionKind) {
   editor
     .chain()
     .focus()
-    .insertContent({
-      type: "question",
-      content: [
-        {
-          type: "questionItem",
-          attrs: itemAttrsForKind(kind),
-          content: itemContentForKind(kind),
-        },
-      ],
+    .command(({ tr, state }) => {
+      const pos = state.selection.from;
+      const node = state.schema.nodeFromJSON({
+        type: "question",
+        content: [
+          {
+            type: "questionItem",
+            attrs: itemAttrsForKind(kind),
+            content: itemContentForKind(kind),
+          },
+        ],
+      });
+      tr.insert(pos, node);
+      tr.setSelection(TextSelection.create(tr.doc, pos + 3));
+      return true;
     })
     .run();
 }
@@ -297,18 +328,25 @@ export function insertQuestion(editor: Editor, kind: QuestionKind) {
 // Appends a new item of the given kind to the END of an existing
 // question container at `containerPos` (the container node's own
 // position, as returned by a NodeView's getPos()) — used by the
-// question-node-view.tsx "add question" button.
+// question-node-view.tsx "add question" button. Same tr.insert-based
+// exact-position fix as insertQuestion above, for the same reason.
 export function appendQuestionItem(editor: Editor, containerPos: number, kind: QuestionKind) {
-  const containerNode = editor.state.doc.nodeAt(containerPos);
-  if (!containerNode) return;
-  const insertPos = containerPos + containerNode.nodeSize - 1;
   editor
     .chain()
     .focus()
-    .insertContentAt(insertPos, {
-      type: "questionItem",
-      attrs: itemAttrsForKind(kind),
-      content: itemContentForKind(kind),
+    .command(({ tr, state }) => {
+      const containerNode = state.doc.nodeAt(containerPos);
+      if (!containerNode) return false;
+      const insertPos = containerPos + containerNode.nodeSize - 1;
+      const node = state.schema.nodeFromJSON({
+        type: "questionItem",
+        attrs: itemAttrsForKind(kind),
+        content: itemContentForKind(kind),
+      });
+      tr.insert(insertPos, node);
+      // questionItem(open) -> paragraph(open) -> cursor.
+      tr.setSelection(TextSelection.create(tr.doc, insertPos + 2));
+      return true;
     })
     .run();
 }
