@@ -511,7 +511,9 @@
       "writtenModes": {
         "lines": "เส้นบรรทัด",
         "blank": "พื้นที่ว่าง"
-      }
+      },
+      "bodyPlaceholder": "เนื้อหาคำถาม…",
+      "choicePlaceholder": "ตัวเลือก {label}"
     }
   },
   "documents": {

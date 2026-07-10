@@ -133,6 +133,23 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
   const figureCaptionPlaceholder = t("editor.image.captionPlaceholder");
   const tableCaptionPlaceholder = t("editor.table.captionPlaceholder");
   const tableDeleteLabel = t("editor.block.delete", { type: t("editor.block.types.table") });
+  const questionBodyPlaceholder = t("editor.questionBlock.bodyPlaceholder");
+  // choicePlaceholder needs a DIFFERENT string per choice letter ("Choice
+  // A", "Choice B", ...) — precompute all 8 possible letters' strings
+  // once (t() is deterministic per locale, so this is stable in
+  // CONTENT even though the array/function below are fresh references
+  // every render) and depend on their JOINED value, not the function
+  // reference itself, same "depend on resolved strings, not `t`" rule
+  // as every other placeholder above.
+  const choicePlaceholderLabels = ["A", "B", "C", "D", "E", "F", "G", "H"];
+  const choicePlaceholderStrings = choicePlaceholderLabels.map((label) =>
+    t("editor.questionBlock.choicePlaceholder", { label }),
+  );
+  const choicePlaceholderKey = choicePlaceholderStrings.join("|");
+  const choicePlaceholder = (label: string) => {
+    const index = choicePlaceholderLabels.indexOf(label);
+    return choicePlaceholderStrings[index] ?? label;
+  };
   const extensions = useMemo(
     () =>
       buildExtensions({
@@ -142,8 +159,17 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         figureCaptionPlaceholder,
         tableCaptionPlaceholder,
         tableDeleteLabel,
+        questionBodyPlaceholder,
+        choicePlaceholder,
         onMathClick: handleMathClick,
       }),
+    // choicePlaceholder is intentionally excluded from this dep array — its
+    // CONTENT is fully determined by choicePlaceholderKey below (already a
+    // dep); including the function reference too would rebuild the
+    // extensions (and tear down the open "/" Suggestion popup) on every
+    // render, since a fresh closure is created each render regardless of
+    // whether its output actually changed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       writePlaceholder,
       figureLabel,
@@ -151,6 +177,8 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
       figureCaptionPlaceholder,
       tableCaptionPlaceholder,
       tableDeleteLabel,
+      questionBodyPlaceholder,
+      choicePlaceholderKey,
       handleMathClick,
     ],
   );

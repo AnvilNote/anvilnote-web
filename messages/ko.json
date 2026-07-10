@@ -511,7 +511,9 @@
       "writtenModes": {
         "lines": "줄",
         "blank": "여백"
-      }
+      },
+      "bodyPlaceholder": "문제 내용…",
+      "choicePlaceholder": "선택지 {label}"
     }
   },
   "documents": {

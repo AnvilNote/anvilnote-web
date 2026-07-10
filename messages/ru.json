@@ -511,7 +511,9 @@
       "writtenModes": {
         "lines": "Линии",
         "blank": "Пустое место"
-      }
+      },
+      "bodyPlaceholder": "Текст вопроса…",
+      "choicePlaceholder": "Вариант {label}"
     }
   },
   "documents": {

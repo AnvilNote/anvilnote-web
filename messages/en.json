@@ -511,7 +511,9 @@
       "writtenModes": {
         "lines": "Lines",
         "blank": "Blank space"
-      }
+      },
+      "bodyPlaceholder": "Question text…",
+      "choicePlaceholder": "Choice {label}"
     }
   },
   "documents": {

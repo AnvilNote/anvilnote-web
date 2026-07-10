@@ -27,6 +27,8 @@ export function VersionPreview({ content }: { content: JSONContent }) {
         figureCaptionPlaceholder: t("image.captionPlaceholder"),
         tableCaptionPlaceholder: t("table.captionPlaceholder"),
         tableDeleteLabel: t("block.delete", { type: t("block.types.table") }),
+        questionBodyPlaceholder: "",
+        choicePlaceholder: () => "",
         onMathClick: () => {},
       }),
     [t],

@@ -310,6 +310,9 @@ const AnvilFootnote = Footnote.configure({
 
 export type MathClickMode = "inline" | "block";
 
+// Same labeling convention as choice-item-node-view.tsx/choice-list-node-view.tsx.
+const CHOICE_LABELS = ["A", "B", "C", "D", "E", "F", "G", "H"];
+
 export type BuildExtensionsOptions = {
   placeholder: string;
   figureLabel: string;
@@ -317,6 +320,16 @@ export type BuildExtensionsOptions = {
   figureCaptionPlaceholder: string;
   tableCaptionPlaceholder: string;
   tableDeleteLabel: string;
+  // Question block placeholders — a fresh questionItem/choiceItem starts
+  // as an empty paragraph, same as any other empty paragraph in the
+  // document, so distinguishing them needs the Placeholder extension's
+  // own per-node function form (see below), not just a single global
+  // string. choicePlaceholder is a function, not a plain string — per
+  // explicit feedback each choice's placeholder names its own letter
+  // ("Choice A", "Choice B", ...), not a generic "Enter a choice" for
+  // every one.
+  questionBodyPlaceholder: string;
+  choicePlaceholder: (label: string) => string;
   // Called when a rendered formula is clicked, so the editor can open the math
   // dialog seeded with the existing LaTeX and its document position (and, for
   // block math, its optional cross-ref display name).
@@ -330,6 +343,8 @@ export function buildExtensions({
   figureCaptionPlaceholder,
   tableCaptionPlaceholder,
   tableDeleteLabel,
+  questionBodyPlaceholder,
+  choicePlaceholder,
   onMathClick,
 }: BuildExtensionsOptions): Extensions {
   return [
@@ -355,7 +370,64 @@ export function buildExtensions({
     AnvilFootnotes,
     AnvilFootnote,
     FootnoteReference,
-    Placeholder.configure({ placeholder }),
+    // A fresh questionItem's own body paragraph and a fresh choiceItem's
+    // own paragraph both start out as an ordinary EMPTY paragraph —
+    // indistinguishable from any other empty paragraph in the document
+    // by node type alone. Placeholder's `placeholder` option accepts a
+    // function ({ editor, node, pos, hasAnchor }) => string instead of a
+    // plain string for exactly this "different empty-state text
+    // depending on context" case.
+    //
+    // Two real bugs found via live testing after the first version of
+    // this shipped:
+    //
+    // 1. `showOnlyCurrent: true` (the extension's own default) resolves
+    // WHICH node counts as "the current one" via `doc.resolve(anchor)
+    // .node(1)` — the ancestor at DEPTH 1, i.e. a direct child of the
+    // top-level doc. For a shallow document that's the paragraph itself,
+    // so the default works for ordinary body text. But a question
+    // body/choice paragraph sits several levels deep (doc > question >
+    // questionItem > choiceList? > choiceItem? > paragraph), so
+    // `node(1)` resolves to the outer "question" block instead — which
+    // isn't a textblock, so the built-in check silently produces NO
+    // decoration at all. Nothing ever showed, focused or not.
+    //
+    // 2. Per explicit feedback, question/choice placeholders must show
+    // ALWAYS while empty (not gated on focus at all) — matching a live
+    // reference screenshot showing every empty choice's placeholder
+    // visible simultaneously, not just whichever one has the cursor.
+    //
+    // Fixed by setting `showOnlyCurrent: false, includeChildren: true`
+    // (makes the plugin decorate EVERY empty textblock in the document,
+    // any depth, regardless of focus) and replicating the "only when
+    // focused" gate MANUALLY inside the placeholder function itself for
+    // the generic/non-question case (via the `hasAnchor` argument the
+    // function already receives) — so ordinary body paragraphs keep
+    // their original focus-only behavior while question/choice
+    // paragraphs deliberately opt out of that gate.
+    Placeholder.configure({
+      showOnlyCurrent: false,
+      includeChildren: true,
+      placeholder: ({ editor, pos, hasAnchor }) => {
+        const $pos = editor.state.doc.resolve(pos + 1);
+        for (let depth = $pos.depth; depth > 0; depth -= 1) {
+          const ancestor = $pos.node(depth);
+          if (ancestor.type.name === "choiceItem") {
+            // Same "resolve this choiceItem's own start position, then
+            // read its index within its parent choiceList" pattern
+            // choice-item-node-view.tsx uses for its (A)/(B)/... label
+            // — kept in sync manually (small enough not to warrant a
+            // shared constant/helper across files).
+            const choiceItemStart = $pos.before(depth);
+            const index = editor.state.doc.resolve(choiceItemStart).index();
+            const label = CHOICE_LABELS[index] ?? String(index + 1);
+            return choicePlaceholder(label);
+          }
+          if (ancestor.type.name === "questionItem") return questionBodyPlaceholder;
+        }
+        return hasAnchor ? placeholder : "";
+      },
+    }),
     Typography,
     // TextStyle + Color back the per-block text color set from the block handle.
     TextStyle,
