@@ -141,6 +141,15 @@ export function inlineToMarkdown(content: unknown): string {
           primaryLang,
         );
       }
+      if (type === "questionBlank") {
+        // Mirrors the sibling DOCX exporter's identical "(N)" output for a
+        // resolved cloze blank, keeping the two export paths consistent.
+        const value = node.attrs?.resolvedValue;
+        if (node.attrs?.broken || typeof value !== "string") {
+          return "";
+        }
+        return `(${value})`;
+      }
       return "";
     })
     .join("");
