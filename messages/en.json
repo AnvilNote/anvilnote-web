@@ -784,6 +784,13 @@
     "numberedHeadings": {
       "label": "Numbered headings",
       "description": "Show numbers before headings in PDF export."
+    },
+    "margins": {
+      "label": "Margins",
+      "top": "Top",
+      "bottom": "Bottom",
+      "left": "Left",
+      "right": "Right"
     }
   },
   "export": {

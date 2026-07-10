@@ -141,6 +141,11 @@ type DocumentState = {
   setMetadataField: (id: string, key: string, value: AnvilMetadataValue) => void;
   setTemplateSettingField: (id: string, key: string, value: AnvilMetadataValue) => void;
   setNumberedHeadings: (id: string, value: boolean) => void;
+  setMarginCm: (
+    id: string,
+    side: "top" | "bottom" | "left" | "right",
+    value: number | null,
+  ) => void;
   setTemplate: (id: string, templateId: string) => void;
   saveDocument: (id: string, options?: { manual?: boolean }) => Promise<AnvilDocument | undefined>;
   restoreVersion: (id: string, versionId: string) => Promise<void>;
@@ -265,6 +270,15 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
       templateSettings: seedTemplateSettings(template),
       templateId,
       numberedHeadings: true,
+      // 2.54cm (1in) all around — a plain, familiar default (matches the
+      // classic "1 inch margin" most word processors ship with) rather
+      // than silently inheriting whatever a given template's own built-in
+      // margin happens to be. A user can still clear a field back to
+      // empty/null to fall back to the active template's own default.
+      marginTopCm: 2.54,
+      marginBottomCm: 2.54,
+      marginLeftCm: 2.54,
+      marginRightCm: 2.54,
       projectId,
     });
 
@@ -323,6 +337,10 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
       templateSettings: source.templateSettings,
       templateId: source.templateId,
       numberedHeadings: source.numberedHeadings,
+      marginTopCm: source.marginTopCm,
+      marginBottomCm: source.marginBottomCm,
+      marginLeftCm: source.marginLeftCm,
+      marginRightCm: source.marginRightCm,
       projectId: source.projectId,
     });
 
@@ -433,6 +451,18 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
     scheduleSave(id);
   },
 
+  setMarginCm: (id, side, value) => {
+    const key = (
+      { top: "marginTopCm", bottom: "marginBottomCm", left: "marginLeftCm", right: "marginRightCm" } as const
+    )[side];
+    set((state) => ({
+      documents: state.documents.map((document) =>
+        document.id === id ? touch(document, { [key]: value }) : document,
+      ),
+    }));
+    scheduleSave(id);
+  },
+
   setTemplate: (id, templateId) => {
     const template = useTemplatesStore.getState().getTemplate(templateId);
     set((state) => ({
@@ -471,6 +501,10 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
         templateSettings: document.templateSettings,
         templateId: document.templateId,
         numberedHeadings: document.numberedHeadings,
+        marginTopCm: document.marginTopCm,
+        marginBottomCm: document.marginBottomCm,
+        marginLeftCm: document.marginLeftCm,
+        marginRightCm: document.marginRightCm,
       });
 
       // Don't overwrite the local document with the server echo: the user may

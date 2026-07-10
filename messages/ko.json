@@ -784,6 +784,13 @@
     "numberedHeadings": {
       "label": "제목 번호",
       "description": "PDF 내보내기 시 제목에 번호를 표시합니다."
+    },
+    "margins": {
+      "label": "여백",
+      "top": "위",
+      "bottom": "아래",
+      "left": "왼쪽",
+      "right": "오른쪽"
     }
   },
   "export": {

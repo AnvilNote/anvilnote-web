@@ -55,6 +55,10 @@ type ApiDocument = {
   templateSettings?: Record<string, AnvilMetadataValue>;
   templateId: string | null;
   numberedHeadings: boolean;
+  marginTopCm?: number | null;
+  marginBottomCm?: number | null;
+  marginLeftCm?: number | null;
+  marginRightCm?: number | null;
   projectId?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -145,6 +149,10 @@ function fromApiDocument(document: ApiDocument): AnvilDocument {
     metadata: document.metadata ?? {},
     templateSettings: document.templateSettings ?? {},
     numberedHeadings: document.numberedHeadings,
+    marginTopCm: document.marginTopCm ?? null,
+    marginBottomCm: document.marginBottomCm ?? null,
+    marginLeftCm: document.marginLeftCm ?? null,
+    marginRightCm: document.marginRightCm ?? null,
     projectId: document.projectId ?? null,
     createdAt: document.createdAt,
     updatedAt: document.updatedAt,
@@ -222,6 +230,10 @@ export async function createDocument(input: {
   templateSettings: Record<string, AnvilMetadataValue>;
   templateId: string | null;
   numberedHeadings?: boolean;
+  marginTopCm?: number | null;
+  marginBottomCm?: number | null;
+  marginLeftCm?: number | null;
+  marginRightCm?: number | null;
   projectId?: string | null;
 }) {
   const response = await requestJson<ApiDocument>("/api/documents", {
@@ -233,6 +245,10 @@ export async function createDocument(input: {
       templateSettings: input.templateSettings,
       templateId: input.templateId,
       numberedHeadings: input.numberedHeadings ?? true,
+      marginTopCm: input.marginTopCm ?? null,
+      marginBottomCm: input.marginBottomCm ?? null,
+      marginLeftCm: input.marginLeftCm ?? null,
+      marginRightCm: input.marginRightCm ?? null,
       projectId: input.projectId ?? null,
     }),
   });
@@ -249,6 +265,10 @@ export async function updateDocument(
     templateSettings: Record<string, AnvilMetadataValue>;
     templateId: string | null;
     numberedHeadings: boolean;
+    marginTopCm: number | null;
+    marginBottomCm: number | null;
+    marginLeftCm: number | null;
+    marginRightCm: number | null;
     projectId: string | null;
   }>,
 ) {

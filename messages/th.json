@@ -784,6 +784,13 @@
     "numberedHeadings": {
       "label": "หมายเลขหัวข้อ",
       "description": "แสดงหมายเลขหัวข้อเมื่อส่งออก PDF"
+    },
+    "margins": {
+      "label": "ระยะขอบ",
+      "top": "บน",
+      "bottom": "ล่าง",
+      "left": "ซ้าย",
+      "right": "ขวา"
     }
   },
   "export": {

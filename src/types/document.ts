@@ -19,6 +19,15 @@ export type AnvilDocument = {
   // templateSettings — it applies uniformly regardless of which template is
   // active (only plain-note's own adapter chain currently acts on it).
   numberedHeadings: boolean;
+  // Document-level, template-independent: adjustable page margins for PDF
+  // export, in cm. null means "use the active template's own built-in
+  // margins" — each side is an independent partial override, same
+  // reasoning as numberedHeadings above (only plain-note's own adapter
+  // chain currently acts on these).
+  marginTopCm: number | null;
+  marginBottomCm: number | null;
+  marginLeftCm: number | null;
+  marginRightCm: number | null;
   // Optional grouping; null means the document is unfiled.
   projectId: string | null;
   createdAt: string;

@@ -784,6 +784,13 @@
     "numberedHeadings": {
       "label": "標題編號",
       "description": "PDF 匯出時是否在標題前顯示編號。"
+    },
+    "margins": {
+      "label": "邊界設定",
+      "top": "上",
+      "bottom": "下",
+      "left": "左",
+      "right": "右"
     }
   },
   "export": {

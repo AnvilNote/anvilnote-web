@@ -83,6 +83,7 @@ export function MetadataForm({ documentId }: { documentId: string }) {
     (s) => s.setTemplateSettingField,
   );
   const setNumberedHeadings = useDocumentStore((s) => s.setNumberedHeadings);
+  const setMarginCm = useDocumentStore((s) => s.setMarginCm);
   const template = useTemplatesStore((s) =>
     doc ? s.getTemplate(doc.templateId) : undefined,
   );
@@ -93,19 +94,56 @@ export function MetadataForm({ documentId }: { documentId: string }) {
   // when the active template has no manifest fields of its own.
   const numberedHeadingsToggle = (
     <div className="flex items-center justify-between rounded-lg border px-3 py-2">
-      <div>
-        <Label htmlFor="numbered-headings" className="text-sm font-normal">
-          {t("panel.numberedHeadings.label")}
-        </Label>
-        <p className="text-xs text-muted-foreground">
-          {t("panel.numberedHeadings.description")}
-        </p>
-      </div>
+      <Label htmlFor="numbered-headings" className="text-sm font-normal">
+        {t("panel.numberedHeadings.label")}
+      </Label>
       <Switch
         id="numbered-headings"
         checked={doc.numberedHeadings}
         onCheckedChange={(checked) => setNumberedHeadings(doc.id, checked)}
       />
+    </div>
+  );
+
+  // 2x2 grid, top/bottom on the first row and left/right on the second —
+  // no per-field text label, just a placeholder inside each input (per
+  // explicit feedback: the section heading alone is enough context, a
+  // label on every one of the 4 cells was redundant). null (cleared/empty
+  // input) means "use the active template's own built-in margin" for
+  // that side. The "cm" unit is shown inline inside the input (right-
+  // aligned, pr-7 makes room for it) rather than as a separate label.
+  const marginField = (
+    side: "top" | "bottom" | "left" | "right",
+    value: number | null,
+  ) => (
+    <div className="relative">
+      <Input
+        type="number"
+        min={0}
+        step={0.1}
+        placeholder={t(`panel.margins.${side}`)}
+        value={value ?? ""}
+        onChange={(event) => {
+          const raw = event.target.value;
+          setMarginCm(doc.id, side, raw === "" ? null : Number(raw));
+        }}
+        className="pr-8 text-sm"
+      />
+      <span className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-xs text-muted-foreground">
+        cm
+      </span>
+    </div>
+  );
+
+  const marginsSection = (
+    <div className="space-y-2 rounded-lg border px-3 py-2">
+      <Label className="text-sm font-normal">{t("panel.margins.label")}</Label>
+      <div className="grid grid-cols-2 gap-2">
+        {marginField("top", doc.marginTopCm)}
+        {marginField("bottom", doc.marginBottomCm)}
+        {marginField("left", doc.marginLeftCm)}
+        {marginField("right", doc.marginRightCm)}
+      </div>
     </div>
   );
 
@@ -116,6 +154,7 @@ export function MetadataForm({ documentId }: { documentId: string }) {
           {t("panel.metadataEmpty")}
         </p>
         {numberedHeadingsToggle}
+        {marginsSection}
       </div>
     );
   }
@@ -341,6 +380,7 @@ export function MetadataForm({ documentId }: { documentId: string }) {
       })}
 
       {numberedHeadingsToggle}
+      {marginsSection}
     </div>
   );
 }

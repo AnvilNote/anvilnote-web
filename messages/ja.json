@@ -784,6 +784,13 @@
     "numberedHeadings": {
       "label": "見出し番号",
       "description": "PDF書き出し時に見出しに番号を表示します。"
+    },
+    "margins": {
+      "label": "余白",
+      "top": "上",
+      "bottom": "下",
+      "left": "左",
+      "right": "右"
     }
   },
   "export": {
