@@ -1,8 +1,11 @@
 import type { Editor } from "@tiptap/core";
 import { Node, mergeAttributes } from "@tiptap/core";
+import { DOMParser as PMDOMParser, Fragment } from "@tiptap/pm/model";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { QuestionNodeView } from "@/components/editor/node-views/question-node-view";
 import { QuestionItemNodeView } from "@/components/editor/node-views/question-item-node-view";
+import { ChoiceItemNodeView } from "@/components/editor/node-views/choice-item-node-view";
+import { ChoiceListNodeView } from "@/components/editor/node-views/choice-list-node-view";
 import {
   type QuestionKind,
   DEFAULT_QUESTION_KIND,
@@ -11,6 +14,56 @@ import {
   normalizeQuestionKind,
   normalizeWrittenMode,
 } from "@/lib/question-kinds";
+
+// A single choice's content — exactly one of: a rich-text paragraph
+// (bold/italic/inlineMath all already work, it's a normal paragraph),
+// a single image, or a single block-math equation. No attrs of its own
+// — which of the three is present is read directly from
+// node.content.firstChild.type.name at render time (both here and in
+// anvilnote-renderer's tiptap-to-typst.ts / anvilnote-docx-exporter's
+// tiptap-to-pandoc-markdown.ts).
+export const AnvilChoiceItem = Node.create({
+  name: "choiceItem",
+  content: "paragraph | image | blockMath",
+  defining: true,
+  isolating: true,
+
+  parseHTML() {
+    return [{ tag: 'div[data-type="choice-item"]' }];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return ["div", mergeAttributes(HTMLAttributes, { "data-type": "choice-item" }), 0];
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(ChoiceItemNodeView);
+  },
+});
+
+// Pure container for a questionItem's choices — replaces v2's
+// choices:string[] attribute. Sits as the LAST child in questionItem's
+// own content stream (after the body paragraph(s)), only present when
+// kind is "single" or "multi" (a "written" item's content is just its
+// body, no choiceList).
+export const AnvilChoiceList = Node.create({
+  name: "choiceList",
+  group: "block",
+  content: "choiceItem+",
+  isolating: true,
+
+  parseHTML() {
+    return [{ tag: 'div[data-type="choice-list"]' }];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return ["div", mergeAttributes(HTMLAttributes, { "data-type": "choice-list" }), 0];
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(ChoiceListNodeView);
+  },
+});
 
 // Question block v2: `question` is a pure container (no attrs of its
 // own — see this feature's design doc for why the v1 "one question per
@@ -51,7 +104,7 @@ export const AnvilQuestion = Node.create({
 // writtenHeightCm).
 export const AnvilQuestionItem = Node.create({
   name: "questionItem",
-  content: "block+",
+  content: "block+ choiceList?",
   defining: true,
   isolating: true,
 
@@ -61,20 +114,6 @@ export const AnvilQuestionItem = Node.create({
         default: DEFAULT_QUESTION_KIND,
         parseHTML: (element) => normalizeQuestionKind(element.getAttribute("data-kind")),
         renderHTML: (attributes) => ({ "data-kind": normalizeQuestionKind(attributes.kind) }),
-      },
-      choices: {
-        default: Array.from({ length: defaultChoiceCount(DEFAULT_QUESTION_KIND) }, () => ""),
-        parseHTML: (element) => {
-          try {
-            const parsed = JSON.parse(element.getAttribute("data-choices") ?? "[]");
-            return Array.isArray(parsed) ? parsed : [];
-          } catch {
-            return [];
-          }
-        },
-        renderHTML: (attributes) => ({
-          "data-choices": JSON.stringify(attributes.choices ?? []),
-        }),
       },
       writtenMode: {
         default: DEFAULT_WRITTEN_MODE,
@@ -103,18 +142,26 @@ export const AnvilQuestionItem = Node.create({
           "data-written-height-percent": String(attributes.writtenHeightPercent ?? 20),
         }),
       },
-      // Multi -> single removes the LAST choice rather than silently
+      // Multi -> single removes the LAST choiceItem rather than silently
       // discarding it — it's parked here. Single -> multi restores it
-      // (or appends "" if nothing's parked, e.g. a fresh single->multi
-      // switch that's never been multi before) — see
-      // question-item-node-view.tsx's handleKindChange. Only touched by
-      // single<->multi transitions; switching to/from "written" leaves
-      // both choices and this stash alone.
-      stashedChoice: {
+      // (or appends a fresh empty-paragraph choiceItem if nothing's
+      // parked, e.g. a fresh single->multi switch that's never been
+      // multi before) — see question-item-node-view.tsx's
+      // handleKindChange. Only touched by single<->multi transitions;
+      // switching to/from "written" leaves this stash alone. Serialized
+      // ProseMirror JSON of the last choiceItem removed when switching
+      // multi -> single (v3: a stashed choice can now be an image or
+      // equation, not just text, so a plain string can't hold it — this
+      // stores editor.schema.nodeFromJSON-compatible JSON, restored via
+      // JSON.parse + nodeFromJSON when switching back to multi). null
+      // when nothing is stashed.
+      stashedChoiceJSON: {
         default: null,
-        parseHTML: (element) => element.getAttribute("data-stashed-choice"),
+        parseHTML: (element) => element.getAttribute("data-stashed-choice-json"),
         renderHTML: (attributes) =>
-          attributes.stashedChoice != null ? { "data-stashed-choice": attributes.stashedChoice } : {},
+          attributes.stashedChoiceJSON != null
+            ? { "data-stashed-choice-json": attributes.stashedChoiceJSON }
+            : {},
       },
       // The RESOLVED value (percent x the active template's textHeightCm),
       // baked in at edit time — same "bake a literal cm from a percentage
@@ -140,7 +187,52 @@ export const AnvilQuestionItem = Node.create({
   },
 
   parseHTML() {
-    return [{ tag: 'div[data-type="question-item"]' }];
+    return [
+      {
+        tag: 'div[data-type="question-item"]',
+        // Migration: a v2 document has NO choice-list child in its DOM
+        // at all — its choices lived entirely in the now-deleted
+        // data-choices JSON-array attribute. If that attribute is
+        // present, parse the element's real DOM children normally (the
+        // body paragraph(s)) and append a synthesized choiceList (one
+        // plain-paragraph choiceItem per array entry) as a real child,
+        // so the document round-trips into the new v3 shape on next
+        // save instead of silently losing every choice it had. When
+        // data-choices is absent (already-migrated or fresh v3
+        // documents), this just parses the DOM children normally —
+        // identical to not having a getContent override at all.
+        getContent: (domNode, schema) => {
+          const element = domNode as HTMLElement;
+          const parser = PMDOMParser.fromSchema(schema);
+          const parsedFragment = parser.parseSlice(element, { preserveWhitespace: true }).content;
+
+          const raw = element.getAttribute?.("data-choices");
+          if (!raw) return parsedFragment;
+          let choices: unknown;
+          try {
+            choices = JSON.parse(raw);
+          } catch {
+            return parsedFragment;
+          }
+          if (!Array.isArray(choices) || choices.length === 0) return parsedFragment;
+          const choiceItemType = schema.nodes.choiceItem;
+          const paragraphType = schema.nodes.paragraph;
+          const choiceListType = schema.nodes.choiceList;
+          if (!choiceItemType || !paragraphType || !choiceListType) return parsedFragment;
+          const items = choices.map((choice) =>
+            choiceItemType.create(
+              null,
+              paragraphType.create(
+                null,
+                typeof choice === "string" && choice ? schema.text(choice) : undefined,
+              ),
+            ),
+          );
+          const choiceListNode = choiceListType.create(null, items);
+          return parsedFragment.append(Fragment.from(choiceListNode));
+        },
+      },
+    ];
   },
 
   renderHTML({ HTMLAttributes }) {
@@ -155,13 +247,31 @@ export const AnvilQuestionItem = Node.create({
 function itemAttrsForKind(kind: QuestionKind) {
   return {
     kind,
-    choices: Array.from({ length: defaultChoiceCount(kind) }, () => ""),
-    stashedChoice: null,
+    stashedChoiceJSON: null,
     writtenMode: DEFAULT_WRITTEN_MODE,
     writtenLines: 3,
     writtenHeightPercent: 20,
     writtenHeightCm: null,
   };
+}
+
+// Builds the content array for a fresh questionItem: one empty body
+// paragraph, plus (for single/multi kind only) a trailing choiceList
+// with the kind's default empty-choice count.
+function itemContentForKind(kind: QuestionKind) {
+  const body = [{ type: "paragraph" }];
+  if (kind === "written") return body;
+  const count = defaultChoiceCount(kind);
+  return [
+    ...body,
+    {
+      type: "choiceList",
+      content: Array.from({ length: count }, () => ({
+        type: "choiceItem",
+        content: [{ type: "paragraph" }],
+      })),
+    },
+  ];
 }
 
 // Inserts a question BLOCK containing one item of the given kind — used
@@ -177,7 +287,7 @@ export function insertQuestion(editor: Editor, kind: QuestionKind) {
         {
           type: "questionItem",
           attrs: itemAttrsForKind(kind),
-          content: [{ type: "paragraph" }],
+          content: itemContentForKind(kind),
         },
       ],
     })
@@ -198,7 +308,7 @@ export function appendQuestionItem(editor: Editor, containerPos: number, kind: Q
     .insertContentAt(insertPos, {
       type: "questionItem",
       attrs: itemAttrsForKind(kind),
-      content: [{ type: "paragraph" }],
+      content: itemContentForKind(kind),
     })
     .run();
 }

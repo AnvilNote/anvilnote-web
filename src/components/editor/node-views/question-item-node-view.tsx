@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { useTranslations } from "next-intl";
 import { NodeViewContent, NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
-import { Check, Minus, Pencil, Plus, Trash2, X } from "lucide-react";
+import type { Node as PMNode } from "@tiptap/pm/model";
+import { Minus, Plus, Trash2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { choiceColumns } from "@/lib/question-choices";
 import { QuestionKindMenu } from "@/components/editor/question-kind-menu";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useTemplatesStore } from "@/lib/stores/templates-store";
@@ -16,14 +16,6 @@ import {
   type QuestionKind,
   type WrittenMode,
 } from "@/lib/question-kinds";
-
-const GRID_COLS_CLASS: Record<1 | 2 | 4, string> = {
-  1: "grid-cols-1",
-  2: "grid-cols-2",
-  4: "grid-cols-4",
-};
-
-const CHOICE_LABELS = ["A", "B", "C", "D", "E", "F", "G", "H"];
 
 // Same live-counted numbering as v1, now counting "questionItem" nodes
 // (was: "question" nodes) — see this feature's design doc for why the
@@ -67,7 +59,6 @@ export function QuestionItemNodeView({
   const number = useQuestionNumber(editor, getPos);
 
   const kind = normalizeQuestionKind(node.attrs.kind);
-  const choices: string[] = Array.isArray(node.attrs.choices) ? node.attrs.choices : [];
   const writtenMode = normalizeWrittenMode(node.attrs.writtenMode);
   const writtenLines: number = typeof node.attrs.writtenLines === "number" ? node.attrs.writtenLines : 3;
   const writtenHeightPercent: number =
@@ -87,52 +78,130 @@ export function QuestionItemNodeView({
     return textHeightCm != null ? Math.round(((percent / 100) * textHeightCm) * 100) / 100 : null;
   }
 
-  const [editingChoices, setEditingChoices] = useState(false);
-  const [draft, setDraft] = useState<string[]>(choices);
-
-  function startEditingChoices() {
-    setDraft(choices);
-    setEditingChoices(true);
-  }
-
-  function commitChoices() {
-    updateAttributes({ choices: draft });
-    setEditingChoices(false);
-  }
-
   // Switching kind is a structural action (not gated behind an edit
-  // toggle — always available). Per this feature's design doc: switching
-  // TO "multi" tops the choices array up to 5 entries ONLY if it's still
-  // exactly the untouched 4-empty-string "single" default — real
-  // user-entered content is never clobbered. Switching to/from "written"
-  // leaves `choices` attrs untouched (just unused while kind is
-  // "written"), so switching back restores whatever was there.
-  // multi -> single parks the LAST choice in stashedChoice instead of
-  // discarding it; single -> multi restores that parked value (or
-  // appends "" if nothing's parked — e.g. a fresh single that was never
-  // multi before). Only single<->multi transitions touch choices/stash
-  // at all; switching to/from "written" leaves both alone so switching
-  // back later restores whatever was there.
+  // toggle — always available). multi -> single: removes the LAST
+  // choiceItem, parking its full ProseMirror JSON in stashedChoiceJSON
+  // (not just text — v3 choices can be images/equations, a plain string
+  // can't hold that). single -> multi: restores the parked node (or
+  // appends a fresh empty-paragraph choiceItem if nothing's parked).
+  // Switching to/from "written" adds/removes the ENTIRE choiceList child
+  // (written items have no choices at all) — the choiceList itself, not
+  // just its item count, changes.
   function handleKindChange(nextKind: QuestionKind) {
-    if (kind === "multi" && nextKind === "single" && choices.length > 0) {
-      const stashed = choices[choices.length - 1];
-      updateAttributes({
-        kind: nextKind,
-        choices: choices.slice(0, -1),
-        stashedChoice: stashed,
-      });
+    const pos = getPos();
+    if (pos === undefined) return;
+    const thisNode = editor.state.doc.nodeAt(pos);
+    if (!thisNode) return;
+
+    if (kind === "written" && nextKind !== "written") {
+      // Append a fresh choiceList (default count for nextKind) after the body.
+      const insertPos = pos + thisNode.nodeSize - 1;
+      const count = nextKind === "multi" ? 5 : 4;
+      editor
+        .chain()
+        .focus()
+        .insertContentAt(insertPos, {
+          type: "choiceList",
+          content: Array.from({ length: count }, () => ({
+            type: "choiceItem",
+            content: [{ type: "paragraph" }],
+          })),
+        })
+        .updateAttributes("questionItem", { kind: nextKind })
+        .run();
       return;
     }
+
+    if (kind !== "written" && nextKind === "written") {
+      // Remove the entire choiceList child.
+      let choiceListPos: number | null = null;
+      let choiceListNode: PMNode | null = null;
+      thisNode.forEach((child, offset) => {
+        if (child.type.name === "choiceList") {
+          choiceListPos = pos + 1 + offset;
+          choiceListNode = child;
+        }
+      });
+      if (choiceListPos !== null && choiceListNode !== null) {
+        const from = choiceListPos;
+        const to = choiceListPos + (choiceListNode as PMNode).nodeSize;
+        editor
+          .chain()
+          .focus()
+          .command(({ tr }) => {
+            tr.delete(from, to);
+            return true;
+          })
+          .updateAttributes("questionItem", { kind: nextKind })
+          .run();
+      } else {
+        editor.chain().focus().updateAttributes("questionItem", { kind: nextKind }).run();
+      }
+      return;
+    }
+
+    if (kind === "multi" && nextKind === "single") {
+      let choiceListNode: PMNode | null = null;
+      let choiceListPos: number | null = null;
+      thisNode.forEach((child, offset) => {
+        if (child.type.name === "choiceList") {
+          choiceListNode = child;
+          choiceListPos = pos + 1 + offset;
+        }
+      });
+      if (choiceListNode === null || choiceListPos === null || (choiceListNode as PMNode).childCount === 0) {
+        editor.chain().focus().updateAttributes("questionItem", { kind: nextKind }).run();
+        return;
+      }
+      const list = choiceListNode as PMNode;
+      const lastChild = list.child(list.childCount - 1);
+      const stashedChoiceJSON = JSON.stringify(lastChild.toJSON());
+      let lastChildStart = (choiceListPos as number) + 1;
+      for (let i = 0; i < list.childCount - 1; i++) lastChildStart += list.child(i).nodeSize;
+      const lastChildEnd = lastChildStart + lastChild.nodeSize;
+      editor
+        .chain()
+        .focus()
+        .command(({ tr }) => {
+          tr.delete(lastChildStart, lastChildEnd);
+          return true;
+        })
+        .updateAttributes("questionItem", { kind: nextKind, stashedChoiceJSON })
+        .run();
+      return;
+    }
+
     if (kind === "single" && nextKind === "multi") {
-      const stashedChoice = typeof node.attrs.stashedChoice === "string" ? node.attrs.stashedChoice : "";
-      updateAttributes({
-        kind: nextKind,
-        choices: [...choices, stashedChoice],
-        stashedChoice: null,
+      const stashedRaw = typeof node.attrs.stashedChoiceJSON === "string" ? node.attrs.stashedChoiceJSON : null;
+      let choiceListPos: number | null = null;
+      let choiceListNode: PMNode | null = null;
+      thisNode.forEach((child, offset) => {
+        if (child.type.name === "choiceList") {
+          choiceListNode = child;
+          choiceListPos = pos + 1 + offset;
+        }
       });
+      if (choiceListNode === null || choiceListPos === null) {
+        editor.chain().focus().updateAttributes("questionItem", { kind: nextKind }).run();
+        return;
+      }
+      const list = choiceListNode as PMNode;
+      const insertPos = (choiceListPos as number) + list.nodeSize - 1;
+      const newItemJSON = stashedRaw
+        ? JSON.parse(stashedRaw)
+        : { type: "choiceItem", content: [{ type: "paragraph" }] };
+      editor
+        .chain()
+        .focus()
+        .insertContentAt(insertPos, newItemJSON)
+        .updateAttributes("questionItem", { kind: nextKind, stashedChoiceJSON: null })
+        .run();
       return;
     }
-    updateAttributes({ kind: nextKind });
+
+    // multi -> multi / single -> single (shouldn't happen via the kind
+    // menu, which only offers the 3 kinds — defensive fallback).
+    editor.chain().focus().updateAttributes("questionItem", { kind: nextKind }).run();
   }
 
   function handleWrittenModeChange(nextMode: WrittenMode) {
@@ -182,10 +251,6 @@ export function QuestionItemNodeView({
     deleteNode();
   }
 
-  // Multi-choice always renders one option per line — per explicit
-  // feedback, the 4/2/1 auto-column heuristic is single-choice only.
-  const columns = kind === "multi" ? 1 : choiceColumns(choices);
-
   return (
     <NodeViewWrapper
       className="anvil-question-item relative grid grid-cols-[1.8em_1fr] items-baseline gap-x-[1em] gap-y-1"
@@ -230,57 +295,7 @@ export function QuestionItemNodeView({
             lives in globals.css right next to .ProseMirror p itself. */}
         <NodeViewContent className="anvil-question-item__body" />
 
-        {kind !== "written" ? (
-          editingChoices ? (
-            <div className="mt-1.5 flex flex-col gap-[0.8em]" contentEditable={false}>
-              {draft.map((choice, index) => (
-                <div key={index} className="flex items-center gap-1.5">
-                  <span className="w-6 shrink-0 text-sm text-muted-foreground">
-                    ({CHOICE_LABELS[index] ?? index + 1})
-                  </span>
-                  <input
-                    type="text"
-                    value={choice}
-                    onChange={(event) => {
-                      const next = [...draft];
-                      next[index] = event.target.value;
-                      setDraft(next);
-                    }}
-                    className="flex-1 rounded border bg-transparent px-2 py-1"
-                  />
-                  <button
-                    type="button"
-                    aria-label={tq("removeChoice")}
-                    title={tq("removeChoice")}
-                    onClick={() => setDraft(draft.filter((_, i) => i !== index))}
-                    className="flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground/60 hover:text-destructive"
-                  >
-                    <X className="size-3.5" />
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={() => setDraft([...draft, ""])}
-                className="flex w-fit items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent"
-              >
-                <Plus className="size-3.5" />
-                {tq("addChoice")}
-              </button>
-            </div>
-          ) : choices.length > 0 ? (
-            <div
-              className={`mt-1.5 grid gap-x-4 gap-y-[0.8em] ${GRID_COLS_CLASS[columns]}`}
-              contentEditable={false}
-            >
-              {choices.map((choice, index) => (
-                <div key={index}>
-                  ({CHOICE_LABELS[index] ?? index + 1}) {choice}
-                </div>
-              ))}
-            </div>
-          ) : null
-        ) : (
+        {kind === "written" ? (
           <div className="mt-1.5 flex flex-col gap-2" contentEditable={false}>
             <label className="flex items-center gap-2 text-xs text-muted-foreground">
               <Switch
@@ -331,7 +346,7 @@ export function QuestionItemNodeView({
               </div>
             )}
           </div>
-        )}
+        ) : null}
       </div>
 
       <div
@@ -350,17 +365,6 @@ export function QuestionItemNodeView({
             </button>
           }
         />
-        {kind !== "written" ? (
-          <button
-            type="button"
-            aria-label={editingChoices ? tq("done") : tq("edit")}
-            title={editingChoices ? tq("done") : tq("edit")}
-            onClick={editingChoices ? commitChoices : startEditingChoices}
-            className="flex size-6 items-center justify-center rounded text-muted-foreground/60 transition-colors hover:text-foreground"
-          >
-            {editingChoices ? <Check className="size-3.5" /> : <Pencil className="size-3.5" />}
-          </button>
-        ) : null}
         <button
           type="button"
           aria-label={tq("removeQuestion")}
