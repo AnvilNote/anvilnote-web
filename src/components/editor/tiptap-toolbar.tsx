@@ -55,6 +55,7 @@ import { TableSizeGrid } from "@/components/editor/table-size-picker";
 import { pickAndInsertImage } from "@/lib/tiptap/image";
 import { insertCallout } from "@/lib/tiptap/callout";
 import { insertQuestion } from "@/lib/tiptap/question";
+import { QuestionKindMenu } from "@/components/editor/question-kind-menu";
 import { insertMermaid } from "@/lib/tiptap/mermaid";
 import { insertFunctionPlot } from "@/lib/tiptap/function-plot";
 import { insertStatsChart } from "@/lib/tiptap/stats-chart";
@@ -394,11 +395,23 @@ export function TiptapToolbar({
             )
           }
         />
-        <ToolbarButton
-          icon={MessageCircleQuestion}
-          label={t("questionBlock")}
-          active={s.question}
-          onClick={() => insertQuestion(editor)}
+        <QuestionKindMenu
+          onSelect={(kind) => insertQuestion(editor, kind)}
+          trigger={
+            <button
+              type="button"
+              title={t("questionBlock")}
+              aria-label={t("questionBlock")}
+              aria-pressed={s.question}
+              className={cn(
+                "inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors md:size-8",
+                "hover:bg-accent hover:text-foreground",
+                s.question && "bg-accent text-foreground",
+              )}
+            >
+              <MessageCircleQuestion className="size-4" />
+            </button>
+          }
         />
         <ToolbarButton
           icon={Workflow}
