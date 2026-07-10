@@ -4,13 +4,13 @@ import { useEffect, useReducer, useState } from "react";
 import { useTranslations } from "next-intl";
 import { NodeViewContent, NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { Check, Minus, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { choiceColumns } from "@/lib/question-choices";
 import { QuestionKindMenu } from "@/components/editor/question-kind-menu";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useTemplatesStore } from "@/lib/stores/templates-store";
 import { DEFAULT_TEMPLATE_ID } from "@/lib/templates/templates";
 import {
-  WRITTEN_MODES,
   normalizeQuestionKind,
   normalizeWrittenMode,
   defaultChoiceCount,
@@ -243,18 +243,13 @@ export function QuestionItemNodeView({
           ) : null
         ) : (
           <div className="mt-1.5 flex flex-col gap-2" contentEditable={false}>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              {WRITTEN_MODES.map((mode) => (
-                <label key={mode} className="flex items-center gap-1">
-                  <input
-                    type="radio"
-                    checked={writtenMode === mode}
-                    onChange={() => handleWrittenModeChange(mode)}
-                  />
-                  {tq(`writtenModes.${mode}`)}
-                </label>
-              ))}
-            </div>
+            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Switch
+                checked={writtenMode === "blank"}
+                onCheckedChange={(checked) => handleWrittenModeChange(checked ? "blank" : "lines")}
+              />
+              {tq(`writtenModes.${writtenMode}`)}
+            </label>
             {writtenMode === "lines" ? (
               <div className="flex items-center gap-2">
                 <button
@@ -275,20 +270,25 @@ export function QuestionItemNodeView({
                 <div className="ml-2 flex-1 border-t border-dashed" />
               </div>
             ) : (
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min={5}
-                  max={100}
-                  value={writtenHeightPercent}
-                  onChange={(event) => handleWrittenHeightPercentChange(Number(event.target.value))}
-                  className="w-16 rounded border bg-transparent px-2 py-1 text-sm"
-                />
-                <span className="text-xs text-muted-foreground">%</span>
-                <div
-                  className="flex-1 rounded border border-dashed"
-                  style={{ height: `${writtenHeightPercent * BLANK_PREVIEW_PX_PER_PERCENT}px` }}
-                />
+              // Percent input sits INSIDE the simulated blank box's own
+              // top-right corner (absolute, relative to this wrapper) —
+              // per explicit feedback, not as a separate control beside
+              // the box.
+              <div
+                className="relative rounded border border-dashed"
+                style={{ height: `${writtenHeightPercent * BLANK_PREVIEW_PX_PER_PERCENT}px` }}
+              >
+                <div className="absolute top-1 right-1 flex items-center gap-1">
+                  <input
+                    type="number"
+                    min={5}
+                    max={100}
+                    value={writtenHeightPercent}
+                    onChange={(event) => handleWrittenHeightPercentChange(Number(event.target.value))}
+                    className="w-14 rounded border bg-background px-1.5 py-0.5 text-xs"
+                  />
+                  <span className="text-xs text-muted-foreground">%</span>
+                </div>
               </div>
             )}
           </div>
