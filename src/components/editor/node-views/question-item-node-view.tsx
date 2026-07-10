@@ -188,7 +188,7 @@ export function QuestionItemNodeView({
 
   return (
     <NodeViewWrapper
-      className="anvil-question-item relative grid grid-cols-[1.8em_1fr] items-baseline gap-x-2 gap-y-1 py-1.5"
+      className="anvil-question-item relative grid grid-cols-[1.8em_1fr] items-baseline gap-x-[1.2em] gap-y-1 py-1.5"
       data-type="question-item"
     >
       {/* items-baseline, not items-start/align-top — a plain top-alignment
