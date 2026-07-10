@@ -140,6 +140,7 @@ type DocumentState = {
   setContent: (id: string, content: JSONContent) => void;
   setMetadataField: (id: string, key: string, value: AnvilMetadataValue) => void;
   setTemplateSettingField: (id: string, key: string, value: AnvilMetadataValue) => void;
+  setNumberedHeadings: (id: string, value: boolean) => void;
   setTemplate: (id: string, templateId: string) => void;
   saveDocument: (id: string, options?: { manual?: boolean }) => Promise<AnvilDocument | undefined>;
   restoreVersion: (id: string, versionId: string) => Promise<void>;
@@ -263,6 +264,7 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
       metadata,
       templateSettings: seedTemplateSettings(template),
       templateId,
+      numberedHeadings: true,
       projectId,
     });
 
@@ -320,6 +322,7 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
       metadata: source.metadata,
       templateSettings: source.templateSettings,
       templateId: source.templateId,
+      numberedHeadings: source.numberedHeadings,
       projectId: source.projectId,
     });
 
@@ -421,6 +424,15 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
     scheduleSave(id);
   },
 
+  setNumberedHeadings: (id, value) => {
+    set((state) => ({
+      documents: state.documents.map((document) =>
+        document.id === id ? touch(document, { numberedHeadings: value }) : document,
+      ),
+    }));
+    scheduleSave(id);
+  },
+
   setTemplate: (id, templateId) => {
     const template = useTemplatesStore.getState().getTemplate(templateId);
     set((state) => ({
@@ -458,6 +470,7 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
         metadata: document.metadata,
         templateSettings: document.templateSettings,
         templateId: document.templateId,
+        numberedHeadings: document.numberedHeadings,
       });
 
       // Don't overwrite the local document with the server echo: the user may
