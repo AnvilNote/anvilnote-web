@@ -14,6 +14,11 @@ export type AnvilDocument = {
   metadata: Record<string, AnvilMetadataValue>;
   // Template Options: bound to the current template (toc/paperSize…).
   templateSettings: Record<string, AnvilMetadataValue>;
+  // Document-level, template-independent: whether PDF export shows
+  // "1"/"1.1"-style heading numbers. Deliberately NOT part of
+  // templateSettings — it applies uniformly regardless of which template is
+  // active (only plain-note's own adapter chain currently acts on it).
+  numberedHeadings: boolean;
   // Optional grouping; null means the document is unfiled.
   projectId: string | null;
   createdAt: string;

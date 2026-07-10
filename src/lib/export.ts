@@ -49,6 +49,7 @@ export function buildExportPayload(
       ? formatDateFields(doc.metadata, doc.templateId)
       : {},
     templateSettings: doc.templateSettings,
+    numberedHeadings: doc.numberedHeadings,
     content: normalizeHeadingLevels(doc.content),
     sourceFormat: "tiptap-json",
     mathFormat: "latex",
