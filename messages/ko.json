@@ -186,6 +186,7 @@
         "inlineMath": "인라인 수식",
         "proof": "증명 블록",
         "question": "문제 블록",
+        "questionItem": "소문항",
         "mermaid": "mermaid 블록",
         "imageRow": "이미지 행 블록",
         "functionPlot": "함수 그래프 블록",
@@ -498,8 +499,19 @@
     "questionBlock": {
       "addChoice": "선택지 추가",
       "removeChoice": "선택지 삭제",
+      "addQuestion": "문제 추가",
+      "removeQuestion": "문제 삭제",
       "done": "완료",
-      "edit": "편집"
+      "edit": "편집",
+      "kinds": {
+        "single": "단일 선택",
+        "multi": "복수 선택",
+        "written": "서술형"
+      },
+      "writtenModes": {
+        "lines": "줄",
+        "blank": "여백"
+      }
     }
   },
   "documents": {

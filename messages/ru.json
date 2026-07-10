@@ -186,6 +186,7 @@
         "inlineMath": "Встроенная формула",
         "proof": "блок доказательства",
         "question": "блок вопроса",
+        "questionItem": "подвопрос",
         "mermaid": "блок mermaid",
         "imageRow": "блок ряда изображений",
         "functionPlot": "блок графика функции",
@@ -498,8 +499,19 @@
     "questionBlock": {
       "addChoice": "Добавить вариант",
       "removeChoice": "Удалить вариант",
+      "addQuestion": "Добавить вопрос",
+      "removeQuestion": "Удалить вопрос",
       "done": "Готово",
-      "edit": "Редактировать"
+      "edit": "Редактировать",
+      "kinds": {
+        "single": "Один вариант",
+        "multi": "Несколько вариантов",
+        "written": "Письменный ответ"
+      },
+      "writtenModes": {
+        "lines": "Линии",
+        "blank": "Пустое место"
+      }
     }
   },
   "documents": {
