@@ -242,7 +242,8 @@ export const CrossRefTargetIds = Extension.create({
           tr.doc.descendants((node, pos) => {
             if (node.type.name !== "questionBlank") return;
             const targetId = node.attrs.targetId as string | null;
-            const target = targetId ? resolved.get(targetId) : undefined;
+            const raw = targetId ? resolved.get(targetId) : undefined;
+            const target = raw?.kind === "question" ? raw : undefined;
             const nextValue = target?.value ?? null;
             const nextBroken = !target;
 
