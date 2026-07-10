@@ -773,7 +773,11 @@
     "historyRestore": "このバージョンに戻す",
     "historyRestoreDescription": "現在の内容は先に自動でスナップショットされるので、気が変わってもいつでも元に戻せます。",
     "historyRestored": "選択したバージョンに戻しました",
-    "historyRestoreFailed": "バージョンの復元に失敗しました"
+    "historyRestoreFailed": "バージョンの復元に失敗しました",
+    "numberedHeadings": {
+      "label": "見出し番号",
+      "description": "PDF書き出し時に見出しの前に「1」「1.1」形式の番号を表示します。"
+    }
   },
   "export": {
     "title": "書き出し",

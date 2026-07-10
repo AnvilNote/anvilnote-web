@@ -54,6 +54,7 @@ type ApiDocument = {
   metadata?: Record<string, AnvilMetadataValue>;
   templateSettings?: Record<string, AnvilMetadataValue>;
   templateId: string | null;
+  numberedHeadings: boolean;
   projectId?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -143,6 +144,7 @@ function fromApiDocument(document: ApiDocument): AnvilDocument {
     templateId: document.templateId ?? DEFAULT_TEMPLATE_ID,
     metadata: document.metadata ?? {},
     templateSettings: document.templateSettings ?? {},
+    numberedHeadings: document.numberedHeadings,
     projectId: document.projectId ?? null,
     createdAt: document.createdAt,
     updatedAt: document.updatedAt,
@@ -219,6 +221,7 @@ export async function createDocument(input: {
   metadata: Record<string, AnvilMetadataValue>;
   templateSettings: Record<string, AnvilMetadataValue>;
   templateId: string | null;
+  numberedHeadings?: boolean;
   projectId?: string | null;
 }) {
   const response = await requestJson<ApiDocument>("/api/documents", {
@@ -229,6 +232,7 @@ export async function createDocument(input: {
       metadata: input.metadata,
       templateSettings: input.templateSettings,
       templateId: input.templateId,
+      numberedHeadings: input.numberedHeadings ?? true,
       projectId: input.projectId ?? null,
     }),
   });
@@ -244,6 +248,7 @@ export async function updateDocument(
     metadata: Record<string, AnvilMetadataValue>;
     templateSettings: Record<string, AnvilMetadataValue>;
     templateId: string | null;
+    numberedHeadings: boolean;
     projectId: string | null;
   }>,
 ) {

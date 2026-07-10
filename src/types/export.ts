@@ -20,6 +20,7 @@ export type ExportPayload = {
   templateId: string;
   metadata: Record<string, AnvilMetadataValue>;
   templateSettings: Record<string, AnvilMetadataValue>;
+  numberedHeadings: boolean;
   content: JSONContent;
   sourceFormat: "tiptap-json";
   mathFormat: "latex";
