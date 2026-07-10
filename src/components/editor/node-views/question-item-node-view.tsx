@@ -13,7 +13,6 @@ import { DEFAULT_TEMPLATE_ID } from "@/lib/templates/templates";
 import {
   normalizeQuestionKind,
   normalizeWrittenMode,
-  defaultChoiceCount,
   type QuestionKind,
   type WrittenMode,
 } from "@/lib/question-kinds";
@@ -108,14 +107,32 @@ export function QuestionItemNodeView({
   // user-entered content is never clobbered. Switching to/from "written"
   // leaves `choices` attrs untouched (just unused while kind is
   // "written"), so switching back restores whatever was there.
+  // multi -> single parks the LAST choice in stashedChoice instead of
+  // discarding it; single -> multi restores that parked value (or
+  // appends "" if nothing's parked — e.g. a fresh single that was never
+  // multi before). Only single<->multi transitions touch choices/stash
+  // at all; switching to/from "written" leaves both alone so switching
+  // back later restores whatever was there.
   function handleKindChange(nextKind: QuestionKind) {
-    const isDefaultSingleChoices =
-      choices.length === 4 && choices.every((c) => c === "");
-    const nextChoices =
-      nextKind === "multi" && isDefaultSingleChoices
-        ? Array.from({ length: defaultChoiceCount("multi") }, () => "")
-        : choices;
-    updateAttributes({ kind: nextKind, choices: nextChoices });
+    if (kind === "multi" && nextKind === "single" && choices.length > 0) {
+      const stashed = choices[choices.length - 1];
+      updateAttributes({
+        kind: nextKind,
+        choices: choices.slice(0, -1),
+        stashedChoice: stashed,
+      });
+      return;
+    }
+    if (kind === "single" && nextKind === "multi") {
+      const stashedChoice = typeof node.attrs.stashedChoice === "string" ? node.attrs.stashedChoice : "";
+      updateAttributes({
+        kind: nextKind,
+        choices: [...choices, stashedChoice],
+        stashedChoice: null,
+      });
+      return;
+    }
+    updateAttributes({ kind: nextKind });
   }
 
   function handleWrittenModeChange(nextMode: WrittenMode) {

@@ -103,6 +103,19 @@ export const AnvilQuestionItem = Node.create({
           "data-written-height-percent": String(attributes.writtenHeightPercent ?? 20),
         }),
       },
+      // Multi -> single removes the LAST choice rather than silently
+      // discarding it — it's parked here. Single -> multi restores it
+      // (or appends "" if nothing's parked, e.g. a fresh single->multi
+      // switch that's never been multi before) — see
+      // question-item-node-view.tsx's handleKindChange. Only touched by
+      // single<->multi transitions; switching to/from "written" leaves
+      // both choices and this stash alone.
+      stashedChoice: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("data-stashed-choice"),
+        renderHTML: (attributes) =>
+          attributes.stashedChoice != null ? { "data-stashed-choice": attributes.stashedChoice } : {},
+      },
       // The RESOLVED value (percent x the active template's textHeightCm),
       // baked in at edit time — same "bake a literal cm from a percentage
       // at edit time, so the renderer never needs template context"
@@ -143,6 +156,7 @@ function itemAttrsForKind(kind: QuestionKind) {
   return {
     kind,
     choices: Array.from({ length: defaultChoiceCount(kind) }, () => ""),
+    stashedChoice: null,
     writtenMode: DEFAULT_WRITTEN_MODE,
     writtenLines: 3,
     writtenHeightPercent: 20,
