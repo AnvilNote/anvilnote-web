@@ -776,7 +776,7 @@
     "historyRestoreFailed": "Failed to restore version",
     "numberedHeadings": {
       "label": "Numbered headings",
-      "description": "Show \"1\", \"1.1\" style numbers before headings in PDF export."
+      "description": "Show numbers before headings in PDF export."
     }
   },
   "export": {

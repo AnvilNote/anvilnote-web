@@ -776,7 +776,7 @@
     "historyRestoreFailed": "버전 복원에 실패했습니다",
     "numberedHeadings": {
       "label": "제목 번호",
-      "description": "PDF 내보내기 시 제목 앞에 \"1\", \"1.1\" 형식의 번호를 표시합니다."
+      "description": "PDF 내보내기 시 제목에 번호를 표시합니다."
     }
   },
   "export": {

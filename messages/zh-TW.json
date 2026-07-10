@@ -776,7 +776,7 @@
     "historyRestoreFailed": "回復版本失敗",
     "numberedHeadings": {
       "label": "標題編號",
-      "description": "PDF 匯出時是否在標題前顯示「1」「1.1」等編號。"
+      "description": "PDF 匯出時是否在標題前顯示編號。"
     }
   },
   "export": {

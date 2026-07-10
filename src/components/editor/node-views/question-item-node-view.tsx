@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { NodeViewContent, NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import type { Node as PMNode } from "@tiptap/pm/model";
@@ -39,6 +39,42 @@ function useQuestionNumber(editor: NodeViewProps["editor"], getPos: NodeViewProp
   return count + 1;
 }
 
+// Press-and-hold auto-repeat for the -/+ stepper buttons: single click
+// still fires once immediately, but holding down keeps stepping after a
+// short delay (so a quick tap doesn't also trigger a repeat) until
+// release. `onStep` is read fresh on every tick via the caller's own
+// closure — this hook doesn't cache or clamp the value itself.
+function useHoldRepeat(onStep: () => void) {
+  const onStepRef = useRef(onStep);
+  onStepRef.current = onStep;
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stop = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    timeoutRef.current = null;
+    intervalRef.current = null;
+  };
+
+  const start = () => {
+    onStepRef.current();
+    timeoutRef.current = setTimeout(() => {
+      intervalRef.current = setInterval(() => onStepRef.current(), 80);
+    }, 400);
+  };
+
+  useEffect(() => stop, []);
+
+  return {
+    onMouseDown: start,
+    onMouseUp: stop,
+    onMouseLeave: stop,
+    onTouchStart: start,
+    onTouchEnd: stop,
+  };
+}
+
 // Rough in-editor visual proxy for the written-blank area's height — NOT
 // a claim of matching the eventual PDF page-relative height pixel for
 // pixel, just enough to see the box grow/shrink as the percent changes.
@@ -63,6 +99,15 @@ export function QuestionItemNodeView({
   const writtenLines: number = typeof node.attrs.writtenLines === "number" ? node.attrs.writtenLines : 3;
   const writtenHeightPercent: number =
     typeof node.attrs.writtenHeightPercent === "number" ? node.attrs.writtenHeightPercent : 20;
+
+  const writtenLinesRef = useRef(writtenLines);
+  writtenLinesRef.current = writtenLines;
+  const decrementLines = useHoldRepeat(() =>
+    updateAttributes({ writtenLines: Math.max(1, writtenLinesRef.current - 1) }),
+  );
+  const incrementLines = useHoldRepeat(() =>
+    updateAttributes({ writtenLines: writtenLinesRef.current + 1 }),
+  );
 
   // Same activeDocument -> templateId -> activeTemplate lookup as
   // stats-chart-dialog.tsx's own textWidthCm resolution — falls back to
@@ -308,7 +353,7 @@ export function QuestionItemNodeView({
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => updateAttributes({ writtenLines: Math.max(1, writtenLines - 1) })}
+                  {...decrementLines}
                   className="flex size-6 items-center justify-center rounded text-muted-foreground/60 hover:bg-accent"
                 >
                   <Minus className="size-3.5" />
@@ -316,7 +361,7 @@ export function QuestionItemNodeView({
                 <span className="w-6 text-center text-sm">{writtenLines}</span>
                 <button
                   type="button"
-                  onClick={() => updateAttributes({ writtenLines: writtenLines + 1 })}
+                  {...incrementLines}
                   className="flex size-6 items-center justify-center rounded text-muted-foreground/60 hover:bg-accent"
                 >
                   <Plus className="size-3.5" />

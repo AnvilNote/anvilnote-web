@@ -214,6 +214,13 @@
   margin-top: 0;
 }
 
+/* Same fix for a choice item: its (A)/(B) label sits in grid column 1
+   with no margin, so the content paragraph's inherited .ProseMirror p
+   margin-top pushed the choice text below the label's line. */
+.anvil-choice-item [data-node-view-content-react] > :first-child {
+  margin-top: 0;
+}
+
 /* An image-type choice renders at its own natural size, no forced
    crop/scale — per explicit feedback reversing the earlier "uniform
    fixed 120px height" decision (matches anvilnote-renderer's own

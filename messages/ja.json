@@ -776,7 +776,7 @@
     "historyRestoreFailed": "バージョンの復元に失敗しました",
     "numberedHeadings": {
       "label": "見出し番号",
-      "description": "PDF書き出し時に見出しの前に「1」「1.1」形式の番号を表示します。"
+      "description": "PDF書き出し時に見出しに番号を表示します。"
     }
   },
   "export": {
