@@ -197,6 +197,23 @@
   margin: 0.65rem 0;
 }
 
+/* question-item-node-view.tsx's number+body grid needs the body's FIRST
+   line to align with the number span it sits beside — the leading
+   paragraph's own top margin (above) would otherwise push it down.
+   Plain/unlayered rule (matches .ProseMirror p's own placement, both
+   outside any @layer) so it actually wins the cascade over that rule —
+   a Tailwind [&>*:first-child]:mt-0 utility class was tried first and
+   had no effect, since Tailwind's utilities layer always loses to
+   unlayered CSS regardless of specificity.
+   `> :first-child` alone doesn't reach the paragraph — confirmed via a
+   live DOM dump that Tiptap's React NodeViewContent renders an extra
+   unstyled wrapper div (marked with the stable data-node-view-content-
+   react attribute) between its own contentDOM div and the actual first
+   block — this targets that wrapper's own first child instead. */
+.anvil-question-item__body [data-node-view-content-react] > :first-child {
+  margin-top: 0;
+}
+
 .ProseMirror blockquote {
   border-left: 3px solid var(--border);
   padding-left: 1rem;

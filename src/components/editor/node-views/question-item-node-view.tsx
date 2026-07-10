@@ -177,7 +177,19 @@ export function QuestionItemNodeView({
       </span>
 
       <div>
-        <NodeViewContent className="[&>*:first-child]:mt-0" />
+        {/* anvil-question-item__body, not a Tailwind [&>*:first-child]:mt-0
+            arbitrary variant — that was tried first and had ZERO effect:
+            globals.css's ".ProseMirror p { margin: 0.65rem 0; }" rule
+            sits OUTSIDE any @layer block (plain/unlayered CSS), and CSS
+            cascade layers always let an unlayered rule win over ANY
+            layered rule (Tailwind v4's utilities included), regardless
+            of specificity. Confirmed via a live pixel measurement
+            (getBoundingClientRect + getComputedStyle) showing the
+            paragraph's real margin-top was still 0.65rem, offsetting the
+            body's first line 10.4px below the number span it's supposed
+            to align with. The matching plain/unlayered override rule
+            lives in globals.css right next to .ProseMirror p itself. */}
+        <NodeViewContent className="anvil-question-item__body" />
 
         {kind !== "written" ? (
           editingChoices ? (
