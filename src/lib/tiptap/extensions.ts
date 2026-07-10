@@ -26,6 +26,8 @@ import { AnvilQuestion, AnvilQuestionItem, AnvilChoiceList, AnvilChoiceItem } fr
 import { AnvilImageRow } from "@/lib/tiptap/image-row";
 import { CrossRef, CrossRefTargetIds } from "@/lib/tiptap/cross-ref";
 import { CrossRefSuggestion } from "@/components/editor/cross-ref-suggestion";
+import { QuestionBlank } from "@/lib/tiptap/question-blank";
+import { QuestionBlankSuggestion } from "@/components/editor/question-blank-suggestion";
 import { captionHasMath, renderCaptionHtml } from "@/lib/tiptap/caption-math";
 
 export type TableVariant = "normal" | "three-line";
@@ -476,5 +478,7 @@ export function buildExtensions({
     CrossRefTargetIds,
     CrossRef,
     CrossRefSuggestion,
+    QuestionBlank,
+    QuestionBlankSuggestion,
   ];
 }
