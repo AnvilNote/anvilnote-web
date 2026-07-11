@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { useTranslations } from "next-intl";
 import { NodeViewContent, NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { ImagePlus, Sigma, Trash2, Type } from "lucide-react";
 import { pickAndInsertImageAt } from "@/lib/tiptap/image";
-import { isValidLatex, renderMathPreview } from "@/lib/tiptap/math";
 
 const CHOICE_LABELS = ["A", "B", "C", "D", "E", "F", "G", "H"];
 
@@ -18,8 +17,6 @@ const CHOICE_LABELS = ["A", "B", "C", "D", "E", "F", "G", "H"];
 // what column 2 holds.
 export function ChoiceItemNodeView({ node, editor, getPos, deleteNode }: NodeViewProps) {
   const t = useTranslations("editor.questionBlock");
-  const [mathDraft, setMathDraft] = useState("");
-  const [showMathInput, setShowMathInput] = useState(false);
 
   // Real bug, caught via a live repro: this NodeView only re-renders
   // when its OWN node/content changes — inserting/removing a SIBLING
@@ -92,24 +89,23 @@ export function ChoiceItemNodeView({ node, editor, getPos, deleteNode }: NodeVie
   }
 
   function switchToText() {
-    setShowMathInput(false);
     replaceContentWith({ type: "paragraph" });
   }
 
   function switchToImage() {
-    setShowMathInput(false);
     pickAndInsertImageAt(editor, currentRange);
   }
 
-  function confirmMath() {
-    if (!isValidLatex(mathDraft)) return;
-    replaceContentWith({ type: "blockMath", attrs: { latex: mathDraft } });
-    setShowMathInput(false);
-    setMathDraft("");
+  // No custom draft-input box (the earlier version's raw-LaTeX textbox +
+  // manual KaTeX preview) — inserting a blockMath node with empty latex is
+  // enough on its own: blockMath's onClick is already wired GLOBALLY (see
+  // extensions.ts's Mathematics.configure blockOptions.onClick), so
+  // clicking the freshly-inserted (empty) box opens the SAME math editor
+  // dialog every other formula in the app uses, with real KaTeX preview —
+  // no new UI needed here at all.
+  function switchToEquation() {
+    replaceContentWith({ type: "blockMath", attrs: { latex: "" } });
   }
-
-  const mathPreview =
-    mathDraft && isValidLatex(mathDraft) ? renderMathPreview(mathDraft, true) : null;
 
   return (
     <NodeViewWrapper
@@ -125,24 +121,6 @@ export function ChoiceItemNodeView({ node, editor, getPos, deleteNode }: NodeVie
           className={contentType === "image" ? "anvil-choice-item__image" : undefined}
         />
 
-        {showMathInput ? (
-          <div className="mt-1 flex flex-col gap-1" contentEditable={false}>
-            <input
-              type="text"
-              value={mathDraft}
-              onChange={(event) => setMathDraft(event.target.value)}
-              placeholder="x^2 + 1"
-              className="rounded border bg-transparent px-2 py-1 font-mono text-sm"
-            />
-            {mathPreview?.ok ? (
-              <div dangerouslySetInnerHTML={{ __html: mathPreview.html }} />
-            ) : null}
-            <button type="button" onClick={confirmMath} className="w-fit text-xs underline">
-              {t("done")}
-            </button>
-          </div>
-        ) : null}
-
         <div
           className="mt-1 flex items-center gap-1"
           contentEditable={false}
@@ -150,11 +128,13 @@ export function ChoiceItemNodeView({ node, editor, getPos, deleteNode }: NodeVie
         >
           <button
             type="button"
-            aria-label="text"
-            onClick={switchToText}
-            className={`flex size-5 items-center justify-center rounded ${contentType === "paragraph" ? "bg-accent" : "text-muted-foreground/60 hover:bg-accent"}`}
+            aria-label="text-or-equation"
+            onClick={contentType === "blockMath" ? switchToText : switchToEquation}
+            className={`flex h-5 items-center justify-center gap-0.5 rounded px-1 ${contentType === "paragraph" || contentType === "blockMath" ? "bg-accent" : "text-muted-foreground/60 hover:bg-accent"}`}
           >
             <Type className="size-3" />
+            <span className="text-[9px] text-muted-foreground">/</span>
+            <Sigma className="size-3" />
           </button>
           <button
             type="button"
@@ -163,14 +143,6 @@ export function ChoiceItemNodeView({ node, editor, getPos, deleteNode }: NodeVie
             className={`flex size-5 items-center justify-center rounded ${contentType === "image" ? "bg-accent" : "text-muted-foreground/60 hover:bg-accent"}`}
           >
             <ImagePlus className="size-3" />
-          </button>
-          <button
-            type="button"
-            aria-label="equation"
-            onClick={() => setShowMathInput(true)}
-            className={`flex size-5 items-center justify-center rounded ${contentType === "blockMath" ? "bg-accent" : "text-muted-foreground/60 hover:bg-accent"}`}
-          >
-            <Sigma className="size-3" />
           </button>
           <button
             type="button"
