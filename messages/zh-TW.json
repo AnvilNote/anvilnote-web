@@ -286,7 +286,9 @@
       "statsChart": "統計圖",
       "statsChartHint": "長條圖、堆疊長條圖、圓餅圖、折線圖、散佈圖或箱形圖",
       "blank": "空格",
-      "blankHint": "插入固定寬度的底線空格"
+      "blankHint": "插入固定寬度的底線空格",
+      "divider": "分隔線",
+      "dividerHint": "插入一條與內文同寬的分隔線"
     },
     "image": {
       "figure": "圖",

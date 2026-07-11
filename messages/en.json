@@ -286,7 +286,9 @@
       "statsChart": "Stats chart",
       "statsChartHint": "Bar, stacked bar, pie, line, scatter, or box chart",
       "blank": "Blank",
-      "blankHint": "Insert a fixed-width underline blank"
+      "blankHint": "Insert a fixed-width underline blank",
+      "divider": "Divider",
+      "dividerHint": "Insert a horizontal line spanning the text width"
     },
     "image": {
       "figure": "Figure",

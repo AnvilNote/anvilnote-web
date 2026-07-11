@@ -286,7 +286,9 @@
       "statsChart": "통계 차트",
       "statsChartHint": "막대, 누적 막대, 파이, 꺾은선형, 분산형, 상자수염 그림",
       "blank": "빈칸",
-      "blankHint": "고정 너비 밑줄 빈칸을 삽입합니다"
+      "blankHint": "고정 너비 밑줄 빈칸을 삽입합니다",
+      "divider": "구분선",
+      "dividerHint": "본문 너비의 수평선을 삽입합니다"
     },
     "image": {
       "figure": "그림",

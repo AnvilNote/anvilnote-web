@@ -20,6 +20,7 @@ import {
   MessageSquareWarning,
   Minus,
   Quote,
+  SeparatorHorizontal,
   Sigma,
   Square,
   SquareSigma,
@@ -297,6 +298,13 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         run: ({ editor, range }) => {
           insertInlineBlank(editor, range);
         },
+      },
+      {
+        title: tt("divider"),
+        subtitle: tt("dividerHint"),
+        icon: SeparatorHorizontal,
+        aliases: ["divider", "hr", "line", "分隔線", "橫線"],
+        run: run((c) => c.setHorizontalRule().run()),
       },
       {
         title: tt("proof"),
