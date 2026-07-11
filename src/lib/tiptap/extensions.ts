@@ -28,6 +28,7 @@ import { CrossRef, CrossRefTargetIds } from "@/lib/tiptap/cross-ref";
 import { CrossRefSuggestion } from "@/components/editor/cross-ref-suggestion";
 import { QuestionBlank } from "@/lib/tiptap/question-blank";
 import { QuestionBlankSuggestion } from "@/components/editor/question-blank-suggestion";
+import { InlineBlank } from "@/lib/tiptap/inline-blank";
 import { captionHasMath, renderCaptionHtml } from "@/lib/tiptap/caption-math";
 
 export type TableVariant = "normal" | "three-line";
@@ -480,5 +481,6 @@ export function buildExtensions({
     CrossRefSuggestion,
     QuestionBlank,
     QuestionBlankSuggestion,
+    InlineBlank,
   ];
 }

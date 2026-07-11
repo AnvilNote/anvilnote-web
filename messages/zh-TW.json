@@ -284,7 +284,9 @@
       "functionPlot": "函數圖",
       "functionPlotHint": "繪製 y = f(x) 曲線",
       "statsChart": "統計圖",
-      "statsChartHint": "長條圖、堆疊長條圖、圓餅圖、折線圖、散佈圖或箱形圖"
+      "statsChartHint": "長條圖、堆疊長條圖、圓餅圖、折線圖、散佈圖或箱形圖",
+      "blank": "空格",
+      "blankHint": "插入固定寬度的底線空格"
     },
     "image": {
       "figure": "圖",

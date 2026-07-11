@@ -150,6 +150,11 @@ export function inlineToMarkdown(content: unknown): string {
         }
         return `(${value})`;
       }
+      if (type === "inlineBlank") {
+        // Mirrors the sibling DOCX exporter's identical escaped-underscore
+        // approximation of the PDF path's fixed 3em width.
+        return "\\_".repeat(6);
+      }
       return "";
     })
     .join("");

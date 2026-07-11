@@ -244,6 +244,23 @@
   display: none;
 }
 
+/* inlineBlank: a plain fixed-width cloze blank for prose ("the ______ he
+   showed") — see inline-blank.ts. Fixed at 3em, no attrs/dialog; a plain
+   bottom border reads as an underline without borrowing <u> semantics.
+   Real bug, caught via a live repro: an earlier version set height: 1em,
+   which — combined with vertical-align: baseline on an inline-block —
+   let the box's full 1em height extend UPWARD from the surrounding
+   text's baseline, so the border-bottom line rode near x-height instead
+   of sitting on the baseline the way real text's underline would. No
+   explicit height at all (an empty inline-block's height collapses to
+   0) puts the border-bottom exactly at the baseline instead. */
+.anvil-inline-blank {
+  display: inline-block;
+  width: 3em;
+  border-bottom: 1px solid currentColor;
+  vertical-align: baseline;
+}
+
 /* choiceList's own NodeView (choice-list-node-view.tsx) renders
    NodeViewContent with className="contents" so its choiceItem children
    become direct grid items of the outer 1/2/4-column grid — same

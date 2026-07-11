@@ -284,7 +284,9 @@
       "functionPlot": "関数グラフ",
       "functionPlotHint": "y = f(x) の曲線を描画",
       "statsChart": "統計グラフ",
-      "statsChartHint": "棒グラフ、積み上げ棒グラフ、円グラフ、折れ線グラフ、散布図、箱ひげ図"
+      "statsChartHint": "棒グラフ、積み上げ棒グラフ、円グラフ、折れ線グラフ、散布図、箱ひげ図",
+      "blank": "空欄",
+      "blankHint": "固定幅の下線付き空欄を挿入"
     },
     "image": {
       "figure": "図",

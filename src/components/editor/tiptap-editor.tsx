@@ -18,6 +18,7 @@ import {
   List,
   ListOrdered,
   MessageSquareWarning,
+  Minus,
   Quote,
   Sigma,
   Square,
@@ -58,6 +59,7 @@ import { insertProof } from "@/lib/tiptap/proof";
 import { insertMermaid } from "@/lib/tiptap/mermaid";
 import { insertFunctionPlot } from "@/lib/tiptap/function-plot";
 import { insertStatsChart } from "@/lib/tiptap/stats-chart";
+import { insertInlineBlank } from "@/lib/tiptap/inline-blank";
 import { DEFAULT_CALLOUT_KIND } from "@/config/callouts";
 import { migratedDocIds } from "@/lib/tiptap/serialization";
 import { emptyTiptapContent } from "@/lib/tiptap/default-content";
@@ -285,6 +287,15 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         run: ({ editor, range }) => {
           editor.chain().focus().deleteRange(range).run();
           insertStatsChart(editor);
+        },
+      },
+      {
+        title: tt("blank"),
+        subtitle: tt("blankHint"),
+        icon: Minus,
+        aliases: ["blank", "underline", "cloze", "空格", "底線"],
+        run: ({ editor, range }) => {
+          insertInlineBlank(editor, range);
         },
       },
       {

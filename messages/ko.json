@@ -284,7 +284,9 @@
       "functionPlot": "함수 그래프",
       "functionPlotHint": "y = f(x) 곡선 그리기",
       "statsChart": "통계 차트",
-      "statsChartHint": "막대, 누적 막대, 파이, 꺾은선형, 분산형, 상자수염 그림"
+      "statsChartHint": "막대, 누적 막대, 파이, 꺾은선형, 분산형, 상자수염 그림",
+      "blank": "빈칸",
+      "blankHint": "고정 너비 밑줄 빈칸을 삽입합니다"
     },
     "image": {
       "figure": "그림",

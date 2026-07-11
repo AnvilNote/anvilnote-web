@@ -284,7 +284,9 @@
       "functionPlot": "Function plot",
       "functionPlotHint": "Plot y = f(x) curves",
       "statsChart": "Stats chart",
-      "statsChartHint": "Bar, stacked bar, pie, line, scatter, or box chart"
+      "statsChartHint": "Bar, stacked bar, pie, line, scatter, or box chart",
+      "blank": "Blank",
+      "blankHint": "Insert a fixed-width underline blank"
     },
     "image": {
       "figure": "Figure",
