@@ -83,6 +83,8 @@ type ApiTemplate = {
   fields?: AnvilTemplate["fields"];
   textWidthCm?: number;
   universeUrl?: string;
+  supportsNumberedHeadings?: boolean;
+  supportsCustomMargins?: boolean;
 };
 
 type ApiRenderResponse = {
@@ -206,6 +208,8 @@ function fromApiTemplate(template: ApiTemplate): AnvilTemplate {
     // real per-template measurement.
     textWidthCm: template.textWidthCm ?? 16,
     universeUrl: template.universeUrl,
+    supportsNumberedHeadings: template.supportsNumberedHeadings ?? false,
+    supportsCustomMargins: template.supportsCustomMargins ?? false,
   };
 }
 

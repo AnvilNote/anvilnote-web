@@ -64,4 +64,12 @@ export type AnvilTemplate = {
   // Typst Universe page for the wrapped @preview package; absent for
   // self-authored/vendored templates (e.g. plain-note).
   universeUrl?: string;
+  // Whether this template's adapter chain actually applies the document-
+  // level numberedHeadings/margin*Cm overrides — mirrors anvilnote-api's
+  // own TemplateSummary field. metadata-form.tsx uses these to hide a
+  // control that would otherwise be a silent no-op (or, for a couple of
+  // templates whose wrapped package forbids `set page` inside its own
+  // layout container, actually fail to render).
+  supportsNumberedHeadings: boolean;
+  supportsCustomMargins: boolean;
 };

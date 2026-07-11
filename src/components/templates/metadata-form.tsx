@@ -90,9 +90,12 @@ export function MetadataForm({ documentId }: { documentId: string }) {
 
   if (!doc) return null;
 
-  // Document-level, template-independent — rendered unconditionally, even
-  // when the active template has no manifest fields of its own.
-  const numberedHeadingsToggle = (
+  // Document-level, template-independent — rendered whenever the active
+  // template's own manifest says the override actually reaches the PDF
+  // (a couple of templates' wrapped @preview packages forbid overriding
+  // page setup inside their own layout container, so the control would
+  // otherwise be a silent no-op or, worse, a render failure).
+  const numberedHeadingsToggle = template?.supportsNumberedHeadings ? (
     <div className="flex items-center justify-between rounded-lg border px-3 py-2">
       <Label htmlFor="numbered-headings" className="text-sm font-normal">
         {t("panel.numberedHeadings.label")}
@@ -103,7 +106,7 @@ export function MetadataForm({ documentId }: { documentId: string }) {
         onCheckedChange={(checked) => setNumberedHeadings(doc.id, checked)}
       />
     </div>
-  );
+  ) : null;
 
   // 2x2 grid, top/bottom on the first row and left/right on the second —
   // no per-field text label, just a placeholder inside each input (per
@@ -139,7 +142,7 @@ export function MetadataForm({ documentId }: { documentId: string }) {
     </div>
   );
 
-  const marginsSection = (
+  const marginsSection = template?.supportsCustomMargins ? (
     <div className="space-y-2 rounded-lg border px-3 py-2">
       <Label className="text-sm font-normal">{t("panel.margins.label")}</Label>
       <div className="grid grid-cols-2 gap-2">
@@ -149,7 +152,7 @@ export function MetadataForm({ documentId }: { documentId: string }) {
         {marginField("right", doc.marginRightCm)}
       </div>
     </div>
-  );
+  ) : null;
 
   if (!template || template.fields.length === 0) {
     return (
