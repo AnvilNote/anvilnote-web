@@ -122,7 +122,11 @@ export function MetadataForm({ documentId }: { documentId: string }) {
         min={0}
         step={0.1}
         placeholder={t(`panel.margins.${side}`)}
-        value={value ?? ""}
+        // A stored null (old documents predating this feature, or a field
+        // the user cleared) still DISPLAYS the 2.54cm default rather than
+        // an empty box — per explicit feedback, the user should see it and
+        // be able to actively delete it, not just infer it's there.
+        value={value ?? 2.54}
         onChange={(event) => {
           const raw = event.target.value;
           setMarginCm(doc.id, side, raw === "" ? null : Number(raw));
