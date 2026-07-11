@@ -6,6 +6,7 @@ import type { Editor } from "@tiptap/core";
 import type { ComponentType } from "react";
 import { useTranslations } from "next-intl";
 import {
+  BarChart3,
   Bold,
   Code,
   Code2,
@@ -14,9 +15,9 @@ import {
   Heading3,
   ImagePlus,
   Italic,
-  Link2,
   List,
   ListOrdered,
+  MessageCircleQuestion,
   MessageSquareWarning,
   Pilcrow,
   Quote,
@@ -27,6 +28,7 @@ import {
   Strikethrough,
   Table as TableIcon,
   Undo2,
+  Workflow,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "@/lib/i18n/navigation";
@@ -67,11 +69,20 @@ const TOOLBAR_GROUPS: ToolbarItem[][] = [
     { icon: List, key: "bulletList" },
     { icon: ListOrdered, key: "orderedList" },
   ],
+  // Real bug, caught via a live repro: this group had drifted from the
+  // actual toolbar (tiptap-toolbar.tsx's own data-tour-toolbar-group="3")
+  // — missing questionBlock/mermaid/statsChart entirely (all added after
+  // this list was last synced) and still listing a "link" toolbar button
+  // that no longer exists there. Order/membership re-verified directly
+  // against the live DOM, not just the source file, to catch drift like
+  // this from recurring silently.
   [
     { icon: Quote, key: "blockquote" },
     { icon: MessageSquareWarning, key: "callout" },
+    { icon: MessageCircleQuestion, key: "questionBlock" },
+    { icon: Workflow, key: "mermaid" },
+    { icon: BarChart3, key: "statsChart" },
     { icon: Code2, key: "codeBlock" },
-    { icon: Link2, key: "link" },
     { icon: TableIcon, key: "table" },
     { icon: ImagePlus, key: "image" },
   ],
@@ -149,9 +160,13 @@ export function TourOverlay() {
   const blockMathBaselineRef = useRef<number | null>(null);
   const footnoteBaselineRef = useRef<number | null>(null);
   const crossRefBaselineRef = useRef<number | null>(null);
+  const questionBlockBaselineRef = useRef<number | null>(null);
+  const clozeBaselineRef = useRef<number | null>(null);
   const [inlineMathCount, setInlineMathCount] = useState(0);
   const [blockMathCount, setBlockMathCount] = useState(0);
   const [footnoteCount, setFootnoteCount] = useState(0);
+  const [questionBlockCount, setQuestionBlockCount] = useState(0);
+  const [clozeCount, setClozeCount] = useState(0);
   // The "toolbar" step pages through its groups one at a time instead of
   // dumping every group into one popover. `toolbarGroupsSeen` mirrors
   // `visitedTabs`'s Set-of-seen-items pattern (each group is its own "seen"
@@ -233,13 +248,40 @@ export function TourOverlay() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, step?.id]);
 
-  // Poll the document for math/footnote nodes while their step is active
-  // (mirrors the anchor-measuring interval below; Tiptap content changes
-  // don't otherwise trigger a re-render here).
+  // Same node-count pattern as mathInline/mathBlock/footnote above: a real
+  // "question" node has to actually land in the doc, not just the kind-
+  // picker popover being opened (that can be dismissed with nothing
+  // inserted).
+  useEffect(() => {
+    if (active && step?.id === "questionBlock") {
+      questionBlockBaselineRef.current = countNodesOfType(editor, "question");
+    } else {
+      questionBlockBaselineRef.current = null;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, step?.id]);
+
+  // Same pattern for the cloze-blank ("#" reference) step.
+  useEffect(() => {
+    if (active && step?.id === "cloze") {
+      clozeBaselineRef.current = countNodesOfType(editor, "questionBlank");
+    } else {
+      clozeBaselineRef.current = null;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, step?.id]);
+
+  // Poll the document for math/footnote/question/cloze nodes while their
+  // step is active (mirrors the anchor-measuring interval below; Tiptap
+  // content changes don't otherwise trigger a re-render here).
   useEffect(() => {
     if (
       !active ||
-      (step?.id !== "mathInline" && step?.id !== "mathBlock" && step?.id !== "footnote")
+      (step?.id !== "mathInline" &&
+        step?.id !== "mathBlock" &&
+        step?.id !== "footnote" &&
+        step?.id !== "questionBlock" &&
+        step?.id !== "cloze")
     ) {
       return;
     }
@@ -247,6 +289,8 @@ export function TourOverlay() {
       setInlineMathCount(countNodesOfType(editor, "inlineMath"));
       setBlockMathCount(countNodesOfType(editor, "blockMath"));
       setFootnoteCount(countNodesOfType(editor, "footnoteReference"));
+      setQuestionBlockCount(countNodesOfType(editor, "question"));
+      setClozeCount(countNodesOfType(editor, "questionBlank"));
     }, ANCHOR_POLL_MS);
     return () => window.clearInterval(interval);
   }, [active, step?.id, editor]);
@@ -257,7 +301,14 @@ export function TourOverlay() {
     const baseline = createBaselineRef.current;
     if (baseline === null) return;
     if (documents.length > baseline) {
-      const created = documents[documents.length - 1];
+      // documents.length - 1 was a real bug, caught via a live repro: the
+      // store PREPENDS new documents (see document-store.ts's createDocument
+      // — `documents: [document, ...state.documents]`), so the newest one is
+      // documents[0], not the last element. Pushing to the wrong (oldest)
+      // document's URL left the tour stuck on the documents LIST page for
+      // ~1.5s until the separate "doc-scoped anchor never shows" fallback
+      // effect below independently self-corrected to documents[0] anyway.
+      const created = documents[0];
       next();
       if (created) router.push(`/documents/${created.id}`);
     }
@@ -346,6 +397,8 @@ export function TourOverlay() {
       "mathBlock",
       "footnote",
       "crossRef",
+      "questionBlock",
+      "cloze",
       "imageCrop",
       "panel",
     ];
@@ -384,6 +437,14 @@ export function TourOverlay() {
     step.id === "crossRef" &&
     crossRefBaselineRef.current !== null &&
     crossRefOpenCount <= crossRefBaselineRef.current;
+  const questionBlockPending =
+    step.id === "questionBlock" &&
+    questionBlockBaselineRef.current !== null &&
+    questionBlockCount <= questionBlockBaselineRef.current;
+  const clozePending =
+    step.id === "cloze" &&
+    clozeBaselineRef.current !== null &&
+    clozeCount <= clozeBaselineRef.current;
   const nextDisabled =
     forcedCreatePending ||
     tabsPending ||
@@ -391,7 +452,9 @@ export function TourOverlay() {
     mathInlinePending ||
     mathBlockPending ||
     footnotePending ||
-    crossRefPending;
+    crossRefPending ||
+    questionBlockPending ||
+    clozePending;
 
   // "toolbar" pages through its groups via the same Next/Back buttons before
   // they fall through to the normal step-advance behavior — never disabled
@@ -438,7 +501,21 @@ export function TourOverlay() {
 
   let popTop: number;
   let popLeft: number;
-  if (placeLeftOfAnchor && padded) {
+  if (step.preferSide && padded) {
+    // Well clear to the right of the anchor (falls back to the left if
+    // that would run off-screen) — NEVER above/below, so a real dropdown
+    // the anchor's own click opens downward is never covered regardless
+    // of how tall that dropdown turns out to be. A wider gap than the
+    // plain popoverGap: real bug, caught via a live repro — the tighter
+    // gap still clipped the left edge of the actual (wider-than-the-
+    // anchor-itself) kind-picker dropdown.
+    const sideGap = 140;
+    popTop = padded.top;
+    const rightFits = padded.left + padded.width + sideGap + popoverWidth <= vw;
+    popLeft = rightFits
+      ? padded.left + padded.width + sideGap
+      : padded.left - popoverWidth - sideGap;
+  } else if (placeLeftOfAnchor && padded) {
     popTop = padded.top;
     popLeft = padded.left - popoverWidth - popoverGap;
   } else {
@@ -530,6 +607,12 @@ export function TourOverlay() {
         ) : null}
         {crossRefPending ? (
           <p className="mt-2 text-xs font-medium text-primary">{t("crossRefHint")}</p>
+        ) : null}
+        {questionBlockPending ? (
+          <p className="mt-2 text-xs font-medium text-primary">{t("questionBlockHint")}</p>
+        ) : null}
+        {clozePending ? (
+          <p className="mt-2 text-xs font-medium text-primary">{t("clozeHint")}</p>
         ) : null}
         {step.id === "panel" ? (
           <p className="mt-2 text-xs font-medium text-primary">

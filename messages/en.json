@@ -12,10 +12,6 @@
     "mathInlineHint": "Try typing $$x$$ to create inline math",
     "mathBlockHint": "Try typing $$$x$$$ to create standalone display math",
     "steps": {
-      "sidebar": {
-        "title": "Collapse the sidebar",
-        "body": "Use this toggle to collapse or expand the sidebar and free up space."
-      },
       "newDoc": {
         "title": "Create a document",
         "body": "Click the + next to Documents to create your first document."
@@ -52,7 +48,7 @@
           },
           "metadata": {
             "title": "Document Info",
-            "body": "Fill in title, author, date, and other metadata. Fields adjust automatically based on your chosen template, and some can be left blank."
+            "body": "Fill in title, author, date, and other metadata. Fields adjust automatically based on your chosen template, and some can be left blank. Numbered headings and page margins can also be adjusted here."
           },
           "template": {
             "title": "Template",
@@ -76,6 +72,14 @@
         "title": "Cross-references",
         "body": "Type @ to reference any figure, table, equation, or heading in the document. Figures and tables number themselves automatically; equations only get a number once something actually references them. Clicking an inserted reference jumps straight to its target."
       },
+      "questionBlock": {
+        "title": "Question blocks",
+        "body": "Click the question-mark icon to insert a single-choice, multiple-choice, or written-answer question — build a quiz or worksheet right in the document."
+      },
+      "cloze": {
+        "title": "Cloze references",
+        "body": "Type # anywhere to insert an inline blank that references one of your questions by number — handy for fill-in-the-blank style exercises. It stays correct even if the question moves."
+      },
       "imageCrop": {
         "title": "Image cropping",
         "body": "Click an image you've already inserted to crop it right there in place, no separate image editor needed. Not happy with the crop? Revert back to the original in one click, any time."
@@ -98,7 +102,9 @@
       "blockquote": "Quotes a passage",
       "callout": "Inserts a highlighted callout box",
       "codeBlock": "Inserts a multi-line code block",
-      "link": "Turns text into a hyperlink",
+      "questionBlock": "Inserts a quiz-style question",
+      "mermaid": "Inserts a Mermaid diagram",
+      "statsChart": "Inserts a statistics chart",
       "table": "Inserts a table",
       "image": "Inserts an image",
       "inlineMath": "Inserts an inline formula",
@@ -107,7 +113,9 @@
       "redo": "Redoes the undone action"
     },
     "footnoteHint": "Try inserting a footnote",
-    "crossRefHint": "Type @ anywhere in the editor to open the menu"
+    "crossRefHint": "Type @ anywhere in the editor to open the menu",
+    "questionBlockHint": "Click the question-mark icon and pick a question type",
+    "clozeHint": "Type # and pick a question to reference"
   },
   "onboarding": {
     "chooseTheme": "Choose your color theme",

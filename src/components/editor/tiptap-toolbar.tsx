@@ -72,12 +72,17 @@ function ToolbarButton({
   active,
   disabled,
   onClick,
+  dataTour,
 }: {
   icon: ComponentType<{ className?: string }>;
   label: string;
   active?: boolean;
   disabled?: boolean;
   onClick: () => void;
+  /** Anchor id for TourOverlay to spotlight this specific button, instead
+   *  of the much larger generic editor-area anchor — only set on buttons a
+   *  tour step actually points at. */
+  dataTour?: string;
 }) {
   return (
     <button
@@ -87,6 +92,7 @@ function ToolbarButton({
       aria-pressed={active}
       disabled={disabled}
       onClick={onClick}
+      data-tour={dataTour}
       className={cn(
         "inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors md:size-8",
         "hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-40",
@@ -342,6 +348,7 @@ export function TiptapToolbar({
           icon={SquareAsterisk}
           label={t("footnote")}
           onClick={() => editor.chain().focus().addFootnote().run()}
+          dataTour="footnote-btn"
         />
         <ToolbarButton
           icon={Strikethrough}
@@ -403,6 +410,7 @@ export function TiptapToolbar({
               title={t("questionBlock")}
               aria-label={t("questionBlock")}
               aria-pressed={s.question}
+              data-tour="question-block-btn"
               className={cn(
                 "inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors md:size-8",
                 "hover:bg-accent hover:text-foreground",
