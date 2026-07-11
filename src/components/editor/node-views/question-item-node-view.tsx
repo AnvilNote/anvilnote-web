@@ -99,6 +99,7 @@ export function QuestionItemNodeView({
   const writtenLines: number = typeof node.attrs.writtenLines === "number" ? node.attrs.writtenLines : 3;
   const writtenHeightPercent: number =
     typeof node.attrs.writtenHeightPercent === "number" ? node.attrs.writtenHeightPercent : 20;
+  const multiForceOneColumn: boolean = node.attrs.multiForceOneColumn !== false;
 
   const writtenLinesRef = useRef(writtenLines);
   writtenLinesRef.current = writtenLines;
@@ -399,6 +400,15 @@ export function QuestionItemNodeView({
         contentEditable={false}
         onMouseDown={(event) => event.stopPropagation()}
       >
+        {kind === "multi" ? (
+          <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Switch
+              checked={multiForceOneColumn}
+              onCheckedChange={(checked) => updateAttributes({ multiForceOneColumn: checked })}
+            />
+            {tq(multiForceOneColumn ? "multiLayout.oneColumn" : "multiLayout.auto")}
+          </label>
+        ) : null}
         <QuestionKindMenu
           onSelect={handleKindChange}
           trigger={

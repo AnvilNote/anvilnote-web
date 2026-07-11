@@ -513,6 +513,10 @@
         "lines": "줄",
         "blank": "여백"
       },
+      "multiLayout": {
+        "oneColumn": "한 줄씩",
+        "auto": "자동 열"
+      },
       "bodyPlaceholder": "문제 내용…",
       "choicePlaceholder": "선택지 {label}"
     },

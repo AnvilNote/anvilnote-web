@@ -96,15 +96,13 @@ export function ChoiceItemNodeView({ node, editor, getPos, deleteNode }: NodeVie
     pickAndInsertImageAt(editor, currentRange);
   }
 
-  // No custom draft-input box (the earlier version's raw-LaTeX textbox +
-  // manual KaTeX preview) — inserting a blockMath node with empty latex is
-  // enough on its own: blockMath's onClick is already wired GLOBALLY (see
-  // extensions.ts's Mathematics.configure blockOptions.onClick), so
-  // clicking the freshly-inserted (empty) box opens the SAME math editor
-  // dialog every other formula in the app uses, with real KaTeX preview —
-  // no new UI needed here at all.
-  function switchToEquation() {
-    replaceContentWith({ type: "blockMath", attrs: { latex: "" } });
+  // The combined T/Σ button is a "get into a typeable state" toggle, not a
+  // 3-way cycle: from paragraph OR blockMath (both already typeable — the
+  // editor supports $$...$$/$$$...$$$ shortcuts directly inline, no
+  // separate equation UI needed) it's a no-op; only from image does it do
+  // anything, switching back to a plain paragraph.
+  function switchToTextOrEquation() {
+    if (contentType === "image") switchToText();
   }
 
   return (
@@ -129,7 +127,7 @@ export function ChoiceItemNodeView({ node, editor, getPos, deleteNode }: NodeVie
           <button
             type="button"
             aria-label="text-or-equation"
-            onClick={contentType === "blockMath" ? switchToText : switchToEquation}
+            onClick={switchToTextOrEquation}
             className={`flex h-5 items-center justify-center gap-0.5 rounded px-1 ${contentType === "paragraph" || contentType === "blockMath" ? "bg-accent" : "text-muted-foreground/60 hover:bg-accent"}`}
           >
             <Type className="size-3" />

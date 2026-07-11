@@ -513,6 +513,10 @@
         "lines": "Линии",
         "blank": "Пустое место"
       },
+      "multiLayout": {
+        "oneColumn": "По одному в строке",
+        "auto": "Авто-колонки"
+      },
       "bodyPlaceholder": "Текст вопроса…",
       "choicePlaceholder": "Вариант {label}"
     },

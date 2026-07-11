@@ -513,6 +513,10 @@
         "lines": "橫線",
         "blank": "空白區"
       },
+      "multiLayout": {
+        "oneColumn": "每行一個",
+        "auto": "自動排列"
+      },
       "bodyPlaceholder": "題目敘述…",
       "choicePlaceholder": "選項 {label}"
     },

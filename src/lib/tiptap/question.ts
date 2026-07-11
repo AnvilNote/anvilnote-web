@@ -184,6 +184,19 @@ export const AnvilQuestionItem = Node.create({
             ? { "data-written-height-cm": String(attributes.writtenHeightCm) }
             : {},
       },
+      // Multi-choice-only: forces every choice onto its own line (true,
+      // the default — preserves the original always-forced behavior for
+      // existing documents) vs. using the SAME 4/2/1 auto-column
+      // heuristic single-choice already uses (false) — a toggle next to
+      // the kind menu, only shown while kind === "multi". Meaningless
+      // for single/written (ignored there).
+      multiForceOneColumn: {
+        default: true,
+        parseHTML: (element) => element.getAttribute("data-multi-force-one-column") !== "false",
+        renderHTML: (attributes) => ({
+          "data-multi-force-one-column": attributes.multiForceOneColumn === false ? "false" : "true",
+        }),
+      },
     };
   },
 

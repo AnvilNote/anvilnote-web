@@ -513,6 +513,10 @@
         "lines": "罫線",
         "blank": "余白"
       },
+      "multiLayout": {
+        "oneColumn": "1行ずつ",
+        "auto": "自動列"
+      },
       "bodyPlaceholder": "問題文…",
       "choicePlaceholder": "選択肢 {label}"
     },

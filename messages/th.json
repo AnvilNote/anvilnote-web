@@ -513,6 +513,10 @@
         "lines": "เส้นบรรทัด",
         "blank": "พื้นที่ว่าง"
       },
+      "multiLayout": {
+        "oneColumn": "บรรทัดละ 1 ตัวเลือก",
+        "auto": "จัดคอลัมน์อัตโนมัติ"
+      },
       "bodyPlaceholder": "เนื้อหาคำถาม…",
       "choicePlaceholder": "ตัวเลือก {label}"
     },

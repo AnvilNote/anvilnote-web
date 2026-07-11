@@ -513,6 +513,10 @@
         "lines": "Lines",
         "blank": "Blank space"
       },
+      "multiLayout": {
+        "oneColumn": "One per line",
+        "auto": "Auto columns"
+      },
       "bodyPlaceholder": "Question text…",
       "choicePlaceholder": "Choice {label}"
     },
