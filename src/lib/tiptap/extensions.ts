@@ -483,13 +483,13 @@ export function buildExtensions({
       },
     }),
     BlockMathExit,
-    MathArrowSelect,
+    MathArrowSelect.configure({ onMathClick }),
     CrossRefTargetIds,
     CrossRef,
     CrossRefSuggestion,
     QuestionBlank,
     QuestionBlankSuggestion,
     InlineBlank,
-    TabNavigation,
+    TabNavigation.configure({ onMathClick }),
   ];
 }

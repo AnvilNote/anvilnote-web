@@ -1,52 +1,73 @@
 import { Extension } from "@tiptap/core";
 import type { Node as PMNode } from "@tiptap/pm/model";
-import { NodeSelection, Selection, TextSelection } from "@tiptap/pm/state";
+import { TextSelection } from "@tiptap/pm/state";
 
-// blockMath is an atom with no editable content (see math.ts), so plain
-// Selection.findFrom(..., textblockOnly: true) walks straight past it —
-// same reasoning MathArrowSelect (math.ts) exists for arrow keys. Treated
-// as a stop alongside textblocks here so Tab can land on it as a
-// NodeSelection instead of skipping it. inlineMath doesn't need its own
-// entry here — it lives INSIDE a textblock's inline content, so landing
-// in that textblock (the normal stop) already puts the cursor near it,
-// and MathArrowSelect's ArrowLeft/Right takes over from there.
-function isStop(node: PMNode): boolean {
-  return node.type.name === "blockMath" || node.isTextblock;
-}
+const MATH_NODE_NAMES = new Set(["inlineMath", "blockMath"]);
 
-function selectionForStop(doc: PMNode, node: PMNode, pos: number): Selection {
-  return node.type.name === "blockMath"
-    ? NodeSelection.create(doc, pos)
-    : TextSelection.create(doc, pos + 1);
-}
+type Stop = { node: PMNode; pos: number };
 
-function findStopForward(doc: PMNode, from: number): Selection | null {
-  let result: Selection | null = null;
-  doc.descendants((node, pos) => {
-    if (result) return false;
-    if (pos + node.nodeSize <= from) return false;
-    if (pos >= from && isStop(node)) {
-      result = selectionForStop(doc, node, pos);
-      return false;
+// Builds an ordered list of every place Tab/Shift-Tab can land: each
+// textblock's own start (the normal "next place to type" stop), UNLESS
+// that textblock contains a math node — inlineMath lives inside a
+// textblock's own inline content, so without this a math formula sitting
+// right after some plain text (e.g. "這是一段數學：$d$") would never get
+// its own stop, since the textblock's bare start would already satisfy
+// isTextblock and claim the position first. Math nodes (inline OR block)
+// are collected as their own stop instead, at the math node's own
+// position, taking priority over the enclosing textblock's start —
+// scanning the textblock's children FIRST and only falling back to its
+// own start if nothing inside qualified.
+function collectStops(doc: PMNode): Stop[] {
+  const stops: Stop[] = [];
+
+  function visit(node: PMNode, pos: number) {
+    if (MATH_NODE_NAMES.has(node.type.name)) {
+      stops.push({ node, pos });
+      return;
     }
-    return true;
-  });
-  return result;
+    if (node.isTextblock) {
+      const before = stops.length;
+      node.forEach((child, offset) => visit(child, pos + 1 + offset));
+      if (stops.length === before) {
+        stops.push({ node, pos });
+      }
+      return;
+    }
+    node.forEach((child, offset) => visit(child, pos + 1 + offset));
+  }
+
+  doc.forEach((child, offset) => visit(child, offset));
+  return stops;
 }
 
-function findStopBackward(doc: PMNode, before: number): Selection | null {
-  let result: Selection | null = null;
-  doc.descendants((node, pos) => {
-    if (pos >= before) return false;
-    if (isStop(node)) {
-      // Keeps overwriting as it scans forward from the doc start, so the
-      // last match found (closest to `before`) wins.
-      result = selectionForStop(doc, node, pos);
-      return false;
-    }
-    return true;
-  });
-  return result;
+function findStopForward(doc: PMNode, from: number): Stop | null {
+  return collectStops(doc).find((stop) => stop.pos >= from) ?? null;
+}
+
+function findStopBackward(doc: PMNode, before: number): Stop | null {
+  const stops = collectStops(doc).filter((stop) => stop.pos < before);
+  return stops.length > 0 ? stops[stops.length - 1] : null;
+}
+
+export type TabNavigationOptions = {
+  // Landing on a math stop opens its edit dialog directly (same one a
+  // click on the formula opens — see extensions.ts's Mathematics
+  // .configure({ inlineOptions/blockOptions: { onClick } }) — rather than
+  // just placing a NodeSelection on it.
+  onMathClick: (mode: "inline" | "block", pos: number, latex: string, refName?: string) => void;
+};
+
+function openMathAt(
+  onMathClick: TabNavigationOptions["onMathClick"],
+  node: PMNode,
+  pos: number,
+) {
+  onMathClick(
+    node.type.name === "blockMath" ? "block" : "inline",
+    pos,
+    String(node.attrs.latex ?? ""),
+    typeof node.attrs.refName === "string" ? node.attrs.refName : undefined,
+  );
 }
 
 // Registered AFTER StarterKit in extensions.ts, so its own ListItem
@@ -64,8 +85,11 @@ function findStopBackward(doc: PMNode, before: number): Selection | null {
 // stop, wrap back around to the first one instead of falling through to
 // `false`/native handling. Same for Shift-Tab at the first stop, wrapping
 // to the last one.
-export const TabNavigation = Extension.create({
+export const TabNavigation = Extension.create<TabNavigationOptions>({
   name: "tabNavigation",
+  addOptions() {
+    return { onMathClick: () => {} };
+  },
   addKeyboardShortcuts() {
     return {
       // Raw tr.setSelection + literal `return true`, not a
@@ -79,30 +103,33 @@ export const TabNavigation = Extension.create({
       Tab: () => {
         const { view } = this.editor;
         const { state, dispatch } = view;
-        const { selection } = state;
-        // selection.to already means "one past the selected content" for
-        // BOTH a NodeSelection (e.g. currently sitting on a blockMath from
-        // a previous Tab) and a collapsed TextSelection at a block
-        // boundary — using it directly (rather than the previous
-        // $to.end($to.depth)+1 dance, which assumed a TextSelection)
-        // avoids mis-searching from mid-node when the current selection
-        // is already a NodeSelection.
         const target =
-          findStopForward(state.doc, selection.to) ?? findStopForward(state.doc, 0);
+          findStopForward(state.doc, state.selection.to) ?? findStopForward(state.doc, 0);
         if (!target) return false;
-        dispatch(state.tr.setSelection(target).scrollIntoView());
+        if (MATH_NODE_NAMES.has(target.node.type.name)) {
+          openMathAt(this.options.onMathClick, target.node, target.pos);
+          return true;
+        }
+        dispatch(
+          state.tr.setSelection(TextSelection.create(state.doc, target.pos + 1)).scrollIntoView(),
+        );
         view.focus();
         return true;
       },
       "Shift-Tab": () => {
         const { view } = this.editor;
         const { state, dispatch } = view;
-        const { selection } = state;
         const target =
-          findStopBackward(state.doc, selection.from) ??
+          findStopBackward(state.doc, state.selection.from) ??
           findStopBackward(state.doc, state.doc.content.size);
         if (!target) return false;
-        dispatch(state.tr.setSelection(target).scrollIntoView());
+        if (MATH_NODE_NAMES.has(target.node.type.name)) {
+          openMathAt(this.options.onMathClick, target.node, target.pos);
+          return true;
+        }
+        dispatch(
+          state.tr.setSelection(TextSelection.create(state.doc, target.pos + 1)).scrollIntoView(),
+        );
         view.focus();
         return true;
       },

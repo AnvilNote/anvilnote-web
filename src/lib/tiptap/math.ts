@@ -1,5 +1,6 @@
 import type { Editor } from "@tiptap/core";
 import { Extension } from "@tiptap/core";
+import type { Node as PMNode } from "@tiptap/pm/model";
 import { NodeSelection } from "@tiptap/pm/state";
 import katex from "katex";
 
@@ -130,37 +131,54 @@ export const BlockMathExit = Extension.create({
 
 const MATH_NODE_NAMES = new Set(["inlineMath", "blockMath"]);
 
+export type MathArrowSelectOptions = {
+  // Same dialog a click on the formula opens (extensions.ts's Mathematics
+  // .configure({ inlineOptions/blockOptions: { onClick } })) — arrowing
+  // onto a formula opens it directly rather than just placing a
+  // NodeSelection on it.
+  onMathClick: (mode: "inline" | "block", pos: number, latex: string, refName?: string) => void;
+};
+
 // Both math nodes are atoms with no editable content inside them (see the
 // BlockMathExit comment above) — ProseMirror's default arrow-key motion
 // treats an atom as a single unit to step OVER, landing the cursor on the
-// far side in one keypress rather than ever selecting it. This makes
-// ArrowLeft/ArrowRight instead select the adjacent math node (a
-// NodeSelection, same kind BlockMathExit's Enter handler already knows
-// how to act on) when the cursor is right next to one, matching how the
-// user actually wants to "step into" a formula to edit/delete it — a
-// second press of the same arrow, now starting FROM that NodeSelection,
-// continues past it via ProseMirror's own default NodeSelection motion
-// (no extra handling needed for that direction).
-export const MathArrowSelect = Extension.create({
+// far side in one keypress rather than ever stopping on it. This makes
+// ArrowLeft/ArrowRight open the adjacent math node's edit dialog instead
+// when the cursor is right next to one, matching how the user actually
+// wants to "step into" a formula — pressing Escape to close the dialog
+// leaves the cursor exactly where the click-to-edit path already puts it,
+// so a subsequent arrow press continues past it same as clicking would.
+export const MathArrowSelect = Extension.create<MathArrowSelectOptions>({
   name: "mathArrowSelect",
+  addOptions() {
+    return { onMathClick: () => {} };
+  },
   addKeyboardShortcuts() {
+    const openMath = (node: PMNode, pos: number) => {
+      this.options.onMathClick(
+        node.type.name === "blockMath" ? "block" : "inline",
+        pos,
+        String(node.attrs.latex ?? ""),
+        typeof node.attrs.refName === "string" ? node.attrs.refName : undefined,
+      );
+    };
     return {
       ArrowRight: () => {
-        const { state, dispatch } = this.editor.view;
+        const { state } = this.editor.view;
         const { $from, empty } = state.selection;
         if (!empty) return false;
         const nodeAfter = $from.nodeAfter;
         if (!nodeAfter || !MATH_NODE_NAMES.has(nodeAfter.type.name)) return false;
-        dispatch(state.tr.setSelection(NodeSelection.create(state.doc, $from.pos)));
+        openMath(nodeAfter, $from.pos);
         return true;
       },
       ArrowLeft: () => {
-        const { state, dispatch } = this.editor.view;
+        const { state } = this.editor.view;
         const { $from, empty } = state.selection;
         if (!empty) return false;
         const nodeBefore = $from.nodeBefore;
         if (!nodeBefore || !MATH_NODE_NAMES.has(nodeBefore.type.name)) return false;
-        dispatch(state.tr.setSelection(NodeSelection.create(state.doc, $from.pos - nodeBefore.nodeSize)));
+        openMath(nodeBefore, $from.pos - nodeBefore.nodeSize);
         return true;
       },
     };
