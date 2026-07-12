@@ -472,24 +472,62 @@ class AnvilTableView extends TableView {
     if (tr.docChanged) this.viewInstance.dispatch(tr);
   }
 
+  // Resolves the sizes a drag/nudge should produce. Columns growing the
+  // table via the LAST boundary are capped so the table's total width never
+  // exceeds the wrapper's (= the text column's) width — shrinking below it
+  // is fine, growing past it is not, per explicit product decision. Internal
+  // boundaries redistribute between two tracks (total unchanged), so only
+  // the last-boundary case can change the total at all.
+  private computeResizedSizes(
+    axis: "row" | "column",
+    boundaryIndex: number,
+    sizes: number[],
+    delta: number,
+  ): number[] {
+    const minimum = axis === "row" ? MIN_ROW_HEIGHT : MIN_COLUMN_WIDTH;
+    if (boundaryIndex === sizes.length) {
+      const next = [...sizes];
+      let target = Math.max(minimum, next[next.length - 1] + delta);
+      if (axis === "column") {
+        const others = next.slice(0, -1).reduce((sum, size) => sum + size, 0);
+        const maxTotal = this.tableInner.getBoundingClientRect().width;
+        target = Math.min(target, Math.max(minimum, maxTotal - others));
+      }
+      next[next.length - 1] = target;
+      return next;
+    }
+    return resizeTrackPair(sizes, boundaryIndex - 1, delta, minimum);
+  }
+
+  // Live preview during a drag writes ONLY to the DOM (colgroup widths /
+  // row heights), no transactions — the single real transaction lands on
+  // pointerup, so the whole drag is ONE undo step instead of one per
+  // mousemove (which made Ctrl+Z crawl back through every intermediate
+  // pixel of the drag).
+  private previewSizes(axis: "row" | "column", sizes: number[]) {
+    if (axis === "column") {
+      const cols = Array.from(this.colgroup.children) as HTMLElement[];
+      sizes.forEach((size, index) => {
+        if (cols[index]) cols[index].style.width = `${Math.round(size)}px`;
+      });
+      this.table.style.width = `${Math.round(sizes.reduce((sum, s) => sum + s, 0))}px`;
+    } else {
+      const rows = Array.from(this.table.tBodies[0]?.rows ?? []);
+      sizes.forEach((size, index) => {
+        if (rows[index]) rows[index].style.height = `${Math.round(size)}px`;
+      });
+    }
+  }
+
+  private commitSizes(axis: "row" | "column", sizes: number[]) {
+    if (axis === "row") this.setRowHeights(sizes);
+    else this.setColumnWidths(sizes);
+  }
+
   private resizeBoundary(axis: "row" | "column", boundaryIndex: number, delta: number) {
     const sizes = axis === "row" ? this.measureRowHeights() : this.measureColumnWidths();
     if (boundaryIndex <= 0 || boundaryIndex > sizes.length) return;
-    let next: number[];
-    if (boundaryIndex === sizes.length) {
-      next = [...sizes];
-      const minimum = axis === "row" ? MIN_ROW_HEIGHT : MIN_COLUMN_WIDTH;
-      next[next.length - 1] = Math.max(minimum, next[next.length - 1] + delta);
-    } else {
-      next = resizeTrackPair(
-        sizes,
-        boundaryIndex - 1,
-        delta,
-        axis === "row" ? MIN_ROW_HEIGHT : MIN_COLUMN_WIDTH,
-      );
-    }
-    if (axis === "row") this.setRowHeights(next);
-    else this.setColumnWidths(next);
+    this.commitSizes(axis, this.computeResizedSizes(axis, boundaryIndex, sizes, delta));
   }
 
   private startBoundaryResize(
@@ -506,25 +544,15 @@ class AnvilTableView extends TableView {
     const sizes = axis === "row" ? this.measureRowHeights() : this.measureColumnWidths();
     const bodyClass = axis === "row" ? "anvil-resize-row" : "anvil-resize-column";
     document.body.classList.add(bodyClass);
+    let lastDelta = 0;
 
     const move = (moveEvent: PointerEvent) => {
       const current = axis === "row" ? moveEvent.clientY : moveEvent.clientX;
-      const delta = current - start;
-      let next: number[];
-      if (boundaryIndex === sizes.length) {
-        next = [...sizes];
-        const minimum = axis === "row" ? MIN_ROW_HEIGHT : MIN_COLUMN_WIDTH;
-        next[next.length - 1] = Math.max(minimum, next[next.length - 1] + delta);
-      } else {
-        next = resizeTrackPair(
-          sizes,
-          boundaryIndex - 1,
-          delta,
-          axis === "row" ? MIN_ROW_HEIGHT : MIN_COLUMN_WIDTH,
-        );
-      }
-      if (axis === "row") this.setRowHeights(next);
-      else this.setColumnWidths(next);
+      lastDelta = current - start;
+      this.previewSizes(
+        axis,
+        this.computeResizedSizes(axis, boundaryIndex, sizes, lastDelta),
+      );
     };
     const stop = () => {
       window.removeEventListener("pointermove", move);
@@ -532,6 +560,12 @@ class AnvilTableView extends TableView {
       window.removeEventListener("pointercancel", stop);
       document.body.classList.remove(bodyClass);
       this.stopActiveResize = null;
+      if (lastDelta !== 0) {
+        this.commitSizes(
+          axis,
+          this.computeResizedSizes(axis, boundaryIndex, sizes, lastDelta),
+        );
+      }
       this.requestGutterRender();
     };
     this.stopActiveResize = stop;
