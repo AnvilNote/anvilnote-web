@@ -160,11 +160,16 @@ export function TableBubbleMenu({ editor }: { editor: Editor }) {
         pt
       </label>
       <label className="flex h-7 shrink-0 cursor-pointer items-center gap-1 rounded px-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground" title={t("breakable")}>
+        {/* Round checkbox, black when checked — same "圓形的 checkbox"
+            styling convention as stats-chart-dialog's percentage radios.
+            A native checkbox can't be made circular, so appearance-none +
+            rounded-full + checked:bg-foreground rebuilds it by hand
+            (still a real <input type="checkbox">, keyboard/AT intact). */}
         <input
           type="checkbox"
           checked={state.breakable ?? true}
           onChange={(event) => setCellAttribute("breakable", event.target.checked)}
-          className="size-3.5 accent-foreground"
+          className="size-3.5 appearance-none rounded-full border border-input transition-colors checked:border-foreground checked:bg-foreground"
         />
         {t("breakable")}
       </label>
