@@ -7,7 +7,7 @@ import { FootnotesNodeView } from "@/components/editor/node-views/footnotes-node
 import Placeholder from "@tiptap/extension-placeholder";
 import Typography from "@tiptap/extension-typography";
 import { Table, TableView } from "@tiptap/extension-table";
-import { addColumnAfter, addRowAfter, CellSelection } from "@tiptap/pm/tables";
+import { addColumnAfter, addColumnBefore, addRowAfter, addRowBefore, CellSelection } from "@tiptap/pm/tables";
 import TableRow from "@tiptap/extension-table-row";
 import TableHeader from "@tiptap/extension-table-header";
 import TableCell from "@tiptap/extension-table-cell";
@@ -45,6 +45,11 @@ class AnvilTableView extends TableView {
   // version (image captions), reimplemented with plain DOM here since
   // AnvilTableView is a vanilla TableView subclass, not a React NodeView.
   private readonly captionDisplay: HTMLDivElement;
+  private tableInner!: HTMLDivElement;
+  private addRowLabel = "Add row";
+  private addColumnLabel = "Add column";
+  private rowGutterButtons: HTMLButtonElement[] = [];
+  private colGutterButtons: HTMLButtonElement[] = [];
 
   constructor(
     node: import("@tiptap/pm/model").Node,
@@ -135,45 +140,167 @@ class AnvilTableView extends TableView {
 
     caption.append(label, this.captionInput, this.captionDisplay);
 
-    // Hover-edge "+" buttons — Tiptap's own table extension only exposes
-    // addRowAfter/addColumnAfter as commands, no built-in UI for them (see
-    // https://tiptap.dev/docs/editor/extensions/nodes/table); per explicit
-    // product decision these live at the table's own bottom/right edges
-    // (Notion-style), not as toolbar buttons, so they're only visible
-    // while actually hovering the table.
-    const addRowButton = document.createElement("button");
-    addRowButton.type = "button";
-    addRowButton.className = "anvil-table__add-row";
-    addRowButton.setAttribute("aria-label", addRowLabel);
-    addRowButton.title = addRowLabel;
-    addRowButton.textContent = "+";
-    addRowButton.addEventListener("mousedown", (event) => event.stopPropagation());
-    addRowButton.addEventListener("click", () => this.appendRow());
-
-    const addColumnButton = document.createElement("button");
-    addColumnButton.type = "button";
-    addColumnButton.className = "anvil-table__add-column";
-    addColumnButton.setAttribute("aria-label", addColumnLabel);
-    addColumnButton.title = addColumnLabel;
-    addColumnButton.textContent = "+";
-    addColumnButton.addEventListener("mousedown", (event) => event.stopPropagation());
-    addColumnButton.addEventListener("click", () => this.appendColumn());
+    this.addRowLabel = addRowLabel;
+    this.addColumnLabel = addColumnLabel;
 
     // The base TableView constructor already appended `this.table` directly
     // into `this.dom` — reparent it into a dedicated inner wrapper so the
-    // add-row/add-column buttons (bottom:0/right:0) track the TABLE's own
-    // edges specifically, not `this.dom`'s (which also contains the
-    // caption below the table, and would otherwise push a bottom-anchored
-    // button below the caption instead of sitting on the table's actual
-    // bottom edge).
+    // row/column insert buttons (see renderGutters below) can be
+    // positioned relative to the TABLE's own edges specifically, not
+    // `this.dom`'s (which also contains the caption below the table).
     const tableInner = document.createElement("div");
     tableInner.className = "anvil-table__inner";
     tableInner.appendChild(this.table);
-    tableInner.append(addRowButton, addColumnButton);
+    this.tableInner = tableInner;
     this.dom.insertBefore(tableInner, this.dom.firstChild);
     this.dom.append(caption, deleteButton);
 
     this.syncWrapperAttrs();
+    // getBoundingClientRect() on the row/column gutter buttons needs real
+    // layout, which doesn't exist yet mid-constructor (the DOM isn't
+    // attached to the document until the caller inserts this.dom) —
+    // deferred one frame past the initial synchronous mount.
+    requestAnimationFrame(() => this.renderGutters());
+  }
+
+  // Hover-edge "+" buttons — Tiptap's own table extension only exposes
+  // addRowAfter/addColumnAfter/addRowBefore/addColumnBefore as commands,
+  // no built-in UI for them at all (see
+  // https://tiptap.dev/docs/editor/extensions/nodes/table); per explicit
+  // product decision these live at the table's own edges (Notion-style —
+  // row-insert buttons down the left edge, one per row boundary
+  // (rows.length + 1 of them, including before the first and after the
+  // last row); column-insert buttons across the top edge the same way),
+  // not as toolbar buttons, and not just a single "append at the end"
+  // button — any boundary between two rows/columns (or before the first/
+  // after the last) gets its own insertion point. Positions are computed
+  // from each row/cell's OWN rendered rect (not assumed uniform height/
+  // width), so this stays correct with wrapped multi-line cell content or
+  // manually resized columns.
+  private renderGutters() {
+    this.rowGutterButtons.forEach((el) => el.remove());
+    this.colGutterButtons.forEach((el) => el.remove());
+    this.rowGutterButtons = [];
+    this.colGutterButtons = [];
+
+    const rows = Array.from(this.table.tBodies[0]?.rows ?? []);
+    if (rows.length === 0) return;
+    const tableRect = this.table.getBoundingClientRect();
+
+    const makeButton = (
+      className: string,
+      label: string,
+      onClick: () => void,
+    ): HTMLButtonElement => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = className;
+      button.setAttribute("aria-label", label);
+      button.title = label;
+      button.textContent = "+";
+      button.addEventListener("mousedown", (event) => event.stopPropagation());
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        onClick();
+      });
+      this.tableInner.appendChild(button);
+      return button;
+    };
+
+    rows.forEach((row, index) => {
+      const rect = row.getBoundingClientRect();
+      const y = rect.top - tableRect.top;
+      const button = makeButton("anvil-table__row-insert", this.addRowLabel, () =>
+        this.insertRowAt(index, "before"),
+      );
+      button.style.top = `${y}px`;
+      this.rowGutterButtons.push(button);
+    });
+    const lastRowRect = rows[rows.length - 1].getBoundingClientRect();
+    const lastRowButton = makeButton("anvil-table__row-insert", this.addRowLabel, () =>
+      this.insertRowAt(rows.length - 1, "after"),
+    );
+    lastRowButton.style.top = `${lastRowRect.bottom - tableRect.top}px`;
+    this.rowGutterButtons.push(lastRowButton);
+
+    const firstRowCells = Array.from(rows[0].cells);
+    firstRowCells.forEach((cell, index) => {
+      const rect = cell.getBoundingClientRect();
+      const x = rect.left - tableRect.left;
+      const button = makeButton("anvil-table__col-insert", this.addColumnLabel, () =>
+        this.insertColumnAt(index, "before"),
+      );
+      button.style.left = `${x}px`;
+      this.colGutterButtons.push(button);
+    });
+    if (firstRowCells.length > 0) {
+      const lastCellRect = firstRowCells[firstRowCells.length - 1].getBoundingClientRect();
+      const lastColButton = makeButton("anvil-table__col-insert", this.addColumnLabel, () =>
+        this.insertColumnAt(firstRowCells.length - 1, "after"),
+      );
+      lastColButton.style.left = `${lastCellRect.right - tableRect.left}px`;
+      this.colGutterButtons.push(lastColButton);
+    }
+  }
+
+  private insertRowAt(rowIndex: number, side: "before" | "after") {
+    const table = this.findTablePos();
+    if (!table) return;
+    const cellPos = this.firstCellPosInRow(table.pos, table.node, rowIndex);
+    if (cellPos === null) return;
+    const { state, dispatch } = this.viewInstance;
+    dispatch(state.tr.setSelection(CellSelection.create(state.doc, cellPos)));
+    (side === "before" ? addRowBefore : addRowAfter)(
+      this.viewInstance.state,
+      this.viewInstance.dispatch,
+    );
+  }
+
+  private insertColumnAt(colIndex: number, side: "before" | "after") {
+    const table = this.findTablePos();
+    if (!table) return;
+    const cellPos = this.cellPosInFirstRow(table.pos, table.node, colIndex);
+    if (cellPos === null) return;
+    const { state, dispatch } = this.viewInstance;
+    dispatch(state.tr.setSelection(CellSelection.create(state.doc, cellPos)));
+    (side === "before" ? addColumnBefore : addColumnAfter)(
+      this.viewInstance.state,
+      this.viewInstance.dispatch,
+    );
+  }
+
+  // addRowBefore/After and addColumnBefore/After (from @tiptap/pm/tables)
+  // all act relative to the CURRENT selection, not a target position —
+  // ANY cell within the target row/column is a valid anchor (the command
+  // operates on the whole row/column regardless of which cell in it is
+  // selected), so these only need to find one.
+  private firstCellPosInRow(
+    tablePos: number,
+    tableNode: import("@tiptap/pm/model").Node,
+    rowIndex: number,
+  ): number | null {
+    if (rowIndex < 0 || rowIndex >= tableNode.childCount) return null;
+    let pos = tablePos + 1;
+    for (let i = 0; i < rowIndex; i += 1) {
+      pos += tableNode.child(i).nodeSize;
+    }
+    // pos is now the row's own start; +1 enters the row to its first cell.
+    return tableNode.child(rowIndex).childCount > 0 ? pos + 1 : null;
+  }
+
+  private cellPosInFirstRow(
+    tablePos: number,
+    tableNode: import("@tiptap/pm/model").Node,
+    colIndex: number,
+  ): number | null {
+    if (tableNode.childCount === 0) return null;
+    const firstRow = tableNode.child(0);
+    if (colIndex < 0 || colIndex >= firstRow.childCount) return null;
+    let pos = tablePos + 1 + 1;
+    for (let i = 0; i < colIndex; i += 1) {
+      pos += firstRow.child(i).nodeSize;
+    }
+    return pos;
   }
 
   // Shared by appendRow/appendColumn below — same "search DOM candidates
@@ -206,44 +333,6 @@ class AnvilTableView extends TableView {
     return null;
   }
 
-  // addRowAfter/addColumnAfter (from @tiptap/pm/tables) act relative to
-  // the CURRENT selection, not a target position — resolving just inside
-  // the table's own end and walking up to the enclosing cell finds the
-  // LAST cell regardless of row/column count, so a CellSelection anchored
-  // there always means "the bottom-right cell" and the command always
-  // appends at the true end.
-  private lastCellPos(tablePos: number, tableNode: import("@tiptap/pm/model").Node): number | null {
-    const endPos = tablePos + tableNode.nodeSize - 2;
-    if (endPos < 0) return null;
-    const $end = this.viewInstance.state.doc.resolve(endPos);
-    for (let depth = $end.depth; depth > 0; depth -= 1) {
-      const ancestor = $end.node(depth);
-      if (ancestor.type.name === "tableCell" || ancestor.type.name === "tableHeader") {
-        return $end.before(depth);
-      }
-    }
-    return null;
-  }
-
-  private appendRow() {
-    const table = this.findTablePos();
-    if (!table) return;
-    const cellPos = this.lastCellPos(table.pos, table.node);
-    if (cellPos === null) return;
-    const { state, dispatch } = this.viewInstance;
-    dispatch(state.tr.setSelection(CellSelection.create(state.doc, cellPos)));
-    addRowAfter(this.viewInstance.state, this.viewInstance.dispatch);
-  }
-
-  private appendColumn() {
-    const table = this.findTablePos();
-    if (!table) return;
-    const cellPos = this.lastCellPos(table.pos, table.node);
-    if (cellPos === null) return;
-    const { state, dispatch } = this.viewInstance;
-    dispatch(state.tr.setSelection(CellSelection.create(state.doc, cellPos)));
-    addColumnAfter(this.viewInstance.state, this.viewInstance.dispatch);
-  }
 
   // Same "search up from a DOM position for the ancestor node matching
   // this.node.type" approach as updateCaption below — the only way to find
@@ -282,6 +371,10 @@ class AnvilTableView extends TableView {
     const updated = super.update(node);
     if (updated) {
       this.syncWrapperAttrs();
+      // Row/column counts, cell content (row height), and column widths
+      // (drag-resize) can all change here — same "defer past this
+      // synchronous render" reasoning as the constructor's own call.
+      requestAnimationFrame(() => this.renderGutters());
     }
     return updated;
   }

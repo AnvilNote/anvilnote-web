@@ -1272,55 +1272,60 @@
   position: relative;
 }
 
-/* Hover-edge "+" buttons (Notion-style) — hidden until the table itself is
-   hovered, then fade in as a thin bar hugging the table's own bottom/right
-   edge (anvil-table__inner wraps ONLY the <table>, not the caption below
-   it — see the constructor's own comment for why that distinction matters
-   for bottom-edge positioning specifically). */
-.anvil-table__add-row,
-.anvil-table__add-column {
+/* Per-boundary "+" buttons (Notion-style) — one per row boundary down the
+   left edge, one per column boundary across the top edge (see
+   extensions.ts's renderGutters, which sets each button's own top/left
+   inline style from its boundary's real rendered position). Always
+   visible at low opacity rather than hidden-until-hover — a hover-reveal
+   tied to a specific parent's :hover state turned out finicky in
+   practice (only reliably triggering right at the edge itself, not
+   anywhere over the table), so this drops that entirely in favor of a
+   permanent, low-opacity affordance that brightens on its OWN :hover.
+   anvil-table__inner wraps ONLY the <table> (not the caption below it),
+   so these coordinates are always relative to the table's own box
+   regardless of caption presence. */
+.anvil-table__row-insert,
+.anvil-table__col-insert {
   position: absolute;
   z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0;
+  opacity: 0.45;
   color: var(--muted-foreground);
-  background: color-mix(in srgb, var(--accent) 60%, transparent);
-  border-radius: 0.2rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  line-height: 1;
   transition:
     opacity 0.1s,
     color 0.1s,
     background 0.1s;
 }
 
-.anvil-table__inner:hover .anvil-table__add-row,
-.anvil-table__inner:hover .anvil-table__add-column {
+.anvil-table__row-insert:hover,
+.anvil-table__col-insert:hover {
   opacity: 1;
-}
-
-.anvil-table__add-row:hover,
-.anvil-table__add-column:hover {
   color: var(--foreground);
   background: var(--accent);
 }
 
-.anvil-table__add-row {
-  left: 0;
-  right: 0;
-  bottom: -0.6rem;
-  height: 0.6rem;
-  font-size: 0.7rem;
-  line-height: 1;
+/* Row buttons sit to the LEFT of the table, vertically centered on their
+   row boundary (top set inline in JS to that boundary's y-offset). */
+.anvil-table__row-insert {
+  left: -1.4rem;
+  transform: translateY(-50%);
 }
 
-.anvil-table__add-column {
-  top: 0;
-  bottom: 0;
-  right: -0.6rem;
-  width: 0.6rem;
-  font-size: 0.7rem;
-  line-height: 1;
+/* Column buttons sit ABOVE the table, horizontally centered on their
+   column boundary (left set inline in JS to that boundary's x-offset). */
+.anvil-table__col-insert {
+  top: -1.4rem;
+  transform: translateX(-50%);
 }
 
 .ProseMirror .tableWrapper[data-align="center"] .anvil-table__caption {
