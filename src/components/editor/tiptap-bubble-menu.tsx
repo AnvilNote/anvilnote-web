@@ -38,6 +38,20 @@ function MenuButton({
   );
 }
 
+// The DOM serializes any style="color: #rrggbb" back as "rgb(r, g, b)", so
+// getAttributes("textStyle").color returns the rgb() form for any color
+// that round-tripped through parseHTML (e.g. after a reload) even though
+// setColor() stored hex — normalize for display so the label always reads
+// as hex.
+function toHexColor(color: string): string {
+  const match = color.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+  if (!match) return color;
+  return `#${match
+    .slice(1, 4)
+    .map((part) => Number(part).toString(16).padStart(2, "0"))
+    .join("")}`;
+}
+
 export function TiptapBubbleMenu({
   editor,
   onInsertMath,
@@ -136,7 +150,9 @@ export function TiptapBubbleMenu({
           className="size-3.5 shrink-0 rounded-full border"
           style={{ backgroundColor: s.color ?? "#000000" }}
         />
-        <span className="font-mono text-xs">{s.color ?? tBlock("colors.default")}</span>
+        <span className="font-mono text-xs">
+          {s.color ? toHexColor(s.color) : tBlock("colors.default")}
+        </span>
       </button>
     </BubbleMenu>
   );
