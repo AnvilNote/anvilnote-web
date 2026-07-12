@@ -48,8 +48,8 @@ class AnvilTableView extends TableView {
   private tableInner!: HTMLDivElement;
   private addRowLabel = "Add row";
   private addColumnLabel = "Add column";
-  private rowGutterButtons: HTMLButtonElement[] = [];
-  private colGutterButtons: HTMLButtonElement[] = [];
+  private rowGutterButtons: HTMLDivElement[] = [];
+  private colGutterButtons: HTMLDivElement[] = [];
 
   constructor(
     node: import("@tiptap/pm/model").Node,
@@ -187,14 +187,22 @@ class AnvilTableView extends TableView {
     if (rows.length === 0) return;
     const tableRect = this.table.getBoundingClientRect();
 
-    const makeButton = (
-      className: string,
+    // Each boundary gets its own independent hover ZONE (a full-width, for
+    // rows — full-height, for columns — invisible strip centered on that
+    // one boundary) wrapping just its own button. Reveal is driven by the
+    // ZONE's own :hover, not a table-wide one, so hovering near boundary
+    // N only ever reveals boundary N's "+", not every boundary's at once.
+    const makeZone = (
+      zoneClassName: string,
+      buttonClassName: string,
       label: string,
       onClick: () => void,
-    ): HTMLButtonElement => {
+    ): HTMLDivElement => {
+      const zone = document.createElement("div");
+      zone.className = zoneClassName;
       const button = document.createElement("button");
       button.type = "button";
-      button.className = className;
+      button.className = buttonClassName;
       button.setAttribute("aria-label", label);
       button.title = label;
       button.textContent = "+";
@@ -203,43 +211,56 @@ class AnvilTableView extends TableView {
         event.preventDefault();
         onClick();
       });
-      this.tableInner.appendChild(button);
-      return button;
+      zone.appendChild(button);
+      this.tableInner.appendChild(zone);
+      return zone;
     };
 
     rows.forEach((row, index) => {
       const rect = row.getBoundingClientRect();
       const y = rect.top - tableRect.top;
-      const button = makeButton("anvil-table__row-insert", this.addRowLabel, () =>
-        this.insertRowAt(index, "before"),
+      const zone = makeZone(
+        "anvil-table__row-zone",
+        "anvil-table__row-insert",
+        this.addRowLabel,
+        () => this.insertRowAt(index, "before"),
       );
-      button.style.top = `${y}px`;
-      this.rowGutterButtons.push(button);
+      zone.style.top = `${y}px`;
+      this.rowGutterButtons.push(zone);
     });
     const lastRowRect = rows[rows.length - 1].getBoundingClientRect();
-    const lastRowButton = makeButton("anvil-table__row-insert", this.addRowLabel, () =>
-      this.insertRowAt(rows.length - 1, "after"),
+    const lastRowZone = makeZone(
+      "anvil-table__row-zone",
+      "anvil-table__row-insert",
+      this.addRowLabel,
+      () => this.insertRowAt(rows.length - 1, "after"),
     );
-    lastRowButton.style.top = `${lastRowRect.bottom - tableRect.top}px`;
-    this.rowGutterButtons.push(lastRowButton);
+    lastRowZone.style.top = `${lastRowRect.bottom - tableRect.top}px`;
+    this.rowGutterButtons.push(lastRowZone);
 
     const firstRowCells = Array.from(rows[0].cells);
     firstRowCells.forEach((cell, index) => {
       const rect = cell.getBoundingClientRect();
       const x = rect.left - tableRect.left;
-      const button = makeButton("anvil-table__col-insert", this.addColumnLabel, () =>
-        this.insertColumnAt(index, "before"),
+      const zone = makeZone(
+        "anvil-table__col-zone",
+        "anvil-table__col-insert",
+        this.addColumnLabel,
+        () => this.insertColumnAt(index, "before"),
       );
-      button.style.left = `${x}px`;
-      this.colGutterButtons.push(button);
+      zone.style.left = `${x}px`;
+      this.colGutterButtons.push(zone);
     });
     if (firstRowCells.length > 0) {
       const lastCellRect = firstRowCells[firstRowCells.length - 1].getBoundingClientRect();
-      const lastColButton = makeButton("anvil-table__col-insert", this.addColumnLabel, () =>
-        this.insertColumnAt(firstRowCells.length - 1, "after"),
+      const lastColZone = makeZone(
+        "anvil-table__col-zone",
+        "anvil-table__col-insert",
+        this.addColumnLabel,
+        () => this.insertColumnAt(firstRowCells.length - 1, "after"),
       );
-      lastColButton.style.left = `${lastCellRect.right - tableRect.left}px`;
-      this.colGutterButtons.push(lastColButton);
+      lastColZone.style.left = `${lastCellRect.right - tableRect.left}px`;
+      this.colGutterButtons.push(lastColZone);
     }
   }
 

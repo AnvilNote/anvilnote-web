@@ -1272,14 +1272,31 @@
   position: relative;
 }
 
-/* Per-boundary "+" buttons (Notion-style) — one per row boundary down the
-   left edge, one per column boundary across the top edge (see
-   extensions.ts's renderGutters, which sets each button's own top/left
-   inline style from its boundary's real rendered position). Hidden until
-   the table itself (anvil-table__inner — wraps ONLY the <table>, not the
-   caption below it) is hovered, then all fade in together; CSS :hover
-   bubbles from any descendant, so this reliably triggers anywhere over
-   the table, not just right at a button's own tiny hit box. */
+/* Per-boundary hover ZONES (Notion-style) — one per row boundary, one per
+   column boundary (see extensions.ts's renderGutters, which sets each
+   zone's own top/left inline style from its boundary's real rendered
+   position). Each zone is an INDEPENDENT hover trigger for its own "+"
+   button only — a row zone spans the table's full WIDTH but is only a
+   thin strip centered on ITS OWN boundary's y-offset, so hovering near
+   boundary N never reveals boundary M's button. Not a single table-wide
+   hover (that revealed every boundary's button at once, which isn't
+   what's wanted here). */
+.anvil-table__row-zone {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0.9rem;
+  transform: translateY(-50%);
+}
+
+.anvil-table__col-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0.9rem;
+  transform: translateX(-50%);
+}
+
 .anvil-table__row-insert,
 .anvil-table__col-insert {
   position: absolute;
@@ -1303,8 +1320,8 @@
     background 0.1s;
 }
 
-.anvil-table__inner:hover .anvil-table__row-insert,
-.anvil-table__inner:hover .anvil-table__col-insert {
+.anvil-table__row-zone:hover .anvil-table__row-insert,
+.anvil-table__col-zone:hover .anvil-table__col-insert {
   opacity: 1;
 }
 
@@ -1314,17 +1331,19 @@
   background: var(--accent);
 }
 
-/* Row buttons sit to the LEFT of the table, vertically centered on their
-   row boundary (top set inline in JS to that boundary's y-offset). */
+/* Row buttons sit to the LEFT of the table, vertically centered within
+   their own zone (which is itself already centered on the boundary). */
 .anvil-table__row-insert {
   left: -1.4rem;
+  top: 50%;
   transform: translateY(-50%);
 }
 
-/* Column buttons sit ABOVE the table, horizontally centered on their
-   column boundary (left set inline in JS to that boundary's x-offset). */
+/* Column buttons sit ABOVE the table, horizontally centered within their
+   own zone. */
 .anvil-table__col-insert {
   top: -1.4rem;
+  left: 50%;
   transform: translateX(-50%);
 }
 
