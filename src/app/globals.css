@@ -1464,9 +1464,34 @@ body.anvil-resize-column * {
 .ProseMirror td {
   position: relative;
   border: 1px solid var(--border);
-  padding: 0.4rem 0.6rem;
+  padding: 0.05cm 0.19cm;
   text-align: left;
   vertical-align: top;
+  /* Word-like default row height — `height` on a table cell acts as a
+     MINIMUM (content still grows the row), so an empty row renders
+     0.45cm tall instead of collapsing to the padding alone. Kept in
+     sync with the renderer's empty-cell #box(height: 0.45cm). */
+  height: 0.45cm;
+}
+
+/* Word cells have no paragraph spacing — without this, .ProseMirror p's
+   own 0.65rem top+bottom margins inflate every row to ~1.4cm, three times
+   the intended 0.45cm default. Paragraphs inside a cell keep only a small
+   BETWEEN-paragraph gap (margin-top on non-first paragraphs); first/last
+   ones sit flush against the cell inset. */
+.ProseMirror th > p,
+.ProseMirror td > p {
+  margin: 0;
+}
+
+.ProseMirror th > p + p,
+.ProseMirror td > p + p {
+  margin-top: 0.25rem;
+}
+
+.ProseMirror th > p:only-child,
+.ProseMirror td > p:only-child {
+  min-height: 1.25rem;
 }
 
 .ProseMirror .selectedCell::after {
@@ -1480,7 +1505,15 @@ body.anvil-resize-column * {
 
 .ProseMirror th {
   background: var(--muted);
+  font-family: var(--font-proof);
   font-weight: 600;
+}
+
+.ProseMirror th[rowspan]:not([rowspan="1"]),
+.ProseMirror td[rowspan]:not([rowspan="1"]),
+.ProseMirror th[colspan]:not([colspan="1"]),
+.ProseMirror td[colspan]:not([colspan="1"]) {
+  vertical-align: middle;
 }
 
 /* @tiptap/extension-table's columnResizing plugin inserts these as bare,
@@ -1837,7 +1870,7 @@ body:has(.anvil-drag-handle[data-dragging="true"]) .anvil-footnotes-panel {
 
   .ProseMirror th,
   .ProseMirror td {
-    padding: 0.35rem 0.5rem;
+    padding: 0.05cm 0.19cm;
     white-space: nowrap;
   }
 }

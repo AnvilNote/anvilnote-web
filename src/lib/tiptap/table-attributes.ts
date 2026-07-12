@@ -16,6 +16,14 @@ export function normalizeCellBoolean(value: unknown): boolean | null {
   return null;
 }
 
+export function normalizeCellVerticalAlign(
+  value: unknown,
+): "top" | "middle" | "bottom" | null {
+  return value === "top" || value === "middle" || value === "bottom"
+    ? value
+    : null;
+}
+
 // Black-or-white text for a given fill, decided mathematically instead of
 // by eye: WCAG relative luminance — linearize each sRGB channel
 // (c/12.92 below 0.03928, ((c+0.055)/1.055)^2.4 above) and weight with

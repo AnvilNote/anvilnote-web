@@ -46,13 +46,17 @@ import {
   normalizeCellBoolean,
   normalizeCellColor,
   normalizeCellInset,
+  normalizeCellVerticalAlign,
 } from "@/lib/tiptap/table-attributes";
 
 export type TableVariant = "normal" | "three-line";
 export type TableAlign = "left" | "center" | "right";
 
 const MIN_COLUMN_WIDTH = 48;
-const MIN_ROW_HEIGHT = 32;
+// 0.45cm at CSS 96dpi (0.45 / 2.54 * 96 ≈ 17px) — the Word-like default/
+// minimum row height; drag-resizing can shrink a row back down to exactly
+// the default but no further.
+const MIN_ROW_HEIGHT = 17;
 
 class AnvilTableView extends TableView {
   private readonly viewInstance;
@@ -834,6 +838,23 @@ function anvilCellAttributes() {
       renderHTML: (attributes: Record<string, unknown>) => {
         const value = normalizeCellBoolean(attributes.breakable);
         return value === null ? {} : { "data-cell-breakable": String(value) };
+      },
+    },
+    verticalAlign: {
+      default: null,
+      parseHTML: (element: HTMLElement) =>
+        normalizeCellVerticalAlign(
+          element.getAttribute("data-cell-vertical-align") ||
+            element.style.verticalAlign,
+        ),
+      renderHTML: (attributes: Record<string, unknown>) => {
+        const value = normalizeCellVerticalAlign(attributes.verticalAlign);
+        return value
+          ? {
+              "data-cell-vertical-align": value,
+              style: `vertical-align: ${value}`,
+            }
+          : {};
       },
     },
   };

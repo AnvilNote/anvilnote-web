@@ -17,6 +17,7 @@ import {
   TableCellsSplit,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { setCellAttributesAcrossSelection } from "@/lib/tiptap/table-selection";
 
 function TableMenuButton({
   icon: Icon,
@@ -73,8 +74,13 @@ export function TableBubbleMenu({ editor }: { editor: Editor }) {
     },
   });
 
+  const setCellAttributes = (attributes: Record<string, unknown>) => {
+    const transaction = setCellAttributesAcrossSelection(editor.state, attributes);
+    if (transaction?.docChanged) editor.view.dispatch(transaction);
+    editor.view.focus();
+  };
   const setCellAttribute = (name: string, value: unknown) =>
-    editor.chain().focus().setCellAttribute(name, value).run();
+    setCellAttributes({ [name]: value });
   const inset = Number.parseFloat(state.inset ?? "");
 
   return (
@@ -176,15 +182,14 @@ export function TableBubbleMenu({ editor }: { editor: Editor }) {
         icon={RotateCcw}
         label={t("resetCellAttrs")}
         onClick={() =>
-          editor
-            .chain()
-            .focus()
-            .setCellAttribute("align", null)
-            .setCellAttribute("fill", null)
-            .setCellAttribute("stroke", null)
-            .setCellAttribute("inset", null)
-            .setCellAttribute("breakable", null)
-            .run()
+          setCellAttributes({
+            align: null,
+            fill: null,
+            stroke: null,
+            inset: null,
+            breakable: null,
+            verticalAlign: null,
+          })
         }
       />
     </BubbleMenu>

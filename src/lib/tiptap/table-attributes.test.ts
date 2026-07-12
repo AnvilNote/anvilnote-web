@@ -4,6 +4,7 @@ import {
   normalizeCellBoolean,
   normalizeCellColor,
   normalizeCellInset,
+  normalizeCellVerticalAlign,
 } from "./table-attributes.ts";
 
 test("normalizeCellColor accepts CSS hex colors only", () => {
@@ -24,4 +25,10 @@ test("normalizeCellBoolean accepts booleans and serialized booleans", () => {
   assert.equal(normalizeCellBoolean(true), true);
   assert.equal(normalizeCellBoolean("false"), false);
   assert.equal(normalizeCellBoolean("yes"), null);
+});
+
+test("normalizeCellVerticalAlign accepts only table-safe values", () => {
+  assert.equal(normalizeCellVerticalAlign("middle"), "middle");
+  assert.equal(normalizeCellVerticalAlign("top"), "top");
+  assert.equal(normalizeCellVerticalAlign("baseline"), null);
 });
