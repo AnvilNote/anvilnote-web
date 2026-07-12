@@ -137,7 +137,11 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
   const figureCaptionPlaceholder = t("editor.image.captionPlaceholder");
   const tableCaptionPlaceholder = t("editor.table.captionPlaceholder");
   const tableDeleteLabel = t("editor.block.delete", { type: t("editor.block.types.table") });
+  const tableAddRowLabel = t("editor.table.addRow");
+  const tableAddColumnLabel = t("editor.table.addColumn");
   const questionBodyPlaceholder = t("editor.questionBlock.bodyPlaceholder");
+  const tableHeaderPlaceholder = t("editor.table.headerPlaceholder");
+  const tableCellPlaceholder = t("editor.table.cellPlaceholder");
   // choicePlaceholder needs a DIFFERENT string per choice letter ("Choice
   // A", "Choice B", ...) — precompute all 8 possible letters' strings
   // once (t() is deterministic per locale, so this is stable in
@@ -163,8 +167,12 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         figureCaptionPlaceholder,
         tableCaptionPlaceholder,
         tableDeleteLabel,
+        tableAddRowLabel,
+        tableAddColumnLabel,
         questionBodyPlaceholder,
         choicePlaceholder,
+        tableHeaderPlaceholder,
+        tableCellPlaceholder,
         onMathClick: handleMathClick,
       }),
     // choicePlaceholder is intentionally excluded from this dep array — its
@@ -181,8 +189,12 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
       figureCaptionPlaceholder,
       tableCaptionPlaceholder,
       tableDeleteLabel,
+      tableAddRowLabel,
+      tableAddColumnLabel,
       questionBodyPlaceholder,
       choicePlaceholderKey,
+      tableHeaderPlaceholder,
+      tableCellPlaceholder,
       handleMathClick,
     ],
   );

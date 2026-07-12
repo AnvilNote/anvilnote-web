@@ -7,6 +7,7 @@ import { FootnotesNodeView } from "@/components/editor/node-views/footnotes-node
 import Placeholder from "@tiptap/extension-placeholder";
 import Typography from "@tiptap/extension-typography";
 import { Table, TableView } from "@tiptap/extension-table";
+import { addColumnAfter, addRowAfter, CellSelection } from "@tiptap/pm/tables";
 import TableRow from "@tiptap/extension-table-row";
 import TableHeader from "@tiptap/extension-table-header";
 import TableCell from "@tiptap/extension-table-cell";
@@ -66,6 +67,14 @@ class AnvilTableView extends TableView {
       typeof HTMLAttributes["data-delete-label"] === "string"
         ? HTMLAttributes["data-delete-label"]
         : "Delete";
+    const addRowLabel =
+      typeof HTMLAttributes["data-add-row-label"] === "string"
+        ? HTMLAttributes["data-add-row-label"]
+        : "Add row";
+    const addColumnLabel =
+      typeof HTMLAttributes["data-add-column-label"] === "string"
+        ? HTMLAttributes["data-add-column-label"]
+        : "Add column";
 
     // Vanilla DOM delete button — same bottom-right corner pattern as
     // callout/proof/codeBlock/mermaid's own React NodeView delete buttons,
@@ -125,9 +134,115 @@ class AnvilTableView extends TableView {
     });
 
     caption.append(label, this.captionInput, this.captionDisplay);
+
+    // Hover-edge "+" buttons — Tiptap's own table extension only exposes
+    // addRowAfter/addColumnAfter as commands, no built-in UI for them (see
+    // https://tiptap.dev/docs/editor/extensions/nodes/table); per explicit
+    // product decision these live at the table's own bottom/right edges
+    // (Notion-style), not as toolbar buttons, so they're only visible
+    // while actually hovering the table.
+    const addRowButton = document.createElement("button");
+    addRowButton.type = "button";
+    addRowButton.className = "anvil-table__add-row";
+    addRowButton.setAttribute("aria-label", addRowLabel);
+    addRowButton.title = addRowLabel;
+    addRowButton.textContent = "+";
+    addRowButton.addEventListener("mousedown", (event) => event.stopPropagation());
+    addRowButton.addEventListener("click", () => this.appendRow());
+
+    const addColumnButton = document.createElement("button");
+    addColumnButton.type = "button";
+    addColumnButton.className = "anvil-table__add-column";
+    addColumnButton.setAttribute("aria-label", addColumnLabel);
+    addColumnButton.title = addColumnLabel;
+    addColumnButton.textContent = "+";
+    addColumnButton.addEventListener("mousedown", (event) => event.stopPropagation());
+    addColumnButton.addEventListener("click", () => this.appendColumn());
+
+    // The base TableView constructor already appended `this.table` directly
+    // into `this.dom` — reparent it into a dedicated inner wrapper so the
+    // add-row/add-column buttons (bottom:0/right:0) track the TABLE's own
+    // edges specifically, not `this.dom`'s (which also contains the
+    // caption below the table, and would otherwise push a bottom-anchored
+    // button below the caption instead of sitting on the table's actual
+    // bottom edge).
+    const tableInner = document.createElement("div");
+    tableInner.className = "anvil-table__inner";
+    tableInner.appendChild(this.table);
+    tableInner.append(addRowButton, addColumnButton);
+    this.dom.insertBefore(tableInner, this.dom.firstChild);
     this.dom.append(caption, deleteButton);
 
     this.syncWrapperAttrs();
+  }
+
+  // Shared by appendRow/appendColumn below — same "search DOM candidates
+  // for this table's own document position" technique deleteTable/
+  // updateCaption already use, resolved once here since both new methods
+  // need it.
+  private findTablePos(): { pos: number; node: import("@tiptap/pm/model").Node } | null {
+    const domCandidates: Node[] = [this.dom, this.table, this.contentDOM];
+
+    for (const dom of domCandidates) {
+      try {
+        const domPos = this.viewInstance.posAtDOM(dom, 0);
+        for (const candidate of [domPos, domPos - 1, domPos + 1]) {
+          if (candidate < 0 || candidate > this.viewInstance.state.doc.content.size) {
+            continue;
+          }
+          const resolved = this.viewInstance.state.doc.resolve(candidate);
+          for (let depth = resolved.depth; depth >= 0; depth -= 1) {
+            const target = resolved.node(depth);
+            if (target.type === this.node.type) {
+              const pos = depth === 0 ? 0 : resolved.before(depth);
+              return { pos, node: target };
+            }
+          }
+        }
+      } catch {
+        continue;
+      }
+    }
+    return null;
+  }
+
+  // addRowAfter/addColumnAfter (from @tiptap/pm/tables) act relative to
+  // the CURRENT selection, not a target position — resolving just inside
+  // the table's own end and walking up to the enclosing cell finds the
+  // LAST cell regardless of row/column count, so a CellSelection anchored
+  // there always means "the bottom-right cell" and the command always
+  // appends at the true end.
+  private lastCellPos(tablePos: number, tableNode: import("@tiptap/pm/model").Node): number | null {
+    const endPos = tablePos + tableNode.nodeSize - 2;
+    if (endPos < 0) return null;
+    const $end = this.viewInstance.state.doc.resolve(endPos);
+    for (let depth = $end.depth; depth > 0; depth -= 1) {
+      const ancestor = $end.node(depth);
+      if (ancestor.type.name === "tableCell" || ancestor.type.name === "tableHeader") {
+        return $end.before(depth);
+      }
+    }
+    return null;
+  }
+
+  private appendRow() {
+    const table = this.findTablePos();
+    if (!table) return;
+    const cellPos = this.lastCellPos(table.pos, table.node);
+    if (cellPos === null) return;
+    const { state, dispatch } = this.viewInstance;
+    dispatch(state.tr.setSelection(CellSelection.create(state.doc, cellPos)));
+    addRowAfter(this.viewInstance.state, this.viewInstance.dispatch);
+  }
+
+  private appendColumn() {
+    const table = this.findTablePos();
+    if (!table) return;
+    const cellPos = this.lastCellPos(table.pos, table.node);
+    if (cellPos === null) return;
+    const { state, dispatch } = this.viewInstance;
+    dispatch(state.tr.setSelection(CellSelection.create(state.doc, cellPos)));
+    addColumnAfter(this.viewInstance.state, this.viewInstance.dispatch);
   }
 
   // Same "search up from a DOM position for the ancestor node matching
@@ -241,6 +356,8 @@ function createAnvilTableView(
   captionLabel: string,
   captionPlaceholder: string,
   deleteLabel: string,
+  addRowLabel: string,
+  addColumnLabel: string,
 ) {
   return class extends AnvilTableView {
     constructor(
@@ -254,6 +371,8 @@ function createAnvilTableView(
         "data-caption-label": captionLabel,
         "data-caption-placeholder": captionPlaceholder,
         "data-delete-label": deleteLabel,
+        "data-add-row-label": addRowLabel,
+        "data-add-column-label": addColumnLabel,
       });
     }
   };
@@ -325,6 +444,8 @@ export type BuildExtensionsOptions = {
   figureCaptionPlaceholder: string;
   tableCaptionPlaceholder: string;
   tableDeleteLabel: string;
+  tableAddRowLabel: string;
+  tableAddColumnLabel: string;
   // Question block placeholders — a fresh questionItem/choiceItem starts
   // as an empty paragraph, same as any other empty paragraph in the
   // document, so distinguishing them needs the Placeholder extension's
@@ -335,6 +456,12 @@ export type BuildExtensionsOptions = {
   // every one.
   questionBodyPlaceholder: string;
   choicePlaceholder: (label: string) => string;
+  // A table cell starts as an empty paragraph too — same reasoning as
+  // questionBodyPlaceholder above, but short (the generic `placeholder`
+  // sentence overflows/wraps awkwardly in a narrow cell). Header vs. body
+  // cells get their own text since they mean different things.
+  tableHeaderPlaceholder: string;
+  tableCellPlaceholder: string;
   // Called when a rendered formula is clicked, so the editor can open the math
   // dialog seeded with the existing LaTeX and its document position (and, for
   // block math, its optional cross-ref display name).
@@ -348,8 +475,12 @@ export function buildExtensions({
   figureCaptionPlaceholder,
   tableCaptionPlaceholder,
   tableDeleteLabel,
+  tableAddRowLabel,
+  tableAddColumnLabel,
   questionBodyPlaceholder,
   choicePlaceholder,
+  tableHeaderPlaceholder,
+  tableCellPlaceholder,
   onMathClick,
 }: BuildExtensionsOptions): Extensions {
   return [
@@ -434,6 +565,8 @@ export function buildExtensions({
             return choicePlaceholder(label);
           }
           if (ancestor.type.name === "questionItem") return questionBodyPlaceholder;
+          if (ancestor.type.name === "tableHeader") return hasAnchor ? tableHeaderPlaceholder : "";
+          if (ancestor.type.name === "tableCell") return hasAnchor ? tableCellPlaceholder : "";
         }
         return hasAnchor ? placeholder : "";
       },
@@ -461,7 +594,13 @@ export function buildExtensions({
     }),
     AnvilTable.configure({
       resizable: true,
-      View: createAnvilTableView(tableLabel, tableCaptionPlaceholder, tableDeleteLabel),
+      View: createAnvilTableView(
+        tableLabel,
+        tableCaptionPlaceholder,
+        tableDeleteLabel,
+        tableAddRowLabel,
+        tableAddColumnLabel,
+      ),
     }),
     TableRow,
     TableHeader,

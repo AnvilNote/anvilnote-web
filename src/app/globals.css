@@ -1268,6 +1268,61 @@
   height: 0.875rem;
 }
 
+.anvil-table__inner {
+  position: relative;
+}
+
+/* Hover-edge "+" buttons (Notion-style) — hidden until the table itself is
+   hovered, then fade in as a thin bar hugging the table's own bottom/right
+   edge (anvil-table__inner wraps ONLY the <table>, not the caption below
+   it — see the constructor's own comment for why that distinction matters
+   for bottom-edge positioning specifically). */
+.anvil-table__add-row,
+.anvil-table__add-column {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  color: var(--muted-foreground);
+  background: color-mix(in srgb, var(--accent) 60%, transparent);
+  border-radius: 0.2rem;
+  transition:
+    opacity 0.1s,
+    color 0.1s,
+    background 0.1s;
+}
+
+.anvil-table__inner:hover .anvil-table__add-row,
+.anvil-table__inner:hover .anvil-table__add-column {
+  opacity: 1;
+}
+
+.anvil-table__add-row:hover,
+.anvil-table__add-column:hover {
+  color: var(--foreground);
+  background: var(--accent);
+}
+
+.anvil-table__add-row {
+  left: 0;
+  right: 0;
+  bottom: -0.6rem;
+  height: 0.6rem;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.anvil-table__add-column {
+  top: 0;
+  bottom: 0;
+  right: -0.6rem;
+  width: 0.6rem;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
 .ProseMirror .tableWrapper[data-align="center"] .anvil-table__caption {
   text-align: center;
   justify-content: center;

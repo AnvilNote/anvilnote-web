@@ -312,7 +312,11 @@
     "table": {
       "figure": "表",
       "captionPlaceholder": "表の説明を入力",
-      "pickSize": "表のサイズを選択"
+      "pickSize": "表のサイズを選択",
+      "headerPlaceholder": "見出し",
+      "cellPlaceholder": "内容",
+      "addRow": "行を追加",
+      "addColumn": "列を追加"
     },
     "math": {
       "editTitle": "数式を編集",

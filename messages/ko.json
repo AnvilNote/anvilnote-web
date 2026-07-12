@@ -312,7 +312,11 @@
     "table": {
       "figure": "표",
       "captionPlaceholder": "표 설명 입력",
-      "pickSize": "표 크기 선택"
+      "pickSize": "표 크기 선택",
+      "headerPlaceholder": "제목",
+      "cellPlaceholder": "내용",
+      "addRow": "행 추가",
+      "addColumn": "열 추가"
     },
     "math": {
       "editTitle": "수식 편집",

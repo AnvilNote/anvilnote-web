@@ -312,7 +312,11 @@
     "table": {
       "figure": "表",
       "captionPlaceholder": "輸入表格說明",
-      "pickSize": "選擇表格大小"
+      "pickSize": "選擇表格大小",
+      "headerPlaceholder": "標題",
+      "cellPlaceholder": "內容",
+      "addRow": "新增列",
+      "addColumn": "新增欄"
     },
     "math": {
       "editTitle": "編輯公式",

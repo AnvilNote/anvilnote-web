@@ -312,7 +312,11 @@
     "table": {
       "figure": "ตาราง",
       "captionPlaceholder": "ใส่คำบรรยายตาราง",
-      "pickSize": "เลือกขนาดตาราง"
+      "pickSize": "เลือกขนาดตาราง",
+      "headerPlaceholder": "หัวข้อ",
+      "cellPlaceholder": "เนื้อหา",
+      "addRow": "เพิ่มแถว",
+      "addColumn": "เพิ่มคอลัมน์"
     },
     "math": {
       "editTitle": "แก้ไขสมการ",

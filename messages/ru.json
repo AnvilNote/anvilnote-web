@@ -312,7 +312,11 @@
     "table": {
       "figure": "Таблица",
       "captionPlaceholder": "Введите подпись к таблице",
-      "pickSize": "Выберите размер таблицы"
+      "pickSize": "Выберите размер таблицы",
+      "headerPlaceholder": "Заголовок",
+      "cellPlaceholder": "Текст",
+      "addRow": "Добавить строку",
+      "addColumn": "Добавить столбец"
     },
     "math": {
       "editTitle": "Редактировать формулу",

@@ -312,7 +312,11 @@
     "table": {
       "figure": "Table",
       "captionPlaceholder": "Enter a table caption",
-      "pickSize": "Choose table size"
+      "pickSize": "Choose table size",
+      "headerPlaceholder": "Header",
+      "cellPlaceholder": "Text",
+      "addRow": "Add row",
+      "addColumn": "Add column"
     },
     "math": {
       "editTitle": "Edit equation",
