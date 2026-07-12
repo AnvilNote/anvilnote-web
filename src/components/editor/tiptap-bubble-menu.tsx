@@ -3,6 +3,7 @@
 import type { ComponentType } from "react";
 import type { Editor } from "@tiptap/core";
 import { BubbleMenu } from "@tiptap/react/menus";
+import { CellSelection } from "@tiptap/pm/tables";
 import { useEditorState } from "@tiptap/react";
 import { useTranslations } from "next-intl";
 import { Bold, Code, Italic, Link2, Sigma, Strikethrough } from "lucide-react";
@@ -68,6 +69,7 @@ export function TiptapBubbleMenu({
       className="flex items-center gap-0.5 rounded-lg border bg-popover p-1 shadow-md"
       shouldShow={({ editor: e, from, to }) =>
         from !== to &&
+        !(e.state.selection instanceof CellSelection) &&
         !e.isActive("codeBlock") &&
         !e.isActive("blockMath") &&
         !e.isActive("horizontalRule")

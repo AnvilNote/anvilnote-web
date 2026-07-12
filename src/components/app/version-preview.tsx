@@ -29,6 +29,8 @@ export function VersionPreview({ content }: { content: JSONContent }) {
         tableDeleteLabel: t("block.delete", { type: t("block.types.table") }),
         tableAddRowLabel: t("table.addRow"),
         tableAddColumnLabel: t("table.addColumn"),
+        tableResizeRowLabel: t("table.resizeRow"),
+        tableResizeColumnLabel: t("table.resizeColumn"),
         questionBodyPlaceholder: "",
         choicePlaceholder: () => "",
         tableHeaderPlaceholder: "",

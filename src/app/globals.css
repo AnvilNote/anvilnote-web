@@ -1272,42 +1272,41 @@
   position: relative;
 }
 
-/* Per-boundary hover ZONES (Notion-style) — one per row boundary, one per
-   column boundary (see extensions.ts's renderGutters, which sets each
-   zone's own top/left inline style from its boundary's real rendered
-   position). Each zone is an INDEPENDENT hover trigger for its own "+"
-   button only — a row zone spans the table's full WIDTH but is only a
-   thin strip centered on ITS OWN boundary's y-offset, so hovering near
-   boundary N never reveals boundary M's button. Not a single table-wide
-   hover (that revealed every boundary's button at once, which isn't
-   what's wanted here). */
 .anvil-table__row-zone {
   position: absolute;
-  left: 0;
+  left: -2rem;
   right: 0;
-  height: 0.9rem;
+  z-index: 10;
+  height: 0.75rem;
   transform: translateY(-50%);
 }
 
 .anvil-table__col-zone {
   position: absolute;
-  top: 0;
+  top: -2rem;
   bottom: 0;
-  width: 0.9rem;
+  z-index: 10;
+  width: 0.75rem;
   transform: translateX(-50%);
 }
 
 .anvil-table__row-insert,
-.anvil-table__col-insert {
+.anvil-table__col-insert,
+.anvil-table__boundary-resize {
   position: absolute;
-  z-index: 2;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.anvil-table__row-insert,
+.anvil-table__col-insert {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 1.1rem;
   height: 1.1rem;
   padding: 0;
-  opacity: 0;
   color: var(--muted-foreground);
   background: var(--background);
   border: 1px solid var(--border);
@@ -1321,7 +1320,10 @@
 }
 
 .anvil-table__row-zone:hover .anvil-table__row-insert,
-.anvil-table__col-zone:hover .anvil-table__col-insert {
+.anvil-table__col-zone:hover .anvil-table__col-insert,
+.anvil-table__row-zone:hover .anvil-table__boundary-resize,
+.anvil-table__col-zone:hover .anvil-table__boundary-resize,
+.anvil-table__boundary-resize:focus-visible {
   opacity: 1;
 }
 
@@ -1331,20 +1333,73 @@
   background: var(--accent);
 }
 
-/* Row buttons sit to the LEFT of the table, vertically centered within
-   their own zone (which is itself already centered on the boundary). */
 .anvil-table__row-insert {
-  left: -1.4rem;
+  left: 0.25rem;
   top: 50%;
   transform: translateY(-50%);
 }
 
-/* Column buttons sit ABOVE the table, horizontally centered within their
-   own zone. */
 .anvil-table__col-insert {
-  top: -1.4rem;
+  top: 0.25rem;
   left: 50%;
   transform: translateX(-50%);
+}
+
+.anvil-table__boundary-resize {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.anvil-table__boundary-resize::after {
+  position: absolute;
+  content: "";
+  background: var(--ring);
+  border-radius: 999px;
+}
+
+.anvil-table__row-zone .anvil-table__boundary-resize {
+  left: 2rem;
+  right: 0;
+  top: 50%;
+  height: 0.75rem;
+  transform: translateY(-50%);
+  cursor: row-resize;
+}
+
+.anvil-table__row-zone .anvil-table__boundary-resize::after {
+  left: 0;
+  right: 0;
+  top: calc(50% - 1px);
+  height: 2px;
+}
+
+.anvil-table__col-zone .anvil-table__boundary-resize {
+  top: 2rem;
+  bottom: 0;
+  left: 50%;
+  width: 0.75rem;
+  transform: translateX(-50%);
+  cursor: col-resize;
+}
+
+.anvil-table__col-zone .anvil-table__boundary-resize::after {
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 1px);
+  width: 2px;
+}
+
+body.anvil-resize-row,
+body.anvil-resize-row * {
+  cursor: row-resize !important;
+  user-select: none !important;
+}
+
+body.anvil-resize-column,
+body.anvil-resize-column * {
+  cursor: col-resize !important;
+  user-select: none !important;
 }
 
 .ProseMirror .tableWrapper[data-align="center"] .anvil-table__caption {
@@ -1381,6 +1436,15 @@
   padding: 0.4rem 0.6rem;
   text-align: left;
   vertical-align: top;
+}
+
+.ProseMirror .selectedCell::after {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  content: "";
+  background: color-mix(in srgb, var(--ring) 18%, transparent);
 }
 
 .ProseMirror th {

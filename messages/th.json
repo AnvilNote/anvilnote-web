@@ -316,7 +316,21 @@
       "headerPlaceholder": "หัวข้อ",
       "cellPlaceholder": "เนื้อหา",
       "addRow": "เพิ่มแถว",
-      "addColumn": "เพิ่มคอลัมน์"
+      "addColumn": "เพิ่มคอลัมน์",
+      "resizeRow": "ปรับความสูงแถว",
+      "resizeColumn": "ปรับความกว้างคอลัมน์",
+      "mergeCells": "ผสานเซลล์",
+      "splitCell": "แยกเซลล์ที่ผสาน",
+      "deleteRows": "ลบแถวที่เลือก",
+      "deleteColumns": "ลบคอลัมน์ที่เลือก",
+      "alignLeft": "ชิดซ้าย",
+      "alignCenter": "กึ่งกลาง",
+      "alignRight": "ชิดขวา",
+      "fill": "สีพื้น",
+      "stroke": "เส้นขอบ",
+      "inset": "ระยะขอบใน",
+      "breakable": "อนุญาตให้แบ่งหน้า",
+      "resetCellAttrs": "รีเซ็ตรูปแบบเซลล์"
     },
     "math": {
       "editTitle": "แก้ไขสมการ",

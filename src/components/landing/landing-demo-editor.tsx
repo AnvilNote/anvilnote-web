@@ -37,6 +37,7 @@ import {
 import { LinkInput } from "@/components/editor/link-input";
 import { TextColorPicker } from "@/components/editor/text-color-picker";
 import { TiptapBubbleMenu } from "@/components/editor/tiptap-bubble-menu";
+import { TableBubbleMenu } from "@/components/editor/table-bubble-menu";
 import { TiptapToolbar } from "@/components/editor/tiptap-toolbar";
 import { BlockHandle } from "@/components/editor/block-handle";
 import { TableSizeDialog } from "@/components/editor/table-size-picker";
@@ -330,6 +331,8 @@ export function LandingDemoEditor({ copy }: { copy: DemoCopy }) {
         tableDeleteLabel: t("editor.block.delete", { type: t("editor.block.types.table") }),
         tableAddRowLabel: t("editor.table.addRow"),
         tableAddColumnLabel: t("editor.table.addColumn"),
+        tableResizeRowLabel: t("editor.table.resizeRow"),
+        tableResizeColumnLabel: t("editor.table.resizeColumn"),
         questionBodyPlaceholder: t("editor.questionBlock.bodyPlaceholder"),
         choicePlaceholder: (label: string) => t("editor.questionBlock.choicePlaceholder", { label }),
         tableHeaderPlaceholder: t("editor.table.headerPlaceholder"),
@@ -665,6 +668,7 @@ export function LandingDemoEditor({ copy }: { copy: DemoCopy }) {
                       onEditLink={() => setLinkOpen(true)}
                       onEditColor={() => setColorPickerOpen(true)}
                     />
+                    <TableBubbleMenu editor={editor} />
                     <BlockHandle editor={editor} />
                   </>
                 ) : null}

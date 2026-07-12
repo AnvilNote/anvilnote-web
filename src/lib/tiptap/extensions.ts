@@ -7,7 +7,14 @@ import { FootnotesNodeView } from "@/components/editor/node-views/footnotes-node
 import Placeholder from "@tiptap/extension-placeholder";
 import Typography from "@tiptap/extension-typography";
 import { Table, TableView } from "@tiptap/extension-table";
-import { addColumnAfter, addColumnBefore, addRowAfter, addRowBefore, CellSelection } from "@tiptap/pm/tables";
+import {
+  addColumnAfter,
+  addColumnBefore,
+  addRowAfter,
+  addRowBefore,
+  CellSelection,
+  TableMap,
+} from "@tiptap/pm/tables";
 import TableRow from "@tiptap/extension-table-row";
 import TableHeader from "@tiptap/extension-table-header";
 import TableCell from "@tiptap/extension-table-cell";
@@ -33,9 +40,18 @@ import { InlineBlank } from "@/lib/tiptap/inline-blank";
 import { TabNavigation } from "@/lib/tiptap/tab-navigation";
 import { AnvilDivider } from "@/lib/tiptap/divider";
 import { captionHasMath, renderCaptionHtml } from "@/lib/tiptap/caption-math";
+import { insertTrackSize, resizeTrackPair } from "@/lib/tiptap/table-geometry";
+import {
+  normalizeCellBoolean,
+  normalizeCellColor,
+  normalizeCellInset,
+} from "@/lib/tiptap/table-attributes";
 
 export type TableVariant = "normal" | "three-line";
 export type TableAlign = "left" | "center" | "right";
+
+const MIN_COLUMN_WIDTH = 48;
+const MIN_ROW_HEIGHT = 32;
 
 class AnvilTableView extends TableView {
   private readonly viewInstance;
@@ -48,8 +64,13 @@ class AnvilTableView extends TableView {
   private tableInner!: HTMLDivElement;
   private addRowLabel = "Add row";
   private addColumnLabel = "Add column";
-  private rowGutterButtons: HTMLDivElement[] = [];
-  private colGutterButtons: HTMLDivElement[] = [];
+  private resizeRowLabel = "Resize row";
+  private resizeColumnLabel = "Resize column";
+  private rowGutterZones: HTMLDivElement[] = [];
+  private colGutterZones: HTMLDivElement[] = [];
+  private resizeObserver: ResizeObserver | null = null;
+  private renderFrame: number | null = null;
+  private stopActiveResize: (() => void) | null = null;
 
   constructor(
     node: import("@tiptap/pm/model").Node,
@@ -80,6 +101,14 @@ class AnvilTableView extends TableView {
       typeof HTMLAttributes["data-add-column-label"] === "string"
         ? HTMLAttributes["data-add-column-label"]
         : "Add column";
+    const resizeRowLabel =
+      typeof HTMLAttributes["data-resize-row-label"] === "string"
+        ? HTMLAttributes["data-resize-row-label"]
+        : "Resize row";
+    const resizeColumnLabel =
+      typeof HTMLAttributes["data-resize-column-label"] === "string"
+        ? HTMLAttributes["data-resize-column-label"]
+        : "Resize column";
 
     // Vanilla DOM delete button — same bottom-right corner pattern as
     // callout/proof/codeBlock/mermaid's own React NodeView delete buttons,
@@ -142,6 +171,8 @@ class AnvilTableView extends TableView {
 
     this.addRowLabel = addRowLabel;
     this.addColumnLabel = addColumnLabel;
+    this.resizeRowLabel = resizeRowLabel;
+    this.resizeColumnLabel = resizeColumnLabel;
 
     // The base TableView constructor already appended `this.table` directly
     // into `this.dom` — reparent it into a dedicated inner wrapper so the
@@ -160,39 +191,32 @@ class AnvilTableView extends TableView {
     // layout, which doesn't exist yet mid-constructor (the DOM isn't
     // attached to the document until the caller inserts this.dom) —
     // deferred one frame past the initial synchronous mount.
-    requestAnimationFrame(() => this.renderGutters());
+    this.requestGutterRender();
+    this.resizeObserver = new ResizeObserver(() => this.requestGutterRender());
+    this.resizeObserver.observe(this.table);
   }
 
-  // Hover-edge "+" buttons — Tiptap's own table extension only exposes
-  // addRowAfter/addColumnAfter/addRowBefore/addColumnBefore as commands,
-  // no built-in UI for them at all (see
-  // https://tiptap.dev/docs/editor/extensions/nodes/table); per explicit
-  // product decision these live at the table's own edges (Notion-style —
-  // row-insert buttons down the left edge, one per row boundary
-  // (rows.length + 1 of them, including before the first and after the
-  // last row); column-insert buttons across the top edge the same way),
-  // not as toolbar buttons, and not just a single "append at the end"
-  // button — any boundary between two rows/columns (or before the first/
-  // after the last) gets its own insertion point. Positions are computed
-  // from each row/cell's OWN rendered rect (not assumed uniform height/
-  // width), so this stays correct with wrapped multi-line cell content or
-  // manually resized columns.
+  private requestGutterRender() {
+    if (this.renderFrame !== null) cancelAnimationFrame(this.renderFrame);
+    this.renderFrame = requestAnimationFrame(() => {
+      this.renderFrame = null;
+      this.renderGutters();
+    });
+  }
+
   private renderGutters() {
-    this.rowGutterButtons.forEach((el) => el.remove());
-    this.colGutterButtons.forEach((el) => el.remove());
-    this.rowGutterButtons = [];
-    this.colGutterButtons = [];
+    this.rowGutterZones.forEach((element) => element.remove());
+    this.colGutterZones.forEach((element) => element.remove());
+    this.rowGutterZones = [];
+    this.colGutterZones = [];
 
     const rows = Array.from(this.table.tBodies[0]?.rows ?? []);
     if (rows.length === 0) return;
     const tableRect = this.table.getBoundingClientRect();
 
-    // Each boundary gets its own independent hover ZONE (a full-width, for
-    // rows — full-height, for columns — invisible strip centered on that
-    // one boundary) wrapping just its own button. Reveal is driven by the
-    // ZONE's own :hover, not a table-wide one, so hovering near boundary
-    // N only ever reveals boundary N's "+", not every boundary's at once.
     const makeZone = (
+      axis: "row" | "column",
+      boundaryIndex: number,
       zoneClassName: string,
       buttonClassName: string,
       label: string,
@@ -200,73 +224,111 @@ class AnvilTableView extends TableView {
     ): HTMLDivElement => {
       const zone = document.createElement("div");
       zone.className = zoneClassName;
+      zone.contentEditable = "false";
+      zone.dataset.boundary = String(boundaryIndex);
+
       const button = document.createElement("button");
       button.type = "button";
       button.className = buttonClassName;
       button.setAttribute("aria-label", label);
       button.title = label;
       button.textContent = "+";
-      button.addEventListener("mousedown", (event) => event.stopPropagation());
+      button.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      });
       button.addEventListener("click", (event) => {
         event.preventDefault();
+        event.stopPropagation();
+        this.viewInstance.focus();
         onClick();
       });
-      zone.appendChild(button);
+
+      zone.append(button);
+      if (boundaryIndex > 0) {
+        const resizeButton = document.createElement("button");
+        resizeButton.type = "button";
+        resizeButton.className = "anvil-table__boundary-resize";
+        const resizeLabel = axis === "row" ? this.resizeRowLabel : this.resizeColumnLabel;
+        resizeButton.setAttribute("aria-label", resizeLabel);
+        resizeButton.title = resizeLabel;
+        resizeButton.addEventListener("pointerdown", (event) => {
+          this.startBoundaryResize(axis, boundaryIndex, event);
+        });
+        resizeButton.addEventListener("keydown", (event) => {
+          const delta =
+            axis === "column"
+              ? event.key === "ArrowLeft"
+                ? -8
+                : event.key === "ArrowRight"
+                  ? 8
+                  : 0
+              : event.key === "ArrowUp"
+                ? -8
+                : event.key === "ArrowDown"
+                  ? 8
+                  : 0;
+          if (delta !== 0) {
+            event.preventDefault();
+            event.stopPropagation();
+            this.resizeBoundary(axis, boundaryIndex, delta);
+          }
+        });
+        zone.append(resizeButton);
+      }
+
       this.tableInner.appendChild(zone);
       return zone;
     };
 
-    rows.forEach((row, index) => {
-      const rect = row.getBoundingClientRect();
-      const y = rect.top - tableRect.top;
+    const rowOffsets = [0];
+    for (const row of rows) {
+      rowOffsets.push(row.getBoundingClientRect().bottom - tableRect.top);
+    }
+    rowOffsets.forEach((offset, boundaryIndex) => {
       const zone = makeZone(
+        "row",
+        boundaryIndex,
         "anvil-table__row-zone",
         "anvil-table__row-insert",
         this.addRowLabel,
-        () => this.insertRowAt(index, "before"),
+        () => this.insertRowAtBoundary(boundaryIndex),
       );
-      zone.style.top = `${y}px`;
-      this.rowGutterButtons.push(zone);
+      zone.style.top = `${offset}px`;
+      this.rowGutterZones.push(zone);
     });
-    const lastRowRect = rows[rows.length - 1].getBoundingClientRect();
-    const lastRowZone = makeZone(
-      "anvil-table__row-zone",
-      "anvil-table__row-insert",
-      this.addRowLabel,
-      () => this.insertRowAt(rows.length - 1, "after"),
-    );
-    lastRowZone.style.top = `${lastRowRect.bottom - tableRect.top}px`;
-    this.rowGutterButtons.push(lastRowZone);
 
-    const firstRowCells = Array.from(rows[0].cells);
-    firstRowCells.forEach((cell, index) => {
-      const rect = cell.getBoundingClientRect();
-      const x = rect.left - tableRect.left;
-      const zone = makeZone(
-        "anvil-table__col-zone",
-        "anvil-table__col-insert",
-        this.addColumnLabel,
-        () => this.insertColumnAt(index, "before"),
-      );
-      zone.style.left = `${x}px`;
-      this.colGutterButtons.push(zone);
-    });
-    if (firstRowCells.length > 0) {
-      const lastCellRect = firstRowCells[firstRowCells.length - 1].getBoundingClientRect();
-      const lastColZone = makeZone(
-        "anvil-table__col-zone",
-        "anvil-table__col-insert",
-        this.addColumnLabel,
-        () => this.insertColumnAt(firstRowCells.length - 1, "after"),
-      );
-      lastColZone.style.left = `${lastCellRect.right - tableRect.left}px`;
-      this.colGutterButtons.push(lastColZone);
+    const columnWidths = this.measureColumnWidths();
+    const columnOffsets = [0];
+    for (const width of columnWidths) {
+      columnOffsets.push(columnOffsets[columnOffsets.length - 1] + width);
     }
+    columnOffsets.forEach((offset, boundaryIndex) => {
+      const zone = makeZone(
+        "column",
+        boundaryIndex,
+        "anvil-table__col-zone",
+        "anvil-table__col-insert",
+        this.addColumnLabel,
+        () => this.insertColumnAtBoundary(boundaryIndex),
+      );
+      zone.style.left = `${offset}px`;
+      this.colGutterZones.push(zone);
+    });
   }
 
-  private insertRowAt(rowIndex: number, side: "before" | "after") {
+  private insertRowAtBoundary(boundaryIndex: number) {
     const table = this.findTablePos();
     if (!table) return;
+    const rowCount = table.node.childCount;
+    if (rowCount === 0 || boundaryIndex < 0 || boundaryIndex > rowCount) return;
+    const manual = Array.from({ length: rowCount }, (_, index) =>
+      Number(table.node.child(index).attrs.rowHeight),
+    ).some((height) => Number.isFinite(height) && height > 0);
+    const sizes = manual ? this.measureRowHeights() : [];
+    const total = sizes.reduce((sum, size) => sum + size, 0);
+    const rowIndex = boundaryIndex === rowCount ? rowCount - 1 : boundaryIndex;
+    const side = boundaryIndex === rowCount ? "after" : "before";
     const cellPos = this.firstCellPosInRow(table.pos, table.node, rowIndex);
     if (cellPos === null) return;
     const { state, dispatch } = this.viewInstance;
@@ -275,11 +337,35 @@ class AnvilTableView extends TableView {
       this.viewInstance.state,
       this.viewInstance.dispatch,
     );
+    if (manual) {
+      this.setRowHeights(
+        insertTrackSize(sizes, boundaryIndex, total, MIN_ROW_HEIGHT),
+      );
+    }
+    this.requestGutterRender();
   }
 
-  private insertColumnAt(colIndex: number, side: "before" | "after") {
+  private insertColumnAtBoundary(boundaryIndex: number) {
     const table = this.findTablePos();
     if (!table) return;
+    const columnCount = TableMap.get(table.node).width;
+    if (columnCount === 0 || boundaryIndex < 0 || boundaryIndex > columnCount) return;
+    let manual = false;
+    table.node.descendants((node) => {
+      if (
+        (node.type.name === "tableCell" || node.type.name === "tableHeader") &&
+        Array.isArray(node.attrs.colwidth) &&
+        node.attrs.colwidth.some((width: unknown) => typeof width === "number" && width > 0)
+      ) {
+        manual = true;
+        return false;
+      }
+      return true;
+    });
+    const sizes = manual ? this.measureColumnWidths() : [];
+    const total = sizes.reduce((sum, size) => sum + size, 0);
+    const colIndex = boundaryIndex === columnCount ? columnCount - 1 : boundaryIndex;
+    const side = boundaryIndex === columnCount ? "after" : "before";
     const cellPos = this.cellPosInFirstRow(table.pos, table.node, colIndex);
     if (cellPos === null) return;
     const { state, dispatch } = this.viewInstance;
@@ -288,32 +374,145 @@ class AnvilTableView extends TableView {
       this.viewInstance.state,
       this.viewInstance.dispatch,
     );
-    this.resetColumnWidths();
+    if (manual) {
+      this.setColumnWidths(
+        insertTrackSize(sizes, boundaryIndex, total, MIN_COLUMN_WIDTH),
+      );
+    }
+    this.requestGutterRender();
   }
 
-  // Per explicit product decision: columns default to an even split
-  // (.ProseMirror table's table-layout: fixed makes any cell with
-  // colwidth: null share space evenly with its siblings) and STAY that
-  // way across inserts — addColumnBefore/After only sets the NEW
-  // column's cells to colwidth: null, leaving any already-manually-
-  // resized columns at their old explicit pixel width, which would
-  // otherwise leave the new column an uneven leftover sliver instead of
-  // an equal share. Clearing colwidth on every cell resets the whole
-  // table back to an even split each time a column is added.
-  private resetColumnWidths() {
+  private measureColumnWidths() {
+    const table = this.findTablePos();
+    if (!table) return [];
+    const count = TableMap.get(table.node).width;
+    const tableWidth = this.table.getBoundingClientRect().width;
+    const measured = Array.from(this.colgroup.children, (column) =>
+      column.getBoundingClientRect().width,
+    );
+    if (measured.length === count && measured.every((width) => width > 0)) {
+      return measured;
+    }
+    return Array<number>(count).fill(tableWidth / Math.max(count, 1));
+  }
+
+  private measureRowHeights() {
+    return Array.from(this.table.tBodies[0]?.rows ?? [], (row) =>
+      row.getBoundingClientRect().height,
+    );
+  }
+
+  private setColumnWidths(widths: number[]) {
     const table = this.findTablePos();
     if (!table) return;
+    const map = TableMap.get(table.node);
+    if (widths.length !== map.width) return;
     const { state, dispatch } = this.viewInstance;
-    let tr = state.tr;
-    let changed = false;
-    table.node.descendants((node, pos) => {
-      if (node.type.name !== "tableCell" && node.type.name !== "tableHeader") return true;
-      if (node.attrs.colwidth == null) return false;
-      tr = tr.setNodeMarkup(table.pos + 1 + pos, undefined, { ...node.attrs, colwidth: null });
-      changed = true;
-      return false;
-    });
-    if (changed) dispatch(tr);
+    const tr = state.tr;
+    const start = table.pos + 1;
+    for (let column = 0; column < map.width; column += 1) {
+      const width = Math.max(MIN_COLUMN_WIDTH, Math.round(widths[column]));
+      for (let row = 0; row < map.height; row += 1) {
+        const mapIndex = row * map.width + column;
+        if (row > 0 && map.map[mapIndex] === map.map[mapIndex - map.width]) continue;
+        const relativePos = map.map[mapIndex];
+        const cell = table.node.nodeAt(relativePos);
+        if (!cell) continue;
+        const cellColumn = map.colCount(relativePos);
+        const widthIndex = cell.attrs.colspan === 1 ? 0 : column - cellColumn;
+        const colwidth = Array.isArray(cell.attrs.colwidth)
+          ? [...cell.attrs.colwidth]
+          : Array<number>(cell.attrs.colspan).fill(0);
+        if (colwidth[widthIndex] === width) continue;
+        colwidth[widthIndex] = width;
+        tr.setNodeMarkup(start + relativePos, undefined, { ...cell.attrs, colwidth });
+      }
+    }
+    if (tr.docChanged) dispatch(tr);
+  }
+
+  private setRowHeights(heights: number[]) {
+    const table = this.findTablePos();
+    if (!table || heights.length !== table.node.childCount) return;
+    const tr = this.viewInstance.state.tr;
+    let rowPos = table.pos + 1;
+    for (let index = 0; index < table.node.childCount; index += 1) {
+      const row = table.node.child(index);
+      const rowHeight = Math.max(MIN_ROW_HEIGHT, Math.round(heights[index]));
+      if (row.attrs.rowHeight !== rowHeight) {
+        tr.setNodeMarkup(rowPos, undefined, { ...row.attrs, rowHeight });
+      }
+      rowPos += row.nodeSize;
+    }
+    if (tr.docChanged) this.viewInstance.dispatch(tr);
+  }
+
+  private resizeBoundary(axis: "row" | "column", boundaryIndex: number, delta: number) {
+    const sizes = axis === "row" ? this.measureRowHeights() : this.measureColumnWidths();
+    if (boundaryIndex <= 0 || boundaryIndex > sizes.length) return;
+    let next: number[];
+    if (boundaryIndex === sizes.length) {
+      next = [...sizes];
+      const minimum = axis === "row" ? MIN_ROW_HEIGHT : MIN_COLUMN_WIDTH;
+      next[next.length - 1] = Math.max(minimum, next[next.length - 1] + delta);
+    } else {
+      next = resizeTrackPair(
+        sizes,
+        boundaryIndex - 1,
+        delta,
+        axis === "row" ? MIN_ROW_HEIGHT : MIN_COLUMN_WIDTH,
+      );
+    }
+    if (axis === "row") this.setRowHeights(next);
+    else this.setColumnWidths(next);
+  }
+
+  private startBoundaryResize(
+    axis: "row" | "column",
+    boundaryIndex: number,
+    event: PointerEvent,
+  ) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.stopActiveResize?.();
+    this.viewInstance.focus();
+
+    const start = axis === "row" ? event.clientY : event.clientX;
+    const sizes = axis === "row" ? this.measureRowHeights() : this.measureColumnWidths();
+    const bodyClass = axis === "row" ? "anvil-resize-row" : "anvil-resize-column";
+    document.body.classList.add(bodyClass);
+
+    const move = (moveEvent: PointerEvent) => {
+      const current = axis === "row" ? moveEvent.clientY : moveEvent.clientX;
+      const delta = current - start;
+      let next: number[];
+      if (boundaryIndex === sizes.length) {
+        next = [...sizes];
+        const minimum = axis === "row" ? MIN_ROW_HEIGHT : MIN_COLUMN_WIDTH;
+        next[next.length - 1] = Math.max(minimum, next[next.length - 1] + delta);
+      } else {
+        next = resizeTrackPair(
+          sizes,
+          boundaryIndex - 1,
+          delta,
+          axis === "row" ? MIN_ROW_HEIGHT : MIN_COLUMN_WIDTH,
+        );
+      }
+      if (axis === "row") this.setRowHeights(next);
+      else this.setColumnWidths(next);
+    };
+    const stop = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", stop);
+      window.removeEventListener("pointercancel", stop);
+      document.body.classList.remove(bodyClass);
+      this.stopActiveResize = null;
+      this.requestGutterRender();
+    };
+    this.stopActiveResize = stop;
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", stop, { once: true });
+    window.addEventListener("pointercancel", stop, { once: true });
   }
 
   // addRowBefore/After and addColumnBefore/After (from @tiptap/pm/tables)
@@ -418,12 +617,27 @@ class AnvilTableView extends TableView {
     const updated = super.update(node);
     if (updated) {
       this.syncWrapperAttrs();
-      // Row/column counts, cell content (row height), and column widths
-      // (drag-resize) can all change here — same "defer past this
-      // synchronous render" reasoning as the constructor's own call.
-      requestAnimationFrame(() => this.renderGutters());
+      this.requestGutterRender();
     }
     return updated;
+  }
+
+  stopEvent(event: Event) {
+    const target = event.target;
+    return (
+      target instanceof Element &&
+      Boolean(
+        target.closest(
+          ".anvil-table__row-zone, .anvil-table__col-zone, .anvil-table__caption, .anvil-table__delete",
+        ),
+      )
+    );
+  }
+
+  destroy() {
+    this.stopActiveResize?.();
+    this.resizeObserver?.disconnect();
+    if (this.renderFrame !== null) cancelAnimationFrame(this.renderFrame);
   }
 
   private syncWrapperAttrs() {
@@ -498,6 +712,8 @@ function createAnvilTableView(
   deleteLabel: string,
   addRowLabel: string,
   addColumnLabel: string,
+  resizeRowLabel: string,
+  resizeColumnLabel: string,
 ) {
   return class extends AnvilTableView {
     constructor(
@@ -513,6 +729,8 @@ function createAnvilTableView(
         "data-delete-label": deleteLabel,
         "data-add-row-label": addRowLabel,
         "data-add-column-label": addColumnLabel,
+        "data-resize-row-label": resizeRowLabel,
+        "data-resize-column-label": resizeColumnLabel,
       });
     }
   };
@@ -544,6 +762,86 @@ const AnvilTable = Table.extend({
         renderHTML: (attributes) => ({ "data-align": attributes.align }),
       },
     };
+  },
+});
+
+const AnvilTableRow = TableRow.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      rowHeight: {
+        default: null,
+        parseHTML: (element) => {
+          const value = Number(element.getAttribute("data-row-height"));
+          return Number.isFinite(value) && value >= MIN_ROW_HEIGHT ? value : null;
+        },
+        renderHTML: (attributes) => {
+          const value = Number(attributes.rowHeight);
+          return Number.isFinite(value) && value >= MIN_ROW_HEIGHT
+            ? { "data-row-height": value, style: `height: ${value}px` }
+            : {};
+        },
+      },
+    };
+  },
+});
+
+function anvilCellAttributes() {
+  return {
+    fill: {
+      default: null,
+      parseHTML: (element: HTMLElement) =>
+        normalizeCellColor(element.getAttribute("data-cell-fill")),
+      renderHTML: (attributes: Record<string, unknown>) => {
+        const value = normalizeCellColor(attributes.fill);
+        return value
+          ? { "data-cell-fill": value, style: `background-color: ${value}` }
+          : {};
+      },
+    },
+    stroke: {
+      default: null,
+      parseHTML: (element: HTMLElement) =>
+        normalizeCellColor(element.getAttribute("data-cell-stroke")),
+      renderHTML: (attributes: Record<string, unknown>) => {
+        const value = normalizeCellColor(attributes.stroke);
+        return value
+          ? { "data-cell-stroke": value, style: `border-color: ${value}` }
+          : {};
+      },
+    },
+    inset: {
+      default: null,
+      parseHTML: (element: HTMLElement) =>
+        normalizeCellInset(element.getAttribute("data-cell-inset")),
+      renderHTML: (attributes: Record<string, unknown>) => {
+        const value = normalizeCellInset(attributes.inset);
+        return value
+          ? { "data-cell-inset": value, style: `padding: ${value}` }
+          : {};
+      },
+    },
+    breakable: {
+      default: null,
+      parseHTML: (element: HTMLElement) =>
+        normalizeCellBoolean(element.getAttribute("data-cell-breakable")),
+      renderHTML: (attributes: Record<string, unknown>) => {
+        const value = normalizeCellBoolean(attributes.breakable);
+        return value === null ? {} : { "data-cell-breakable": String(value) };
+      },
+    },
+  };
+}
+
+const AnvilTableCell = TableCell.extend({
+  addAttributes() {
+    return { ...this.parent?.(), ...anvilCellAttributes() };
+  },
+});
+
+const AnvilTableHeader = TableHeader.extend({
+  addAttributes() {
+    return { ...this.parent?.(), ...anvilCellAttributes() };
   },
 });
 
@@ -586,6 +884,8 @@ export type BuildExtensionsOptions = {
   tableDeleteLabel: string;
   tableAddRowLabel: string;
   tableAddColumnLabel: string;
+  tableResizeRowLabel: string;
+  tableResizeColumnLabel: string;
   // Question block placeholders — a fresh questionItem/choiceItem starts
   // as an empty paragraph, same as any other empty paragraph in the
   // document, so distinguishing them needs the Placeholder extension's
@@ -617,6 +917,8 @@ export function buildExtensions({
   tableDeleteLabel,
   tableAddRowLabel,
   tableAddColumnLabel,
+  tableResizeRowLabel,
+  tableResizeColumnLabel,
   questionBodyPlaceholder,
   choicePlaceholder,
   tableHeaderPlaceholder,
@@ -733,18 +1035,20 @@ export function buildExtensions({
       },
     }),
     AnvilTable.configure({
-      resizable: true,
+      resizable: false,
       View: createAnvilTableView(
         tableLabel,
         tableCaptionPlaceholder,
         tableDeleteLabel,
         tableAddRowLabel,
         tableAddColumnLabel,
+        tableResizeRowLabel,
+        tableResizeColumnLabel,
       ),
     }),
-    TableRow,
-    TableHeader,
-    TableCell,
+    AnvilTableRow,
+    AnvilTableHeader,
+    AnvilTableCell,
     Mathematics.configure({
       katexOptions: { throwOnError: false },
       inlineOptions: {

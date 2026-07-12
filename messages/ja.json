@@ -316,7 +316,21 @@
       "headerPlaceholder": "見出し",
       "cellPlaceholder": "内容",
       "addRow": "行を追加",
-      "addColumn": "列を追加"
+      "addColumn": "列を追加",
+      "resizeRow": "行の高さを変更",
+      "resizeColumn": "列幅を変更",
+      "mergeCells": "セルを結合",
+      "splitCell": "結合セルを分割",
+      "deleteRows": "選択した行を削除",
+      "deleteColumns": "選択した列を削除",
+      "alignLeft": "左揃え",
+      "alignCenter": "中央揃え",
+      "alignRight": "右揃え",
+      "fill": "塗りつぶし",
+      "stroke": "罫線",
+      "inset": "余白",
+      "breakable": "改ページを許可",
+      "resetCellAttrs": "セル書式をリセット"
     },
     "math": {
       "editTitle": "数式を編集",

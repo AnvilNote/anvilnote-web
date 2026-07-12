@@ -316,7 +316,21 @@
       "headerPlaceholder": "Header",
       "cellPlaceholder": "Text",
       "addRow": "Add row",
-      "addColumn": "Add column"
+      "addColumn": "Add column",
+      "resizeRow": "Resize row",
+      "resizeColumn": "Resize column",
+      "mergeCells": "Merge cells",
+      "splitCell": "Split merged cell",
+      "deleteRows": "Delete selected rows",
+      "deleteColumns": "Delete selected columns",
+      "alignLeft": "Align left",
+      "alignCenter": "Align center",
+      "alignRight": "Align right",
+      "fill": "Fill",
+      "stroke": "Border",
+      "inset": "Inset",
+      "breakable": "Page break",
+      "resetCellAttrs": "Reset cell formatting"
     },
     "math": {
       "editTitle": "Edit equation",

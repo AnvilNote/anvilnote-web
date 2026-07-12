@@ -316,7 +316,21 @@
       "headerPlaceholder": "제목",
       "cellPlaceholder": "내용",
       "addRow": "행 추가",
-      "addColumn": "열 추가"
+      "addColumn": "열 추가",
+      "resizeRow": "행 높이 조절",
+      "resizeColumn": "열 너비 조절",
+      "mergeCells": "셀 병합",
+      "splitCell": "병합 셀 분할",
+      "deleteRows": "선택한 행 삭제",
+      "deleteColumns": "선택한 열 삭제",
+      "alignLeft": "왼쪽 맞춤",
+      "alignCenter": "가운데 맞춤",
+      "alignRight": "오른쪽 맞춤",
+      "fill": "채우기",
+      "stroke": "테두리",
+      "inset": "안쪽 여백",
+      "breakable": "페이지 나눔 허용",
+      "resetCellAttrs": "셀 서식 초기화"
     },
     "math": {
       "editTitle": "수식 편집",

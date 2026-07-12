@@ -32,6 +32,7 @@ import { DocumentTitle } from "@/components/editor/document-title";
 import { AutosaveIndicator } from "@/components/editor/autosave-indicator";
 import { TiptapToolbar } from "@/components/editor/tiptap-toolbar";
 import { TiptapBubbleMenu } from "@/components/editor/tiptap-bubble-menu";
+import { TableBubbleMenu } from "@/components/editor/table-bubble-menu";
 import { DividerBubbleMenu } from "@/components/editor/divider-bubble-menu";
 import { BlockHandle } from "@/components/editor/block-handle";
 import { LinkInput } from "@/components/editor/link-input";
@@ -139,6 +140,8 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
   const tableDeleteLabel = t("editor.block.delete", { type: t("editor.block.types.table") });
   const tableAddRowLabel = t("editor.table.addRow");
   const tableAddColumnLabel = t("editor.table.addColumn");
+  const tableResizeRowLabel = t("editor.table.resizeRow");
+  const tableResizeColumnLabel = t("editor.table.resizeColumn");
   const questionBodyPlaceholder = t("editor.questionBlock.bodyPlaceholder");
   const tableHeaderPlaceholder = t("editor.table.headerPlaceholder");
   const tableCellPlaceholder = t("editor.table.cellPlaceholder");
@@ -169,6 +172,8 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         tableDeleteLabel,
         tableAddRowLabel,
         tableAddColumnLabel,
+        tableResizeRowLabel,
+        tableResizeColumnLabel,
         questionBodyPlaceholder,
         choicePlaceholder,
         tableHeaderPlaceholder,
@@ -191,6 +196,8 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
       tableDeleteLabel,
       tableAddRowLabel,
       tableAddColumnLabel,
+      tableResizeRowLabel,
+      tableResizeColumnLabel,
       questionBodyPlaceholder,
       choicePlaceholderKey,
       tableHeaderPlaceholder,
@@ -634,6 +641,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
               onEditLink={() => setLinkOpen(true)}
               onEditColor={() => setColorPickerOpen(true)}
             />
+            <TableBubbleMenu editor={editor} />
             <DividerBubbleMenu editor={editor} />
             <BlockHandle editor={editor} />
           </>

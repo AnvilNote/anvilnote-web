@@ -316,7 +316,21 @@
       "headerPlaceholder": "標題",
       "cellPlaceholder": "內容",
       "addRow": "新增列",
-      "addColumn": "新增欄"
+      "addColumn": "新增欄",
+      "resizeRow": "調整列高",
+      "resizeColumn": "調整欄寬",
+      "mergeCells": "合併儲存格",
+      "splitCell": "拆分合併儲存格",
+      "deleteRows": "刪除選取列",
+      "deleteColumns": "刪除選取欄",
+      "alignLeft": "靠左對齊",
+      "alignCenter": "置中對齊",
+      "alignRight": "靠右對齊",
+      "fill": "填色",
+      "stroke": "邊框",
+      "inset": "內距",
+      "breakable": "允許跨頁",
+      "resetCellAttrs": "重設儲存格格式"
     },
     "math": {
       "editTitle": "編輯公式",

@@ -316,7 +316,21 @@
       "headerPlaceholder": "Заголовок",
       "cellPlaceholder": "Текст",
       "addRow": "Добавить строку",
-      "addColumn": "Добавить столбец"
+      "addColumn": "Добавить столбец",
+      "resizeRow": "Изменить высоту строки",
+      "resizeColumn": "Изменить ширину столбца",
+      "mergeCells": "Объединить ячейки",
+      "splitCell": "Разделить объединённую ячейку",
+      "deleteRows": "Удалить выбранные строки",
+      "deleteColumns": "Удалить выбранные столбцы",
+      "alignLeft": "По левому краю",
+      "alignCenter": "По центру",
+      "alignRight": "По правому краю",
+      "fill": "Заливка",
+      "stroke": "Граница",
+      "inset": "Отступ",
+      "breakable": "Разрешить разрыв страницы",
+      "resetCellAttrs": "Сбросить формат ячейки"
     },
     "math": {
       "editTitle": "Редактировать формулу",
