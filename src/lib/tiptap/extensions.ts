@@ -42,6 +42,7 @@ import { AnvilDivider } from "@/lib/tiptap/divider";
 import { captionHasMath, renderCaptionHtml } from "@/lib/tiptap/caption-math";
 import { insertTrackSize, resizeTrackPair } from "@/lib/tiptap/table-geometry";
 import {
+  contrastTextColor,
   normalizeCellBoolean,
   normalizeCellColor,
   normalizeCellInset,
@@ -794,8 +795,13 @@ function anvilCellAttributes() {
         normalizeCellColor(element.getAttribute("data-cell-fill")),
       renderHTML: (attributes: Record<string, unknown>) => {
         const value = normalizeCellColor(attributes.fill);
+        // Text flips black/white by the fill's WCAG relative luminance —
+        // see contrastTextColor's own comment for the math.
         return value
-          ? { "data-cell-fill": value, style: `background-color: ${value}` }
+          ? {
+              "data-cell-fill": value,
+              style: `background-color: ${value}; color: ${contrastTextColor(value)}`,
+            }
           : {};
       },
     },
