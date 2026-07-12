@@ -654,6 +654,14 @@ class AnvilTableView extends TableView {
         : "center";
 
     this.dom.setAttribute("data-align", align);
+    // The base TableView only applies renderHTML attributes to the <table>
+    // element at CONSTRUCTION — its update() never re-applies them, so a
+    // variant/align switch from the toolbar (updateAttributes on the node)
+    // otherwise never reaches the DOM and the three-line CSS preview
+    // (globals.css's table[data-variant="three-line"] rules) never fires.
+    const variant = this.node.attrs.variant === "three-line" ? "three-line" : "normal";
+    this.table.setAttribute("data-variant", variant);
+    this.table.setAttribute("data-align", align);
     if (
       document.activeElement !== this.captionInput &&
       this.captionInput.value !== caption
