@@ -14,6 +14,11 @@ import { Selection } from "@tiptap/pm/state";
 // typeable position, skipping over atom nodes (images, blanks, dividers,
 // math) and node-view chrome entirely, since neither has a corresponding
 // ProseMirror text position to land on.
+// Tab must never leave the editor (escaping to the browser's native focus
+// order is exactly the bug this extension exists to fix) — at the last
+// textblock, wrap back around to the first one instead of falling through
+// to `false`/native handling. Same for Shift-Tab at the first textblock,
+// wrapping to the last one.
 export const TabNavigation = Extension.create({
   name: "tabNavigation",
   addKeyboardShortcuts() {
@@ -22,27 +27,26 @@ export const TabNavigation = Extension.create({
         const { state } = this.editor;
         const { $to } = state.selection;
         const afterCurrentBlock = $to.end($to.depth) + 1;
-        if (afterCurrentBlock > state.doc.content.size) return false;
-        const next = Selection.findFrom(
-          state.doc.resolve(afterCurrentBlock),
-          1,
-          true,
-        );
-        if (!next) return false;
-        return this.editor.chain().focus().setTextSelection(next.from).scrollIntoView().run();
+        const next =
+          afterCurrentBlock <= state.doc.content.size
+            ? Selection.findFrom(state.doc.resolve(afterCurrentBlock), 1, true)
+            : null;
+        const target = next ?? Selection.findFrom(state.doc.resolve(0), 1, true);
+        if (!target) return false;
+        return this.editor.chain().focus().setTextSelection(target.from).scrollIntoView().run();
       },
       "Shift-Tab": () => {
         const { state } = this.editor;
         const { $from } = state.selection;
         const beforeCurrentBlock = $from.start($from.depth) - 1;
-        if (beforeCurrentBlock < 0) return false;
-        const prev = Selection.findFrom(
-          state.doc.resolve(beforeCurrentBlock),
-          -1,
-          true,
-        );
-        if (!prev) return false;
-        return this.editor.chain().focus().setTextSelection(prev.from).scrollIntoView().run();
+        const prev =
+          beforeCurrentBlock >= 0
+            ? Selection.findFrom(state.doc.resolve(beforeCurrentBlock), -1, true)
+            : null;
+        const target =
+          prev ?? Selection.findFrom(state.doc.resolve(state.doc.content.size), -1, true);
+        if (!target) return false;
+        return this.editor.chain().focus().setTextSelection(target.from).scrollIntoView().run();
       },
     };
   },
