@@ -32,6 +32,7 @@ import { DocumentTitle } from "@/components/editor/document-title";
 import { AutosaveIndicator } from "@/components/editor/autosave-indicator";
 import { TiptapToolbar } from "@/components/editor/tiptap-toolbar";
 import { TiptapBubbleMenu } from "@/components/editor/tiptap-bubble-menu";
+import { DividerBubbleMenu } from "@/components/editor/divider-bubble-menu";
 import { BlockHandle } from "@/components/editor/block-handle";
 import { LinkInput } from "@/components/editor/link-input";
 import { TextColorPicker } from "@/components/editor/text-color-picker";
@@ -294,7 +295,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         title: tt("blank"),
         subtitle: tt("blankHint"),
         icon: Minus,
-        aliases: ["blank", "underline", "cloze", "空格", "底線"],
+        aliases: ["s", "blank", "underline", "cloze", "空格", "底線"],
         run: ({ editor, range }) => {
           insertInlineBlank(editor, range);
         },
@@ -303,7 +304,9 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         title: tt("divider"),
         subtitle: tt("dividerHint"),
         icon: SeparatorHorizontal,
-        aliases: ["divider", "hr", "line", "分隔線", "橫線"],
+        // "-" for quick access (mirrors "x"/"d" for inline/block math above)
+        // — not "d", already exact-aliased to blockMath below.
+        aliases: ["-", "divider", "hr", "line", "分隔線", "橫線"],
         run: run((c) => c.setHorizontalRule().run()),
       },
       {
@@ -619,6 +622,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
               onEditLink={() => setLinkOpen(true)}
               onEditColor={() => setColorPickerOpen(true)}
             />
+            <DividerBubbleMenu editor={editor} />
             <BlockHandle editor={editor} />
           </>
         ) : null}

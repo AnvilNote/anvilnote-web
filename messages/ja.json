@@ -209,6 +209,13 @@
         "green": "グリーン",
         "blue": "ブルー",
         "purple": "パープル"
+      },
+      "dividerThickness": "太さ",
+      "dividerStyles": {
+        "solid": "実線",
+        "dashed": "破線",
+        "dotted": "点線",
+        "dashdot": "一点鎖線"
       }
     },
     "toolbar": {

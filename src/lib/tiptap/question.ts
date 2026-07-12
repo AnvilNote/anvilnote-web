@@ -320,7 +320,16 @@ export function insertQuestion(editor: Editor, kind: QuestionKind) {
     .chain()
     .focus()
     .command(({ tr, state }) => {
-      const pos = state.selection.from;
+      const { $from } = state.selection;
+      // Toolbar-triggered (no text/range to consume), so the cursor is
+      // usually resting in an empty paragraph — plain tr.insert() at that
+      // position splices the question node in WITHOUT touching that
+      // paragraph, leaving it behind as a stray blank line above the
+      // question. Replace it outright when empty; otherwise fall back to
+      // the original insert-at-cursor behavior.
+      const replaceEmptyParagraph =
+        $from.parent.type.name === "paragraph" && $from.parent.content.size === 0;
+      const nodeStart = replaceEmptyParagraph ? $from.before() : state.selection.from;
       const node = state.schema.nodeFromJSON({
         type: "question",
         content: [
@@ -331,8 +340,12 @@ export function insertQuestion(editor: Editor, kind: QuestionKind) {
           },
         ],
       });
-      tr.insert(pos, node);
-      tr.setSelection(TextSelection.create(tr.doc, pos + 3));
+      if (replaceEmptyParagraph) {
+        tr.replaceRangeWith(nodeStart, $from.after(), node);
+      } else {
+        tr.insert(nodeStart, node);
+      }
+      tr.setSelection(TextSelection.create(tr.doc, nodeStart + 3));
       return true;
     })
     .run();

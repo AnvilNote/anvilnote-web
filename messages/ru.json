@@ -209,6 +209,13 @@
         "green": "Зелёный",
         "blue": "Синий",
         "purple": "Фиолетовый"
+      },
+      "dividerThickness": "Толщина",
+      "dividerStyles": {
+        "solid": "Сплошная",
+        "dashed": "Пунктирная",
+        "dotted": "Точечная",
+        "dashdot": "Штрихпунктирная"
       }
     },
     "toolbar": {

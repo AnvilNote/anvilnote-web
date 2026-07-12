@@ -67,7 +67,10 @@ export function TiptapBubbleMenu({
       editor={editor}
       className="flex items-center gap-0.5 rounded-lg border bg-popover p-1 shadow-md"
       shouldShow={({ editor: e, from, to }) =>
-        from !== to && !e.isActive("codeBlock") && !e.isActive("blockMath")
+        from !== to &&
+        !e.isActive("codeBlock") &&
+        !e.isActive("blockMath") &&
+        !e.isActive("horizontalRule")
       }
     >
       <MenuButton

@@ -209,6 +209,13 @@
         "green": "เขียว",
         "blue": "น้ำเงิน",
         "purple": "ม่วง"
+      },
+      "dividerThickness": "ความหนา",
+      "dividerStyles": {
+        "solid": "เส้นทึบ",
+        "dashed": "เส้นประ",
+        "dotted": "เส้นจุด",
+        "dashdot": "เส้นจุดขีด"
       }
     },
     "toolbar": {

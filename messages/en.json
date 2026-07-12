@@ -209,6 +209,13 @@
         "green": "Green",
         "blue": "Blue",
         "purple": "Purple"
+      },
+      "dividerThickness": "Thickness",
+      "dividerStyles": {
+        "solid": "Solid",
+        "dashed": "Dashed",
+        "dotted": "Dotted",
+        "dashdot": "Dash-dot"
       }
     },
     "toolbar": {

@@ -29,6 +29,8 @@ import { CrossRefSuggestion } from "@/components/editor/cross-ref-suggestion";
 import { QuestionBlank } from "@/lib/tiptap/question-blank";
 import { QuestionBlankSuggestion } from "@/components/editor/question-blank-suggestion";
 import { InlineBlank } from "@/lib/tiptap/inline-blank";
+import { TabNavigation } from "@/lib/tiptap/tab-navigation";
+import { AnvilDivider } from "@/lib/tiptap/divider";
 import { captionHasMath, renderCaptionHtml } from "@/lib/tiptap/caption-math";
 
 export type TableVariant = "normal" | "three-line";
@@ -362,6 +364,10 @@ export function buildExtensions({
       // attribution attrs + a NodeView on top of the same node
       // name/content/commands/keyboard shortcuts/input rules.
       blockquote: false,
+      // Replaced by AnvilDivider below, which adds thickness/line-style
+      // attrs on top of the same node name/content/commands/keyboard
+      // shortcuts/input rules.
+      horizontalRule: false,
       link: {
         openOnClick: false,
         autolink: true,
@@ -370,6 +376,7 @@ export function buildExtensions({
     }),
     AnvilDocument,
     AnvilBlockquote,
+    AnvilDivider,
     AnvilFootnotes,
     AnvilFootnote,
     FootnoteReference,
@@ -482,5 +489,6 @@ export function buildExtensions({
     QuestionBlank,
     QuestionBlankSuggestion,
     InlineBlank,
+    TabNavigation,
   ];
 }
