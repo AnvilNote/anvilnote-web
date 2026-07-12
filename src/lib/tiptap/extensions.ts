@@ -13,7 +13,7 @@ import TableCell from "@tiptap/extension-table-cell";
 import { TextStyle } from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import { Mathematics } from "@tiptap/extension-mathematics";
-import { BlockMathExit } from "@/lib/tiptap/math";
+import { BlockMathExit, MathArrowSelect } from "@/lib/tiptap/math";
 import { AnvilBlockquote } from "@/lib/tiptap/blockquote";
 import { AnvilCodeBlock } from "@/lib/tiptap/code-block";
 import { AnvilImage } from "@/lib/tiptap/image";
@@ -483,6 +483,7 @@ export function buildExtensions({
       },
     }),
     BlockMathExit,
+    MathArrowSelect,
     CrossRefTargetIds,
     CrossRef,
     CrossRefSuggestion,

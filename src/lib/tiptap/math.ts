@@ -127,3 +127,42 @@ export const BlockMathExit = Extension.create({
     };
   },
 });
+
+const MATH_NODE_NAMES = new Set(["inlineMath", "blockMath"]);
+
+// Both math nodes are atoms with no editable content inside them (see the
+// BlockMathExit comment above) — ProseMirror's default arrow-key motion
+// treats an atom as a single unit to step OVER, landing the cursor on the
+// far side in one keypress rather than ever selecting it. This makes
+// ArrowLeft/ArrowRight instead select the adjacent math node (a
+// NodeSelection, same kind BlockMathExit's Enter handler already knows
+// how to act on) when the cursor is right next to one, matching how the
+// user actually wants to "step into" a formula to edit/delete it — a
+// second press of the same arrow, now starting FROM that NodeSelection,
+// continues past it via ProseMirror's own default NodeSelection motion
+// (no extra handling needed for that direction).
+export const MathArrowSelect = Extension.create({
+  name: "mathArrowSelect",
+  addKeyboardShortcuts() {
+    return {
+      ArrowRight: () => {
+        const { state, dispatch } = this.editor.view;
+        const { $from, empty } = state.selection;
+        if (!empty) return false;
+        const nodeAfter = $from.nodeAfter;
+        if (!nodeAfter || !MATH_NODE_NAMES.has(nodeAfter.type.name)) return false;
+        dispatch(state.tr.setSelection(NodeSelection.create(state.doc, $from.pos)));
+        return true;
+      },
+      ArrowLeft: () => {
+        const { state, dispatch } = this.editor.view;
+        const { $from, empty } = state.selection;
+        if (!empty) return false;
+        const nodeBefore = $from.nodeBefore;
+        if (!nodeBefore || !MATH_NODE_NAMES.has(nodeBefore.type.name)) return false;
+        dispatch(state.tr.setSelection(NodeSelection.create(state.doc, $from.pos - nodeBefore.nodeSize)));
+        return true;
+      },
+    };
+  },
+});
