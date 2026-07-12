@@ -286,6 +286,20 @@ class AnvilTableView extends TableView {
       return zone;
     };
 
+    // Zones are absolutely positioned inside tableInner, but every offset
+    // below is measured relative to the TABLE's own rect — the two only
+    // coincide while the table fills the wrapper. Once the table has an
+    // explicit total width narrower than the wrapper (e.g. after dragging
+    // the rightmost boundary inward), data-align="center"'s margin-inline:
+    // auto shifts the table right of the wrapper's left edge and every
+    // zone would otherwise land misaligned, making the visual boundaries
+    // un-hoverable. Add the table's offset within the wrapper to both
+    // axes, and pin row zones to the table's actual width instead of the
+    // CSS default left:0/right:0 wrapper span.
+    const innerRect = this.tableInner.getBoundingClientRect();
+    const tableOffsetX = tableRect.left - innerRect.left;
+    const tableOffsetY = tableRect.top - innerRect.top;
+
     const rowOffsets = [0];
     for (const row of rows) {
       rowOffsets.push(row.getBoundingClientRect().bottom - tableRect.top);
@@ -299,7 +313,10 @@ class AnvilTableView extends TableView {
         this.addRowLabel,
         () => this.insertRowAtBoundary(boundaryIndex),
       );
-      zone.style.top = `${offset}px`;
+      zone.style.top = `${tableOffsetY + offset}px`;
+      zone.style.left = `${tableOffsetX}px`;
+      zone.style.right = "auto";
+      zone.style.width = `${tableRect.width}px`;
       this.rowGutterZones.push(zone);
     });
 
@@ -317,7 +334,10 @@ class AnvilTableView extends TableView {
         this.addColumnLabel,
         () => this.insertColumnAtBoundary(boundaryIndex),
       );
-      zone.style.left = `${offset}px`;
+      zone.style.left = `${tableOffsetX + offset}px`;
+      zone.style.top = `${tableOffsetY}px`;
+      zone.style.bottom = "auto";
+      zone.style.height = `${tableRect.height}px`;
       this.colGutterZones.push(zone);
     });
   }
