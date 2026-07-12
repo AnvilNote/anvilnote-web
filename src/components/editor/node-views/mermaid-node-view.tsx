@@ -111,6 +111,19 @@ export function MermaidNodeView({ node, updateAttributes, deleteNode, editor }: 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, draft, effectiveTheme, JSON.stringify(themeVariables), instanceId]);
 
+  // Numeric twin of the drag handle: type a percentage directly (10–100,
+  // blank = natural size) — same percent-of-width sizing convention as
+  // stats-chart's own width field.
+  function commitWidthPercent(raw: string) {
+    if (!raw.trim()) {
+      updateAttributes({ width: null });
+      return;
+    }
+    const value = Number(raw);
+    if (!Number.isFinite(value)) return;
+    updateAttributes({ width: Math.max(10, Math.min(100, Math.round(value))) });
+  }
+
   function startResize(event: React.PointerEvent) {
     event.preventDefault();
     event.stopPropagation();
@@ -287,6 +300,25 @@ export function MermaidNodeView({ node, updateAttributes, deleteNode, editor }: 
         </div>
 
         <div className="anvil-mermaid__handle" onPointerDown={startResize} contentEditable={false} />
+
+        <div
+          className="anvil-size-percent"
+          contentEditable={false}
+          title={tBlock("widthPercent")}
+          onMouseDown={(event) => event.stopPropagation()}
+        >
+          <input
+            type="number"
+            min={10}
+            max={100}
+            placeholder="100"
+            aria-label={tBlock("widthPercent")}
+            value={width ?? ""}
+            onChange={(event) => commitWidthPercent(event.target.value)}
+            onKeyDown={(event) => event.stopPropagation()}
+          />
+          %
+        </div>
       </div>
     </NodeViewWrapper>
   );

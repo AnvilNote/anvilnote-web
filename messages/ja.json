@@ -216,7 +216,8 @@
         "dashed": "破線",
         "dotted": "点線",
         "dashdot": "一点鎖線"
-      }
+      },
+      "widthPercent": "幅の割合"
     },
     "toolbar": {
       "paragraph": "段落",

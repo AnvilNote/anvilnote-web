@@ -1272,6 +1272,44 @@
   position: relative;
 }
 
+/* Bottom-right width-percentage input shared by mermaid and image node
+   views (matches stats-chart's percent-of-text-width sizing convention;
+   here the percent applies to the editor/page width the two nodes
+   already store in their width attr). Hidden until the frame is
+   hovered, same reveal pattern as the other node-view chrome. */
+.anvil-size-percent {
+  position: absolute;
+  right: 0.35rem;
+  bottom: 0.35rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.1rem 0.3rem;
+  font-size: 0.7rem;
+  color: var(--muted-foreground);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 0.3rem;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.anvil-mermaid__frame:hover .anvil-size-percent,
+.anvil-image__frame:hover .anvil-size-percent,
+.anvil-size-percent:focus-within {
+  opacity: 1;
+}
+
+.anvil-size-percent input {
+  width: 2.4rem;
+  border: 0;
+  background: transparent;
+  font-size: 0.7rem;
+  color: var(--foreground);
+  outline: none;
+}
+
 .anvil-table__row-zone {
   position: absolute;
   left: -2rem;

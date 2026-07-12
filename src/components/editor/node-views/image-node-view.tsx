@@ -135,6 +135,19 @@ export function ImageNodeView({
     window.addEventListener("pointerup", onUp);
   }
 
+  // Numeric twin of the drag handle: type a percentage directly (10–100,
+  // blank = natural size) — same percent-of-width sizing convention as
+  // stats-chart's own width field.
+  function commitWidthPercent(raw: string) {
+    if (!raw.trim()) {
+      updateAttributes({ width: null });
+      return;
+    }
+    const value = Number(raw);
+    if (!Number.isFinite(value)) return;
+    updateAttributes({ width: Math.max(10, Math.min(100, Math.round(value))) });
+  }
+
   function handleImageClick(event: ReactMouseEvent) {
     // The default atom-node click behavior would otherwise turn this into a
     // ProseMirror NodeSelection — harmless, but pointless now that click's
@@ -243,6 +256,24 @@ export function ImageNodeView({
                 contentEditable={false}
                 aria-hidden
               />
+              <div
+                className="anvil-size-percent"
+                contentEditable={false}
+                title={tBlock("widthPercent")}
+                onMouseDown={(event) => event.stopPropagation()}
+              >
+                <input
+                  type="number"
+                  min={10}
+                  max={100}
+                  placeholder="100"
+                  aria-label={tBlock("widthPercent")}
+                  value={width ?? ""}
+                  onChange={(event) => commitWidthPercent(event.target.value)}
+                  onKeyDown={(event) => event.stopPropagation()}
+                />
+                %
+              </div>
             </>
           ) : null}
         </div>

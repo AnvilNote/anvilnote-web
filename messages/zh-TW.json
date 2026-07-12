@@ -216,7 +216,8 @@
         "dashed": "虛線",
         "dotted": "點線",
         "dashdot": "點虛線"
-      }
+      },
+      "widthPercent": "寬度比例"
     },
     "toolbar": {
       "paragraph": "段落",

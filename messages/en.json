@@ -216,7 +216,8 @@
         "dashed": "Dashed",
         "dotted": "Dotted",
         "dashdot": "Dash-dot"
-      }
+      },
+      "widthPercent": "Width percent"
     },
     "toolbar": {
       "paragraph": "Paragraph",

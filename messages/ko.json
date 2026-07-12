@@ -216,7 +216,8 @@
         "dashed": "파선",
         "dotted": "점선",
         "dashdot": "일점쇄선"
-      }
+      },
+      "widthPercent": "너비 비율"
     },
     "toolbar": {
       "paragraph": "단락",
