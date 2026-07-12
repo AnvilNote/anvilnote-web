@@ -23,8 +23,17 @@ export const TabNavigation = Extension.create({
   name: "tabNavigation",
   addKeyboardShortcuts() {
     return {
+      // Raw tr.setSelection + literal `return true`, not a
+      // .chain()...run() whose aggregate boolean depends on every
+      // sub-command (focus()/scrollIntoView()) individually succeeding —
+      // if any of those returned false the whole chain's return value
+      // would too, and ProseMirror only calls preventDefault() when the
+      // bound command returns true, letting the native Tab-to-next-DOM-
+      // element behavior ALSO fire right after. Same pattern
+      // question.ts's insertQuestion uses for the same reason.
       Tab: () => {
-        const { state } = this.editor;
+        const { view } = this.editor;
+        const { state, dispatch } = view;
         const { $to } = state.selection;
         const afterCurrentBlock = $to.end($to.depth) + 1;
         const next =
@@ -33,10 +42,13 @@ export const TabNavigation = Extension.create({
             : null;
         const target = next ?? Selection.findFrom(state.doc.resolve(0), 1, true);
         if (!target) return false;
-        return this.editor.chain().focus().setTextSelection(target.from).scrollIntoView().run();
+        dispatch(state.tr.setSelection(target).scrollIntoView());
+        view.focus();
+        return true;
       },
       "Shift-Tab": () => {
-        const { state } = this.editor;
+        const { view } = this.editor;
+        const { state, dispatch } = view;
         const { $from } = state.selection;
         const beforeCurrentBlock = $from.start($from.depth) - 1;
         const prev =
@@ -46,7 +58,9 @@ export const TabNavigation = Extension.create({
         const target =
           prev ?? Selection.findFrom(state.doc.resolve(state.doc.content.size), -1, true);
         if (!target) return false;
-        return this.editor.chain().focus().setTextSelection(target.from).scrollIntoView().run();
+        dispatch(state.tr.setSelection(target).scrollIntoView());
+        view.focus();
+        return true;
       },
     };
   },
