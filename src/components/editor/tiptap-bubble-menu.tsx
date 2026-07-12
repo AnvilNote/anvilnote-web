@@ -80,7 +80,7 @@ export function TiptapBubbleMenu({
   return (
     <BubbleMenu
       editor={editor}
-      className="flex items-center gap-0.5 rounded-lg border bg-popover p-1 shadow-md"
+      className="z-20 flex items-center gap-0.5 rounded-lg border bg-popover p-1 shadow-md"
       shouldShow={({ editor: e, from, to }) =>
         from !== to &&
         !(e.state.selection instanceof CellSelection) &&

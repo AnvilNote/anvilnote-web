@@ -86,7 +86,10 @@ export function TableBubbleMenu({ editor }: { editor: Editor }) {
   return (
     <BubbleMenu
       editor={editor}
-      className="flex max-w-[min(94vw,48rem)] items-center gap-0.5 overflow-x-auto rounded-lg border bg-popover p-1 shadow-md"
+      // z-20 beats the boundary hover zones (z-10) and their handles/lines
+      // (z-3) so the menu always sits ON TOP of the resize affordances
+      // instead of the column handle's line drawing through it.
+      className="z-20 flex max-w-[min(94vw,48rem)] items-center gap-0.5 overflow-x-auto rounded-lg border bg-popover p-1 shadow-md"
       shouldShow={() => state.isCellSelection}
     >
       <TableMenuButton

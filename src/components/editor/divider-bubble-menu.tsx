@@ -48,7 +48,7 @@ export function DividerBubbleMenu({ editor }: { editor: Editor }) {
   return (
     <BubbleMenu
       editor={editor}
-      className="flex items-center gap-2 rounded-lg border bg-popover p-1.5 shadow-md"
+      className="z-20 flex items-center gap-2 rounded-lg border bg-popover p-1.5 shadow-md"
       shouldShow={() => s.isDivider}
     >
       <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
