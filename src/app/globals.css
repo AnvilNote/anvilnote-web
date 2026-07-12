@@ -1275,15 +1275,11 @@
 /* Per-boundary "+" buttons (Notion-style) — one per row boundary down the
    left edge, one per column boundary across the top edge (see
    extensions.ts's renderGutters, which sets each button's own top/left
-   inline style from its boundary's real rendered position). Always
-   visible at low opacity rather than hidden-until-hover — a hover-reveal
-   tied to a specific parent's :hover state turned out finicky in
-   practice (only reliably triggering right at the edge itself, not
-   anywhere over the table), so this drops that entirely in favor of a
-   permanent, low-opacity affordance that brightens on its OWN :hover.
-   anvil-table__inner wraps ONLY the <table> (not the caption below it),
-   so these coordinates are always relative to the table's own box
-   regardless of caption presence. */
+   inline style from its boundary's real rendered position). Hidden until
+   the table itself (anvil-table__inner — wraps ONLY the <table>, not the
+   caption below it) is hovered, then all fade in together; CSS :hover
+   bubbles from any descendant, so this reliably triggers anywhere over
+   the table, not just right at a button's own tiny hit box. */
 .anvil-table__row-insert,
 .anvil-table__col-insert {
   position: absolute;
@@ -1294,7 +1290,7 @@
   width: 1.1rem;
   height: 1.1rem;
   padding: 0;
-  opacity: 0.45;
+  opacity: 0;
   color: var(--muted-foreground);
   background: var(--background);
   border: 1px solid var(--border);
@@ -1307,9 +1303,13 @@
     background 0.1s;
 }
 
+.anvil-table__inner:hover .anvil-table__row-insert,
+.anvil-table__inner:hover .anvil-table__col-insert {
+  opacity: 1;
+}
+
 .anvil-table__row-insert:hover,
 .anvil-table__col-insert:hover {
-  opacity: 1;
   color: var(--foreground);
   background: var(--accent);
 }
@@ -1347,6 +1347,12 @@
   border-collapse: collapse;
   width: 100%;
   overflow: hidden;
+  /* Columns with no explicit colwidth (the default — see extensions.ts's
+     resetColumnWidths, which clears it back to this on every add/remove
+     column) split the table's width EVENLY under fixed layout; the
+     default `auto` instead sizes each column to its own content, which
+     is what "equal columns" needs to NOT happen. */
+  table-layout: fixed;
 }
 
 .ProseMirror th,

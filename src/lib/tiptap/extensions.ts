@@ -267,6 +267,32 @@ class AnvilTableView extends TableView {
       this.viewInstance.state,
       this.viewInstance.dispatch,
     );
+    this.resetColumnWidths();
+  }
+
+  // Per explicit product decision: columns default to an even split
+  // (.ProseMirror table's table-layout: fixed makes any cell with
+  // colwidth: null share space evenly with its siblings) and STAY that
+  // way across inserts — addColumnBefore/After only sets the NEW
+  // column's cells to colwidth: null, leaving any already-manually-
+  // resized columns at their old explicit pixel width, which would
+  // otherwise leave the new column an uneven leftover sliver instead of
+  // an equal share. Clearing colwidth on every cell resets the whole
+  // table back to an even split each time a column is added.
+  private resetColumnWidths() {
+    const table = this.findTablePos();
+    if (!table) return;
+    const { state, dispatch } = this.viewInstance;
+    let tr = state.tr;
+    let changed = false;
+    table.node.descendants((node, pos) => {
+      if (node.type.name !== "tableCell" && node.type.name !== "tableHeader") return true;
+      if (node.attrs.colwidth == null) return false;
+      tr = tr.setNodeMarkup(table.pos + 1 + pos, undefined, { ...node.attrs, colwidth: null });
+      changed = true;
+      return false;
+    });
+    if (changed) dispatch(tr);
   }
 
   // addRowBefore/After and addColumnBefore/After (from @tiptap/pm/tables)
