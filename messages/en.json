@@ -87,6 +87,8 @@
     },
     "cheatSheet": "Cheat sheet",
     "helpMenu": "Help",
+    "helpMenuDragHint": "Help (drag to move)",
+    "hide": "Hide",
     "itemHints": {
       "paragraph": "Back to a plain paragraph",
       "heading1": "Largest heading level",
@@ -868,6 +870,11 @@
       "description": "Adjust how AnvilNote looks.",
       "theme": "Theme",
       "themeHint": "Choose light or dark mode.",
+      "tourButton": "Tutorial button",
+      "tourButtonHint": "Show the floating help/tutorial button in the bottom-right corner.",
+      "tourButtonPosition": "Button position",
+      "tourButtonPositionHint": "The help button has been moved from its default spot.",
+      "tourButtonPositionReset": "Reset position",
       "themeLight": "Light",
       "themeDark": "Dark"
     },

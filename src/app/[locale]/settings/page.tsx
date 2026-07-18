@@ -122,6 +122,32 @@ export default function SettingsPage() {
               </div>
             }
           />
+          <SettingsRow
+            label={t("settings.appearance.tourButton")}
+            hint={t("settings.appearance.tourButtonHint")}
+            control={
+              <Switch
+                checked={!settings.hideTourButton}
+                aria-label={t("settings.appearance.tourButton")}
+                onCheckedChange={(checked) => settings.setHideTourButton(!checked)}
+              />
+            }
+          />
+          {settings.tourButtonPosition ? (
+            <SettingsRow
+              label={t("settings.appearance.tourButtonPosition")}
+              hint={t("settings.appearance.tourButtonPositionHint")}
+              control={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => settings.setTourButtonPosition(null)}
+                >
+                  {t("settings.appearance.tourButtonPositionReset")}
+                </Button>
+              }
+            />
+          ) : null}
         </SettingsSection>
 
         <SettingsSection

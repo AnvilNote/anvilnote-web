@@ -87,6 +87,8 @@
     },
     "cheatSheet": "ชีตช่วยจำ",
     "helpMenu": "ช่วยเหลือ",
+    "helpMenuDragHint": "ช่วยเหลือ (ลากเพื่อย้าย)",
+    "hide": "ซ่อน",
     "itemHints": {
       "paragraph": "กลับเป็นย่อหน้าปกติ",
       "heading1": "ระดับหัวข้อใหญ่ที่สุด",
@@ -868,6 +870,11 @@
       "description": "ปรับวิธีแสดงผลของ AnvilNote",
       "theme": "ธีม",
       "themeHint": "เลือกโหมดสว่างหรือมืด",
+      "tourButton": "ปุ่มบทช่วยสอน",
+      "tourButtonHint": "แสดงปุ่มลอยช่วยเหลือ/บทช่วยสอนที่มุมล่างขวา",
+      "tourButtonPosition": "ตำแหน่งปุ่ม",
+      "tourButtonPositionHint": "ปุ่มช่วยเหลือถูกย้ายจากตำแหน่งเริ่มต้น",
+      "tourButtonPositionReset": "รีเซ็ตตำแหน่ง",
       "themeLight": "สว่าง",
       "themeDark": "มืด"
     },

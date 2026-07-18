@@ -87,6 +87,8 @@
     },
     "cheatSheet": "チートシート",
     "helpMenu": "ヘルプ",
+    "helpMenuDragHint": "ヘルプ（ドラッグで移動）",
+    "hide": "非表示",
     "itemHints": {
       "paragraph": "通常の段落に戻す",
       "heading1": "最大の見出しレベル",
@@ -868,6 +870,11 @@
       "description": "AnvilNoteの見た目を調整します。",
       "theme": "テーマ",
       "themeHint": "ライトモードかダークモードを選びます。",
+      "tourButton": "チュートリアルボタン",
+      "tourButtonHint": "右下にヘルプ/チュートリアルの浮動ボタンを表示します。",
+      "tourButtonPosition": "ボタンの位置",
+      "tourButtonPositionHint": "ヘルプボタンはデフォルトの位置から移動しています。",
+      "tourButtonPositionReset": "位置をリセット",
       "themeLight": "ライト",
       "themeDark": "ダーク"
     },

@@ -87,6 +87,8 @@
     },
     "cheatSheet": "치트 시트",
     "helpMenu": "도움말",
+    "helpMenuDragHint": "도움말 (드래그하여 이동)",
+    "hide": "숨기기",
     "itemHints": {
       "paragraph": "일반 문단으로 되돌리기",
       "heading1": "가장 큰 제목 레벨",
@@ -868,6 +870,11 @@
       "description": "AnvilNote의 표시 방식을 조정합니다.",
       "theme": "테마",
       "themeHint": "밝게 또는 어둡게 모드를 선택하세요.",
+      "tourButton": "튜토리얼 버튼",
+      "tourButtonHint": "오른쪽 하단에 도움말/튜토리얼 버튼을 표시합니다.",
+      "tourButtonPosition": "버튼 위치",
+      "tourButtonPositionHint": "도움말 버튼이 기본 위치에서 이동되었습니다.",
+      "tourButtonPositionReset": "위치 초기화",
       "themeLight": "밝게",
       "themeDark": "어둡게"
     },

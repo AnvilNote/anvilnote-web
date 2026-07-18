@@ -87,6 +87,8 @@
     },
     "cheatSheet": "小抄",
     "helpMenu": "說明",
+    "helpMenuDragHint": "說明（可拖曳移動）",
+    "hide": "隱藏",
     "itemHints": {
       "paragraph": "恢復成一般段落",
       "heading1": "最大的標題層級",
@@ -868,6 +870,11 @@
       "description": "調整 AnvilNote 的顯示方式。",
       "theme": "主題",
       "themeHint": "選擇淺色或深色模式。",
+      "tourButton": "教學按鈕",
+      "tourButtonHint": "在右下角顯示浮動的教學/說明按鈕。",
+      "tourButtonPosition": "按鈕位置",
+      "tourButtonPositionHint": "教學按鈕已被拖曳離開預設位置。",
+      "tourButtonPositionReset": "重置位置",
       "themeLight": "淺色",
       "themeDark": "深色"
     },

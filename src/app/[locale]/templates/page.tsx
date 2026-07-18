@@ -31,7 +31,7 @@ export default function TemplatesPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-6 py-10 sm:px-10">
+    <div className="mx-auto w-full max-w-4xl px-6 pt-10 pb-40 sm:px-10 lg:pb-44">
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">
           {t("templates.title")}

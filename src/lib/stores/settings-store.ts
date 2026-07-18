@@ -38,6 +38,14 @@ type SettingsState = {
   // (see export.ts); the underlying stored value stays a plain "YYYY-MM-DD"
   // string regardless, so switching formats is always lossless.
   dateFormat: DateFormat;
+  // Floating "?" tutorial/help button, bottom-right of the app shell
+  // (see tour-replay-button.tsx). Persisted so a user who dismisses it
+  // doesn't see it reappear on reload; re-enabled from Settings.
+  hideTourButton: boolean;
+  // User-dragged position for the same floating button, in px offsets from
+  // the viewport's bottom-right corner. null means "use the default corner
+  // position" (never dragged, or reset).
+  tourButtonPosition: { right: number; bottom: number } | null;
   setAutosave: (v: boolean) => void;
   setSpellcheck: (v: boolean) => void;
   setExportPageSize: (v: ExportPageSize) => void;
@@ -46,6 +54,8 @@ type SettingsState = {
   setVersionSnapshotIntervalMinutes: (v: VersionSnapshotIntervalMinutes) => void;
   setDefaultAuthor: (v: string) => void;
   setDateFormat: (v: DateFormat) => void;
+  setHideTourButton: (v: boolean) => void;
+  setTourButtonPosition: (v: { right: number; bottom: number } | null) => void;
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -59,6 +69,8 @@ export const useSettingsStore = create<SettingsState>()(
       versionSnapshotIntervalMinutes: 15,
       defaultAuthor: "",
       dateFormat: DEFAULT_DATE_FORMAT,
+      hideTourButton: false,
+      tourButtonPosition: null,
       setAutosave: (v) => set({ autosave: v }),
       setSpellcheck: (v) => set({ spellcheck: v }),
       setExportPageSize: (v) => set({ exportPageSize: v }),
@@ -67,6 +79,8 @@ export const useSettingsStore = create<SettingsState>()(
       setVersionSnapshotIntervalMinutes: (v) => set({ versionSnapshotIntervalMinutes: v }),
       setDefaultAuthor: (v) => set({ defaultAuthor: v }),
       setDateFormat: (v) => set({ dateFormat: v }),
+      setHideTourButton: (v) => set({ hideTourButton: v }),
+      setTourButtonPosition: (v) => set({ tourButtonPosition: v }),
     }),
     {
       name: STORAGE_KEY,

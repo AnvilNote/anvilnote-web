@@ -87,6 +87,8 @@
     },
     "cheatSheet": "Шпаргалка",
     "helpMenu": "Помощь",
+    "helpMenuDragHint": "Справка (перетащите, чтобы переместить)",
+    "hide": "Скрыть",
     "itemHints": {
       "paragraph": "Вернуть обычный абзац",
       "heading1": "Самый крупный заголовок",
@@ -868,6 +870,11 @@
       "description": "Настройте внешний вид AnvilNote.",
       "theme": "Тема",
       "themeHint": "Выберите светлый или тёмный режим.",
+      "tourButton": "Кнопка обучения",
+      "tourButtonHint": "Показывать плавающую кнопку справки/обучения в правом нижнем углу.",
+      "tourButtonPosition": "Положение кнопки",
+      "tourButtonPositionHint": "Кнопка справки перемещена с исходного места.",
+      "tourButtonPositionReset": "Сбросить положение",
       "themeLight": "Светлая",
       "themeDark": "Тёмная"
     },
