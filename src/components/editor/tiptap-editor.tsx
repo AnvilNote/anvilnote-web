@@ -492,9 +492,9 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
   // Expose this editor to the global command menu while it's mounted.
   useEffect(() => {
     if (!editor) return;
-    register(editor, requestMath);
+    register(editor, requestMath, documentId);
     return () => unregister(editor);
-  }, [editor, register, unregister, requestMath]);
+  }, [documentId, editor, register, unregister, requestMath]);
 
   // Reflect the spellcheck preference on the editable surface. Set the DOM
   // attribute directly so the editorProps (and its handleClick) stay intact.
@@ -637,6 +637,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
           <>
             <TiptapBubbleMenu
               editor={editor}
+              documentId={documentId}
               onInsertMath={requestMath}
               onEditLink={() => setLinkOpen(true)}
               onEditColor={() => setColorPickerOpen(true)}

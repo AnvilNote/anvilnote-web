@@ -1090,5 +1090,24 @@
       "source": "リンク",
       "projectLink": "プロジェクトページ"
     }
+  },
+  "ai": {
+    "smart": {
+      "promptPlaceholder": "何を書きたい？",
+      "inlinePlaceholder": "どう直したい？",
+      "copyMessage": "メッセージをコピー",
+      "messageCopied": "メッセージをコピーしました",
+      "moreAttachments": "他 {count} 件の添付ファイル",
+      "switchConversation": "会話を切り替える"
+    },
+    "settings": {
+      "advanced": "詳細設定",
+      "humanizer": "AIっぽさを抑える",
+      "humanizerHint": "事実や意図した文体を保ちながら、決まりきったAI表現を減らします。",
+      "keyReadyForSession": "この API キーはこのタブでのみ保持され、更新すると消去されます。"
+    },
+    "writingStyle": {
+      "label": "文体"
+    }
   }
 }

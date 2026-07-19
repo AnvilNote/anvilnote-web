@@ -20,6 +20,7 @@ import {
   SettingsSection,
 } from "@/components/settings/settings-section";
 import { FolderPicker } from "@/components/settings/folder-picker";
+import { AISettingsSection } from "@/components/settings/ai-settings-section";
 import { LocaleSwitcher } from "@/components/app/locale-switcher";
 import { ImportBackupButton } from "@/components/app/import-backup-button";
 import { isDesktopShell, useAppVersion } from "@/components/app/app-version";
@@ -159,6 +160,8 @@ export default function SettingsPage() {
             control={<LocaleSwitcher />}
           />
         </SettingsSection>
+
+        <AISettingsSection />
 
         <SettingsSection
           title={t("settings.documentDefaults.title")}

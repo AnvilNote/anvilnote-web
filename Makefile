@@ -6,7 +6,7 @@
 PM := pnpm
 
 # Treat these targets as commands rather than files on disk.
-.PHONY: help install dev build start lint typecheck check format clean reset
+.PHONY: help install dev build start lint typecheck test check format clean reset
 
 # Show this help message when make runs without a target.
 .DEFAULT_GOAL := help
@@ -33,6 +33,9 @@ lint: ## Run ESLint across the whole project
 
 typecheck: ## Run the TypeScript compiler in no-emit mode
 	$(PM) exec tsc --noEmit
+
+test: ## Run Node and component unit tests
+	$(PM) test
 
 # Run linting and type checking together as a quick quality gate.
 check: lint typecheck ## Run lint and typecheck in sequence

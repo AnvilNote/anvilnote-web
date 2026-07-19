@@ -9,21 +9,27 @@ import type { MathClickMode } from "@/lib/tiptap/extensions";
 // editor-specific actions can be enabled only when a document is open.
 type EditorBridgeState = {
   editor: Editor | null;
+  documentId: string | null;
   // Opens the math editor dialog for a fresh insertion (no existing node).
   requestMath: ((mode: MathClickMode) => void) | null;
-  register: (editor: Editor, requestMath: (mode: MathClickMode) => void) => void;
+  register: (
+    editor: Editor,
+    requestMath: (mode: MathClickMode) => void,
+    documentId: string,
+  ) => void;
   unregister: (editor: Editor) => void;
 };
 
 export const useEditorBridge = create<EditorBridgeState>((set, get) => ({
   editor: null,
+  documentId: null,
   requestMath: null,
-  register: (editor, requestMath) => set({ editor, requestMath }),
+  register: (editor, requestMath, documentId) => set({ editor, requestMath, documentId }),
   unregister: (editor) => {
     // Only clear if the unmounting editor is still the registered one; guards
     // against races when navigating between documents.
     if (get().editor === editor) {
-      set({ editor: null, requestMath: null });
+      set({ editor: null, documentId: null, requestMath: null });
     }
   },
 }));
