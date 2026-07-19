@@ -101,6 +101,23 @@ describe("Tiptap and AnvilNote AI AST converters", () => {
     expect(anvilNoteDocumentToTiptap(ai)).toEqual(richDocument);
   });
 
+  it("wraps a partial inline selection in a paragraph fragment", () => {
+    expect(
+      tiptapSelectionToAnvilNote([
+        { type: "text", text: "selected", marks: [{ type: "bold" }] },
+      ]),
+    ).toEqual({
+      schemaVersion: "anvilnote.fragment.v1",
+      type: "fragment",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "selected", marks: [{ type: "bold" }] }],
+        },
+      ],
+    });
+  });
+
   it("blocks unknown nodes, unsafe marks, and unsupported cell styling without data loss", () => {
     expect(() =>
       tiptapDocumentToAnvilNote({

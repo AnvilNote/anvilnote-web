@@ -1090,5 +1090,23 @@
       "source": "Ссылка",
       "projectLink": "Страница проекта"
     }
+  },
+  "ai": {
+    "smart": {
+      "promptPlaceholder": "Что хотите написать?",
+      "inlinePlaceholder": "Как это поправить?",
+      "copyMessage": "Копировать сообщение",
+      "messageCopied": "Сообщение скопировано",
+      "moreAttachments": "Ещё вложений: {count}"
+    },
+    "settings": {
+      "advanced": "Дополнительно",
+      "humanizer": "Меньше AI-стиля",
+      "humanizerHint": "Убирает шаблонные AI-обороты, сохраняя факты и нужный тон.",
+      "keyReadyForSession": "Этот ключ API хранится только в этой вкладке и удаляется при перезагрузке."
+    },
+    "writingStyle": {
+      "label": "Стиль"
+    }
   }
 }

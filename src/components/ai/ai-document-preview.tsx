@@ -66,9 +66,8 @@ export function aiDocumentPlainText(document: PreviewDocument): string {
 
 export function AIDocumentPreview({ document }: { document: PreviewDocument }) {
   return (
-    <div className="space-y-3 rounded-lg border bg-background p-4 text-sm">
+    <div className="space-y-3 text-sm">
       {document.content.map((node, index) => block(node, `preview-${index}`))}
     </div>
   );
 }
-

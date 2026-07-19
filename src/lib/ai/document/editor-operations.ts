@@ -64,3 +64,44 @@ export function applyAIContent(
   if (applied) editor.view.dispatch(closeHistory(editor.state.tr));
   return applied;
 }
+
+/**
+ * Applies a reviewed inline proposal without allowing a block node to split
+ * or replace the surrounding paragraph. Like applyAIContent(), this remains a
+ * single, history-eligible editor operation.
+ */
+export function applyInlineAIContent(
+  editor: Editor,
+  range: AIApplyRange,
+  content: JSONContent[],
+): boolean {
+  if (
+    range.from < 0 ||
+    range.to < range.from ||
+    range.to > editor.state.doc.content.size
+  ) {
+    return false;
+  }
+
+  try {
+    const nodes = content.map((node) => editor.schema.nodeFromJSON(node));
+    if (nodes.some((node) => !node.isInline)) return false;
+    const replacement = Fragment.fromArray(nodes);
+    const transaction = editor.state.tr;
+    closeHistory(transaction);
+    transaction.setMeta("addToHistory", true);
+    transaction.replaceWith(range.from, range.to, replacement);
+    const selectionPosition = Math.min(
+      range.from + replacement.size,
+      transaction.doc.content.size,
+    );
+    transaction.setSelection(
+      TextSelection.near(transaction.doc.resolve(selectionPosition), -1),
+    );
+    editor.view.dispatch(transaction);
+    editor.view.dispatch(closeHistory(editor.state.tr));
+    return true;
+  } catch {
+    return false;
+  }
+}

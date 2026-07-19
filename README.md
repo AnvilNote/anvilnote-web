@@ -85,16 +85,32 @@ ${NEXT_PUBLIC_API_URL}${pdfUrl}
 
 ## Smart Mode
 
-Smart Mode is a document-operation Sheet, not a chat. It infers compose or
-selection rewrite from the current editor state, optionally extracts local
-attachments through the API, estimates cost, and previews the versioned AI AST
-before any editor change. Accept uses one history-eligible Tiptap transaction;
-selection/document hashes prevent a late result from overwriting newer edits.
+Smart Mode is a document-scoped conversation in the right-side Sheet. Each
+document has its own named conversations, with newest conversation summaries
+and messages loaded lazily; a new conversation is not persisted until its
+first successful turn. Assistant results remain safe versioned-AST previews:
+compose drafts can insert at the cursor or explicitly replace the whole
+document (including an optional suggested title). Usage, pricing and warnings
+are deliberately absent from the transcript.
+
+Selecting ordinary marked text also exposes Smart Mode from the editor toolbar.
+The toolbar turns into a small inline composer; its pending red-strike/black
+proposal is a decoration only. Accept is one history-eligible Tiptap
+transaction, while reject, selection changes, document changes and unmounting
+leave document JSON untouched. Complex selections use the right-side preview.
+Historical selection rewrites remain preview-only because their original range
+and protected-content registry are not reconstructed after a reload.
 
 The browser imports only `@anvilnote/ai-writer` contracts, document schemas,
 and pricing. It never bundles the OpenAI SDK or prompt/policy Markdown. Browser
 BYOK is tab-memory-only and disappears on reload; no API Key is written to
 localStorage, IndexedDB, persisted Zustand state, a URL, or analytics.
+
+For Next.js hot reload with persistent encrypted key profiles, stop the direct
+Web dev process and run `make dev-hot` from `anvilnote-desktop`. That command
+loads the dev server inside Electron with the trusted SQLite/safeStorage
+boundary. A direct browser deliberately labels its key action as current-tab
+use rather than a persistent save.
 
 Supported AI round trips include paragraphs, headings, lists, blockquotes,
 code blocks, math, tables, horizontal rules, safe links, and the registered

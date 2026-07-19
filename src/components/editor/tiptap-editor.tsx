@@ -637,6 +637,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
           <>
             <TiptapBubbleMenu
               editor={editor}
+              documentId={documentId}
               onInsertMath={requestMath}
               onEditLink={() => setLinkOpen(true)}
               onEditColor={() => setColorPickerOpen(true)}

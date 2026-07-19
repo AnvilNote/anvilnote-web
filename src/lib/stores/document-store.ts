@@ -138,6 +138,11 @@ type DocumentState = {
   deleteDocument: (id: string) => Promise<void>;
   renameDocument: (id: string, title: string) => void;
   setContent: (id: string, content: JSONContent) => void;
+  replaceWholeDocumentFromAI: (
+    id: string,
+    content: JSONContent,
+    suggestedTitle?: string | null,
+  ) => Promise<AnvilDocument | undefined>;
   setMetadataField: (id: string, key: string, value: AnvilMetadataValue) => void;
   setTemplateSettingField: (id: string, key: string, value: AnvilMetadataValue) => void;
   setNumberedHeadings: (id: string, value: boolean) => void;
@@ -416,6 +421,73 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
       ),
     }));
     scheduleSave(id);
+  },
+
+  // A confirmed AI full-document replacement is one deliberate user action.
+  // Keep the document's template/project/settings untouched and persist its
+  // content (and a non-empty suggested title, if any) in exactly one PATCH.
+  // Tiptap's onUpdate may have queued a normal autosave while applying the
+  // same transaction, so cancel it before the direct write.
+  replaceWholeDocumentFromAI: async (id, content, suggestedTitle) => {
+    const current = get().documents.find((document) => document.id === id);
+    if (!current) return undefined;
+
+    const queued = saveTimers.get(id);
+    if (queued) {
+      clearTimeout(queued);
+      saveTimers.delete(id);
+    }
+
+    const nextTitle = suggestedTitle?.trim() || current.title;
+    const titleChanged = nextTitle !== current.title;
+    const template = useTemplatesStore.getState().getTemplate(current.templateId);
+    const hasTitleField = template?.fields.some(
+      (field) => field.scope === "metadata" && field.key === "title",
+    );
+    const nextMetadata =
+      titleChanged && hasTitleField
+        ? { ...current.metadata, title: nextTitle }
+        : current.metadata;
+    const replacement = touch(current, {
+      content,
+      ...(titleChanged ? { title: nextTitle } : {}),
+      ...(nextMetadata !== current.metadata ? { metadata: nextMetadata } : {}),
+    });
+
+    // Keep the live editor and document store on the existing document until
+    // the single replacement PATCH succeeds. A full replacement is
+    // destructive enough that a failed network write must not leave a local
+    // document which looks saved but cannot be recovered from the API.
+    set((state) => ({
+      saveStateById: { ...state.saveStateById, [id]: "saving" },
+    }));
+
+    try {
+      const saved = await updateDocumentRequest(id, {
+        title: replacement.title,
+        content: replacement.content,
+        ...(nextMetadata !== current.metadata ? { metadata: replacement.metadata } : {}),
+      });
+      set((state) => ({
+        documents: state.documents.map((document) =>
+          document.id === id ? { ...replacement, updatedAt: saved.updatedAt } : document,
+        ),
+        saveStateById: { ...state.saveStateById, [id]: "saved" },
+        // Tiptap is intentionally uncontrolled, so a persisted full-document
+        // replacement needs the same remount signal as restoring a version.
+        restoreNonceById: {
+          ...state.restoreNonceById,
+          [id]: (state.restoreNonceById[id] ?? 0) + 1,
+        },
+      }));
+      maybeSnapshotVersion(replacement);
+      return saved;
+    } catch {
+      set((state) => ({
+        saveStateById: { ...state.saveStateById, [id]: "failed" },
+      }));
+      throw new Error("Failed to save AI document replacement");
+    }
   },
 
   setMetadataField: (id, key, value) => {

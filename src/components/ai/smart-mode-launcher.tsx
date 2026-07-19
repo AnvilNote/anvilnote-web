@@ -44,7 +44,7 @@ export function SmartModeLauncher() {
         </TooltipTrigger>
         <TooltipContent side="left">{t("smart.open")}</TooltipContent>
       </Tooltip>
-      <SmartModePanel open={open} onOpenChange={setOpen} />
+      <SmartModePanel open={open} />
     </Sheet>
   );
 }

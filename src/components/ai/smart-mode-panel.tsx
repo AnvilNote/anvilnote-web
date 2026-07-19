@@ -4,16 +4,25 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { JSONContent } from "@tiptap/core";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/lib/i18n/navigation";
-import { FileText, Loader2, Paperclip, RotateCcw, Trash2 } from "lucide-react";
-import type {
-  AIWriterRequest,
-  AIWriterResult,
-  AttachmentContext,
-  WritingStyle,
-} from "@anvilnote/ai-writer/contracts";
+import { toast } from "sonner";
+import {
+  Check,
+  ChevronDown,
+  Copy,
+  FileText,
+  Loader2,
+  MessageSquarePlus,
+  Pencil,
+  Plus,
+  Send,
+  Trash2,
+} from "lucide-react";
+import type { AttachmentContext, WritingStyle } from "@anvilnote/ai-writer/contracts";
 import type { AnvilNoteDocumentFragmentV1 } from "@anvilnote/ai-writer/document";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -21,25 +30,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import {
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { AIDocumentPreview, aiDocumentPlainText } from "./ai-document-preview";
-import { AIClientError, aiClient, type AIProviderMetadata, type AISecretStatus, type AIWriterCostEstimate } from "@/lib/ai/runtime-client";
+import { AIDocumentPreview } from "./ai-document-preview";
+import {
+  AIClientError,
+  aiClient,
+  type AIConversation,
+  type AIConversationAttachment,
+  type AIConversationDraft,
+  type AIConversationMessage,
+  type AIConversationTurnRequest,
+  type AIProviderMetadata,
+  type PreparedAIConversationAttachment,
+  type AISecretStatus,
+} from "@/lib/ai/runtime-client";
 import {
   anvilNoteDocumentToTiptap,
   anvilNoteFragmentToTiptap,
-  tiptapDocumentToAnvilNote,
   tiptapSelectionToAnvilNote,
   UnsupportedAIContentError,
 } from "@/lib/ai/document/converters";
-import { applyAIContent, isEmptyEditorDocument } from "@/lib/ai/document/editor-operations";
+import { applyAIContent } from "@/lib/ai/document/editor-operations";
 import { ProtectedSelectionRegistry } from "@/lib/ai/document/protected-selection";
 import {
   createSelectionSnapshot,
@@ -47,30 +64,86 @@ import {
   stableDocumentHash,
   type SelectionSnapshot,
 } from "@/lib/ai/document/selection-snapshot";
-import { createWordDiff } from "@/lib/ai/document/word-diff";
-import { buildSmartModeRequest, deriveWriterIntent } from "@/lib/ai/smart-mode-request";
+import { useDocumentStore } from "@/lib/stores/document-store";
 import { useEditorBridge } from "@/lib/stores/editor-bridge";
 import { useSettingsStore } from "@/lib/stores/settings-store";
+import { useSmartModeUIStore } from "@/lib/stores/smart-mode-ui-store";
 
-const MAX_INSTRUCTION_CHARACTERS = 50_000;
+const MAX_INSTRUCTION_CHARACTERS = 6_000;
 const ACCEPTED_EXTENSIONS = new Set(["txt", "md", "markdown", "pdf", "docx"]);
 
-type SmartModeState =
-  | "idle"
-  | "extracting-attachments"
-  | "estimating"
-  | "ready"
-  | "submitting"
-  | "success"
-  | "error"
-  | "cancelled"
-  | "conflict";
+type SmartModeState = "ready" | "extracting" | "submitting" | "error" | "cancelled";
 
 interface AttachmentItem {
   file: File;
   status: "extracting" | "ready" | "warning" | "error";
   context?: AttachmentContext;
   errorKey?: string;
+  prepared?: PreparedAIConversationAttachment;
+}
+
+const COMPOSER_LINE_HEIGHT = 24;
+const COMPOSER_VERTICAL_PADDING = 16;
+const MAX_COMPOSER_LINES = 10;
+const MAX_COMPOSER_HEIGHT =
+  COMPOSER_LINE_HEIGHT * MAX_COMPOSER_LINES + COMPOSER_VERTICAL_PADDING;
+
+function composerRadius(lines: number): string {
+  if (lines <= 1) return "rounded-full";
+  if (lines <= 3) return "rounded-2xl";
+  if (lines <= 6) return "rounded-xl";
+  return "rounded-lg";
+}
+
+function UserMessage({ message }: { message: AIConversationMessage }) {
+  const t = useTranslations("ai");
+  const visibleAttachments = message.attachments?.slice(0, 2) ?? [];
+  const hiddenAttachmentCount = Math.max(
+    0,
+    (message.attachments?.length ?? 0) - visibleAttachments.length,
+  );
+
+  return (
+    <div className="ml-auto w-fit max-w-full">
+      <div className="relative w-fit max-w-full rounded-2xl rounded-br-md bg-primary py-2 pl-3 pr-10 text-sm text-primary-foreground">
+        <p className="max-w-[20em] whitespace-pre-wrap break-words">{message.content}</p>
+        <button
+          type="button"
+          className="absolute right-2 top-1.5 inline-flex size-6 items-center justify-center rounded-full opacity-70 transition-opacity hover:bg-primary-foreground/10 hover:opacity-100"
+          aria-label={t("smart.copyMessage")}
+          onClick={() => {
+            void navigator.clipboard.writeText(message.content).then(() => {
+              toast.success(t("smart.messageCopied"));
+            }).catch(() => undefined);
+          }}
+        >
+          <Copy className="size-3.5" />
+        </button>
+      </div>
+      {visibleAttachments.length ? (
+        <div className="mt-1 flex max-w-full items-center justify-end gap-1 overflow-hidden">
+          {visibleAttachments.map((attachment) => (
+            <span
+              key={attachment.id}
+              className="inline-flex min-w-0 max-w-28 items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs text-foreground"
+              title={attachment.originalName}
+            >
+              <FileText className="size-3 shrink-0" />
+              <span className="truncate">{attachment.originalName}</span>
+            </span>
+          ))}
+          {hiddenAttachmentCount ? (
+            <span
+              className="inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs text-foreground"
+              aria-label={t("smart.moreAttachments", { count: hiddenAttachmentCount })}
+            >
+              +{hiddenAttachmentCount}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 interface SelectionInfo {
@@ -78,93 +151,94 @@ interface SelectionInfo {
   to: number;
   content: JSONContent[];
   text: string;
-  characterCount: number;
 }
 
-interface OperationContext {
-  request: AIWriterRequest;
+interface DraftOperation {
   registry: ProtectedSelectionRegistry | null;
   selectionSnapshot: SelectionSnapshot | null;
-  originalText: string;
   cursor: { position: number; documentHash: string } | null;
+  documentHash: string;
 }
 
-function selectedContent(editor: NonNullable<ReturnType<typeof useEditorBridge.getState>["editor"]>): SelectionInfo | null {
+function selectedContent(
+  editor: NonNullable<ReturnType<typeof useEditorBridge.getState>["editor"]>,
+): SelectionInfo | null {
   const { from, to } = editor.state.selection;
   if (from === to) return null;
   const content = editor.state.doc.slice(from, to).content.toJSON() as JSONContent[];
-  return {
-    from,
-    to,
-    content,
-    text: editor.state.doc.textBetween(from, to, "\n"),
-    characterCount: editor.state.doc.textBetween(from, to, "").length,
-  };
-}
-
-function resultDocument(result: AIWriterResult) {
-  return result.kind === "compose" ? result.document : result.replacement;
-}
-
-function usd(value: number): string {
-  if (value > 0 && value < 0.01) return "< US$0.01";
-  return `US$${value.toFixed(value < 0.1 ? 3 : 2)}`;
+  const text = editor.state.doc.textBetween(from, to, "\n");
+  return text.trim() ? { from, to, content, text } : null;
 }
 
 function errorKey(error: unknown): string {
   if (error instanceof UnsupportedAIContentError) return "ai.errors.unsupported_selection";
-  if (error instanceof AIClientError) {
-    const knownCodes = new Set([
-      "invalid_api_key",
-      "permission_denied",
-      "insufficient_credit",
-      "model_unavailable",
-      "rate_limited",
-      "request_too_large",
-      "context_length_exceeded",
-      "invalid_structured_output",
-      "invalid_request_schema",
-      "provider_timeout",
-      "request_cancelled",
-      "network_error",
-      "attachment_parse_failed",
-      "password_protected_pdf",
-      "unsupported_attachment",
-      "selection_conflict",
-      "provider_refusal",
-      "incomplete_response",
-      "provider_error",
-      "invalid_request",
-      "secure_storage_unavailable",
-      "browser_unavailable",
-      "unknown_error",
-    ]);
-    return knownCodes.has(error.shape.code)
-      ? `ai.errors.${error.shape.code}`
-      : "ai.errors.unknown_error";
+  if (error instanceof AIClientError) return error.shape.messageKey;
+  if (error instanceof DOMException && error.name === "AbortError") {
+    return "ai.errors.request_cancelled";
   }
-  if (error instanceof DOMException && error.name === "AbortError") return "ai.errors.request_cancelled";
-  if (error instanceof Error) {
-    const localCodes: Record<string, string> = {
-      invalid_structured_output: "ai.errors.invalid_structured_output",
-      selection_conflict: "ai.errors.selection_conflict",
-      conversion_failed: "ai.errors.conversion_failed",
-      editor_unavailable: "ai.errors.editor_unavailable",
-    };
-    if (localCodes[error.message]) return localCodes[error.message];
-  }
-  if (error && typeof error === "object" && "code" in error) {
-    return `ai.errors.${String((error as { code: unknown }).code)}`;
+  if (error instanceof Error && ["selection_conflict", "conversion_failed", "editor_unavailable"].includes(error.message)) {
+    return `ai.errors.${error.message}`;
   }
   return "ai.errors.unknown_error";
 }
 
+function draftContent(draft: AIConversationDraft) {
+  return draft.kind === "compose"
+    ? anvilNoteDocumentToTiptap(draft.document).content ?? []
+    : anvilNoteFragmentToTiptap(draft.replacement, ProtectedSelectionRegistry.create());
+}
+
+function draftTitle(draft: AIConversationDraft): string | null {
+  return draft.kind === "compose" ? draft.suggestedTitle : null;
+}
+
+function DraftCard({
+  message,
+  operation,
+  onInsert,
+  onReplace,
+  disabled,
+}: {
+  message: AIConversationMessage;
+  operation: DraftOperation | undefined;
+  onInsert: (message: AIConversationMessage) => void;
+  onReplace: (message: AIConversationMessage) => void;
+  disabled: boolean;
+}) {
+  const t = useTranslations("ai");
+  if (!message.draft) return null;
+  const { draft } = message;
+  const canApplySelectionRewrite = Boolean(
+    operation?.selectionSnapshot && operation.registry,
+  );
+  const canInsert = draft.kind === "compose" ? Boolean(operation) : canApplySelectionRewrite;
+  const canReplaceWholeDocument = draft.kind === "compose" && Boolean(operation);
+  return (
+    <article className="mt-2 overflow-hidden rounded-2xl border border-border/80 bg-background shadow-sm">
+      <div className="max-h-56 overflow-y-auto p-3">
+        {draft.kind === "compose" ? <AIDocumentPreview document={draft.document} /> : <AIDocumentPreview document={draft.replacement} />}
+      </div>
+      <div className="border-t bg-muted/35 px-3 py-2">
+        <p className="line-clamp-2 text-xs text-muted-foreground">
+          {draft.kind === "compose" ? draft.summary : draft.changeSummary}
+        </p>
+        {canInsert || canReplaceWholeDocument ? <div className="mt-2 flex flex-wrap justify-end gap-2">
+          {canInsert ? <Button size="sm" variant="ghost" disabled={disabled} onClick={() => onInsert(message)}>
+            {draft.kind === "rewrite-selection" ? t("smart.accept") : t("smart.insertAtCursor")}
+          </Button> : null}
+          {canReplaceWholeDocument ? <Button size="sm" disabled={disabled} onClick={() => onReplace(message)}>
+            {t("smart.replaceWholeDocument")}
+          </Button> : null}
+        </div> : null}
+      </div>
+    </article>
+  );
+}
+
 export function SmartModePanel({
   open,
-  onOpenChange,
 }: {
   open: boolean;
-  onOpenChange(open: boolean): void;
 }) {
   const t = useTranslations("ai");
   const locale = useLocale();
@@ -172,146 +246,176 @@ export function SmartModePanel({
   const editor = useEditorBridge((state) => state.editor);
   const documentId = useEditorBridge((state) => state.documentId);
   const settings = useSettingsStore();
+  const replaceWholeDocumentFromAI = useDocumentStore((state) => state.replaceWholeDocumentFromAI);
+  const activeConversationId = useSmartModeUIStore((state) =>
+    documentId ? state.activeConversationByDocument[documentId] ?? null : null,
+  );
+  const setActiveConversation = useSmartModeUIStore((state) => state.setActiveConversation);
+  const notifyConversationChanged = useSmartModeUIStore((state) => state.notifyConversationChanged);
+  const inlineFallbackInstruction = useSmartModeUIStore((state) =>
+    documentId ? state.inlineFallbackInstructionByDocument[documentId] : undefined,
+  );
+  const setInlineFallbackInstruction = useSmartModeUIStore((state) => state.setInlineFallbackInstruction);
+  const conversationVersion = useSmartModeUIStore((state) => state.conversationVersion);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const composerRef = useRef<HTMLTextAreaElement>(null);
+  const composingRef = useRef(false);
+  const compositionJustEndedRef = useRef(false);
+  const compositionEndTimerRef = useRef<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
-  const activeRequestRef = useRef<string | null>(null);
-  const operationRef = useRef<OperationContext | null>(null);
+  const [operations, setOperations] = useState<Map<string, DraftOperation>>(() => new Map());
+  const initialConversationSelectionRef = useRef<string | null>(null);
+  const currentDocumentIdRef = useRef(documentId);
 
-  const [state, setState] = useState<SmartModeState>("idle");
+  const [state, setState] = useState<SmartModeState>("ready");
   const [instruction, setInstruction] = useState("");
-  const [selectionState, setSelectionState] = useState<{
-    editor: typeof editor;
-    value: SelectionInfo | null;
-  }>(() => ({ editor, value: editor ? selectedContent(editor) : null }));
-  const selection = selectionState.editor === editor
-    ? selectionState.value
-    : editor ? selectedContent(editor) : null;
   const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
   const [metadata, setMetadata] = useState<AIProviderMetadata | null>(null);
   const [credential, setCredential] = useState<AISecretStatus | null>(null);
-  const [estimate, setEstimate] = useState<AIWriterCostEstimate | null>(null);
-  const [estimating, setEstimating] = useState(false);
-  const [result, setResult] = useState<AIWriterResult | null>(null);
+  const [conversations, setConversations] = useState<AIConversation[]>([]);
+  const [conversationCursor, setConversationCursor] = useState<string | null>(null);
+  const [messages, setMessages] = useState<AIConversationMessage[]>([]);
+  const [messageCursor, setMessageCursor] = useState<string | null>(null);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameTitle, setRenameTitle] = useState("");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [writingStyleOpen, setWritingStyleOpen] = useState(false);
   const [errorMessageKey, setErrorMessageKey] = useState<string | null>(null);
-  const [originalText, setOriginalText] = useState("");
-
-  const updateSelection = useCallback(() => {
-    setSelectionState({ editor, value: editor ? selectedContent(editor) : null });
-  }, [editor]);
-
-  useEffect(() => {
-    if (!editor) return;
-    editor.on("selectionUpdate", updateSelection);
-    return () => {
-      editor.off("selectionUpdate", updateSelection);
-    };
-  }, [editor, updateSelection]);
-
-  useEffect(() => {
-    if (!open) return;
-    let active = true;
-    Promise.all([aiClient.getProviders(), aiClient.getCredentialStatus()])
-      .then(([nextMetadata, nextCredential]) => {
-        if (!active) return;
-        setMetadata(nextMetadata);
-        setCredential(nextCredential);
-        setState((current) => (current === "idle" ? "ready" : current));
-      })
-      .catch((error) => {
-        if (!active) return;
-        setErrorMessageKey(errorKey(error));
-        setState("error");
-      });
-    return () => {
-      active = false;
-    };
-  }, [open]);
+  const [selectionState, setSelectionState] = useState<SelectionInfo | null>(() =>
+    editor ? selectedContent(editor) : null,
+  );
+  const [composerLines, setComposerLines] = useState(1);
 
   const readyAttachments = useMemo(
     () => attachments.flatMap((item) => (item.context ? [item.context] : [])),
     [attachments],
   );
-  const intent = deriveWriterIntent(Boolean(selection), readyAttachments.length);
-  const hasAttachmentError = attachments.some((item) => item.status === "error");
   const attachmentBusy = attachments.some((item) => item.status === "extracting");
+  const attachmentError = attachments.some((item) => item.status === "error");
+  const activeConversation = conversations.find((item) => item.id === activeConversationId) ?? null;
 
-  const prepareOperation = useCallback((requestId: string): OperationContext => {
-    if (!editor || !documentId) throw new Error("editor_unavailable");
-    const currentSelection = selectedContent(editor);
-    const document = editor.getJSON();
-    let registry: ProtectedSelectionRegistry | null = null;
-    let fragment: AnvilNoteDocumentFragmentV1 | undefined;
-    let snapshot: SelectionSnapshot | null = null;
-
-    if (currentSelection) {
-      registry = ProtectedSelectionRegistry.create();
-      fragment = tiptapSelectionToAnvilNote(currentSelection.content, registry);
-      snapshot = createSelectionSnapshot({
-        requestId,
-        documentId,
-        from: currentSelection.from,
-        to: currentSelection.to,
-        document,
-        selectedContent: currentSelection.content,
-      });
-    }
-
-    let currentDocument;
-    try {
-      currentDocument = tiptapDocumentToAnvilNote(document);
-    } catch {
-      // Unsupported existing blocks must never disappear from a rewrite. For
-      // compose they are simply not sent as optional style context.
-    }
-
-    const request = buildSmartModeRequest({
-      requestId,
-      model: settings.aiModelId,
-      instruction,
-      locale,
-      writingStyle: settings.aiWritingStyle,
-      humanizerEnabled: settings.aiHumanizerEnabled,
-      ...(currentDocument ? { currentDocument } : {}),
-      ...(fragment ? { selectedContent: fragment } : {}),
-      attachments: readyAttachments,
-    });
-    return {
-      request,
-      registry,
-      selectionSnapshot: snapshot,
-      originalText: currentSelection?.text ?? "",
-      cursor: currentSelection
-        ? null
-        : {
-            position: editor.state.selection.from,
-            documentHash: stableDocumentHash(document),
-          },
-    };
-  }, [documentId, editor, instruction, locale, readyAttachments, settings.aiHumanizerEnabled, settings.aiModelId, settings.aiWritingStyle]);
+  const captureSelection = useCallback(() => {
+    setSelectionState(editor ? selectedContent(editor) : null);
+  }, [editor]);
 
   useEffect(() => {
-    if (!open || !editor || !instruction.trim() || hasAttachmentError || attachmentBusy || activeRequestRef.current) {
-      setEstimate(null);
-      return;
-    }
+    if (!editor) return;
+    editor.on("selectionUpdate", captureSelection);
+    return () => {
+      editor.off("selectionUpdate", captureSelection);
+    };
+  }, [captureSelection, editor]);
+
+  useEffect(() => {
+    currentDocumentIdRef.current = documentId;
+  }, [documentId]);
+
+  useEffect(() => {
+    if (!documentId || !inlineFallbackInstruction) return;
     const timer = window.setTimeout(() => {
-      try {
-        const operation = prepareOperation(crypto.randomUUID());
-        setEstimating(true);
-        void aiClient.estimate(operation.request)
-          .then((value) => setEstimate(value))
-          .catch(() => setEstimate(null))
-          .finally(() => setEstimating(false));
-      } catch {
-        setEstimate(null);
-      }
-    }, 500);
+      setInstruction(inlineFallbackInstruction);
+      setInlineFallbackInstruction(documentId, null);
+      setErrorMessageKey("ai.errors.unsupported_selection");
+    }, 0);
     return () => window.clearTimeout(timer);
-  }, [attachmentBusy, editor, hasAttachmentError, instruction, open, prepareOperation]);
+  }, [documentId, inlineFallbackInstruction, setInlineFallbackInstruction]);
+
+  const loadConversations = useCallback(async (cursor?: string) => {
+    if (!documentId) return;
+    const page = await aiClient.listConversations(documentId, cursor);
+    setConversations((current) => {
+      const merged = cursor ? [...current, ...page.data] : page.data;
+      return [...new Map(merged.map((item) => [item.id, item])).values()];
+    });
+    setConversationCursor(page.nextCursor);
+    if (
+      !cursor &&
+      page.data.length &&
+      !activeConversationId &&
+      initialConversationSelectionRef.current !== documentId
+    ) {
+      initialConversationSelectionRef.current = documentId;
+      setActiveConversation(documentId, page.data[0].id);
+    }
+  }, [activeConversationId, documentId, setActiveConversation]);
+
+  const loadMessages = useCallback(async (conversationId: string, cursor?: string) => {
+    if (!documentId) return;
+    setMessagesLoading(true);
+    try {
+      const page = await aiClient.listConversationMessages(documentId, conversationId, cursor);
+      setMessages((current) => (cursor ? [...page.data, ...current] : page.data));
+      setMessageCursor(page.nextCursor);
+      if (editor) {
+        const hash = stableDocumentHash(editor.getJSON());
+        for (const message of page.data) {
+          // A persisted selection rewrite does not carry its original
+          // protected-selection registry or exact range snapshot. Never
+          // reconstruct one from current cursor state: historical rewrites
+          // remain previewable, but only a still-live request may apply one.
+          if (message.draft?.kind === "compose") {
+            setOperations((current) => current.has(message.id) ? current : new Map(current).set(message.id, {
+              registry: null,
+              selectionSnapshot: null,
+              cursor: { position: editor.state.selection.from, documentHash: hash },
+              documentHash: hash,
+            }));
+          }
+        }
+      }
+    } finally {
+      setMessagesLoading(false);
+    }
+  }, [documentId, editor]);
+
+  useEffect(() => {
+    if (!open) return;
+    let mounted = true;
+    const timer = window.setTimeout(() => {
+      Promise.all([aiClient.getProviders(), aiClient.getCredentialStatus(), loadConversations()])
+        .then(([nextMetadata, nextCredential]) => {
+          if (!mounted) return;
+          setMetadata(nextMetadata);
+          setCredential(nextCredential);
+        })
+        .catch((error) => mounted && setErrorMessageKey(errorKey(error)));
+    }, 0);
+    return () => {
+      mounted = false;
+      window.clearTimeout(timer);
+    };
+  }, [loadConversations, open, conversationVersion]);
+
+  useEffect(() => {
+    if (!open || !activeConversationId) {
+      const timer = window.setTimeout(() => {
+        setMessages([]);
+        setMessageCursor(null);
+      }, 0);
+      return () => window.clearTimeout(timer);
+    }
+    const timer = window.setTimeout(() => void loadMessages(activeConversationId), 0);
+    return () => window.clearTimeout(timer);
+  }, [activeConversationId, loadMessages, open]);
+
+  useEffect(() => {
+    // A pending draft is deliberately visual-only. Closing, navigating away,
+    // or a document remount clears its local safety snapshot.
+    return () => {
+      abortRef.current?.abort();
+      abortRef.current = null;
+      if (compositionEndTimerRef.current !== null) {
+        window.clearTimeout(compositionEndTimerRef.current);
+        compositionEndTimerRef.current = null;
+      }
+      setOperations(new Map());
+    };
+  }, [documentId]);
 
   async function addFiles(files: File[]) {
     const limits = metadata?.attachmentLimits;
-    if (!limits) return;
+    if (!limits || attachmentBusy) return;
     if (attachments.length + files.length > limits.maxFiles) {
       setErrorMessageKey("ai.smart.tooManyFiles");
       return;
@@ -321,43 +425,93 @@ export function SmartModePanel({
       return ACCEPTED_EXTENSIONS.has(extension) && file.size <= limits.maxFileSizeBytes;
     });
     if (accepted.length !== files.length) {
-      setErrorMessageKey(files.some((file) => file.size > limits.maxFileSizeBytes) ? "ai.smart.fileTooLarge" : "ai.smart.unsupportedFile");
-      return;
-    }
-    const total = [...attachments.map((item) => item.file), ...accepted]
-      .reduce((sum, file) => sum + file.size, 0);
-    if (total > limits.maxTotalSizeBytes) {
-      setErrorMessageKey("ai.errors.request_too_large");
+      setErrorMessageKey("ai.smart.unsupportedFile");
       return;
     }
     const pending = accepted.map<AttachmentItem>((file) => ({ file, status: "extracting" }));
     setAttachments((current) => [...current, ...pending]);
-    setState("extracting-attachments");
+    setState("extracting");
     const controller = new AbortController();
     abortRef.current = controller;
     try {
-      const contexts = await aiClient.extractAttachments(accepted, controller.signal);
+      const [contexts, preparedAttachments] = await Promise.all([
+        aiClient.extractAttachments(accepted, controller.signal),
+        aiClient.prepareAttachments(accepted),
+      ]);
       setAttachments((current) => current.map((item) => {
         const index = accepted.indexOf(item.file);
         if (index < 0) return item;
         const context = contexts[index];
         return context
-          ? { ...item, context, status: context.warnings.length ? "warning" : "ready" }
+          ? {
+              ...item,
+              context,
+              prepared: preparedAttachments[index],
+              status: context.warnings.length ? "warning" : "ready",
+            }
           : { ...item, status: "error", errorKey: "ai.errors.attachment_parse_failed" };
       }));
       setState("ready");
     } catch (error) {
-      const key = errorKey(error);
-      setAttachments((current) => current.map((item) => accepted.includes(item.file) ? { ...item, status: "error", errorKey: key } : item));
-      setErrorMessageKey(key);
-      setState(key.endsWith("request_cancelled") ? "cancelled" : "error");
+      setAttachments((current) => current.map((item) =>
+        accepted.includes(item.file) && item.status === "extracting"
+          ? { ...item, status: "error", errorKey: "ai.errors.attachment_parse_failed" }
+          : item,
+      ));
+      setErrorMessageKey(errorKey(error));
+      setState("error");
     } finally {
       if (abortRef.current === controller) abortRef.current = null;
     }
   }
 
-  function removeAttachment(file: File) {
-    setAttachments((current) => current.filter((item) => item.file !== file));
+  function prepareTurn(requestId: string): { request: AIConversationTurnRequest; operation: DraftOperation } {
+    if (!editor || !documentId) throw new Error("editor_unavailable");
+    const currentSelection = selectedContent(editor);
+    let registry: ProtectedSelectionRegistry | null = null;
+    let selectedFragment: AnvilNoteDocumentFragmentV1 | undefined;
+    let selectionSnapshot: SelectionSnapshot | null = null;
+    if (currentSelection) {
+      registry = ProtectedSelectionRegistry.create();
+      selectedFragment = tiptapSelectionToAnvilNote(currentSelection.content, registry);
+      selectionSnapshot = createSelectionSnapshot({
+        requestId,
+        documentId,
+        from: currentSelection.from,
+        to: currentSelection.to,
+        document: editor.getJSON(),
+        selectedContent: currentSelection.content,
+      });
+    }
+    const documentHash = stableDocumentHash(editor.getJSON());
+    return {
+      request: {
+        requestId,
+        ...(activeConversationId ? { conversationId: activeConversationId } : {}),
+        provider: { id: "openai", model: settings.aiModelId },
+        instruction: instruction.trim(),
+        context: {
+          locale,
+          writingStyle: settings.aiWritingStyle,
+          ...(selectedFragment ? { selectedContent: selectedFragment } : {}),
+          ...(readyAttachments.length ? { attachments: readyAttachments } : {}),
+        },
+        options: { humanizerEnabled: settings.aiHumanizerEnabled },
+        ...(attachments.some((attachment) => attachment.prepared?.persisted)
+          ? {
+              attachmentIds: attachments.flatMap((attachment) =>
+                attachment.prepared?.persisted ? [attachment.prepared.id] : [],
+              ),
+            }
+          : {}),
+      },
+      operation: {
+        registry,
+        selectionSnapshot,
+        cursor: currentSelection ? null : { position: editor.state.selection.from, documentHash },
+        documentHash,
+      },
+    };
   }
 
   async function submit() {
@@ -365,268 +519,452 @@ export function SmartModePanel({
       setErrorMessageKey("ai.smart.emptyInstruction");
       return;
     }
-    if (!credential?.configured) return;
-    if (hasAttachmentError || state === "submitting") return;
+    if (!credential?.configured || attachmentBusy || attachmentError || state === "submitting") return;
     const requestId = crypto.randomUUID();
     try {
-      updateSelection();
-      const operation = prepareOperation(requestId);
-      operationRef.current = operation;
-      activeRequestRef.current = requestId;
-      setOriginalText(operation.originalText);
-      setErrorMessageKey(null);
-      setResult(null);
+      const { request, operation } = prepareTurn(requestId);
+      const optimisticConversationId = activeConversationId ?? `pending:${requestId}`;
+      const optimisticUserMessage: AIConversationMessage = {
+        id: requestId,
+        conversationId: optimisticConversationId,
+        sequence: (messages.at(-1)?.sequence ?? 0) + 1,
+        role: "user",
+        intent: request.context.selectedContent
+          ? "rewrite-selection"
+          : request.context.attachments?.length
+            ? "compose-from-attachments"
+            : "compose",
+        content: request.instruction,
+        ...(attachments.length
+          ? {
+              attachments: attachments.map<AIConversationAttachment>((item) =>
+                item.prepared ?? {
+                  id: crypto.randomUUID(),
+                  originalName: item.file.name,
+                  mimeType: item.file.type || "application/octet-stream",
+                  sizeBytes: item.file.size,
+                },
+              ),
+            }
+          : {}),
+        createdAt: new Date().toISOString(),
+      };
       setState("submitting");
+      setErrorMessageKey(null);
+      setMessages((current) => [...current, optimisticUserMessage]);
+      setInstruction("");
+      setComposerLines(1);
+      setAttachments([]);
+      if (composerRef.current) {
+        composerRef.current.style.height = `${COMPOSER_LINE_HEIGHT + COMPOSER_VERTICAL_PADDING}px`;
+        composerRef.current.style.overflowY = "hidden";
+      }
       const controller = new AbortController();
       abortRef.current = controller;
-      const nextResult = await aiClient.execute(operation.request, controller.signal);
-      if (activeRequestRef.current !== requestId || controller.signal.aborted) return;
-
-      if (nextResult.kind === "rewrite-selection") {
-        if (!operation.registry || !operation.selectionSnapshot) throw new Error("invalid_structured_output");
-        anvilNoteFragmentToTiptap(nextResult.replacement, operation.registry);
-        const { from, to } = operation.selectionSnapshot;
-        const conflict = to > editor!.state.doc.content.size || hasSelectionConflict(
-          operation.selectionSnapshot,
-          {
-            document: editor!.getJSON(),
-            selectedContent: to <= editor!.state.doc.content.size
-              ? editor!.state.doc.slice(from, to).content.toJSON() as JSONContent[]
-              : [],
-          },
-        );
-        setResult(nextResult);
-        setState(conflict ? "conflict" : "success");
-      } else {
-        anvilNoteDocumentToTiptap(nextResult.document);
-        const conflict = operation.cursor?.documentHash !== stableDocumentHash(editor!.getJSON());
-        setResult(nextResult);
-        setState(conflict ? "conflict" : "success");
-      }
+      const completed = await aiClient.executeConversationTurn(documentId!, request, controller.signal);
+      if (currentDocumentIdRef.current !== documentId) return;
+      const assistant = completed.messages[1];
+      setOperations((current) => new Map(current).set(assistant.id, operation));
+      setConversations((current) => [completed.conversation, ...current.filter((item) => item.id !== completed.conversation.id)]);
+      setActiveConversation(documentId!, completed.conversation.id);
+      setMessages((current) => {
+        const withoutOptimistic = current.filter((message) => message.id !== requestId);
+        return activeConversationId === completed.conversation.id
+          ? [...withoutOptimistic, ...completed.messages]
+          : completed.messages;
+      });
+      setMessageCursor(null);
+      setState("ready");
+      notifyConversationChanged();
     } catch (error) {
-      if (activeRequestRef.current !== requestId) return;
-      const key = errorKey(error);
-      setErrorMessageKey(key);
-      setState(key.endsWith("request_cancelled") ? "cancelled" : "error");
+      if (currentDocumentIdRef.current !== documentId) return;
+      const messageKey = errorKey(error);
+      if (messageKey === "ai.errors.request_cancelled") {
+        setErrorMessageKey(null);
+        setState("cancelled");
+      } else {
+        setErrorMessageKey(messageKey);
+        setState("error");
+      }
     } finally {
-      if (activeRequestRef.current === requestId) activeRequestRef.current = null;
       abortRef.current = null;
     }
   }
 
   function cancel() {
-    const requestId = activeRequestRef.current;
-    activeRequestRef.current = null;
     abortRef.current?.abort();
     abortRef.current = null;
-    if (requestId) void aiClient.cancel(requestId);
     setState("cancelled");
   }
 
-  function applyResult(mode: "insert" | "replace") {
-    if (!editor || !result || state === "conflict") return;
-    const operation = operationRef.current;
-    if (!operation) return;
+  async function insertDraft(message: AIConversationMessage) {
+    if (!editor || !message.draft) return;
+    const operation = operations.get(message.id);
+    if (!operation || operation.documentHash !== stableDocumentHash(editor.getJSON())) {
+      setErrorMessageKey("ai.errors.selection_conflict");
+      return;
+    }
     try {
-      if (result.kind === "rewrite-selection") {
+      if (message.draft.kind === "rewrite-selection" && operation.selectionSnapshot && operation.registry) {
         const snapshot = operation.selectionSnapshot;
-        if (!snapshot || !operation.registry) throw new Error("selection_conflict");
         if (snapshot.to > editor.state.doc.content.size || hasSelectionConflict(snapshot, {
           document: editor.getJSON(),
           selectedContent: editor.state.doc.slice(snapshot.from, snapshot.to).content.toJSON() as JSONContent[],
-        })) {
-          setState("conflict");
-          return;
-        }
-        const content = anvilNoteFragmentToTiptap(result.replacement, operation.registry);
+        })) throw new Error("selection_conflict");
+        const content = anvilNoteFragmentToTiptap(message.draft.replacement, operation.registry);
         if (!applyAIContent(editor, { from: snapshot.from, to: snapshot.to }, content)) throw new Error("conversion_failed");
       } else {
-        const content = anvilNoteDocumentToTiptap(result.document).content ?? [];
-        if (mode === "replace") {
-          if (!isEmptyEditorDocument(editor)) throw new Error("selection_conflict");
-          if (!applyAIContent(editor, { from: 0, to: editor.state.doc.content.size }, content)) throw new Error("conversion_failed");
-        } else {
-          const cursor = operation.cursor;
-          if (!cursor || cursor.documentHash !== stableDocumentHash(editor.getJSON())) {
-            setState("conflict");
-            return;
-          }
-          if (!applyAIContent(editor, { from: cursor.position, to: cursor.position }, content)) throw new Error("conversion_failed");
-        }
+        const content = draftContent(message.draft);
+        const cursor = operation.cursor;
+        if (!cursor || cursor.documentHash !== stableDocumentHash(editor.getJSON())) throw new Error("selection_conflict");
+        if (!applyAIContent(editor, { from: cursor.position, to: cursor.position }, content)) throw new Error("conversion_failed");
       }
-      setResult(null);
-      operationRef.current = null;
-      setState("ready");
+      setOperations((current) => {
+        const next = new Map(current);
+        next.delete(message.id);
+        return next;
+      });
       editor.commands.focus();
     } catch (error) {
       setErrorMessageKey(errorKey(error));
-      setState("error");
     }
   }
 
-  function reject() {
-    setResult(null);
-    operationRef.current = null;
-    setState("ready");
-  }
-
-  function closeRequested(nextOpen: boolean) {
-    if (!nextOpen && (state === "submitting" || state === "extracting-attachments")) {
-      if (!window.confirm(t("smart.closeWhileRunning"))) return;
-      cancel();
+  async function replaceDraft(message: AIConversationMessage) {
+    if (!editor || !documentId || !message.draft) return;
+    const operation = operations.get(message.id);
+    if (!operation || operation.documentHash !== stableDocumentHash(editor.getJSON())) {
+      setErrorMessageKey("ai.errors.selection_conflict");
+      return;
     }
-    onOpenChange(nextOpen);
+    try {
+      // Persist first, then remount Tiptap from the accepted document-store
+      // value. This keeps a failed full-document PATCH from clearing the live
+      // editor while still treating the successful replacement as one
+      // explicit, durable action.
+      const saved = await replaceWholeDocumentFromAI(
+        documentId,
+        { type: "doc", content: draftContent(message.draft) },
+        draftTitle(message.draft),
+      );
+      if (!saved) throw new Error("conversion_failed");
+      setOperations((current) => {
+        const next = new Map(current);
+        next.delete(message.id);
+        return next;
+      });
+    } catch (error) {
+      setErrorMessageKey(errorKey(error));
+    }
   }
 
-  const estimateText = estimate?.cost
-    ? estimate.cost.minimum === estimate.cost.maximum
-      ? usd(estimate.cost.minimum)
-      : `${usd(estimate.cost.minimum)}–${usd(estimate.cost.maximum)}`
-    : null;
-  const rewrite = intent === "rewrite-selection";
-  const resultText = result ? aiDocumentPlainText(resultDocument(result)) : "";
+  async function renameConversation() {
+    if (!documentId || !activeConversationId || !renameTitle.trim()) return;
+    try {
+      const updated = await aiClient.renameConversation(documentId, activeConversationId, renameTitle);
+      setConversations((current) => current.map((item) => item.id === updated.id ? updated : item));
+      setRenameOpen(false);
+    } catch (error) {
+      setErrorMessageKey(errorKey(error));
+    }
+  }
+
+  async function deleteConversation() {
+    if (!documentId || !activeConversationId) return;
+    try {
+      await aiClient.deleteConversation(documentId, activeConversationId);
+      setConversations((current) => current.filter((item) => item.id !== activeConversationId));
+      setActiveConversation(documentId, null);
+      setMessages([]);
+      setMessageCursor(null);
+      setDeleteOpen(false);
+      notifyConversationChanged();
+    } catch (error) {
+      setErrorMessageKey(errorKey(error));
+    }
+  }
+
+  const modelName = metadata?.providers
+    .flatMap((provider) => provider.models)
+    .find((model) => model.id === settings.aiModelId)?.displayName ?? settings.aiModelId;
+  const resizeComposer = useCallback((element: HTMLTextAreaElement) => {
+    element.style.height = "auto";
+    const naturalHeight = Math.max(
+      COMPOSER_LINE_HEIGHT + COMPOSER_VERTICAL_PADDING,
+      element.scrollHeight,
+    );
+    const nextHeight = Math.min(naturalHeight, MAX_COMPOSER_HEIGHT);
+    const nextLines = Math.min(
+      MAX_COMPOSER_LINES,
+      Math.max(1, Math.ceil((naturalHeight - COMPOSER_VERTICAL_PADDING) / COMPOSER_LINE_HEIGHT)),
+    );
+    element.style.height = `${nextHeight}px`;
+    element.style.overflowY = naturalHeight > MAX_COMPOSER_HEIGHT ? "auto" : "hidden";
+    setComposerLines(nextLines);
+  }, []);
+  const attachmentButton = (
+    <Button
+      type="button"
+      size="icon-sm"
+      variant="ghost"
+      aria-label={t("smart.addFiles")}
+      disabled={state === "submitting" || attachmentBusy}
+      onClick={() => fileInputRef.current?.click()}
+    >
+      <Plus className="size-5" />
+    </Button>
+  );
+  const composerControls = (
+    <>
+      <Popover modal={false} open={writingStyleOpen} onOpenChange={setWritingStyleOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-9 min-w-24 justify-between rounded-full bg-muted/60 px-3 text-xs hover:bg-muted"
+            aria-label={t("writingStyle.label")}
+          >
+            {t(`writingStyle.${settings.aiWritingStyle}` as never)}
+            <ChevronDown className="size-4 text-muted-foreground" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          side="top"
+          align="end"
+          sideOffset={14}
+          className="w-44 gap-0 rounded-3xl p-2 shadow-xl"
+        >
+          <p className="px-2.5 pb-1.5 pt-1 text-xs text-muted-foreground">{t("writingStyle.label")}</p>
+          <div role="listbox" aria-label={t("writingStyle.label")}>
+            {(["auto", "neutral", "natural", "preserve-source"] as WritingStyle[]).map((style) => (
+              <button
+                key={style}
+                type="button"
+                role="option"
+                aria-selected={style === settings.aiWritingStyle}
+                className={`flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-left text-sm hover:bg-muted ${style === settings.aiWritingStyle ? "bg-muted/70" : ""}`}
+                onClick={() => {
+                  settings.setAIWritingStyle(style);
+                  setWritingStyleOpen(false);
+                }}
+              >
+                {t(`writingStyle.${style}` as never)}
+                {style === settings.aiWritingStyle ? <Check className="size-4" /> : null}
+              </button>
+            ))}
+          </div>
+        </PopoverContent>
+      </Popover>
+      {state === "submitting" || state === "extracting" ? (
+        <Button
+          type="button"
+          size="icon-sm"
+          className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+          aria-label={t("smart.cancel")}
+          onClick={cancel}
+        >
+          <span data-testid="smart-stop-icon" className="size-2.5 rounded-[2px] bg-primary-foreground" />
+        </Button>
+      ) : (
+        <Button
+          type="button"
+          size="icon-sm"
+          className="rounded-full"
+          aria-label={t("smart.generate")}
+          disabled={!credential?.configured || !instruction.trim() || attachmentBusy || attachmentError}
+          onClick={() => void submit()}
+        >
+          <Send className="size-4" />
+        </Button>
+      )}
+    </>
+  );
 
   return (
     <SheetContent
       id="smart-mode-panel"
-      className="w-full pb-[max(1rem,env(safe-area-inset-bottom))] sm:max-w-xl"
-      showCloseButton={state !== "submitting" && state !== "extracting-attachments"}
-      onEscapeKeyDown={(event) => {
-        if (state === "submitting" || state === "extracting-attachments") {
-          if (!window.confirm(t("smart.closeWhileRunning"))) event.preventDefault();
-          else cancel();
-        }
-      }}
-      onPointerDownOutside={(event) => (state === "submitting" || state === "extracting-attachments") && event.preventDefault()}
-      onInteractOutside={(event) => (state === "submitting" || state === "extracting-attachments") && event.preventDefault()}
+      side="right"
+      className="w-full gap-0 p-0 data-[side=right]:sm:!max-w-[30rem]"
+      showCloseButton={state !== "submitting" && state !== "extracting"}
+      overlayClassName="!bg-transparent supports-backdrop-filter:!backdrop-blur-none"
+      onInteractOutside={(event) => (state === "submitting" || state === "extracting") && event.preventDefault()}
     >
       <SheetHeader className="border-b pr-12">
-        <SheetTitle>{t("smart.title")}</SheetTitle>
-        <SheetDescription>{rewrite && selection ? t("smart.selected", { count: selection.characterCount }) : t("smart.currentDocument")}</SheetDescription>
+        <div className="flex items-center gap-2">
+          <SheetTitle>{t("smart.title")}</SheetTitle>
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{modelName}</span>
+        </div>
+        <SheetDescription>{selectionState ? t("smart.selected", { count: selectionState.text.length }) : t("smart.currentDocument")}</SheetDescription>
       </SheetHeader>
 
-      <div className="flex-1 space-y-5 overflow-y-auto px-4 pb-4">
-        {selection ? <Badge variant="secondary">{t("smart.selected", { count: selection.characterCount })}</Badge> : null}
-        {!credential?.configured ? (
-          <div className="space-y-3 rounded-lg border p-4">
-            <p className="font-medium">{t("smart.notConfigured")}</p>
-            <Button onClick={() => { closeRequested(false); router.push("/settings"); }}>
-              {t("smart.openSettings")}
-            </Button>
-          </div>
-        ) : null}
-
-        <section className="space-y-2">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">{t("smart.attachments")}</p>
-            <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={state === "submitting" || state === "extracting-attachments"}>
-              <Paperclip className="size-4" />{t("smart.addFiles")}
-            </Button>
-            <input ref={fileInputRef} type="file" multiple className="hidden" accept=".txt,.md,.markdown,.pdf,.docx,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={(event) => { void addFiles(Array.from(event.target.files ?? [])); event.currentTarget.value = ""; }} />
-          </div>
-          {attachments.map((item) => (
-            <div key={`${item.file.name}-${item.file.lastModified}`} className="flex items-start gap-3 rounded-lg border px-3 py-2">
-              <FileText className="mt-0.5 size-4 shrink-0" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm">{item.file.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {item.status === "extracting" ? t("smart.extracting") : item.status === "error" ? t("smart.attachmentError") : item.status === "warning" ? t("smart.attachmentWarning") : t("smart.attachmentReady", { count: item.context?.characterCount ?? 0 })}
-                </p>
-                {item.context?.warnings.map((warning) => <p key={warning} className="text-xs text-destructive">{t(`attachments.${warning}` as never)}</p>)}
-              </div>
-              {item.status === "extracting" ? <Loader2 className="size-4 animate-spin" /> : (
-                <Button type="button" variant="ghost" size="icon-sm" aria-label={t("smart.removeFile", { name: item.file.name })} onClick={() => removeAttachment(item.file)}><Trash2 className="size-4" /></Button>
-              )}
-            </div>
-          ))}
-        </section>
-
-        <section className="space-y-2">
-          <label htmlFor="smart-mode-instruction" className="text-sm font-medium">{t("smart.promptLabel")}</label>
-          <Textarea id="smart-mode-instruction" rows={5} maxLength={MAX_INSTRUCTION_CHARACTERS} value={instruction} placeholder={t("smart.promptPlaceholder")} onChange={(event) => setInstruction(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) { event.preventDefault(); void submit(); } }} />
-          <p className="text-right text-xs text-muted-foreground">{t("smart.characterCount", { count: instruction.length, max: MAX_INSTRUCTION_CHARACTERS })}</p>
-        </section>
-
-        <section className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1">
-            <label className="text-xs font-medium">{t("settings.defaultStyle")}</label>
-            <Select value={settings.aiWritingStyle} onValueChange={(value) => settings.setAIWritingStyle(value as WritingStyle)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{(["auto", "neutral", "natural", "preserve-source"] as WritingStyle[]).map((style) => <SelectItem key={style} value={style}>{t(`writingStyle.${style}` as never)}</SelectItem>)}</SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center justify-between rounded-lg border px-3 py-2">
-            <span className="text-xs font-medium">{t("settings.humanizer")}</span>
-            <Switch checked={settings.aiHumanizerEnabled} onCheckedChange={settings.setAIHumanizerEnabled} aria-label={t("settings.humanizer")} />
-          </div>
-        </section>
-
-        <section className="rounded-lg border px-3 py-2 text-xs">
-          <div className="flex justify-between"><span>{t("smart.model")}</span><span>{metadata?.providers.flatMap((provider) => provider.models).find((model) => model.id === settings.aiModelId)?.displayName ?? settings.aiModelId}</span></div>
-          <div className="mt-1 flex justify-between"><span>{t("smart.estimatedCost")}</span><span>{estimating ? t("smart.estimating") : estimateText ?? t("smart.estimateUnavailable")}</span></div>
-          <p className="mt-2 text-muted-foreground">{t("smart.estimateDisclaimer")}</p>
-        </section>
-
-        {errorMessageKey ? <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">{t(errorMessageKey.replace(/^ai\./, "") as never)}</div> : null}
-        {state === "cancelled" ? <p role="status" className="text-sm text-muted-foreground">{t("smart.cancelled")}</p> : null}
-        {state === "conflict" ? (
-          <div role="alert" className="space-y-3 rounded-lg border p-3">
-            <p className="font-medium">{t("smart.conflict")}</p>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" onClick={() => void navigator.clipboard.writeText(resultText)}>{t("smart.copyResult")}</Button>
-              <Button onClick={() => void submit()}>{t("smart.runAgain")}</Button>
-            </div>
-          </div>
-        ) : null}
-
-        {result ? (
-          <section className="space-y-4" aria-live="polite">
-            <Separator />
-            {result.kind === "compose" && result.suggestedTitle ? <div><p className="text-xs font-medium">{t("smart.suggestedTitle")}</p><p>{result.suggestedTitle}</p></div> : null}
-            {result.kind === "rewrite-selection" ? (
-              <>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div><p className="mb-1 text-xs font-medium">{t("smart.original")}</p><div className="rounded-lg border p-3 text-sm whitespace-pre-wrap">{originalText}</div></div>
-                  <div><p className="mb-1 text-xs font-medium">{t("smart.suggested")}</p><AIDocumentPreview document={result.replacement} /></div>
-                </div>
-                <div className="rounded-lg border p-3 text-sm" aria-label={t("smart.changeSummary")}>
-                  {createWordDiff(originalText, resultText).map((part, index) => part.kind === "equal" ? <span key={index}>{part.text}</span> : part.kind === "add" ? <ins key={index} className="rounded bg-muted px-0.5">{part.text}</ins> : <del key={index} className="text-muted-foreground">{part.text}</del>)}
-                </div>
-                <p className="text-sm text-muted-foreground">{result.changeSummary}</p>
-              </>
-            ) : <AIDocumentPreview document={result.document} />}
-            {result.warnings.length ? <div><p className="text-xs font-medium">{t("smart.warnings")}</p><ul className="list-disc pl-5 text-xs text-muted-foreground">{result.warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul></div> : null}
-            <div className="rounded-lg border p-3 text-xs">
-              <p className="mb-2 font-medium">{t("smart.usage")}</p>
-              {result.usage.inputTokens === null ? <p>{t("smart.usageUnavailable")}</p> : (
-                <dl className="grid grid-cols-[1fr_auto] gap-1">
-                  <dt>{t("smart.inputTokens")}</dt><dd>{result.usage.inputTokens}</dd>
-                  {result.usage.cachedInputTokens !== undefined ? <><dt>{t("smart.cachedTokens")}</dt><dd>{result.usage.cachedInputTokens}</dd></> : null}
-                  <dt>{t("smart.outputTokens")}</dt><dd>{result.usage.outputTokens ?? "—"}</dd>
-                  {result.usage.reasoningTokens !== undefined ? <><dt>{t("smart.reasoningTokens")}</dt><dd>{result.usage.reasoningTokens}</dd></> : null}
-                  <dt>{t("smart.totalTokens")}</dt><dd>{result.usage.totalTokens ?? "—"}</dd>
-                  <dt>{t("smart.actualCost")}</dt><dd>{result.usage.estimatedActualCostUsd === null ? "—" : usd(result.usage.estimatedActualCostUsd)}</dd>
-                </dl>
-              )}
-            </div>
-          </section>
-        ) : null}
+      <div className="border-b px-4 py-2">
+        <div className="flex items-center gap-2">
+          <Select
+            value={activeConversationId ?? "__new__"}
+            onValueChange={(conversationId) => {
+              if (conversationId === "__load_more__") {
+                if (conversationCursor) void loadConversations(conversationCursor);
+                return;
+              }
+              const nextConversationId = conversationId === "__new__" ? null : conversationId;
+              if (documentId) setActiveConversation(documentId, nextConversationId);
+              if (!nextConversationId) {
+                setMessages([]);
+                setMessageCursor(null);
+              }
+            }}
+          >
+            <SelectTrigger className="h-9 min-w-0 flex-1" aria-label={t("smart.newConversation")}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent
+              position="popper"
+              side="bottom"
+              align="start"
+              sideOffset={4}
+              avoidCollisions={false}
+              className="min-w-[var(--radix-select-trigger-width)]"
+            >
+              <SelectItem value="__new__">{t("smart.newConversation")}</SelectItem>
+              {conversations.map((conversation) => (
+                <SelectItem key={conversation.id} value={conversation.id}>{conversation.title}</SelectItem>
+              ))}
+              {conversationCursor ? (
+                <SelectItem value="__load_more__">{t("smart.showMore")}</SelectItem>
+              ) : null}
+            </SelectContent>
+          </Select>
+          <Button type="button" variant="ghost" size="icon-sm" aria-label={t("smart.newConversation")} onClick={() => {
+            if (documentId) setActiveConversation(documentId, null);
+            setMessages([]);
+            setMessageCursor(null);
+          }}><MessageSquarePlus className="size-4" /></Button>
+          {activeConversation ? <>
+            <Button type="button" variant="ghost" size="icon-sm" aria-label={t("smart.rename")} onClick={() => {
+              setRenameTitle(activeConversation.title);
+              setRenameOpen(true);
+            }}><Pencil className="size-4" /></Button>
+            <Button type="button" variant="ghost" size="icon-sm" aria-label={t("smart.delete")} onClick={() => setDeleteOpen(true)}><Trash2 className="size-4" /></Button>
+          </> : null}
+        </div>
       </div>
 
-      <div className="flex flex-wrap justify-end gap-2 border-t p-4">
-        {state === "submitting" || state === "extracting-attachments" ? (
-          <Button variant="outline" onClick={cancel}>{t("smart.cancel")}</Button>
-        ) : null}
-        {result && state !== "conflict" ? (
-          <>
-            <Button variant="outline" onClick={reject}>{t("smart.reject")}</Button>
-            <Button variant="outline" onClick={() => void submit()}><RotateCcw className="size-4" />{t("smart.regenerate")}</Button>
-            {result.kind === "rewrite-selection" ? <Button onClick={() => applyResult("replace")}>{t("smart.accept")}</Button> : editor && isEmptyEditorDocument(editor) ? <Button onClick={() => applyResult("replace")}>{t("smart.replaceEmpty")}</Button> : <Button onClick={() => applyResult("insert")}>{t("smart.insertAtCursor")}</Button>}
-          </>
-        ) : state !== "conflict" ? (
-          <Button disabled={!credential?.configured || !instruction.trim() || hasAttachmentError || state === "submitting" || state === "extracting-attachments"} onClick={() => void submit()}>{state === "submitting" ? <Loader2 className="size-4 animate-spin" /> : null}{rewrite ? t("smart.rewrite") : t("smart.generate")}</Button>
-        ) : null}
+      <div data-testid="smart-mode-message-area" className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+        {!credential?.configured ? <div className="rounded-2xl border border-dashed p-4">
+          <p className="font-medium">{t("smart.notConfigured")}</p>
+          <Button className="mt-3" onClick={() => router.push("/settings")}>{t("smart.openSettings")}</Button>
+        </div> : null}
+        {activeConversationId && messageCursor ? <div className="mb-3 text-center"><Button type="button" size="sm" variant="ghost" disabled={messagesLoading} onClick={() => void loadMessages(activeConversationId, messageCursor)}>{messagesLoading ? <Loader2 className="size-4 animate-spin" /> : null}{t("smart.loadEarlier")}</Button></div> : null}
+        {messages.length === 0 && activeConversationId ? <p className="py-8 text-center text-sm text-muted-foreground">{t("smart.emptyConversation")}</p> : null}
+        <div className="space-y-4">
+          {messages.map((message) => <div key={message.id} className={message.role === "user" ? "ml-10" : "mr-4"}>
+            {message.role === "user" ? <UserMessage message={message} /> : <div className="rounded-2xl rounded-bl-md bg-muted px-3 py-2 text-sm">{message.content}</div>}
+            {message.role === "assistant" ? <DraftCard message={message} operation={operations.get(message.id)} disabled={state === "submitting"} onInsert={(value) => void insertDraft(value)} onReplace={(value) => void replaceDraft(value)} /> : null}
+          </div>)}
+        </div>
+        {state === "submitting" ? <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />{t("smart.submitting")}</div> : null}
+        {errorMessageKey ? <p role="alert" className="mt-4 rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm">{t(errorMessageKey.replace(/^ai\./, "") as never)}</p> : null}
       </div>
+
+      <div className="border-t bg-background px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+        {attachments.length ? (
+          <div className="mb-2 flex flex-wrap gap-1.5">
+            {attachments.map((item) => (
+              <span
+                key={`${item.file.name}-${item.file.lastModified}`}
+                className={`inline-flex max-w-full items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs ${item.status === "error" ? "text-destructive" : ""}`}
+              >
+                {item.status === "extracting" ? (
+                  <Loader2 className="size-3 shrink-0 animate-spin" />
+                ) : (
+                  <FileText className="size-3 shrink-0" />
+                )}
+                <span className="max-w-32 truncate">{item.file.name}</span>
+                {item.status === "extracting" ? (
+                  <span className="text-muted-foreground">{t("smart.extracting")}</span>
+                ) : null}
+                {item.status === "error" ? (
+                  <span>{t("smart.attachmentError")}</span>
+                ) : null}
+                <button
+                  type="button"
+                  aria-label={t("smart.removeFile", { name: item.file.name })}
+                  onClick={() => setAttachments((current) => current.filter((entry) => entry.file !== item.file))}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        ) : null}
+        <div
+          data-testid="smart-conversation-composer"
+          className={`border border-input bg-background px-3 py-1 shadow-sm transition-[border-radius] ${composerRadius(composerLines)}`}
+        >
+          <div
+            data-testid="smart-conversation-composer-row"
+            className="flex items-end gap-2"
+          >
+            <div
+              data-testid="smart-composer-attachment-control"
+              className="flex h-10 shrink-0 items-center"
+            >
+              {attachmentButton}
+            </div>
+            <Textarea
+              ref={composerRef}
+              value={instruction}
+              maxLength={MAX_INSTRUCTION_CHARACTERS}
+              rows={1}
+              placeholder={t("smart.promptPlaceholder")}
+              className="min-h-10 max-h-64 flex-1 resize-none overflow-y-auto border-0 bg-transparent px-0 py-2 leading-6 shadow-none focus-visible:border-0 focus-visible:ring-0"
+              onChange={(event) => {
+                setInstruction(event.target.value);
+                resizeComposer(event.currentTarget);
+              }}
+              onCompositionStart={() => {
+                composingRef.current = true;
+                compositionJustEndedRef.current = false;
+                if (compositionEndTimerRef.current !== null) {
+                  window.clearTimeout(compositionEndTimerRef.current);
+                  compositionEndTimerRef.current = null;
+                }
+              }}
+              onCompositionEnd={() => {
+                composingRef.current = false;
+                compositionJustEndedRef.current = true;
+                compositionEndTimerRef.current = window.setTimeout(() => {
+                  compositionJustEndedRef.current = false;
+                  compositionEndTimerRef.current = null;
+                }, 0);
+              }}
+              onKeyDown={(event) => {
+                if (
+                  event.key === "Enter" &&
+                  !event.shiftKey &&
+                  !composingRef.current &&
+                  !compositionJustEndedRef.current &&
+                  !event.nativeEvent.isComposing &&
+                  event.nativeEvent.keyCode !== 229
+                ) {
+                  event.preventDefault();
+                  void submit();
+                }
+              }}
+            />
+            <div
+              data-testid="smart-composer-action-controls"
+              className="flex h-10 shrink-0 items-center gap-1"
+            >
+              {composerControls}
+            </div>
+          </div>
+          <input ref={fileInputRef} type="file" className="hidden" multiple accept=".txt,.md,.markdown,.pdf,.docx" onChange={(event) => { void addFiles(Array.from(event.target.files ?? [])); event.currentTarget.value = ""; }} />
+        </div>
+      </div>
+
+      <Dialog open={renameOpen} onOpenChange={setRenameOpen}><DialogContent><DialogHeader><DialogTitle>{t("smart.renameConversation")}</DialogTitle><DialogDescription>{t("smart.renameConversationDescription")}</DialogDescription></DialogHeader><Input value={renameTitle} maxLength={255} onChange={(event) => setRenameTitle(event.target.value)} /><DialogFooter><Button variant="outline" onClick={() => setRenameOpen(false)}>{t("common.cancel")}</Button><Button onClick={() => void renameConversation()}>{t("smart.save")}</Button></DialogFooter></DialogContent></Dialog>
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}><DialogContent><DialogHeader><DialogTitle>{t("smart.deleteConversation")}</DialogTitle><DialogDescription>{t("smart.deleteConversationDescription")}</DialogDescription></DialogHeader><DialogFooter><Button variant="outline" onClick={() => setDeleteOpen(false)}>{t("common.cancel")}</Button><Button variant="destructive" onClick={() => void deleteConversation()}>{t("smart.delete")}</Button></DialogFooter></DialogContent></Dialog>
     </SheetContent>
   );
 }

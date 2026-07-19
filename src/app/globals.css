@@ -1807,6 +1807,12 @@ body:has(.anvil-drag-handle[data-dragging="true"]) .anvil-footnotes-panel {
   --y: translateX(110%) translateY(var(--slot)) !important;
 }
 
+/* Smart Mode and other Radix layers use z-50. Status feedback must remain
+ * visible above those interaction surfaces without changing its placement. */
+[data-sonner-toaster] {
+  z-index: 100 !important;
+}
+
 [data-sonner-toast][data-y-position="top"][data-mounted="true"] {
   --y: translateX(0) translateY(var(--slot)) !important;
 }
@@ -1985,6 +1991,37 @@ body:has(.anvil-drag-handle[data-dragging="true"]) .anvil-footnotes-panel {
 .quill-quote {
   animation: quill-overlay-fade 600ms ease-out both;
   animation-delay: 200ms;
+}
+
+/* Smart Mode's inline review is a decoration, never persisted editor
+   content. Old text remains visibly red/struck through; the proposed text is
+   a normal black inline widget until the person accepts or rejects it. */
+.anvil-ai-inline-selection {
+  border-radius: 0.18em;
+  /* Keep a visible monochrome fallback in browsers that reject color-mix()
+     or its oklab interpolation syntax. */
+  background-color: rgb(0 0 0 / 16%);
+  background: color-mix(in oklab, var(--primary) 18%, transparent);
+  outline: 1px solid rgb(0 0 0 / 18%);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) 22%, transparent);
+}
+
+.dark .anvil-ai-inline-selection {
+  background-color: rgb(255 255 255 / 18%);
+  outline-color: rgb(255 255 255 / 22%);
+}
+
+.anvil-ai-inline-original {
+  color: oklch(0.52 0.2 25);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+}
+
+.anvil-ai-inline-replacement {
+  margin-inline-start: 0.18em;
+  color: var(--foreground);
+  font: inherit;
+  white-space: pre-wrap;
 }
 
 @media (prefers-reduced-motion: reduce) {

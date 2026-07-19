@@ -7,6 +7,12 @@ const client = vi.hoisted(() => ({
   getCredentialStatus: vi.fn(),
   getCapabilities: vi.fn(),
   saveCredential: vi.fn(),
+  listKeyProfiles: vi.fn(),
+  saveKeyProfile: vi.fn(),
+  renameKeyProfile: vi.fn(),
+  activateKeyProfile: vi.fn(),
+  deactivateKeyProfile: vi.fn(),
+  deleteKeyProfile: vi.fn(),
   removeCredential: vi.fn(),
   testConnection: vi.fn(),
 }));
@@ -101,6 +107,7 @@ describe("AISettingsSection", () => {
       configured: false,
       storage: "os-secure-storage",
     });
+    client.listKeyProfiles.mockResolvedValue([]);
   });
 
   it("shows only enabled OpenAI metadata and the Terra pricing", async () => {
@@ -116,12 +123,18 @@ describe("AISettingsSection", () => {
 
   it("clears an unsaved key and only renders its masked status after saving", async () => {
     const user = userEvent.setup();
-    client.saveCredential.mockResolvedValue({
-      configured: true,
-      lastFour: "1234",
+    client.saveKeyProfile.mockResolvedValue({
+      id: "profile-1",
+      providerId: "openai",
+      label: "OpenAI",
+      display: "OpenAI · sk-proj-****1234",
+      isActive: true,
+      createdAt: "2026-07-19T00:00:00.000Z",
       updatedAt: "2026-07-19T00:00:00.000Z",
-      storage: "os-secure-storage",
     });
+    client.getCredentialStatus
+      .mockResolvedValueOnce({ configured: false, storage: "os-secure-storage" })
+      .mockResolvedValueOnce({ configured: true, lastFour: "1234", updatedAt: "2026-07-19T00:00:00.000Z", storage: "os-secure-storage" });
     render(<AISettingsSection />);
 
     const input = await screen.findByLabelText("settings.apiKey");
@@ -129,7 +142,57 @@ describe("AISettingsSection", () => {
     await user.click(screen.getByRole("button", { name: "settings.saveKey" }));
 
     await waitFor(() => expect(input).toHaveValue(""));
-    expect(screen.getByText(/1234/)).toBeInTheDocument();
+    expect(screen.getAllByText(/1234/).length).toBeGreaterThan(0);
     expect(screen.queryByDisplayValue("sk-test-never-persist-1234")).not.toBeInTheDocument();
+  });
+
+  it("shows only the fixed-mask profile metadata in desktop key management", async () => {
+    client.listKeyProfiles.mockResolvedValue([{
+      id: "profile-1",
+      providerId: "openai",
+      label: "Personal",
+      display: "OpenAI · sk-proj-****1234",
+      isActive: true,
+      createdAt: "2026-07-19T00:00:00.000Z",
+      updatedAt: "2026-07-19T00:00:00.000Z",
+    }]);
+
+    render(<AISettingsSection />);
+
+    expect(await screen.findByText("OpenAI · sk-proj-****1234")).toBeInTheDocument();
+    expect(screen.queryByText(/encryptedSecret|sk-test-never-persist/)).not.toBeInTheDocument();
+  });
+
+  it("labels browser credential storage as session-only instead of saved", async () => {
+    client.getCapabilities.mockResolvedValue({
+      runtime: "browser",
+      persistentCredentialStorage: false,
+      sessionCredentialStorage: true,
+      smartModeAvailable: true,
+    });
+    client.getCredentialStatus.mockResolvedValue({
+      configured: false,
+      storage: "session-only",
+    });
+
+    render(<AISettingsSection />);
+
+    expect(
+      await screen.findByRole("button", { name: "settings.useForSession" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "settings.saveKey" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps the AI-phrasing toggle in collapsed advanced settings", async () => {
+    const user = userEvent.setup();
+    render(<AISettingsSection />);
+
+    await screen.findByText("OpenAI");
+    expect(screen.queryByRole("switch", { name: "settings.humanizer" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "settings.advanced" }));
+    expect(screen.getByRole("switch", { name: "settings.humanizer" })).toBeChecked();
   });
 });

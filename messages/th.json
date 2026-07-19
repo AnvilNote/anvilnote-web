@@ -1090,5 +1090,23 @@
       "source": "ลิงก์",
       "projectLink": "หน้าโปรเจกต์"
     }
+  },
+  "ai": {
+    "smart": {
+      "promptPlaceholder": "อยากเขียนอะไรดี?",
+      "inlinePlaceholder": "อยากแก้ตรงนี้ยังไง?",
+      "copyMessage": "คัดลอกข้อความ",
+      "messageCopied": "คัดลอกข้อความแล้ว",
+      "moreAttachments": "ไฟล์แนบอีก {count} รายการ"
+    },
+    "settings": {
+      "advanced": "การตั้งค่าขั้นสูง",
+      "humanizer": "ลดความเป็น AI",
+      "humanizerHint": "ลดสำนวน AI ที่เป็นแพตเทิร์น โดยยังคงข้อเท็จจริงและโทนที่ต้องการไว้",
+      "keyReadyForSession": "คีย์ API นี้จะเก็บไว้เฉพาะแท็บนี้เท่านั้น และจะถูกล้างเมื่อรีเฟรช"
+    },
+    "writingStyle": {
+      "label": "สไตล์การเขียน"
+    }
   }
 }

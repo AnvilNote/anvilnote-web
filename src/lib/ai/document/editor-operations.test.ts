@@ -1,7 +1,7 @@
 import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import { describe, expect, it } from "vitest";
-import { applyAIContent, isEmptyEditorDocument } from "./editor-operations";
+import { applyAIContent, applyInlineAIContent, isEmptyEditorDocument } from "./editor-operations";
 
 function editor(content: object) {
   return new Editor({ extensions: [StarterKit], content });
@@ -48,6 +48,50 @@ describe("AI editor operations", () => {
     expect(instance.getJSON().content?.slice(1)).toEqual([{ type: "paragraph" }]);
     expect(instance.commands.undo()).toBe(true);
     expect(isEmptyEditorDocument(instance)).toBe(true);
+    instance.destroy();
+  });
+
+  it("replaces only selected inline text and keeps the surrounding text block intact", () => {
+    const instance = editor({
+      type: "doc",
+      content: [{ type: "paragraph", content: [{ type: "text", text: "Old wording stays" }] }],
+    });
+    const before = instance.getJSON();
+
+    expect(
+      applyInlineAIContent(instance, { from: 1, to: 4 }, [
+        { type: "text", text: "New", marks: [{ type: "bold" }] },
+      ]),
+    ).toBe(true);
+    expect(instance.getJSON()).toEqual({
+      type: "doc",
+      content: [{
+        type: "paragraph",
+        content: [
+          { type: "text", marks: [{ type: "bold" }], text: "New" },
+          { type: "text", text: " wording stays" },
+        ],
+      }],
+    });
+
+    expect(instance.commands.undo()).toBe(true);
+    expect(instance.getJSON()).toEqual(before);
+    instance.destroy();
+  });
+
+  it("rejects block nodes from an inline replacement", () => {
+    const instance = editor({
+      type: "doc",
+      content: [{ type: "paragraph", content: [{ type: "text", text: "Old wording" }] }],
+    });
+    const before = instance.getJSON();
+
+    expect(
+      applyInlineAIContent(instance, { from: 1, to: 4 }, [
+        { type: "paragraph", content: [{ type: "text", text: "Unsafe block" }] },
+      ]),
+    ).toBe(false);
+    expect(instance.getJSON()).toEqual(before);
     instance.destroy();
   });
 });

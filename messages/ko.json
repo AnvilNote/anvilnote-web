@@ -1090,5 +1090,23 @@
       "source": "링크",
       "projectLink": "프로젝트 홈페이지"
     }
+  },
+  "ai": {
+    "smart": {
+      "promptPlaceholder": "무엇을 써볼까요?",
+      "inlinePlaceholder": "어떻게 고칠까?",
+      "copyMessage": "메시지 복사",
+      "messageCopied": "메시지를 복사했습니다",
+      "moreAttachments": "첨부 파일 {count}개 더 있음"
+    },
+    "settings": {
+      "advanced": "고급 설정",
+      "humanizer": "AI 말투 줄이기",
+      "humanizerHint": "사실과 의도한 문체는 유지하면서 틀에 박힌 AI 표현을 줄입니다.",
+      "keyReadyForSession": "이 API 키는 이 탭에서만 유지되며, 새로고침하면 사라집니다."
+    },
+    "writingStyle": {
+      "label": "문체"
+    }
   }
 }

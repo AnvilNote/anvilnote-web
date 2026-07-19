@@ -41,6 +41,7 @@ import { TabNavigation } from "@/lib/tiptap/tab-navigation";
 import { AnvilDivider } from "@/lib/tiptap/divider";
 import { captionHasMath, renderCaptionHtml } from "@/lib/tiptap/caption-math";
 import { insertTrackSize, resizeTrackPair } from "@/lib/tiptap/table-geometry";
+import { InlineAIDiffExtension } from "@/lib/ai/document/inline-diff";
 import {
   contrastTextColor,
   normalizeCellBoolean,
@@ -1163,5 +1164,6 @@ export function buildExtensions({
     QuestionBlankSuggestion,
     InlineBlank,
     TabNavigation.configure({ onMathClick }),
+    InlineAIDiffExtension,
   ];
 }

@@ -2,7 +2,19 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Eye, EyeOff, ExternalLink, Info, Loader2, Trash2 } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Eye,
+  EyeOff,
+  ExternalLink,
+  Info,
+  KeyRound,
+  Loader2,
+  Pencil,
+  Power,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import type { WritingStyle } from "@anvilnote/ai-writer/contracts";
 import { Button } from "@/components/ui/button";
@@ -31,6 +43,7 @@ import {
   AIClientError,
   aiClient,
   type AIProviderMetadata,
+  type AIKeyProfile,
   type AIRuntimeCapability,
   type AISecretStatus,
 } from "@/lib/ai/runtime-client";
@@ -58,11 +71,17 @@ export function AISettingsSection() {
   const [capability, setCapability] = useState<AIRuntimeCapability | null>(null);
   const [credential, setCredential] = useState<AISecretStatus | null>(null);
   const [apiKey, setApiKey] = useState("");
+  const [keyLabel, setKeyLabel] = useState("OpenAI");
+  const [profiles, setProfiles] = useState<AIKeyProfile[]>([]);
   const [showKey, setShowKey] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [removeOpen, setRemoveOpen] = useState(false);
+  const [renameProfile, setRenameProfile] = useState<AIKeyProfile | null>(null);
+  const [renameProfileLabel, setRenameProfileLabel] = useState("");
+  const [deleteProfileCandidate, setDeleteProfileCandidate] = useState<AIKeyProfile | null>(null);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -70,12 +89,14 @@ export function AISettingsSection() {
       aiClient.getProviders(),
       aiClient.getCapabilities(),
       aiClient.getCredentialStatus(),
+      aiClient.listKeyProfiles(),
     ])
-      .then(([nextMetadata, nextCapability, nextCredential]) => {
+      .then(([nextMetadata, nextCapability, nextCredential, nextProfiles]) => {
         if (!active) return;
         setMetadata(nextMetadata);
         setCapability(nextCapability);
         setCredential(nextCredential);
+        setProfiles(nextProfiles);
         const selectedModel = nextMetadata.providers
           .flatMap((provider) => provider.models)
           .find((model) => model.id === settings.aiModelId && model.enabled);
@@ -112,11 +133,24 @@ export function AISettingsSection() {
     if (!canSave) return;
     setSaving(true);
     try {
-      const next = await aiClient.saveCredential(apiKey);
-      setCredential(next);
+      const next = capability?.runtime === "desktop"
+        ? await aiClient.saveKeyProfile({
+            label: keyLabel.trim() || "OpenAI",
+            apiKey,
+            isActive: true,
+          })
+        : await aiClient.saveCredential(apiKey);
+      if ("configured" in next) {
+        setCredential(next);
+      } else {
+        setProfiles((current) => [next, ...current.filter((profile) => profile.id !== next.id)]);
+        setCredential(await aiClient.getCredentialStatus());
+      }
       setApiKey("");
       setShowKey(false);
-      toast.success(t("settings.keySaved"));
+      toast.success(t(capability?.runtime === "desktop"
+        ? "settings.keySaved"
+        : "settings.keyReadyForSession"));
     } catch (error) {
       toast.error(t(safeMessageKey(error).replace(/^ai\./, "") as never));
     } finally {
@@ -148,6 +182,46 @@ export function AISettingsSection() {
       setCredential(await aiClient.removeCredential());
       setRemoveOpen(false);
       toast.success(t("settings.keyRemoved"));
+    } catch (error) {
+      toast.error(t(safeMessageKey(error).replace(/^ai\./, "") as never));
+    }
+  }
+
+  async function activateProfile(profile: AIKeyProfile) {
+    try {
+      const updated = profile.isActive
+        ? await aiClient.deactivateKeyProfile(profile.id)
+        : await aiClient.activateKeyProfile(profile.id);
+      setProfiles((current) => current.map((item) =>
+        item.id === updated.id
+          ? updated
+          : updated.isActive && item.providerId === updated.providerId
+            ? { ...item, isActive: false }
+            : item,
+      ));
+      setCredential(await aiClient.getCredentialStatus());
+    } catch (error) {
+      toast.error(t(safeMessageKey(error).replace(/^ai\./, "") as never));
+    }
+  }
+
+  async function deleteProfile(profile: AIKeyProfile) {
+    try {
+      await aiClient.deleteKeyProfile(profile.id);
+      setProfiles((current) => current.filter((item) => item.id !== profile.id));
+      setCredential(await aiClient.getCredentialStatus());
+      setDeleteProfileCandidate(null);
+    } catch (error) {
+      toast.error(t(safeMessageKey(error).replace(/^ai\./, "") as never));
+    }
+  }
+
+  async function saveProfileRename() {
+    if (!renameProfile || !renameProfileLabel.trim()) return;
+    try {
+      const updated = await aiClient.renameKeyProfile(renameProfile.id, renameProfileLabel);
+      setProfiles((current) => current.map((item) => item.id === updated.id ? updated : item));
+      setRenameProfile(null);
     } catch (error) {
       toast.error(t(safeMessageKey(error).replace(/^ai\./, "") as never));
     }
@@ -205,7 +279,7 @@ export function AISettingsSection() {
       <div className="space-y-3 rounded-lg border px-4 py-3">
         <div className="space-y-0.5">
           <p className="text-sm font-medium">{t("settings.apiKey")}</p>
-          {credential?.configured ? (
+          {credential?.configured && capability?.runtime !== "desktop" ? (
             <p className="text-xs text-muted-foreground">
               {t("settings.configuredEnding", { lastFour: credential.lastFour ?? "••••" })}
             </p>
@@ -214,7 +288,7 @@ export function AISettingsSection() {
           )}
           {storageText ? <p className="text-xs text-muted-foreground">{storageText}</p> : null}
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="flex flex-col gap-2 sm:flex-row">
           <div className="relative min-w-0 flex-1">
             <Input
               aria-label={t("settings.apiKey")}
@@ -238,6 +312,15 @@ export function AISettingsSection() {
               {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </Button>
           </div>
+          {capability?.runtime === "desktop" ? (
+            <Input
+              aria-label={t("settings.keyLabel")}
+              maxLength={120}
+              value={keyLabel}
+              onChange={(event) => setKeyLabel(event.target.value)}
+              placeholder={t("settings.keyLabelPlaceholder")}
+            />
+          ) : null}
           <Button
             type="button"
             variant="outline"
@@ -250,11 +333,15 @@ export function AISettingsSection() {
           <Button
             type="button"
             disabled={!canSave || saving}
-            aria-label={t("settings.saveKey")}
+            aria-label={t(capability?.runtime === "desktop"
+              ? "settings.saveKey"
+              : "settings.useForSession")}
             onClick={() => void saveKey()}
           >
             {saving ? <Loader2 className="size-4 animate-spin" /> : null}
-            {t("settings.saveKey")}
+            {t(capability?.runtime === "desktop"
+              ? "settings.saveKey"
+              : "settings.useForSession")}
           </Button>
         </div>
         <div className="flex items-center justify-between gap-3">
@@ -342,17 +429,34 @@ export function AISettingsSection() {
         </div>
       </div>
 
-      <SettingsRow
-        label={t("settings.humanizer")}
-        hint={t("settings.humanizerHint")}
-        control={
-          <Switch
-            aria-label={t("settings.humanizer")}
-            checked={settings.aiHumanizerEnabled}
-            onCheckedChange={settings.setAIHumanizerEnabled}
-          />
-        }
-      />
+      {capability?.runtime === "desktop" ? (
+        <section className="space-y-3 rounded-lg border px-4 py-3">
+          <div className="flex items-center gap-2">
+            <KeyRound className="size-4 text-muted-foreground" />
+            <div>
+              <p className="text-sm font-medium">{t("settings.keyProfiles")}</p>
+              <p className="text-xs text-muted-foreground">{t("settings.keyProfilesHint")}</p>
+            </div>
+          </div>
+          {profiles.length === 0 ? <p className="text-sm text-muted-foreground">{t("settings.noKeyProfiles")}</p> : (
+            <div className="space-y-2">
+              {profiles.map((profile) => (
+                <div key={profile.id} className="flex items-center gap-2 rounded-md bg-muted/45 px-3 py-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{profile.label}</p>
+                    <p className="truncate text-xs text-muted-foreground">{profile.display}</p>
+                  </div>
+                  {profile.isActive ? <span className="inline-flex items-center gap-1 text-xs text-emerald-700 dark:text-emerald-400"><Check className="size-3.5" />{t("settings.activeKey")}</span> : null}
+                  <Button type="button" variant="ghost" size="icon-sm" aria-label={profile.isActive ? t("settings.deactivateKey") : t("settings.activateKey")} onClick={() => void activateProfile(profile)}><Power className="size-4" /></Button>
+                  <Button type="button" variant="ghost" size="icon-sm" aria-label={t("settings.renameKeyProfile")} onClick={() => { setRenameProfile(profile); setRenameProfileLabel(profile.label); }}><Pencil className="size-4" /></Button>
+                  <Button type="button" variant="ghost" size="icon-sm" aria-label={t("settings.removeKey")} onClick={() => setDeleteProfileCandidate(profile)}><Trash2 className="size-4" /></Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      ) : null}
+
       <SettingsRow
         label={t("settings.defaultStyle")}
         control={
@@ -371,6 +475,31 @@ export function AISettingsSection() {
           </Select>
         }
       />
+
+      <section className="overflow-hidden rounded-lg border">
+        <button
+          type="button"
+          className="flex w-full items-center justify-between px-4 py-3 text-left"
+          aria-expanded={advancedOpen}
+          onClick={() => setAdvancedOpen((value) => !value)}
+        >
+          <span className="text-sm font-medium">{t("settings.advanced")}</span>
+          <ChevronDown className={`size-4 text-muted-foreground transition-transform ${advancedOpen ? "rotate-180" : ""}`} />
+        </button>
+        {advancedOpen ? <div className="border-t px-4 py-3">
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-0.5">
+              <p className="text-sm font-medium">{t("settings.humanizer")}</p>
+              <p className="text-xs text-muted-foreground">{t("settings.humanizerHint")}</p>
+            </div>
+            <Switch
+              aria-label={t("settings.humanizer")}
+              checked={settings.aiHumanizerEnabled}
+              onCheckedChange={settings.setAIHumanizerEnabled}
+            />
+          </div>
+        </div> : null}
+      </section>
 
       {model?.pricing ? (
         <div className="space-y-3 rounded-lg border px-4 py-3 text-sm">
@@ -392,7 +521,32 @@ export function AISettingsSection() {
           <p className="text-xs text-muted-foreground">{t("settings.pricingDisclaimer")}</p>
         </div>
       ) : null}
+
+      <Dialog open={Boolean(renameProfile)} onOpenChange={(open) => !open && setRenameProfile(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("settings.renameKeyProfile")}</DialogTitle>
+            <DialogDescription>{t("settings.renameKeyProfileDescription")}</DialogDescription>
+          </DialogHeader>
+          <Input value={renameProfileLabel} maxLength={120} onChange={(event) => setRenameProfileLabel(event.target.value)} />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameProfile(null)}>{t("common.cancel")}</Button>
+            <Button onClick={() => void saveProfileRename()}>{t("settings.save")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={Boolean(deleteProfileCandidate)} onOpenChange={(open) => !open && setDeleteProfileCandidate(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("settings.deleteKeyProfile")}</DialogTitle>
+            <DialogDescription>{t("settings.deleteKeyProfileDescription")}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteProfileCandidate(null)}>{t("common.cancel")}</Button>
+            <Button variant="destructive" onClick={() => deleteProfileCandidate && void deleteProfile(deleteProfileCandidate)}>{t("settings.removeKey")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SettingsSection>
   );
 }
-

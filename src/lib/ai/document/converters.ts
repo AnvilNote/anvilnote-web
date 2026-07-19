@@ -33,6 +33,13 @@ const PROTECTED_NODES = new Set([
   "footnoteReference",
   "crossRef",
 ]);
+const INLINE_SELECTION_NODES = new Set([
+  "text",
+  "hardBreak",
+  "inlineMath",
+  "footnoteReference",
+  "crossRef",
+]);
 
 export class UnsupportedAIContentError extends Error {
   readonly code = "unsupported_selection";
@@ -248,10 +255,17 @@ export function tiptapSelectionToAnvilNote(
   content: JSONContent[],
   registry?: ProtectedSelectionRegistry,
 ): AnvilNoteDocumentFragmentV1 {
+  // A ProseMirror TextSelection wholly inside one paragraph serializes its
+  // Slice.content as inline nodes (for example [{ type: "text", ... }]), while
+  // the public fragment contract deliberately starts at block nodes. Preserve
+  // the selection and its marks by restoring the implicit paragraph wrapper.
+  const blocks = content.length > 0 && content.every((node) => INLINE_SELECTION_NODES.has(node.type ?? ""))
+    ? [{ type: "paragraph", content }]
+    : content;
   return AnvilNoteDocumentFragmentV1Schema.parse({
     schemaVersion: "anvilnote.fragment.v1",
     type: "fragment",
-    content: content.map((node) => block(node, registry)),
+    content: blocks.map((node) => block(node, registry)),
   });
 }
 
