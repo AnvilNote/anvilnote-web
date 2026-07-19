@@ -107,8 +107,8 @@ export function TourReplayButton() {
           aria-label={t("hide")}
           title={t("hide")}
           className={cn(
-            "flex size-6 scale-90 items-center justify-center self-end rounded-full border bg-background text-muted-foreground opacity-0 shadow-lg transition-all duration-150",
-            "hover:text-foreground group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:scale-100 group-focus-within:opacity-100",
+            "pointer-events-none flex size-6 scale-90 items-center justify-center self-end rounded-full border bg-background text-muted-foreground opacity-0 shadow-lg transition-all duration-150",
+            "hover:text-foreground group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:scale-100 group-focus-within:opacity-100",
             "translate-y-2",
           )}
         >
@@ -120,8 +120,8 @@ export function TourReplayButton() {
           aria-label={t("cheatSheet")}
           title={t("cheatSheet")}
           className={cn(
-            "flex size-10 scale-90 items-center justify-center rounded-full border bg-background text-muted-foreground opacity-0 shadow-lg transition-all duration-150",
-            "hover:text-foreground group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:scale-100 group-focus-within:opacity-100",
+            "pointer-events-none flex size-10 scale-90 items-center justify-center rounded-full border bg-background text-muted-foreground opacity-0 shadow-lg transition-all duration-150",
+            "hover:text-foreground group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:scale-100 group-focus-within:opacity-100",
             "translate-y-2",
           )}
         >
@@ -133,8 +133,8 @@ export function TourReplayButton() {
           aria-label={t("replay")}
           title={t("replay")}
           className={cn(
-            "flex size-10 scale-90 items-center justify-center rounded-full border bg-background text-muted-foreground opacity-0 shadow-lg transition-all duration-150",
-            "hover:text-foreground group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:scale-100 group-focus-within:opacity-100",
+            "pointer-events-none flex size-10 scale-90 items-center justify-center rounded-full border bg-background text-muted-foreground opacity-0 shadow-lg transition-all duration-150",
+            "hover:text-foreground group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:scale-100 group-focus-within:opacity-100",
             "translate-y-2",
           )}
         >

@@ -314,15 +314,6 @@ export function AISettingsSection() {
               {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </Button>
           </div>
-          {capability?.runtime === "desktop" ? (
-            <Input
-              aria-label={t("settings.keyLabel")}
-              maxLength={120}
-              value={keyLabel}
-              onChange={(event) => setKeyLabel(event.target.value)}
-              placeholder={t("settings.keyLabelPlaceholder")}
-            />
-          ) : null}
           <Button
             type="button"
             variant="outline"
@@ -340,22 +331,17 @@ export function AISettingsSection() {
           </Button>
           <Button
             type="button"
-            size={capability?.runtime === "desktop" ? "default" : "icon"}
+            size="icon"
             disabled={!canSave || saving}
-            aria-label={t(capability?.runtime === "desktop"
-              ? "settings.saveKey"
-              : "settings.useForSession")}
-            title={capability?.runtime === "desktop"
-              ? undefined
-              : t("settings.useForSession")}
+            aria-label={t("settings.useForSession")}
+            title={t("settings.useForSession")}
             onClick={() => void saveKey()}
           >
             {saving ? (
               <Loader2 className="size-4 animate-spin" />
-            ) : capability?.runtime === "desktop" ? null : (
+            ) : (
               <Play className="size-4" />
             )}
-            {capability?.runtime === "desktop" ? t("settings.saveKey") : null}
           </Button>
         </div>
         <div className="flex items-center justify-between gap-3">
