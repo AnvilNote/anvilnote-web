@@ -138,6 +138,7 @@ type DocumentState = {
   deleteDocument: (id: string) => Promise<void>;
   renameDocument: (id: string, title: string) => void;
   setContent: (id: string, content: JSONContent) => void;
+  snapshotBeforeAIInsert: (id: string, content: JSONContent) => Promise<void>;
   replaceWholeDocumentFromAI: (
     id: string,
     content: JSONContent,
@@ -421,6 +422,69 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
       ),
     }));
     scheduleSave(id);
+  },
+
+  // An AI insertion is applied directly to the live editor, so capture the
+  // exact editor JSON before that transaction runs. The version endpoint
+  // snapshots the already-persisted Document row; persist first, then create
+  // the version in sequence so a pending autosave cannot turn this into a
+  // post-insert snapshot. This deliberately ignores the user's periodic
+  // snapshot interval: accepting AI content is an explicit safety boundary.
+  snapshotBeforeAIInsert: async (id, content) => {
+    const current = get().documents.find((document) => document.id === id);
+    if (!current) throw new Error("Document not found");
+
+    const queued = saveTimers.get(id);
+    if (queued) {
+      clearTimeout(queued);
+      saveTimers.delete(id);
+    }
+
+    set((state) => ({
+      saveStateById: { ...state.saveStateById, [id]: "saving" },
+    }));
+
+    try {
+      const saved = await updateDocumentRequest(id, {
+        title: current.title,
+        content,
+        metadata: current.metadata,
+        templateSettings: current.templateSettings,
+        templateId: current.templateId,
+        numberedHeadings: current.numberedHeadings,
+        marginTopCm: current.marginTopCm,
+        marginBottomCm: current.marginBottomCm,
+        marginLeftCm: current.marginLeftCm,
+        marginRightCm: current.marginRightCm,
+      });
+      const created = await createDocumentVersion(id);
+      const contentJson = JSON.stringify(content);
+      lastSnapshotAt.set(id, Date.now());
+      lastSnapshottedContent.set(id, contentJson);
+
+      set((state) => {
+        const existingVersions = state.versionsById[id];
+        return {
+          documents: state.documents.map((document) =>
+            document.id === id ? { ...document, updatedAt: saved.updatedAt } : document,
+          ),
+          saveStateById: { ...state.saveStateById, [id]: "saved" },
+          ...(existingVersions
+            ? {
+                versionsById: {
+                  ...state.versionsById,
+                  [id]: [created, ...existingVersions],
+                },
+              }
+            : {}),
+        };
+      });
+    } catch {
+      set((state) => ({
+        saveStateById: { ...state.saveStateById, [id]: "failed" },
+      }));
+      throw new Error("Failed to snapshot document before AI insertion");
+    }
   },
 
   // A confirmed AI full-document replacement is one deliberate user action.

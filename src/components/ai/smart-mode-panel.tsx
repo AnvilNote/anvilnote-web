@@ -11,8 +11,9 @@ import {
   Copy,
   FileText,
   Loader2,
+  MessageSquareMore,
   MessageSquarePlus,
-  Pencil,
+  MessagesSquare,
   Plus,
   Send,
   Trash2,
@@ -28,7 +29,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import {
   SheetContent,
@@ -246,6 +246,7 @@ export function SmartModePanel({
   const editor = useEditorBridge((state) => state.editor);
   const documentId = useEditorBridge((state) => state.documentId);
   const settings = useSettingsStore();
+  const snapshotBeforeAIInsert = useDocumentStore((state) => state.snapshotBeforeAIInsert);
   const replaceWholeDocumentFromAI = useDocumentStore((state) => state.replaceWholeDocumentFromAI);
   const activeConversationId = useSmartModeUIStore((state) =>
     documentId ? state.activeConversationByDocument[documentId] ?? null : null,
@@ -263,6 +264,11 @@ export function SmartModePanel({
   const compositionJustEndedRef = useRef(false);
   const compositionEndTimerRef = useRef<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const renameComposingRef = useRef(false);
+  const renameCompositionJustEndedRef = useRef(false);
+  const renameCompositionEndTimerRef = useRef<number | null>(null);
+  const renamePendingRef = useRef(false);
+  const applyingDraftsRef = useRef<Set<string>>(new Set());
   const [operations, setOperations] = useState<Map<string, DraftOperation>>(() => new Map());
   const initialConversationSelectionRef = useRef<string | null>(null);
   const currentDocumentIdRef = useRef(documentId);
@@ -277,9 +283,10 @@ export function SmartModePanel({
   const [messages, setMessages] = useState<AIConversationMessage[]>([]);
   const [messageCursor, setMessageCursor] = useState<string | null>(null);
   const [messagesLoading, setMessagesLoading] = useState(false);
-  const [renameOpen, setRenameOpen] = useState(false);
+  const [renamingConversation, setRenamingConversation] = useState(false);
   const [renameTitle, setRenameTitle] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [conversationSelectOpen, setConversationSelectOpen] = useState(false);
   const [writingStyleOpen, setWritingStyleOpen] = useState(false);
   const [errorMessageKey, setErrorMessageKey] = useState<string | null>(null);
   const [selectionState, setSelectionState] = useState<SelectionInfo | null>(() =>
@@ -310,6 +317,12 @@ export function SmartModePanel({
   useEffect(() => {
     currentDocumentIdRef.current = documentId;
   }, [documentId]);
+
+  useEffect(() => () => {
+    if (renameCompositionEndTimerRef.current !== null) {
+      window.clearTimeout(renameCompositionEndTimerRef.current);
+    }
+  }, []);
 
   useEffect(() => {
     if (!documentId || !inlineFallbackInstruction) return;
@@ -598,13 +611,19 @@ export function SmartModePanel({
   }
 
   async function insertDraft(message: AIConversationMessage) {
-    if (!editor || !message.draft) return;
+    if (!editor || !documentId || !message.draft) return;
+    if (applyingDraftsRef.current.has(message.id)) return;
     const operation = operations.get(message.id);
     if (!operation || operation.documentHash !== stableDocumentHash(editor.getJSON())) {
       setErrorMessageKey("ai.errors.selection_conflict");
       return;
     }
+    applyingDraftsRef.current.add(message.id);
     try {
+      // Persist and checkpoint the exact pre-insert editor state before any
+      // compose insertion or accepted selection rewrite mutates it. Success
+      // is intentionally silent; a failed checkpoint prevents the mutation.
+      await snapshotBeforeAIInsert(documentId, editor.getJSON());
       if (message.draft.kind === "rewrite-selection" && operation.selectionSnapshot && operation.registry) {
         const snapshot = operation.selectionSnapshot;
         if (snapshot.to > editor.state.doc.content.size || hasSelectionConflict(snapshot, {
@@ -627,6 +646,8 @@ export function SmartModePanel({
       editor.commands.focus();
     } catch (error) {
       setErrorMessageKey(errorKey(error));
+    } finally {
+      applyingDraftsRef.current.delete(message.id);
     }
   }
 
@@ -659,13 +680,22 @@ export function SmartModePanel({
   }
 
   async function renameConversation() {
-    if (!documentId || !activeConversationId || !renameTitle.trim()) return;
+    if (!documentId || !activeConversation || renamePendingRef.current) return;
+    const nextTitle = renameTitle.trim();
+    if (!nextTitle || nextTitle === activeConversation.title) {
+      setRenameTitle(activeConversation.title);
+      setRenamingConversation(false);
+      return;
+    }
+    renamePendingRef.current = true;
     try {
-      const updated = await aiClient.renameConversation(documentId, activeConversationId, renameTitle);
+      const updated = await aiClient.renameConversation(documentId, activeConversation.id, nextTitle);
       setConversations((current) => current.map((item) => item.id === updated.id ? updated : item));
-      setRenameOpen(false);
+      setRenamingConversation(false);
     } catch (error) {
       setErrorMessageKey(errorKey(error));
+    } finally {
+      renamePendingRef.current = false;
     }
   }
 
@@ -707,6 +737,7 @@ export function SmartModePanel({
       type="button"
       size="icon-sm"
       variant="ghost"
+      className="bg-transparent hover:bg-transparent active:bg-transparent aria-expanded:bg-transparent dark:hover:bg-transparent"
       aria-label={t("smart.addFiles")}
       disabled={state === "submitting" || attachmentBusy}
       onClick={() => fileInputRef.current?.click()}
@@ -785,9 +816,14 @@ export function SmartModePanel({
       id="smart-mode-panel"
       side="right"
       className="w-full gap-0 p-0 data-[side=right]:sm:!max-w-[30rem]"
+      style={conversationSelectOpen ? { pointerEvents: "auto" } : undefined}
       showCloseButton={state !== "submitting" && state !== "extracting"}
       overlayClassName="!bg-transparent supports-backdrop-filter:!backdrop-blur-none"
-      onInteractOutside={(event) => (state === "submitting" || state === "extracting") && event.preventDefault()}
+      onInteractOutside={(event) => {
+        if (state === "submitting" || state === "extracting") {
+          event.preventDefault();
+        }
+      }}
     >
       <SheetHeader className="border-b pr-12">
         <div className="flex items-center gap-2">
@@ -799,14 +835,77 @@ export function SmartModePanel({
 
       <div className="border-b px-4 py-2">
         <div className="flex items-center gap-2">
+          <div className="flex h-9 min-w-0 flex-1 items-center">
+            {renamingConversation && activeConversation ? (
+              <Input
+                autoFocus
+                aria-label={t("smart.renameConversation")}
+                value={renameTitle}
+                maxLength={255}
+                onChange={(event) => setRenameTitle(event.target.value)}
+                onBlur={() => {
+                  if (!renameComposingRef.current) void renameConversation();
+                }}
+                onCompositionStart={() => {
+                  renameComposingRef.current = true;
+                  renameCompositionJustEndedRef.current = false;
+                  if (renameCompositionEndTimerRef.current !== null) {
+                    window.clearTimeout(renameCompositionEndTimerRef.current);
+                    renameCompositionEndTimerRef.current = null;
+                  }
+                }}
+                onCompositionEnd={() => {
+                  renameComposingRef.current = false;
+                  renameCompositionJustEndedRef.current = true;
+                  renameCompositionEndTimerRef.current = window.setTimeout(() => {
+                    renameCompositionJustEndedRef.current = false;
+                    renameCompositionEndTimerRef.current = null;
+                  }, 0);
+                }}
+                onKeyDown={(event) => {
+                  if (
+                    event.key === "Enter"
+                    && !renameComposingRef.current
+                    && !renameCompositionJustEndedRef.current
+                    && !event.nativeEvent.isComposing
+                    && event.nativeEvent.keyCode !== 229
+                  ) {
+                    event.preventDefault();
+                    void renameConversation();
+                  } else if (event.key === "Escape" && !renameComposingRef.current) {
+                    event.preventDefault();
+                    setRenameTitle(activeConversation.title);
+                    setRenamingConversation(false);
+                  }
+                }}
+                className="h-8 min-w-0 flex-1 rounded-none border-0 bg-transparent px-0 py-0 shadow-none focus-visible:ring-0 dark:bg-transparent"
+              />
+            ) : activeConversation ? (
+              <button
+                type="button"
+                aria-label={t("smart.renameConversation")}
+                title={activeConversation.title}
+                className="min-w-0 flex-1 truncate border-0 bg-transparent px-0 text-left text-sm hover:text-foreground"
+                onClick={() => {
+                  setRenameTitle(activeConversation.title);
+                  setRenamingConversation(true);
+                }}
+              >
+                {activeConversation.title}
+              </button>
+            ) : (
+              <span className="min-w-0 flex-1 truncate px-0 text-sm text-muted-foreground">
+                {t("smart.newConversation")}
+              </span>
+            )}
+          </div>
           <Select
+            open={conversationSelectOpen}
+            onOpenChange={setConversationSelectOpen}
             value={activeConversationId ?? "__new__"}
             onValueChange={(conversationId) => {
-              if (conversationId === "__load_more__") {
-                if (conversationCursor) void loadConversations(conversationCursor);
-                return;
-              }
               const nextConversationId = conversationId === "__new__" ? null : conversationId;
+              setRenamingConversation(false);
               if (documentId) setActiveConversation(documentId, nextConversationId);
               if (!nextConversationId) {
                 setMessages([]);
@@ -814,36 +913,45 @@ export function SmartModePanel({
               }
             }}
           >
-            <SelectTrigger className="h-9 min-w-0 flex-1" aria-label={t("smart.newConversation")}>
-              <SelectValue />
+            <SelectTrigger
+              className="h-8 w-auto shrink-0 rounded-lg border-0 bg-transparent px-2 shadow-none focus-visible:ring-0"
+              aria-label={t("smart.switchConversation")}
+            >
+              <MessagesSquare className="size-4" />
             </SelectTrigger>
             <SelectContent
               position="popper"
               side="bottom"
-              align="start"
+              align="end"
               sideOffset={4}
               avoidCollisions={false}
-              className="min-w-[var(--radix-select-trigger-width)]"
+              className="min-w-64"
             >
               <SelectItem value="__new__">{t("smart.newConversation")}</SelectItem>
               {conversations.map((conversation) => (
                 <SelectItem key={conversation.id} value={conversation.id}>{conversation.title}</SelectItem>
               ))}
-              {conversationCursor ? (
-                <SelectItem value="__load_more__">{t("smart.showMore")}</SelectItem>
-              ) : null}
             </SelectContent>
           </Select>
           <Button type="button" variant="ghost" size="icon-sm" aria-label={t("smart.newConversation")} onClick={() => {
+            setRenamingConversation(false);
             if (documentId) setActiveConversation(documentId, null);
             setMessages([]);
             setMessageCursor(null);
           }}><MessageSquarePlus className="size-4" /></Button>
+          {conversationCursor ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label={t("smart.showMore")}
+              title={t("smart.showMore")}
+              onClick={() => void loadConversations(conversationCursor)}
+            >
+              <MessageSquareMore className="size-4" />
+            </Button>
+          ) : null}
           {activeConversation ? <>
-            <Button type="button" variant="ghost" size="icon-sm" aria-label={t("smart.rename")} onClick={() => {
-              setRenameTitle(activeConversation.title);
-              setRenameOpen(true);
-            }}><Pencil className="size-4" /></Button>
             <Button type="button" variant="ghost" size="icon-sm" aria-label={t("smart.delete")} onClick={() => setDeleteOpen(true)}><Trash2 className="size-4" /></Button>
           </> : null}
         </div>
@@ -963,7 +1071,6 @@ export function SmartModePanel({
         </div>
       </div>
 
-      <Dialog open={renameOpen} onOpenChange={setRenameOpen}><DialogContent><DialogHeader><DialogTitle>{t("smart.renameConversation")}</DialogTitle><DialogDescription>{t("smart.renameConversationDescription")}</DialogDescription></DialogHeader><Input value={renameTitle} maxLength={255} onChange={(event) => setRenameTitle(event.target.value)} /><DialogFooter><Button variant="outline" onClick={() => setRenameOpen(false)}>{t("common.cancel")}</Button><Button onClick={() => void renameConversation()}>{t("smart.save")}</Button></DialogFooter></DialogContent></Dialog>
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}><DialogContent><DialogHeader><DialogTitle>{t("smart.deleteConversation")}</DialogTitle><DialogDescription>{t("smart.deleteConversationDescription")}</DialogDescription></DialogHeader><DialogFooter><Button variant="outline" onClick={() => setDeleteOpen(false)}>{t("common.cancel")}</Button><Button variant="destructive" onClick={() => void deleteConversation()}>{t("smart.delete")}</Button></DialogFooter></DialogContent></Dialog>
     </SheetContent>
   );

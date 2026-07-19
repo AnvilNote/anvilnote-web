@@ -1,27 +1,27 @@
 import type { JSONContent } from "@tiptap/core";
 import {
+  ANVIL_NOTE_CALLOUT_KINDS,
+  ANVIL_NOTE_QUESTION_KINDS,
+  ANVIL_NOTE_WRITTEN_MODES,
   AnvilNoteDocumentFragmentV1Schema,
   AnvilNoteDocumentV1Schema,
   type AnvilNoteBlockNodeV1,
+  type AnvilNoteCalloutKindV1,
   type AnvilNoteDocumentFragmentV1,
   type AnvilNoteDocumentV1,
   type AnvilNoteInlineNodeV1,
   type AnvilNoteMarkV1,
+  type AnvilNoteQuestionKindV1,
+  type AnvilNoteWrittenModeV1,
 } from "@anvilnote/ai-writer/document";
 import type { ProtectedSelectionRegistry } from "./protected-selection";
 
 const BLOCKED_NODES = new Set([
   "image",
   "imageRow",
-  "callout",
-  "proof",
   "mermaid",
   "functionPlot",
   "statsChart",
-  "question",
-  "questionItem",
-  "choiceList",
-  "choiceItem",
   "inlineBlank",
   "questionBlank",
   "taskList",
@@ -56,6 +56,112 @@ function attrs(node: JSONContent): Record<string, unknown> {
 
 function optionalString(value: unknown): string | null | undefined {
   return typeof value === "string" ? value : value === null ? null : undefined;
+}
+
+function calloutKind(value: unknown): AnvilNoteCalloutKindV1 {
+  if (
+    typeof value === "string" &&
+    (ANVIL_NOTE_CALLOUT_KINDS as readonly string[]).includes(value)
+  ) {
+    return value as AnvilNoteCalloutKindV1;
+  }
+  throw new UnsupportedAIContentError(["callout.kind"]);
+}
+
+function calloutAttrs(node: JSONContent) {
+  const values = attrs(node);
+  for (const key of Object.keys(values)) {
+    if (!["kind", "title", "titleTouched"].includes(key)) {
+      throw new UnsupportedAIContentError([`callout.${key}`]);
+    }
+  }
+  if (
+    values.title !== undefined &&
+    values.title !== null &&
+    typeof values.title !== "string"
+  ) {
+    throw new UnsupportedAIContentError(["callout.title"]);
+  }
+  const title = typeof values.title === "string" ? values.title.trim() : "";
+  return {
+    kind: calloutKind(values.kind),
+    title: title.length > 0 ? title : null,
+  };
+}
+
+function assertNoAttrs(node: JSONContent): void {
+  if (Object.keys(attrs(node)).length > 0) {
+    throw new UnsupportedAIContentError([`${node.type}.attrs`]);
+  }
+}
+
+function questionKind(value: unknown): AnvilNoteQuestionKindV1 {
+  if (
+    typeof value === "string" &&
+    (ANVIL_NOTE_QUESTION_KINDS as readonly string[]).includes(value)
+  ) {
+    return value as AnvilNoteQuestionKindV1;
+  }
+  throw new UnsupportedAIContentError(["questionItem.kind"]);
+}
+
+function writtenMode(value: unknown): AnvilNoteWrittenModeV1 {
+  if (
+    typeof value === "string" &&
+    (ANVIL_NOTE_WRITTEN_MODES as readonly string[]).includes(value)
+  ) {
+    return value as AnvilNoteWrittenModeV1;
+  }
+  throw new UnsupportedAIContentError(["questionItem.writtenMode"]);
+}
+
+function requiredNumber(value: unknown, field: string): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new UnsupportedAIContentError([field]);
+  }
+  return value;
+}
+
+function questionItemAttrs(node: JSONContent) {
+  const values = attrs(node);
+  const allowed = new Set([
+    "kind",
+    "writtenMode",
+    "writtenLines",
+    "writtenHeightPercent",
+    "writtenHeightCm",
+    "multiForceOneColumn",
+    "stashedChoiceJSON",
+  ]);
+  for (const key of Object.keys(values)) {
+    if (!allowed.has(key)) {
+      throw new UnsupportedAIContentError([`questionItem.${key}`]);
+    }
+  }
+  if (values.stashedChoiceJSON !== undefined && values.stashedChoiceJSON !== null) {
+    throw new UnsupportedAIContentError(["questionItem.stashedChoiceJSON"]);
+  }
+  if (
+    values.writtenHeightCm !== null &&
+    (typeof values.writtenHeightCm !== "number" ||
+      !Number.isFinite(values.writtenHeightCm))
+  ) {
+    throw new UnsupportedAIContentError(["questionItem.writtenHeightCm"]);
+  }
+  if (typeof values.multiForceOneColumn !== "boolean") {
+    throw new UnsupportedAIContentError(["questionItem.multiForceOneColumn"]);
+  }
+  return {
+    kind: questionKind(values.kind),
+    writtenMode: writtenMode(values.writtenMode),
+    writtenLines: requiredNumber(values.writtenLines, "questionItem.writtenLines"),
+    writtenHeightPercent: requiredNumber(
+      values.writtenHeightPercent,
+      "questionItem.writtenHeightPercent",
+    ),
+    writtenHeightCm: values.writtenHeightCm as number | null,
+    multiForceOneColumn: values.multiForceOneColumn,
+  };
 }
 
 function marks(input: JSONContent["marks"]): AnvilNoteMarkV1[] | undefined {
@@ -168,6 +274,42 @@ function block(
       return { type: "listItem", content: content.map((child) => block(child, registry)) };
     case "blockquote":
       return { type: "blockquote", content: content.map((child) => block(child, registry)) };
+    case "callout":
+      return {
+        type: "callout",
+        attrs: calloutAttrs(node),
+        content: content.map((child) => block(child, registry)) as never,
+      };
+    case "proof":
+      assertNoAttrs(node);
+      return {
+        type: "proof",
+        content: content.map((child) => block(child, registry)) as never,
+      };
+    case "question":
+      assertNoAttrs(node);
+      return {
+        type: "question",
+        content: content.map((child) => block(child, registry)) as never,
+      };
+    case "questionItem":
+      return {
+        type: "questionItem",
+        attrs: questionItemAttrs(node),
+        content: content.map((child) => block(child, registry)) as never,
+      };
+    case "choiceList":
+      assertNoAttrs(node);
+      return {
+        type: "choiceList",
+        content: content.map((child) => block(child, registry)) as never,
+      };
+    case "choiceItem":
+      assertNoAttrs(node);
+      return {
+        type: "choiceItem",
+        content: content.map((child) => block(child, registry)) as never,
+      };
     case "codeBlock":
       return {
         type: "codeBlock",
@@ -302,6 +444,30 @@ function tiptapBlock(node: AnvilNoteBlockNodeV1): JSONContent {
       return { type: "codeBlock", attrs: { ...node.attrs }, content: node.content.map(tiptapInline) };
     case "mathBlock":
       return { type: "blockMath", attrs: { ...node.attrs } };
+    case "callout":
+      return {
+        type: "callout",
+        attrs: {
+          kind: node.attrs.kind,
+          title: node.attrs.title ?? "",
+          titleTouched: node.attrs.title !== null,
+        },
+        content: node.content.map(tiptapBlock),
+      };
+    case "proof":
+      return { type: "proof", content: node.content.map(tiptapBlock) };
+    case "question":
+      return { type: "question", content: node.content.map(tiptapBlock) };
+    case "questionItem":
+      return {
+        type: "questionItem",
+        attrs: { ...node.attrs, stashedChoiceJSON: null },
+        content: node.content.map(tiptapBlock),
+      };
+    case "choiceList":
+      return { type: "choiceList", content: node.content.map(tiptapBlock) };
+    case "choiceItem":
+      return { type: "choiceItem", content: node.content.map(tiptapBlock) };
     case "table":
       return { type: "table", ...(node.attrs ? { attrs: { ...node.attrs } } : {}), content: node.content.map(tiptapBlock) };
     case "tableRow":

@@ -8,10 +8,12 @@ import {
   Eye,
   EyeOff,
   ExternalLink,
+  FlaskConical,
   Info,
   KeyRound,
   Loader2,
   Pencil,
+  Play,
   Power,
   Trash2,
 } from "lucide-react";
@@ -324,24 +326,36 @@ export function AISettingsSection() {
           <Button
             type="button"
             variant="outline"
+            size="icon"
+            aria-label={t("settings.testConnection")}
+            title={t("settings.testConnection")}
             disabled={testing || (!apiKey.trim() && !credential?.configured)}
             onClick={() => void testConnection()}
           >
-            {testing ? <Loader2 className="size-4 animate-spin" /> : null}
-            {t("settings.testConnection")}
+            {testing ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <FlaskConical className="size-4" />
+            )}
           </Button>
           <Button
             type="button"
+            size={capability?.runtime === "desktop" ? "default" : "icon"}
             disabled={!canSave || saving}
             aria-label={t(capability?.runtime === "desktop"
               ? "settings.saveKey"
               : "settings.useForSession")}
+            title={capability?.runtime === "desktop"
+              ? undefined
+              : t("settings.useForSession")}
             onClick={() => void saveKey()}
           >
-            {saving ? <Loader2 className="size-4 animate-spin" /> : null}
-            {t(capability?.runtime === "desktop"
-              ? "settings.saveKey"
-              : "settings.useForSession")}
+            {saving ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : capability?.runtime === "desktop" ? null : (
+              <Play className="size-4" />
+            )}
+            {capability?.runtime === "desktop" ? t("settings.saveKey") : null}
           </Button>
         </div>
         <div className="flex items-center justify-between gap-3">

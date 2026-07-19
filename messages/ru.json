@@ -1097,7 +1097,8 @@
       "inlinePlaceholder": "Как это поправить?",
       "copyMessage": "Копировать сообщение",
       "messageCopied": "Сообщение скопировано",
-      "moreAttachments": "Ещё вложений: {count}"
+      "moreAttachments": "Ещё вложений: {count}",
+      "switchConversation": "Переключить беседу"
     },
     "settings": {
       "advanced": "Дополнительно",

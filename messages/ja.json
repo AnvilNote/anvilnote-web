@@ -1097,7 +1097,8 @@
       "inlinePlaceholder": "どう直したい？",
       "copyMessage": "メッセージをコピー",
       "messageCopied": "メッセージをコピーしました",
-      "moreAttachments": "他 {count} 件の添付ファイル"
+      "moreAttachments": "他 {count} 件の添付ファイル",
+      "switchConversation": "会話を切り替える"
     },
     "settings": {
       "advanced": "詳細設定",

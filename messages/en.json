@@ -161,6 +161,7 @@
       "unsupportedFile": "Supported formats are TXT, Markdown, PDF, and DOCX.",
       "resultStale": "This result is no longer current. Run Smart Mode again.",
       "newConversation": "New conversation",
+      "switchConversation": "Switch conversation",
       "inline": "Smart Mode",
       "inlinePlaceholder": "How should I tweak this?",
       "emptyConversation": "Ask anything about this document.",

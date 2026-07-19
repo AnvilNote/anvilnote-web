@@ -96,8 +96,12 @@ describe("SmartModePanel", () => {
     editor.destroy();
   });
 
-  it("renders the shared shadcn Select for document conversation switching", async () => {
+  it("renders a plain editable title beside a separate shadcn conversation selector", async () => {
     const editor = createEditor();
+    Object.defineProperty(Element.prototype, "scrollIntoView", {
+      configurable: true,
+      value: vi.fn(),
+    });
     useEditorBridge.setState({ editor, documentId: "doc-1" });
     client.getCredentialStatus.mockResolvedValue({ configured: true, lastFour: "1234", storage: "os-secure-storage" });
     client.listConversations.mockResolvedValue({
@@ -113,7 +117,134 @@ describe("SmartModePanel", () => {
 
     const selector = await screen.findByRole("combobox");
     expect(selector).toHaveAttribute("data-slot", "select-trigger");
-    expect(selector).toHaveTextContent("First");
+    expect(selector).toHaveAccessibleName("smart.switchConversation");
+    expect(selector.querySelector(".lucide-messages-square")).not.toBeNull();
+    expect(selector).not.toHaveTextContent("First");
+    const title = screen.getByRole("button", { name: "smart.renameConversation" });
+    expect(title).toHaveTextContent("First");
+    expect(title).not.toBe(selector);
+    expect(title.parentElement).not.toHaveClass("border", "border-input");
+    expect(screen.queryByRole("button", { name: "smart.rename" })).not.toBeInTheDocument();
+
+    fireEvent.click(selector);
+    const listbox = await screen.findByRole("listbox");
+    expect(listbox).toHaveAttribute("data-side", "bottom");
+    editor.destroy();
+  });
+
+  it("renames the active conversation inline without submitting IME selection Enter", async () => {
+    const editor = createEditor();
+    const conversation = {
+      id: "conversation-1",
+      documentId: "doc-1",
+      title: "First",
+      lastMessageAt: "2026-07-19T00:00:00.000Z",
+      createdAt: "2026-07-19T00:00:00.000Z",
+      updatedAt: "2026-07-19T00:00:00.000Z",
+    };
+    useEditorBridge.setState({ editor, documentId: "doc-1" });
+    client.getCredentialStatus.mockResolvedValue({ configured: true, lastFour: "1234", storage: "os-secure-storage" });
+    client.listConversations.mockResolvedValue({ data: [conversation], nextCursor: null });
+    client.listConversationMessages.mockResolvedValue({ data: [], nextCursor: null });
+    client.renameConversation.mockResolvedValue({ ...conversation, title: "重新命名" });
+
+    render(<Sheet open><SmartModePanel open /></Sheet>);
+
+    fireEvent.click(await screen.findByRole("button", { name: "smart.renameConversation" }));
+    const input = screen.getByRole("textbox", { name: "smart.renameConversation" });
+    fireEvent.compositionStart(input);
+    fireEvent.change(input, { target: { value: "重新命名" } });
+    fireEvent.keyDown(input, { key: "Enter", keyCode: 13 });
+    expect(client.renameConversation).not.toHaveBeenCalled();
+
+    fireEvent.compositionEnd(input);
+    fireEvent.keyDown(input, { key: "Enter", keyCode: 13 });
+    expect(client.renameConversation).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await new Promise((resolve) => window.setTimeout(resolve, 0));
+    });
+    fireEvent.keyDown(input, { key: "Enter", keyCode: 13 });
+
+    await waitFor(() => expect(client.renameConversation).toHaveBeenCalledWith(
+      "doc-1",
+      "conversation-1",
+      "重新命名",
+    ));
+    expect(await screen.findByRole("button", { name: "smart.renameConversation" })).toHaveTextContent("重新命名");
+    editor.destroy();
+  });
+
+  it("loads the next conversation page from a MessageSquareMore control instead of a pencil", async () => {
+    const editor = createEditor();
+    const firstConversation = {
+      id: "conversation-1",
+      documentId: "doc-1",
+      title: "First",
+      lastMessageAt: "2026-07-19T00:00:00.000Z",
+      createdAt: "2026-07-19T00:00:00.000Z",
+      updatedAt: "2026-07-19T00:00:00.000Z",
+    };
+    useEditorBridge.setState({ editor, documentId: "doc-1" });
+    client.getCredentialStatus.mockResolvedValue({ configured: true, lastFour: "1234", storage: "os-secure-storage" });
+    client.listConversations
+      .mockResolvedValueOnce({ data: [firstConversation], nextCursor: "older-page" })
+      .mockResolvedValueOnce({
+        data: [{ ...firstConversation, id: "conversation-2", title: "Older" }],
+        nextCursor: null,
+      });
+    client.listConversationMessages.mockResolvedValue({ data: [], nextCursor: null });
+
+    render(<Sheet open><SmartModePanel open /></Sheet>);
+
+    const moreButton = await screen.findByRole("button", { name: "smart.showMore" });
+    expect(moreButton.querySelector(".lucide-message-square-more")).not.toBeNull();
+    expect(screen.queryByRole("button", { name: "smart.rename" })).not.toBeInTheDocument();
+    fireEvent.click(moreButton);
+
+    await waitFor(() => expect(client.listConversations).toHaveBeenLastCalledWith("doc-1", "older-page"));
+    await waitFor(() => expect(screen.queryByRole("button", { name: "smart.showMore" })).not.toBeInTheDocument());
+    editor.destroy();
+  });
+
+  it("closes the conversation selector without dismissing Smart Mode when the panel is clicked", async () => {
+    const editor = createEditor();
+    const onOpenChange = vi.fn();
+    Object.defineProperty(Element.prototype, "scrollIntoView", {
+      configurable: true,
+      value: vi.fn(),
+    });
+    useEditorBridge.setState({ editor, documentId: "doc-1" });
+    client.getCredentialStatus.mockResolvedValue({ configured: true, lastFour: "1234", storage: "os-secure-storage" });
+    client.listConversations.mockResolvedValue({
+      data: [
+        { id: "conversation-1", documentId: "doc-1", title: "First", lastMessageAt: "2026-07-19T00:00:00.000Z", createdAt: "2026-07-19T00:00:00.000Z", updatedAt: "2026-07-19T00:00:00.000Z" },
+      ],
+      nextCursor: null,
+    });
+    client.listConversationMessages.mockResolvedValue({ data: [], nextCursor: null });
+
+    render(<Sheet open onOpenChange={onOpenChange}><SmartModePanel open /></Sheet>);
+
+    const sheetContent = document.querySelector<HTMLElement>('[data-slot="sheet-content"]');
+    expect(sheetContent).not.toBeNull();
+    expect(sheetContent).toHaveStyle({ pointerEvents: "auto" });
+
+    const selector = await screen.findByRole("combobox");
+    fireEvent.keyDown(selector, { key: "ArrowDown" });
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+
+    await act(async () => {
+      await new Promise((resolve) => window.setTimeout(resolve, 0));
+    });
+    expect(sheetContent).toHaveStyle({ pointerEvents: "auto" });
+
+    const blankMessageArea = screen.getByTestId("smart-mode-message-area");
+    fireEvent.pointerDown(blankMessageArea);
+    fireEvent.click(blankMessageArea);
+
+    await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
     editor.destroy();
   });
 
@@ -129,6 +260,11 @@ describe("SmartModePanel", () => {
     expect(composer).toHaveAttribute("rows", "1");
     expect(composer.className).toContain("overflow-y-auto");
     expect(screen.getByTestId("smart-conversation-composer")).toHaveClass("rounded-full");
+    expect(screen.getByRole("button", { name: "smart.addFiles" })).toHaveClass(
+      "bg-transparent",
+      "hover:bg-transparent",
+      "active:bg-transparent",
+    );
     editor.destroy();
   });
 

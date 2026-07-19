@@ -1097,7 +1097,8 @@
       "inlinePlaceholder": "어떻게 고칠까?",
       "copyMessage": "메시지 복사",
       "messageCopied": "메시지를 복사했습니다",
-      "moreAttachments": "첨부 파일 {count}개 더 있음"
+      "moreAttachments": "첨부 파일 {count}개 더 있음",
+      "switchConversation": "대화 전환"
     },
     "settings": {
       "advanced": "고급 설정",

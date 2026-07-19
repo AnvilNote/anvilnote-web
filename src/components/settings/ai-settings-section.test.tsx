@@ -185,6 +185,35 @@ describe("AISettingsSection", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("uses labeled icons for connection testing and session-only activation", async () => {
+    client.getCapabilities.mockResolvedValue({
+      runtime: "browser",
+      persistentCredentialStorage: false,
+      sessionCredentialStorage: true,
+      smartModeAvailable: true,
+    });
+    client.getCredentialStatus.mockResolvedValue({
+      configured: false,
+      storage: "session-only",
+    });
+
+    render(<AISettingsSection />);
+
+    const testButton = await screen.findByRole("button", {
+      name: "settings.testConnection",
+    });
+    const useButton = screen.getByRole("button", {
+      name: "settings.useForSession",
+    });
+
+    expect(testButton).toHaveAttribute("title", "settings.testConnection");
+    expect(testButton).not.toHaveTextContent("settings.testConnection");
+    expect(testButton.querySelector(".lucide-flask-conical")).not.toBeNull();
+    expect(useButton).toHaveAttribute("title", "settings.useForSession");
+    expect(useButton).not.toHaveTextContent("settings.useForSession");
+    expect(useButton.querySelector(".lucide-play")).not.toBeNull();
+  });
+
   it("keeps the AI-phrasing toggle in collapsed advanced settings", async () => {
     const user = userEvent.setup();
     render(<AISettingsSection />);

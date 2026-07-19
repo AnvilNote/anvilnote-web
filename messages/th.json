@@ -1097,7 +1097,8 @@
       "inlinePlaceholder": "อยากแก้ตรงนี้ยังไง?",
       "copyMessage": "คัดลอกข้อความ",
       "messageCopied": "คัดลอกข้อความแล้ว",
-      "moreAttachments": "ไฟล์แนบอีก {count} รายการ"
+      "moreAttachments": "ไฟล์แนบอีก {count} รายการ",
+      "switchConversation": "สลับการสนทนา"
     },
     "settings": {
       "advanced": "การตั้งค่าขั้นสูง",

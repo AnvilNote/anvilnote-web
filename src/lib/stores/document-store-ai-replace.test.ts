@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AnvilDocument } from "@/types/document";
+import { useSettingsStore } from "@/lib/stores/settings-store";
 
 const api = vi.hoisted(() => ({
   updateDocument: vi.fn(),
@@ -91,5 +92,62 @@ describe("AI whole-document replacement", () => {
     await useDocumentStore.getState().replaceWholeDocumentFromAI("doc-1", content, null);
 
     expect(useDocumentStore.getState().restoreNonceById["doc-1"]).toBe(1);
+  });
+});
+
+describe("AI insertion snapshots", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    api.updateDocument.mockResolvedValue({ ...original, updatedAt: "2026-07-19T01:00:00.000Z" });
+    api.createDocumentVersion.mockResolvedValue({
+      id: "version-before-ai-insert",
+      documentId: "doc-1",
+      title: original.title,
+      createdAt: "2026-07-19T01:00:00.000Z",
+    });
+    useDocumentStore.setState({
+      documents: [structuredClone(original)],
+      saveStateById: { "doc-1": "unsaved" },
+      restoreNonceById: {},
+      versionsById: { "doc-1": [] },
+    });
+  });
+
+  it("persists and snapshots the exact pre-insert editor content before returning", async () => {
+    useSettingsStore.setState({ versionSnapshotIntervalMinutes: 0 });
+    const editorContent = {
+      type: "doc",
+      content: [{ type: "paragraph", content: [{ type: "text", text: "Unsaved before insert" }] }],
+    };
+
+    await useDocumentStore.getState().snapshotBeforeAIInsert("doc-1", editorContent);
+
+    expect(api.updateDocument).toHaveBeenCalledWith("doc-1", {
+      title: original.title,
+      content: editorContent,
+      metadata: original.metadata,
+      templateSettings: original.templateSettings,
+      templateId: original.templateId,
+      numberedHeadings: original.numberedHeadings,
+      marginTopCm: original.marginTopCm,
+      marginBottomCm: original.marginBottomCm,
+      marginLeftCm: original.marginLeftCm,
+      marginRightCm: original.marginRightCm,
+    });
+    expect(api.createDocumentVersion).toHaveBeenCalledWith("doc-1");
+    expect(api.updateDocument.mock.invocationCallOrder[0]).toBeLessThan(
+      api.createDocumentVersion.mock.invocationCallOrder[0]!,
+    );
+    expect(useDocumentStore.getState().versionsById["doc-1"]?.[0]?.id).toBe(
+      "version-before-ai-insert",
+    );
+  });
+
+  it("rejects when the safety snapshot cannot be created", async () => {
+    api.createDocumentVersion.mockRejectedValueOnce(new Error("offline"));
+
+    await expect(
+      useDocumentStore.getState().snapshotBeforeAIInsert("doc-1", original.content),
+    ).rejects.toThrow("Failed to snapshot document before AI insertion");
   });
 });
