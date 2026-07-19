@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { GraduationCap, HelpCircle, SquareChartGantt, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTourStore } from "@/lib/stores/tour-store";
 import { useSettingsStore } from "@/lib/stores/settings-store";
+import { useSmartModeUIStore } from "@/lib/stores/smart-mode-ui-store";
 import { CheatSheetModal } from "@/components/tour/cheat-sheet-modal";
 import { cn } from "@/lib/utils";
 
-const DEFAULT_POSITION = { right: 20, bottom: 20 };
+// The Smart Mode launcher owns the bottom-right anchor. Tour only uses this
+// offset while it has never been dragged (or after reset); saved positions
+// remain completely independent.
+export const DEFAULT_TOUR_POSITION = { right: 16, bottom: 72 };
 const EDGE_MARGIN = 8;
 // Pointer must move at least this far before a press-and-hold on the anchor
 // icon counts as a drag rather than a click (the anchor itself has no
@@ -18,6 +22,7 @@ const DRAG_THRESHOLD_PX = 4;
 export function TourReplayButton() {
   const t = useTranslations("tour");
   const active = useTourStore((s) => s.active);
+  const smartModeOpen = useSmartModeUIStore((s) => s.open);
   const start = useTourStore((s) => s.start);
   const hidden = useSettingsStore((s) => s.hideTourButton);
   const setHideTourButton = useSettingsStore((s) => s.setHideTourButton);
@@ -25,7 +30,8 @@ export function TourReplayButton() {
   const setTourButtonPosition = useSettingsStore((s) => s.setTourButtonPosition);
   const [cheatSheetOpen, setCheatSheetOpen] = useState(false);
 
-  const [position, setPosition] = useState(savedPosition ?? DEFAULT_POSITION);
+  const [dragPosition, setDragPosition] = useState<{ right: number; bottom: number } | null>(null);
+  const position = dragPosition ?? savedPosition ?? DEFAULT_TOUR_POSITION;
   const [dragging, setDragging] = useState(false);
   const dragState = useRef<{
     pointerId: number;
@@ -35,10 +41,6 @@ export function TourReplayButton() {
     startBottom: number;
     moved: boolean;
   } | null>(null);
-
-  useEffect(() => {
-    setPosition(savedPosition ?? DEFAULT_POSITION);
-  }, [savedPosition]);
 
   function clamp(next: { right: number; bottom: number }) {
     const maxRight = window.innerWidth - 44 - EDGE_MARGIN;
@@ -70,7 +72,7 @@ export function TourReplayButton() {
     if (!drag.moved && Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
     drag.moved = true;
     setDragging(true);
-    setPosition(
+    setDragPosition(
       clamp({ right: drag.startRight - dx, bottom: drag.startBottom - dy }),
     );
   }
@@ -82,11 +84,12 @@ export function TourReplayButton() {
     if (drag.moved) {
       setTourButtonPosition(position);
     }
+    setDragPosition(null);
     dragState.current = null;
     setDragging(false);
   }
 
-  if (active || hidden) return null;
+  if (active || hidden || smartModeOpen) return null;
 
   return (
     <>

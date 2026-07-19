@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { ExportFontPreset, ExportPageSize } from "@/types/export";
 import { DEFAULT_DATE_FORMAT, type DateFormat } from "@/lib/date-format";
+import type { WritingStyle } from "@anvilnote/ai-writer/contracts";
 
 const STORAGE_KEY = "anvilnote.settings";
 
@@ -46,6 +47,10 @@ type SettingsState = {
   // the viewport's bottom-right corner. null means "use the default corner
   // position" (never dragged, or reset).
   tourButtonPosition: { right: number; bottom: number } | null;
+  aiProviderId: "openai";
+  aiModelId: string;
+  aiHumanizerEnabled: boolean;
+  aiWritingStyle: WritingStyle;
   setAutosave: (v: boolean) => void;
   setSpellcheck: (v: boolean) => void;
   setExportPageSize: (v: ExportPageSize) => void;
@@ -56,6 +61,9 @@ type SettingsState = {
   setDateFormat: (v: DateFormat) => void;
   setHideTourButton: (v: boolean) => void;
   setTourButtonPosition: (v: { right: number; bottom: number } | null) => void;
+  setAIModelId: (v: string) => void;
+  setAIHumanizerEnabled: (v: boolean) => void;
+  setAIWritingStyle: (v: WritingStyle) => void;
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -71,6 +79,10 @@ export const useSettingsStore = create<SettingsState>()(
       dateFormat: DEFAULT_DATE_FORMAT,
       hideTourButton: false,
       tourButtonPosition: null,
+      aiProviderId: "openai",
+      aiModelId: "gpt-5.6-terra",
+      aiHumanizerEnabled: true,
+      aiWritingStyle: "auto",
       setAutosave: (v) => set({ autosave: v }),
       setSpellcheck: (v) => set({ spellcheck: v }),
       setExportPageSize: (v) => set({ exportPageSize: v }),
@@ -81,6 +93,9 @@ export const useSettingsStore = create<SettingsState>()(
       setDateFormat: (v) => set({ dateFormat: v }),
       setHideTourButton: (v) => set({ hideTourButton: v }),
       setTourButtonPosition: (v) => set({ tourButtonPosition: v }),
+      setAIModelId: (v) => set({ aiModelId: v }),
+      setAIHumanizerEnabled: (v) => set({ aiHumanizerEnabled: v }),
+      setAIWritingStyle: (v) => set({ aiWritingStyle: v }),
     }),
     {
       name: STORAGE_KEY,

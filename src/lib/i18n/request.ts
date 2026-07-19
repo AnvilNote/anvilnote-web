@@ -8,8 +8,17 @@ export default getRequestConfig(async ({ requestLocale }) => {
     ? requested
     : routing.defaultLocale;
 
+  const messages = (await import(`../../../messages/${locale}.json`)).default;
+  const englishMessages = (await import("../../../messages/en.json")).default;
+
   return {
     locale,
-    messages: (await import(`../../../messages/${locale}.json`)).default,
+    // Smart Mode launches with complete en and zh-TW translations. The
+    // remaining existing locales use the English AI namespace until their
+    // localized copy is reviewed, so no newly introduced key renders raw.
+    messages: {
+      ...messages,
+      ai: "ai" in messages ? messages.ai : englishMessages.ai,
+    },
   };
 });
