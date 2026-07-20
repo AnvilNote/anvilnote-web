@@ -314,6 +314,16 @@ export function AISettingsSection() {
               {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </Button>
           </div>
+          {capability?.runtime === "desktop" ? (
+            <Input
+              aria-label={t("settings.keyLabel")}
+              className="sm:w-48"
+              maxLength={120}
+              onChange={(event) => setKeyLabel(event.target.value)}
+              placeholder={t("settings.keyLabelPlaceholder")}
+              value={keyLabel}
+            />
+          ) : null}
           <Button
             type="button"
             variant="outline"
@@ -329,20 +339,30 @@ export function AISettingsSection() {
               <FlaskConical className="size-4" />
             )}
           </Button>
-          <Button
-            type="button"
-            size="icon"
-            disabled={!canSave || saving}
-            aria-label={t("settings.useForSession")}
-            title={t("settings.useForSession")}
-            onClick={() => void saveKey()}
-          >
-            {saving ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Play className="size-4" />
-            )}
-          </Button>
+          {capability?.runtime === "desktop" ? (
+            <Button
+              type="button"
+              disabled={!canSave || saving}
+              onClick={() => void saveKey()}
+            >
+              {saving ? <Loader2 className="size-4 animate-spin" /> : t("settings.saveKey")}
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              size="icon"
+              disabled={!canSave || saving}
+              aria-label={t("settings.useForSession")}
+              title={t("settings.useForSession")}
+              onClick={() => void saveKey()}
+            >
+              {saving ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Play className="size-4" />
+              )}
+            </Button>
+          )}
         </div>
         <div className="flex items-center justify-between gap-3">
           {guide ? (

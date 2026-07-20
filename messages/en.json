@@ -1221,6 +1221,11 @@
       "description": "From draft to export, the whole workflow stays in one place. No sign-in and no bouncing between multiple tools.",
       "cta": "Start writing"
     },
+    "footer": {
+      "rights": "{year} AnvilNote. All rights reserved.",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service"
+    },
     "demo": {
       "search": "Search",
       "documents": "Documents",
@@ -1234,6 +1239,9 @@
       "exportDisabled": "PDF export is available in the full workspace",
       "starterTitle": "AnvilNote Feature Tour"
     }
+  },
+  "legal": {
+    "backHome": "Back to home"
   },
   "locale": {
     "label": "Language",

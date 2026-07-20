@@ -1221,6 +1221,11 @@
       "description": "AnvilNote 讓你從草稿一路做到 PDF，不用登入，也不用換工具。",
       "cta": "開始寫作"
     },
+    "footer": {
+      "rights": "{year} AnvilNote．保留所有權利。",
+      "privacy": "隱私權政策",
+      "terms": "使用者條款"
+    },
     "demo": {
       "search": "搜尋",
       "documents": "文件",
@@ -1234,6 +1239,9 @@
       "exportDisabled": "PDF 匯出可在正式工作區使用",
       "starterTitle": "AnvilNote 功能示範"
     }
+  },
+  "legal": {
+    "backHome": "回到首頁"
   },
   "locale": {
     "label": "語言",

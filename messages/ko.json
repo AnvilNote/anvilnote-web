@@ -996,6 +996,11 @@
       "description": "초안부터 내보내기까지 전체 워크플로가 한곳에. 로그인 없이, 여러 도구를 오갈 필요 없이.",
       "cta": "글쓰기 시작"
     },
+    "footer": {
+      "rights": "{year} AnvilNote. 모든 권리 보유.",
+      "privacy": "개인정보 처리방침",
+      "terms": "이용약관"
+    },
     "demo": {
       "search": "검색",
       "documents": "문서",
@@ -1009,6 +1014,9 @@
       "exportDisabled": "PDF 내보내기는 정식 워크스페이스에서 사용할 수 있습니다",
       "starterTitle": "AnvilNote 기능 둘러보기"
     }
+  },
+  "legal": {
+    "backHome": "홈으로 돌아가기"
   },
   "locale": {
     "label": "언어",

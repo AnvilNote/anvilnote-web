@@ -2,13 +2,14 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import type { AppLocale } from "@/lib/i18n/routing";
 import { Link } from "@/lib/i18n/navigation";
-import { ThemeToggle } from "@/components/app/theme-toggle";
-import { LocaleSwitcher } from "@/components/app/locale-switcher";
 import { LandingDemoEditor } from "@/components/landing/landing-demo-editor";
 import { HeroParticles } from "@/components/landing/hero-particles";
 import { ShowcaseCarousel } from "@/components/landing/showcase-carousel";
+import { LandingHeader } from "@/components/landing/landing-header";
+import { LandingFooter } from "@/components/landing/landing-footer";
 import { Button } from "@/components/ui/button";
 import { TransitionLink } from "@/components/transition/transition-link";
+import { isPublicWebRuntime } from "@/config/runtime";
 
 type LandingCopy = {
   heroLabel: string;
@@ -23,6 +24,9 @@ type LandingCopy = {
   navLinks?: string[];
   showcaseTitle: string;
   showcaseDescription: string;
+  footerRights: string;
+  footerPrivacy: string;
+  footerTerms: string;
   closingTitle: string;
   closingDescription: string;
   closingCta: string;
@@ -102,6 +106,9 @@ export default async function LocaleIndexPage({
     // navLinks: [t("nav.product"), t("nav.templates"), t("nav.guide")],
     showcaseTitle: t("showcase.title"),
     showcaseDescription: t("showcase.description"),
+    footerRights: t("footer.rights", { year: new Date().getFullYear() }),
+    footerPrivacy: t("footer.privacy"),
+    footerTerms: t("footer.terms"),
     closingTitle: t("closing.title"),
     closingDescription: t("closing.description"),
     closingCta: t("closing.cta"),
@@ -124,51 +131,17 @@ export default async function LocaleIndexPage({
     },
   };
 
+  // Public-web builds have no editor route. Keep the embedded demo available,
+  // but omit workspace CTAs instead of sending visitors to a separate route.
+  // Desktop builds keep their original workspace actions.
+  const publicWeb = isPublicWebRuntime();
+
   return (
     <div className="bg-background text-foreground">
       {/* Fixed so it stays pinned while scrolling. Lifted out of the hero
           <section> because that section is overflow-hidden (for the particle
           canvas), which would otherwise clip a sticky header out of view. */}
-      <header className="fixed inset-x-0 top-4 z-50 mx-auto flex w-[min(72rem,calc(100%-2rem))] items-center justify-between gap-5 rounded-[1.7rem] border border-border/80 bg-background/88 px-5 py-3 shadow-[0_14px_40px_-28px_rgba(0,0,0,0.26)] backdrop-blur lg:px-7">
-        <Link href="/" className="flex items-center gap-2.5 text-2xl font-semibold tracking-[-0.04em]">
-          <Image
-            src="/favicon-dark.svg"
-            alt=""
-            width={36}
-            height={36}
-            className="size-9 dark:hidden"
-            priority
-          />
-          <Image
-            src="/favicon-light.svg"
-            alt=""
-            width={36}
-            height={36}
-            className="hidden size-9 dark:block"
-            priority
-          />
-          <span>AnvilNote</span>
-        </Link>
-
-        {/* Nav links hidden for now — re-enable when the destination pages exist.
-        <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-7 text-sm text-foreground/78 lg:flex">
-          {copy.navLinks.map((item) => (
-            <span key={item}>{item}</span>
-          ))}
-        </nav>
-        */}
-
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <LocaleSwitcher />
-          <Button asChild variant="outline" size="lg" className="hidden rounded-2xl px-4 text-sm md:inline-flex">
-            <Link href="#demo">{copy.secondaryCta}</Link>
-          </Button>
-          <Button asChild size="lg" className="rounded-2xl px-4 text-sm">
-            <TransitionLink href="/documents">{copy.cta}</TransitionLink>
-          </Button>
-        </div>
-      </header>
+      <LandingHeader />
 
       <main>
         <section className="relative overflow-hidden">
@@ -191,9 +164,11 @@ export default async function LocaleIndexPage({
               </p>
 
               <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-                <Button asChild size="lg" className="h-11 rounded-full px-6">
-                  <TransitionLink href="/documents">{copy.cta}</TransitionLink>
-                </Button>
+                {!publicWeb ? (
+                  <Button asChild size="lg" className="h-11 rounded-full px-6">
+                    <TransitionLink href="/documents">{copy.cta}</TransitionLink>
+                  </Button>
+                ) : null}
                 <Button asChild variant="outline" size="lg" className="h-11 rounded-full px-6">
                   <Link href="#demo">{copy.secondaryCta}</Link>
                 </Button>
@@ -277,12 +252,20 @@ export default async function LocaleIndexPage({
               </p>
             </div>
 
-            <Button asChild size="lg" className="h-11 rounded-full px-6">
-              <TransitionLink href="/documents">{copy.closingCta}</TransitionLink>
-            </Button>
+            {!publicWeb ? (
+              <Button asChild size="lg" className="h-11 rounded-full px-6">
+                <TransitionLink href="/documents">{copy.closingCta}</TransitionLink>
+              </Button>
+            ) : null}
           </div>
         </section>
       </main>
+
+      <LandingFooter
+        rights={copy.footerRights}
+        privacy={copy.footerPrivacy}
+        terms={copy.footerTerms}
+      />
     </div>
   );
 }

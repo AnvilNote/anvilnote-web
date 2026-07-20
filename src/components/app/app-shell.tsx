@@ -11,10 +11,14 @@ import { TourOverlay } from "@/components/tour/tour-overlay";
 import { TourReplayButton } from "@/components/tour/tour-replay-button";
 import { SmartModeLauncher } from "@/components/ai/smart-mode-launcher";
 import { useLastRouteStore } from "@/lib/stores/ui-store";
+import { isPublicWebRuntime } from "@/config/runtime";
 
 // Must match the fixed boot URL anvilnote-desktop/src/main/main.ts loads on
 // launch — the only route we ever want to redirect away from below.
 const DESKTOP_BOOT_ROUTE = "/documents";
+
+// Standalone marketing/legal pages: no sidebar, no topbar, own header+footer.
+const SHELL_FREE_ROUTES = new Set(["/", "/privacy", "/terms"]);
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -27,7 +31,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   // cold boot. Skip the landing page: it isn't a real "last page" and the
   // desktop shell special-cases navigation away from it anyway.
   useEffect(() => {
-    if (pathname === "/") return;
+    if (SHELL_FREE_ROUTES.has(pathname)) return;
     setLastPath(pathname);
   }, [pathname, setLastPath]);
 
@@ -45,7 +49,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     }
   }, [pathname, lastPath, router]);
 
-  if (pathname === "/") {
+  // The public-web build never has a real editor route to put chrome around —
+  // every route it serves is a standalone marketing/legal page, and any
+  // desktop-only path 404s before rendering anything meaningful (see
+  // src/app/[locale]/(desktop)/layout.tsx). Skip the sidebar shell entirely
+  // rather than wrapping a 404 in app chrome.
+  if (isPublicWebRuntime() || SHELL_FREE_ROUTES.has(pathname)) {
     return <>{children}</>;
   }
 

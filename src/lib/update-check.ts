@@ -37,3 +37,28 @@ export async function fetchLatestReleaseVersion(): Promise<string | null> {
     return null;
   }
 }
+
+export type ReleaseAsset = { name: string; downloadUrl: string };
+export type LatestRelease = { version: string; assets: ReleaseAsset[] };
+
+/** Used by the landing page's download button to pick a platform-specific asset. */
+export async function fetchLatestRelease(): Promise<LatestRelease | null> {
+  try {
+    const res = await fetch(LATEST_RELEASE_API_URL, {
+      headers: { Accept: "application/vnd.github+json" },
+    });
+    if (!res.ok) return null;
+    const data: { tag_name?: string; assets?: { name: string; browser_download_url: string }[] } =
+      await res.json();
+    if (!data.tag_name) return null;
+    return {
+      version: data.tag_name.replace(/^v/, ""),
+      assets: (data.assets ?? []).map((asset) => ({
+        name: asset.name,
+        downloadUrl: asset.browser_download_url,
+      })),
+    };
+  } catch {
+    return null;
+  }
+}

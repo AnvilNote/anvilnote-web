@@ -996,6 +996,11 @@
       "description": "下書きから書き出しまで、ワークフロー全体が一か所に。サインイン不要で、複数のツールを行き来する必要もありません。",
       "cta": "書き始める"
     },
+    "footer": {
+      "rights": "{year} AnvilNote. 無断転載を禁じます。",
+      "privacy": "プライバシーポリシー",
+      "terms": "利用規約"
+    },
     "demo": {
       "search": "検索",
       "documents": "ドキュメント",
@@ -1009,6 +1014,9 @@
       "exportDisabled": "PDF 書き出しは正式なワークスペースで利用できます",
       "starterTitle": "AnvilNote 機能ツアー"
     }
+  },
+  "legal": {
+    "backHome": "ホームに戻る"
   },
   "locale": {
     "label": "言語",
