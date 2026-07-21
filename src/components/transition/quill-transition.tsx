@@ -4,10 +4,13 @@ import { useEffect, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "@/lib/i18n/navigation";
 import { useTransitionStore } from "@/lib/stores/transition-store";
+import { useSettingsStore } from "@/lib/stores/settings-store";
 import { getRandomQuote } from "@/lib/quotes";
+import { getActiveHoliday } from "@/lib/holidays";
+import { HolidayShower } from "./holiday-shower";
 
 const NAVIGATE_AT_MS = 950;
-const CLEAR_AT_MS = 1700;
+const CLEAR_AT_MS = 2000;
 
 // Matches the document editor route (a doc is open), e.g. /en/documents/abc123.
 const EDITOR_ROUTE = /\/documents\/[^/]+/;
@@ -18,9 +21,14 @@ export function QuillTransition() {
   const to = useTransitionStore((s) => s.to);
   const play = useTransitionStore((s) => s.play);
   const clear = useTransitionStore((s) => s.clear);
+  const holidayEffectsEnabled = useSettingsStore((s) => s.holidayEffectsEnabled);
 
   // Pick a fresh quote each time the overlay starts playing.
   const quote = useMemo(() => (playing ? getRandomQuote() : null), [playing]);
+  const holiday = useMemo(
+    () => (playing && holidayEffectsEnabled ? getActiveHoliday() : null),
+    [playing, holidayEffectsEnabled],
+  );
 
   // This component lives in the root layout, so it only mounts on a full page
   // load (reload / direct URL) — never on client-side navigation. Play the
@@ -47,6 +55,7 @@ export function QuillTransition() {
 
   return (
     <div className="quill-transition-overlay fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background">
+      {holiday ? <HolidayShower holiday={holiday} /> : null}
       <span className="quill-enter relative z-10 -mt-16 inline-flex">
         <span className="quill-swing inline-flex">
           <Image
@@ -71,7 +80,7 @@ export function QuillTransition() {
       </span>
 
       {quote ? (
-        <figure className="quill-quote mt-10 w-full max-w-md px-6">
+        <figure className="quill-quote relative z-10 mt-10 w-full max-w-md px-6">
           <blockquote className="text-balance text-center text-lg leading-relaxed text-foreground italic">
             “{quote.content}”
           </blockquote>

@@ -134,6 +134,17 @@ export default function SettingsPage() {
               />
             }
           />
+          <SettingsRow
+            label={t("settings.appearance.holidayEffects")}
+            hint={t("settings.appearance.holidayEffectsHint")}
+            control={
+              <Switch
+                checked={settings.holidayEffectsEnabled}
+                aria-label={t("settings.appearance.holidayEffects")}
+                onCheckedChange={(checked) => settings.setHolidayEffectsEnabled(checked)}
+              />
+            }
+          />
           {settings.tourButtonPosition ? (
             <SettingsRow
               label={t("settings.appearance.tourButtonPosition")}

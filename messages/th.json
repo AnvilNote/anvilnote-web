@@ -872,6 +872,8 @@
       "themeHint": "เลือกโหมดสว่างหรือมืด",
       "tourButton": "ปุ่มบทช่วยสอน",
       "tourButtonHint": "แสดงปุ่มลอยช่วยเหลือ/บทช่วยสอนที่มุมล่างขวา",
+      "holidayEffects": "เอฟเฟกต์เทศกาล",
+      "holidayEffectsHint": "แสดงไอคอนที่ร่วงหล่นบนหน้าจอโหลดในช่วงเทศกาล",
       "tourButtonPosition": "ตำแหน่งปุ่ม",
       "tourButtonPositionHint": "ปุ่มช่วยเหลือถูกย้ายจากตำแหน่งเริ่มต้น",
       "tourButtonPositionReset": "รีเซ็ตตำแหน่ง",

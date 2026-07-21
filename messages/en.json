@@ -1098,6 +1098,8 @@
       "themeHint": "Choose light or dark mode.",
       "tourButton": "Tutorial button",
       "tourButtonHint": "Show the floating help/tutorial button in the bottom-right corner.",
+      "holidayEffects": "Holiday effects",
+      "holidayEffectsHint": "Show falling icons on the loading screen during holidays.",
       "tourButtonPosition": "Button position",
       "tourButtonPositionHint": "The help button has been moved from its default spot.",
       "tourButtonPositionReset": "Reset position",

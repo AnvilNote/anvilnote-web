@@ -872,6 +872,8 @@
       "themeHint": "ライトモードかダークモードを選びます。",
       "tourButton": "チュートリアルボタン",
       "tourButtonHint": "右下にヘルプ/チュートリアルの浮動ボタンを表示します。",
+      "holidayEffects": "季節のエフェクト",
+      "holidayEffectsHint": "祝祭期間中、読み込み画面に落ちてくるアイコンを表示します。",
       "tourButtonPosition": "ボタンの位置",
       "tourButtonPositionHint": "ヘルプボタンはデフォルトの位置から移動しています。",
       "tourButtonPositionReset": "位置をリセット",

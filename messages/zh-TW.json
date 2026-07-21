@@ -1098,6 +1098,8 @@
       "themeHint": "選擇淺色或深色模式。",
       "tourButton": "教學按鈕",
       "tourButtonHint": "在右下角顯示浮動的教學/說明按鈕。",
+      "holidayEffects": "節慶特效",
+      "holidayEffectsHint": "節慶期間，在載入畫面顯示掉落的節慶圖示。",
       "tourButtonPosition": "按鈕位置",
       "tourButtonPositionHint": "教學按鈕已被拖曳離開預設位置。",
       "tourButtonPositionReset": "重置位置",
