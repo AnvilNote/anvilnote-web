@@ -1,8 +1,9 @@
 # AnvilNote Web
 
-`anvilnote-web` is the Next.js frontend for AnvilNote. The same source is
-built in two modes: `public-web` provides the marketing, legal, and download
-site; `desktop` provides the full Tiptap application for Electron.
+`anvilnote-web` is the Next.js frontend for AnvilNote. It contains the Tiptap
+editor, document and template UI, PDF/DOCX export controls, localization, and
+the Smart Mode experience used in both a browser development session and the
+Electron desktop application.
 
 ## Stack
 
@@ -89,39 +90,6 @@ pnpm dev
 
 Open `http://localhost:3000`.
 
-## Runtime modes
-
-`NEXT_PUBLIC_ANVILNOTE_RUNTIME` is selected at build time. It is intentionally
-public and is not an authentication mechanism.
-
-- `public-web` serves the landing page, product demo, privacy policy, and
-  terms. Desktop application routes return a server-side
-  404 before editor UI can render.
-- `desktop` retains the full workspace, including documents, projects,
-  templates, settings, Smart Mode, and Electron integration.
-
-Use the explicit commands below. Production builds fail when the runtime value
-is missing or invalid.
-
-```bash
-pnpm dev:web
-pnpm build:web
-
-pnpm dev:desktop
-pnpm build:desktop
-```
-
-After a production build, run the standalone server with the corresponding
-command. Set `PORT` before the command when the default port is unavailable.
-
-```bash
-pnpm start:web
-pnpm start:desktop
-```
-
-See [public-web deployment notes](docs/public-web-deployment.md) for the
-route policy and sibling-package limitation.
-
 To use a different API address, add this optional value to `.env.local`:
 
 ```env
@@ -186,14 +154,8 @@ Next.js development server inside Electron with the trusted Desktop boundary.
 
 ```bash
 pnpm dev
-pnpm dev:web
-pnpm dev:desktop
 pnpm build
-pnpm build:web
-pnpm build:desktop
 pnpm start
-pnpm start:web
-pnpm start:desktop
 pnpm lint
 pnpm typecheck
 pnpm test

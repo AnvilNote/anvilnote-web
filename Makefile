@@ -6,7 +6,7 @@
 PM := pnpm
 
 # Treat these targets as commands rather than files on disk.
-.PHONY: help install dev dev-web dev-desktop build build-web build-desktop start start-web start-desktop lint typecheck test check format clean reset
+.PHONY: help install dev build start lint typecheck test check format clean reset
 
 # Show this help message when make runs without a target.
 .DEFAULT_GOAL := help
@@ -19,35 +19,14 @@ help: ## List all available targets with a short description
 install: ## Install all project dependencies from the lockfile
 	$(PM) install
 
-
-# Desktop is the default local workflow. Use the explicit public-web targets
-# when working on the marketing, legal, or download site.
-dev: ## Start the full desktop-mode Next.js development server
+dev: ## Start the Next.js development server with hot reload
 	$(PM) dev
 
-dev-web: ## Start the public website development server
-	$(PM) dev:web
-
-dev-desktop: ## Start the full desktop-mode development server
-	$(PM) dev:desktop
-
-build: ## Create an optimized desktop-mode production build
+build: ## Create an optimized production build
 	$(PM) build
 
-build-web: ## Create a public website production build
-	$(PM) build:web
-
-build-desktop: ## Create a full desktop-mode production build
-	$(PM) build:desktop
-
-start: ## Serve the desktop-mode standalone production build
+start: ## Serve the production build on the default port
 	$(PM) start
-
-start-web: ## Serve the public website standalone production build
-	$(PM) start:web
-
-start-desktop: ## Serve the desktop-mode standalone production build
-	$(PM) start:desktop
 
 lint: ## Run ESLint across the whole project
 	$(PM) lint
