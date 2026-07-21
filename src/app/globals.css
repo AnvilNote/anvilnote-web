@@ -1997,7 +1997,6 @@ body:has(.anvil-drag-handle[data-dragging="true"]) .anvil-footnotes-panel {
    content. Old text remains visibly red/struck through; the proposed text is
    a normal black inline widget until the person accepts or rejects it. */
 .anvil-ai-inline-selection {
-  border-radius: 0.18em;
   /* Keep a visible monochrome fallback in browsers that reject color-mix()
      or its oklab interpolation syntax. */
   background-color: rgb(0 0 0 / 16%);

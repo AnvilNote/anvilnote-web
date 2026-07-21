@@ -105,3 +105,54 @@ export function applyInlineAIContent(
     return false;
   }
 }
+
+/**
+ * Applies a reviewed proposal that itself spans more than one paragraph or
+ * heading. Only valid when `range` covers a block's entire content (the
+ * caller must check isWholeBlockSelection first) — the replacement then
+ * lands at that block's own open/close boundaries, so several new blocks can
+ * take the place of the one that stood there instead of being spliced into
+ * running inline text.
+ */
+export function applyInlineAIBlocks(
+  editor: Editor,
+  range: AIApplyRange,
+  blocks: JSONContent[],
+): boolean {
+  if (
+    blocks.length === 0 ||
+    range.from < 0 ||
+    range.to < range.from ||
+    range.to > editor.state.doc.content.size
+  ) {
+    return false;
+  }
+
+  try {
+    const $from = editor.state.doc.resolve(range.from);
+    const $to = editor.state.doc.resolve(range.to);
+    if ($from.parent !== $to.parent) return false;
+    const outerFrom = $from.before();
+    const outerTo = $to.after();
+
+    const nodes = blocks.map((node) => editor.schema.nodeFromJSON(node));
+    nodes.forEach((node) => node.check());
+    const replacement = Fragment.fromArray(nodes);
+    const transaction = editor.state.tr;
+    closeHistory(transaction);
+    transaction.setMeta("addToHistory", true);
+    transaction.replaceWith(outerFrom, outerTo, replacement);
+    const selectionPosition = Math.min(
+      outerFrom + replacement.size,
+      transaction.doc.content.size,
+    );
+    transaction.setSelection(
+      TextSelection.near(transaction.doc.resolve(selectionPosition), -1),
+    );
+    editor.view.dispatch(transaction);
+    editor.view.dispatch(closeHistory(editor.state.tr));
+    return true;
+  } catch {
+    return false;
+  }
+}

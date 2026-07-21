@@ -295,4 +295,84 @@ describe("TiptapBubbleMenu inline Smart Mode", () => {
     expect(editor.getText()).toContain("Clearer");
     editor.destroy();
   });
+
+  it("applies a multi-paragraph reply when the whole paragraph was selected", async () => {
+    client.executeConversationTurn.mockResolvedValue({
+      conversation: {
+        id: "conversation-1",
+        documentId: "doc-1",
+        title: "Rewrite",
+        lastMessageAt: "2026-07-19T00:00:00.000Z",
+        createdAt: "2026-07-19T00:00:00.000Z",
+        updatedAt: "2026-07-19T00:00:00.000Z",
+      },
+      messages: [
+        {
+          id: "message-1",
+          conversationId: "conversation-1",
+          sequence: 1,
+          role: "user",
+          intent: "rewrite-selection",
+          content: "Expand this",
+          createdAt: "2026-07-19T00:00:00.000Z",
+        },
+        {
+          id: "message-2",
+          conversationId: "conversation-1",
+          sequence: 2,
+          role: "assistant",
+          intent: "rewrite-selection",
+          content: "Draft",
+          createdAt: "2026-07-19T00:00:00.000Z",
+          draft: {
+            kind: "rewrite-selection",
+            schemaVersion: "anvilnote.ai.rewrite-result.v1",
+            replacement: {
+              schemaVersion: "anvilnote.fragment.v1",
+              type: "fragment",
+              content: [
+                { type: "paragraph", content: [{ type: "text", text: "First half" }] },
+                { type: "paragraph", content: [{ type: "text", text: "Second half" }] },
+              ],
+            },
+            changeSummary: "Split into two paragraphs",
+          },
+        },
+      ],
+    });
+    const editor = new Editor({
+      extensions: [StarterKit],
+      content: {
+        type: "doc",
+        content: [{ type: "paragraph", content: [{ type: "text", text: "Selected ordinary text" }] }],
+      },
+    });
+    // The whole paragraph's content (not a partial sub-range) is selected.
+    editor.commands.setTextSelection({ from: 1, to: 1 + "Selected ordinary text".length });
+    document.body.appendChild(editor.view.dom);
+    render(
+      <TiptapBubbleMenu
+        editor={editor}
+        documentId="doc-1"
+        onInsertMath={vi.fn()}
+        onEditLink={vi.fn()}
+        onEditColor={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "smart.inline" }));
+    fireEvent.change(screen.getByPlaceholderText("smart.inlinePlaceholder"), {
+      target: { value: "Expand this into two paragraphs" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "smart.rewrite" }));
+    fireEvent.click(await screen.findByRole("button", { name: "smart.accept" }));
+
+    await waitFor(() => {
+      expect(editor.getJSON().content).toEqual([
+        { type: "paragraph", content: [{ type: "text", text: "First half" }] },
+        { type: "paragraph", content: [{ type: "text", text: "Second half" }] },
+      ]);
+    });
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    editor.destroy();
+  });
 });
