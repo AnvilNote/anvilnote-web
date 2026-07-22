@@ -16,7 +16,7 @@ import {
   tiptapSelectionToAnvilNote,
   UnsupportedAIContentError,
 } from "@/lib/ai/document/converters";
-import { applyInlineAIContent } from "@/lib/ai/document/editor-operations";
+import { applyInlineAIBlocks, applyInlineAIContent } from "@/lib/ai/document/editor-operations";
 import {
   clearInlineAIDiff,
   showInlineAIDiff,
@@ -26,10 +26,12 @@ import {
   type InlineAISelectionRange,
 } from "@/lib/ai/document/use-inline-ai-selection";
 import {
+  inlineReviewBlocks,
   inlineReviewContent,
   inlineReviewText,
   isInlineReviewRangeActive,
   isPlainTextSelection,
+  isWholeBlockSelection,
   resolvePlainTextSelectionRange,
 } from "@/lib/ai/document/inline-review";
 import { ProtectedSelectionRegistry } from "@/lib/ai/document/protected-selection";
@@ -131,7 +133,8 @@ export function TiptapBubbleMenu({
   const [inlineSelectionRange, setInlineSelectionRange] = useState<InlineAISelectionRange | null>(null);
   const inlineComposerRef = useRef<HTMLTextAreaElement>(null);
   const [pending, setPending] = useState<{
-    inlineContent: JSONContent[];
+    mode: "inline" | "blocks";
+    content: JSONContent[];
     snapshot: SelectionSnapshot;
   } | null>(null);
   const pendingRef = useRef<typeof pending>(null);
@@ -199,6 +202,27 @@ export function TiptapBubbleMenu({
     };
   }, [editor]);
 
+  // Before a request is submitted, the composer is only ever anchored to the
+  // range the person had selected when they opened it. Moving the selection
+  // elsewhere (wrong text, changed their mind) means that anchor no longer
+  // applies, so close the composer instead of leaving it pinned to stale text.
+  useEffect(() => {
+    if (!inlineOpen || pending || !inlineSelectionRange) return;
+    const closeOnSelectionMove = () => {
+      const { from, to } = editor.state.selection;
+      if (!isInlineReviewRangeActive(inlineSelectionRange, { from, to })) {
+        clearInlineAIDiff(editor);
+        setInlineSelectionRange(null);
+        setInlineOpen(false);
+        setInlineError(null);
+      }
+    };
+    editor.on("selectionUpdate", closeOnSelectionMove);
+    return () => {
+      editor.off("selectionUpdate", closeOnSelectionMove);
+    };
+  }, [editor, inlineOpen, pending, inlineSelectionRange]);
+
   async function submitInline() {
     if (!documentId || !inlineInstruction.trim() || inlineBusy) return;
     const { from, to } = inlineSelectionRange ?? editor.state.selection;
@@ -248,21 +272,42 @@ export function TiptapBubbleMenu({
       ) {
         throw new Error("selection_conflict");
       }
-      const inlineContent = inlineReviewContent(
-        anvilNoteFragmentToTiptap(assistant.draft.replacement, registry),
-      );
-      if (!inlineContent) {
-        setInlineError("ai.errors.unsupported_selection");
+      const convertedReplacement = anvilNoteFragmentToTiptap(assistant.draft.replacement, registry);
+      const inlineContent = inlineReviewContent(convertedReplacement);
+      if (inlineContent) {
+        showInlineAIDiff(editor, {
+          from,
+          to,
+          replacementText: inlineReviewText(inlineContent),
+        });
+        setPending({ mode: "inline", content: inlineContent, snapshot });
+        setInlineSelectionRange(null);
+        setInlineOpen(false);
         return;
       }
-      showInlineAIDiff(editor, {
-        from,
-        to,
-        replacementText: inlineReviewText(inlineContent),
-      });
-      setPending({ inlineContent, snapshot });
-      setInlineSelectionRange(null);
-      setInlineOpen(false);
+
+      // The model split its reply into more than one paragraph/heading. The
+      // inline composer can still apply that, but only when the original
+      // selection was the block's entire content — the swap then lands at
+      // that block's own boundaries instead of splicing new blocks into the
+      // middle of running inline text the person didn't select.
+      const blocks = inlineReviewBlocks(convertedReplacement);
+      if (blocks && isWholeBlockSelection(editor, from, to)) {
+        const previewText = blocks
+          .map((block) => inlineReviewText(block.content ?? []))
+          .join("\n\n");
+        showInlineAIDiff(editor, { from, to, replacementText: previewText });
+        setPending({ mode: "blocks", content: blocks, snapshot });
+        setInlineSelectionRange(null);
+        setInlineOpen(false);
+        return;
+      }
+
+      setInlineError(
+        convertedReplacement.length > 1
+          ? "ai.errors.multi_paragraph_result"
+          : "ai.errors.unsupported_selection",
+      );
       // The turn is saved server-side, and the right panel is the durable
       // conversation view. Keep the temporary review beside the text without
       // interrupting the person by opening that panel automatically.
@@ -299,7 +344,10 @@ export function TiptapBubbleMenu({
         selectedContent: editor.state.doc.slice(snapshot.from, snapshot.to).content.toJSON(),
       })) throw new Error("selection_conflict");
       clearInlineAIDiff(editor);
-      if (!applyInlineAIContent(editor, { from: snapshot.from, to: snapshot.to }, pending.inlineContent)) {
+      const applied = pending.mode === "blocks"
+        ? applyInlineAIBlocks(editor, { from: snapshot.from, to: snapshot.to }, pending.content)
+        : applyInlineAIContent(editor, { from: snapshot.from, to: snapshot.to }, pending.content);
+      if (!applied) {
         throw new Error("conversion_failed");
       }
       setPending(null);
@@ -387,23 +435,6 @@ export function TiptapBubbleMenu({
         active={s.bold}
         onClick={() => editor.chain().focus().toggleBold().run()}
       />
-      {documentId ? <MenuButton
-        icon={Bot}
-        label={tSmart("smart.inline")}
-        active={inlineOpen}
-        onClick={() => {
-          setInlineError(null);
-          const { from, to } = editor.state.selection;
-          const range = resolvePlainTextSelectionRange(editor, from, to);
-          if (!range) {
-            setInlineSelectionRange(null);
-            setInlineOpen(false);
-            return;
-          }
-          setInlineSelectionRange(range);
-          setInlineOpen(true);
-        }}
-      /> : null}
       <MenuButton
         icon={Italic}
         label={t("italic")}
@@ -447,6 +478,35 @@ export function TiptapBubbleMenu({
           editor.chain().focus().deleteSelection().insertInlineMath({ latex: text }).run();
         }}
       />
+      {documentId ? (
+        <button
+          type="button"
+          title={tSmart("smart.inline")}
+          aria-label={tSmart("smart.inline")}
+          aria-pressed={inlineOpen}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => {
+            setInlineError(null);
+            const { from, to } = editor.state.selection;
+            const range = resolvePlainTextSelectionRange(editor, from, to);
+            if (!range) {
+              setInlineSelectionRange(null);
+              setInlineOpen(false);
+              return;
+            }
+            setInlineSelectionRange(range);
+            setInlineOpen(true);
+          }}
+          className={cn(
+            "inline-flex h-7 shrink-0 items-center gap-1.5 rounded px-1.5 text-xs font-medium whitespace-nowrap transition-colors hover:bg-accent",
+            inlineOpen && "bg-accent",
+          )}
+          style={{ color: "#939bc9" }}
+        >
+          <Bot className="size-4" />
+          {tSmart("smart.inline")}
+        </button>
+      ) : null}
       <span className="mx-0.5 h-5 w-px bg-border" />
       <button
         type="button"

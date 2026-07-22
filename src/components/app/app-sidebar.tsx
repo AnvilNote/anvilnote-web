@@ -22,10 +22,12 @@ import { useUiStore } from "@/lib/stores/ui-store";
 import { useTransitionStore } from "@/lib/stores/transition-store";
 import { SidebarProjects } from "@/components/app/sidebar-projects";
 import { AppVersion } from "@/components/app/app-version";
+import { getActiveHoliday } from "@/lib/holidays";
 
 export function AppSidebar() {
   const t = useTranslations();
   const { setOpenMobile, isMobile } = useSidebar();
+  const holiday = getActiveHoliday();
 
   const setCommandOpen = useUiStore((s) => s.setCommandOpen);
   const startTransition = useTransitionStore((s) => s.start);
@@ -59,7 +61,14 @@ export function AppSidebar() {
           onClick={handleLogoClick}
           className="flex items-center gap-2 px-1 py-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
         >
-          <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-md">
+          <span className="relative flex size-7 shrink-0 items-center justify-center rounded-md">
+            {holiday ? (
+              <holiday.hat.Icon
+                aria-hidden="true"
+                className="absolute -top-1.5 -right-1 size-3.5"
+                style={{ transform: `rotate(${holiday.hat.deg}deg)` }}
+              />
+            ) : null}
             <Image
               src="/favicon-dark.svg"
               alt=""

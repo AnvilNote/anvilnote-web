@@ -43,6 +43,10 @@ type SettingsState = {
   // (see tour-replay-button.tsx). Persisted so a user who dismisses it
   // doesn't see it reappear on reload; re-enabled from Settings.
   hideTourButton: boolean;
+  // The loading-transition shower (falling icons) only ever appears during
+  // an actual holiday window (see src/lib/holidays) — this just lets someone
+  // who finds it distracting turn it off. Doesn't affect the sidebar hat.
+  holidayEffectsEnabled: boolean;
   // User-dragged position for the same floating button, in px offsets from
   // the viewport's bottom-right corner. null means "use the default corner
   // position" (never dragged, or reset).
@@ -60,6 +64,7 @@ type SettingsState = {
   setDefaultAuthor: (v: string) => void;
   setDateFormat: (v: DateFormat) => void;
   setHideTourButton: (v: boolean) => void;
+  setHolidayEffectsEnabled: (v: boolean) => void;
   setTourButtonPosition: (v: { right: number; bottom: number } | null) => void;
   setAIModelId: (v: string) => void;
   setAIHumanizerEnabled: (v: boolean) => void;
@@ -78,6 +83,7 @@ export const useSettingsStore = create<SettingsState>()(
       defaultAuthor: "",
       dateFormat: DEFAULT_DATE_FORMAT,
       hideTourButton: false,
+      holidayEffectsEnabled: true,
       tourButtonPosition: null,
       aiProviderId: "openai",
       aiModelId: "gpt-5.6-terra",
@@ -92,6 +98,7 @@ export const useSettingsStore = create<SettingsState>()(
       setDefaultAuthor: (v) => set({ defaultAuthor: v }),
       setDateFormat: (v) => set({ dateFormat: v }),
       setHideTourButton: (v) => set({ hideTourButton: v }),
+      setHolidayEffectsEnabled: (v) => set({ holidayEffectsEnabled: v }),
       setTourButtonPosition: (v) => set({ tourButtonPosition: v }),
       setAIModelId: (v) => set({ aiModelId: v }),
       setAIHumanizerEnabled: (v) => set({ aiHumanizerEnabled: v }),

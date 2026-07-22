@@ -79,6 +79,31 @@ describe("inline Smart Mode review boundaries", () => {
     editor.destroy();
   });
 
+  it("clamps a small drag overshoot into a neighbouring heading, but rejects a whole extra block", () => {
+    const editor = new Editor({
+      extensions: [StarterKit],
+      content: {
+        type: "doc",
+        content: [
+          { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Python dict" }] },
+          { type: "paragraph", content: [{ type: "text", text: "dict is a mapping type." }] },
+          { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Creating a dict" }] },
+        ],
+      },
+    });
+
+    // heading: 1..12 (node 0..13); paragraph: content 14..37 (node 13..38);
+    // heading2: content 39..55. A drag meant for the paragraph that starts
+    // one character early lands inside the previous heading's last word.
+    expect(resolvePlainTextSelectionRange(editor, 11, 37)).toEqual({ from: 14, to: 37 });
+    // ...and one that overshoots past the end lands inside the next heading.
+    expect(resolvePlainTextSelectionRange(editor, 14, 41)).toEqual({ from: 14, to: 37 });
+    // Grabbing the entire neighbouring heading (not just an overshoot letter)
+    // is a genuine multi-block selection and must still be rejected.
+    expect(resolvePlainTextSelectionRange(editor, 1, 38)).toBeNull();
+    editor.destroy();
+  });
+
   it("keeps an inline review actionable only while its original range remains selected", () => {
     expect(
       isInlineReviewRangeActive(
