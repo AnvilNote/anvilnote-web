@@ -355,10 +355,11 @@ export function TiptapBubbleMenu({
       setInlineInstruction("");
       setInlineError(null);
       setInlineOpen(false);
-      // Return DOM focus to ProseMirror after the review button disappears.
-      // This synchronizes the collapsed TextSelection to the native browser
-      // selection so the accepted range cannot remain visibly highlighted.
-      window.requestAnimationFrame(() => editor.view.focus());
+      // Return focus only while the editor is still mounted. The review menu
+      // may unmount before the scheduled frame runs.
+      window.requestAnimationFrame(() => {
+        if (!editor.isDestroyed) editor.view.focus();
+      });
     } catch (error) {
       // A changed document or a failed conversion can no longer safely use
       // this anchored proposal. It is only a view decoration, so discard it
