@@ -803,7 +803,9 @@
     "previewTemplate": "Посмотреть шаблон",
     "templatePreview": "Предпросмотр",
     "useThisTemplate": "Применить этот шаблон",
-    "noPreviewAvailable": "Для этого шаблона пока нет предпросмотра"
+    "noPreviewAvailable": "Для этого шаблона пока нет предпросмотра",
+    "renderingPreview": "Формируется предпросмотр с вашим документом…",
+    "previewRenderFailed": "Не удалось сформировать предпросмотр. Попробуйте ещё раз."
   },
   "panel": {
     "outline": "План",

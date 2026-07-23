@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { AnvilTemplate } from "@/types/template";
+import type { AnvilDocument } from "@/types/document";
 import { TemplatePreviewDialog } from "@/components/templates/template-preview-dialog";
 import { cn } from "@/lib/utils";
 
@@ -14,12 +15,14 @@ export function TemplatePreviewButton({
   description,
   onUseTemplate,
   className,
+  document,
 }: {
   template: AnvilTemplate;
   displayName: string;
   description: string;
   onUseTemplate?: (templateId: string) => void;
   className?: string;
+  document?: AnvilDocument;
 }) {
   const t = useTranslations("templates");
   const [open, setOpen] = useState(false);
@@ -48,6 +51,7 @@ export function TemplatePreviewButton({
         open={open}
         onOpenChange={setOpen}
         onUseTemplate={onUseTemplate}
+        document={document}
       />
     </>
   );

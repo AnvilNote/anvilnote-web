@@ -5,16 +5,19 @@ import { Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { TemplatePreviewButton } from "@/components/templates/template-preview-button";
 import type { AnvilTemplate } from "@/types/template";
+import type { AnvilDocument } from "@/types/document";
 import { cn } from "@/lib/utils";
 
 export function TemplateCard({
   template,
   selected,
   onSelect,
+  document,
 }: {
   template: AnvilTemplate;
   selected: boolean;
   onSelect: () => void;
+  document?: AnvilDocument;
 }) {
   const t = useTranslations("templates");
   const tr = (key: string) => (t.has(key as never) ? t(key as never) : key);
@@ -49,6 +52,7 @@ export function TemplateCard({
             description={description}
             onUseTemplate={onSelect}
             className="size-7 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+            document={document}
           />
           {selected ? (
             <span className="flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground">

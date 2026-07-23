@@ -1029,7 +1029,9 @@
     "previewTemplate": "查看範本",
     "templatePreview": "預覽",
     "useThisTemplate": "套用這個範本",
-    "noPreviewAvailable": "此範本尚無預覽"
+    "noPreviewAvailable": "此範本尚無預覽",
+    "renderingPreview": "正在用目前文件產生預覽…",
+    "previewRenderFailed": "無法產生預覽，請稍後再試。"
   },
   "panel": {
     "outline": "大綱",

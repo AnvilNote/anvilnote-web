@@ -38,6 +38,7 @@ export function TemplateSelector({ documentId }: { documentId: string }) {
           template={template}
           selected={template.id === doc.templateId}
           onSelect={() => choose(template.id, nameOf(template.name))}
+          document={doc}
         />
       ))}
     </div>

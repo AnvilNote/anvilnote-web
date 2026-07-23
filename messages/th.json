@@ -803,7 +803,9 @@
     "previewTemplate": "ดูเทมเพลต",
     "templatePreview": "ตัวอย่าง",
     "useThisTemplate": "ใช้เทมเพลตนี้",
-    "noPreviewAvailable": "ยังไม่มีตัวอย่างของเทมเพลตนี้"
+    "noPreviewAvailable": "ยังไม่มีตัวอย่างของเทมเพลตนี้",
+    "renderingPreview": "กำลังสร้างตัวอย่างจากเอกสารนี้…",
+    "previewRenderFailed": "ไม่สามารถสร้างตัวอย่างได้ กรุณาลองใหม่อีกครั้ง"
   },
   "panel": {
     "outline": "โครงร่าง",

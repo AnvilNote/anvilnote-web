@@ -803,7 +803,9 @@
     "previewTemplate": "テンプレートを見る",
     "templatePreview": "プレビュー",
     "useThisTemplate": "このテンプレートを適用",
-    "noPreviewAvailable": "このテンプレートのプレビューはまだありません"
+    "noPreviewAvailable": "このテンプレートのプレビューはまだありません",
+    "renderingPreview": "この文書でプレビューを生成しています…",
+    "previewRenderFailed": "プレビューを生成できませんでした。もう一度お試しください。"
   },
   "panel": {
     "outline": "目次",

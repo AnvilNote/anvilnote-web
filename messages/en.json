@@ -1029,7 +1029,9 @@
     "previewTemplate": "View template",
     "templatePreview": "Preview",
     "useThisTemplate": "Apply this template",
-    "noPreviewAvailable": "No preview for this template yet"
+    "noPreviewAvailable": "No preview for this template yet",
+    "renderingPreview": "Rendering a preview with your document…",
+    "previewRenderFailed": "Couldn't render a preview. Please try again."
   },
   "panel": {
     "outline": "Outline",
