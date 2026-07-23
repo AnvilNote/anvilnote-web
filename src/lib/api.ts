@@ -35,6 +35,14 @@ declare global {
         segments: string[],
         data: Uint8Array,
       ) => Promise<string>;
+      // One-click in-app update — only present on desktop. See
+      // lib/stores/update-store.ts.
+      update?: {
+        check: () => Promise<void>;
+        download: () => Promise<void>;
+        install: () => Promise<void>;
+        onStatus: (callback: (status: unknown) => void) => () => void;
+      };
     };
   }
 }

@@ -1163,6 +1163,12 @@
       "description": "檢查是否有新版本的 AnvilNote Desktop 可供下載。",
       "currentVersion": "版本 {version}",
       "available": "有新版本可供下載",
+      "checking": "正在檢查更新…",
+      "downloading": "正在下載更新…（{percent}%）",
+      "downloaded": "更新已下載，重新啟動即可套用。",
+      "restartToInstall": "重新啟動並安裝",
+      "updateError": "檢查或下載更新時發生錯誤。",
+      "manualDownload": "改為手動下載",
       "upToDate": "目前已是最新版本。",
       "download": "下載"
     },

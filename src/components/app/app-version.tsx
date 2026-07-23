@@ -39,12 +39,18 @@ export function AppVersion() {
   const t = useTranslations("settings.update");
   const version = useAppVersion();
   const checkForUpdate = useUpdateStore((s) => s.checkForUpdate);
+  const subscribeDesktopUpdates = useUpdateStore((s) => s.subscribeDesktopUpdates);
   const hasUpdate = useUpdateStore(selectHasUpdate(version));
   const isDesktop = isDesktopShell();
 
+  // AppVersion is the one always-mounted app-shell piece, so it owns the
+  // single, app-lifetime subscription to the desktop update bridge — the
+  // Settings dialog just reads the same store without subscribing itself.
   useEffect(() => {
-    if (isDesktop) void checkForUpdate();
-  }, [isDesktop, checkForUpdate]);
+    if (!isDesktop) return;
+    void checkForUpdate();
+    return subscribeDesktopUpdates();
+  }, [isDesktop, checkForUpdate, subscribeDesktopUpdates]);
 
   return (
     <div className="flex items-center gap-2 px-3 pb-2 text-xs text-muted-foreground/70 group-data-[collapsible=icon]:hidden">

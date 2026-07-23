@@ -937,6 +937,12 @@
       "description": "AnvilNote Desktop の新しいバージョンがあるか確認します。",
       "currentVersion": "バージョン {version}",
       "available": "新しいバージョンがあります",
+      "checking": "アップデートを確認しています…",
+      "downloading": "アップデートをダウンロード中…（{percent}%）",
+      "downloaded": "アップデートのダウンロードが完了しました。再起動すると適用されます。",
+      "restartToInstall": "再起動してインストール",
+      "updateError": "アップデートの確認またはダウンロード中にエラーが発生しました。",
+      "manualDownload": "手動でダウンロードする",
       "upToDate": "最新バージョンです。",
       "download": "ダウンロード"
     },

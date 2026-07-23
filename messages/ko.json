@@ -937,6 +937,12 @@
       "description": "AnvilNote Desktop의 새 버전이 있는지 확인합니다.",
       "currentVersion": "버전 {version}",
       "available": "새 버전이 있습니다",
+      "checking": "업데이트 확인 중…",
+      "downloading": "업데이트 다운로드 중… ({percent}%)",
+      "downloaded": "업데이트 다운로드가 완료되었습니다. 재시작하면 적용됩니다.",
+      "restartToInstall": "재시작 후 설치",
+      "updateError": "업데이트 확인 또는 다운로드 중 오류가 발생했습니다.",
+      "manualDownload": "수동으로 다운로드",
       "upToDate": "최신 버전을 사용 중입니다.",
       "download": "다운로드"
     },

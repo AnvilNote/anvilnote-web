@@ -1163,6 +1163,12 @@
       "description": "Check whether a newer version of AnvilNote Desktop is available.",
       "currentVersion": "Version {version}",
       "available": "A new version is available",
+      "checking": "Checking for updates…",
+      "downloading": "Downloading update… ({percent}%)",
+      "downloaded": "Update downloaded — restart to apply it.",
+      "restartToInstall": "Restart and install",
+      "updateError": "Something went wrong checking or downloading the update.",
+      "manualDownload": "Download manually instead",
       "upToDate": "You're on the latest version.",
       "download": "Download"
     },

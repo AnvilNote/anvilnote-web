@@ -117,6 +117,10 @@ export function SettingsDialog() {
   const [backupFormat, setBackupFormat] = useState<"markdown" | "anvilnote">("markdown");
   const version = useAppVersion();
   const hasUpdate = useUpdateStore(selectHasUpdate(version));
+  const desktopUpdatePhase = useUpdateStore((s) => s.phase);
+  const desktopUpdatePercent = useUpdateStore((s) => s.downloadPercent);
+  const downloadDesktopUpdate = useUpdateStore((s) => s.downloadDesktopUpdate);
+  const installDesktopUpdate = useUpdateStore((s) => s.installDesktopUpdate);
   const isDesktop = isDesktopShell();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -488,12 +492,39 @@ export function SettingsDialog() {
           id="update-version"
           highlighted={highlightedRowId === "update-version"}
           label={t("settings.update.currentVersion", { version })}
-          hint={hasUpdate ? t("settings.update.available") : t("settings.update.upToDate")}
+          hint={
+            desktopUpdatePhase === "checking"
+              ? t("settings.update.checking")
+              : desktopUpdatePhase === "downloading"
+                ? t("settings.update.downloading", { percent: desktopUpdatePercent })
+                : desktopUpdatePhase === "downloaded"
+                  ? t("settings.update.downloaded")
+                  : desktopUpdatePhase === "error"
+                    ? t("settings.update.updateError")
+                    : hasUpdate
+                      ? t("settings.update.available")
+                      : t("settings.update.upToDate")
+          }
           control={
-            hasUpdate ? (
-              <Button asChild size="sm">
+            desktopUpdatePhase === "downloaded" ? (
+              <Button size="sm" onClick={() => void installDesktopUpdate()}>
+                {t("settings.update.restartToInstall")}
+              </Button>
+            ) : desktopUpdatePhase === "available" ? (
+              <Button size="sm" onClick={() => void downloadDesktopUpdate()}>
+                {t("settings.update.download")}
+              </Button>
+            ) : desktopUpdatePhase === "downloading" ? (
+              <Button size="sm" disabled className="gap-1.5">
+                <Loader2 className="size-4 animate-spin" />
+                {t("settings.update.download")}
+              </Button>
+            ) : desktopUpdatePhase === "error" || (hasUpdate && desktopUpdatePhase === "idle") ? (
+              <Button asChild size="sm" variant={desktopUpdatePhase === "error" ? "outline" : "default"}>
                 <a href={LATEST_RELEASE_PAGE_URL} target="_blank" rel="noopener noreferrer">
-                  {t("settings.update.download")}
+                  {desktopUpdatePhase === "error"
+                    ? t("settings.update.manualDownload")
+                    : t("settings.update.download")}
                 </a>
               </Button>
             ) : null
