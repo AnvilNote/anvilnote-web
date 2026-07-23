@@ -406,21 +406,47 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
     [setHue, setSaturation, setLightness],
   )
 
+  // One "is this group being actively typed into" flag per format, checked
+  // by that group's resync effect below. Without it: typing e.g. "#123" is a
+  // complete, valid 3-digit hex shorthand (expands to #112233), so the very
+  // first onChange that reaches a parseable prefix calls applyColor and
+  // changes hue/saturation/lightness — which recomputes `hex` to the
+  // normalized 6-digit form and, via the resync effect, overwrites the
+  // draft out from under whatever the user was mid-typing (e.g. continuing
+  // on toward "#123456"). Same class of collision applies to rgb/hsl's
+  // individual number fields and css's parsed string. Skipping the resync
+  // while a field in that group has focus leaves the draft exactly as
+  // typed until blur, when it's fine to snap to the normalized form.
+  const [hexEditing, setHexEditing] = useState(false)
+  const [rgbEditing, setRgbEditing] = useState(false)
+  const [cssEditing, setCssEditing] = useState(false)
+  const [hslEditing, setHslEditing] = useState(false)
+
   const hex = color.hex()
   const [hexDraft, setHexDraft] = useState(hex)
-  useEffect(() => setHexDraft(hex), [hex])
+  useEffect(() => {
+    if (!hexEditing) setHexDraft(hex)
+  }, [hex, hexEditing])
 
   const rgb = color.rgb().array().map(value => Math.round(value))
   const [rgbDraft, setRgbDraft] = useState(rgb.map(String))
-  useEffect(() => setRgbDraft(rgb.map(String)), [rgb.join(",")])
+  useEffect(() => {
+    if (!rgbEditing) setRgbDraft(rgb.map(String))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rgb.join(","), rgbEditing])
 
   const cssValue = `rgba(${rgb.join(", ")}, ${alpha}%)`
   const [cssDraft, setCssDraft] = useState(cssValue)
-  useEffect(() => setCssDraft(cssValue), [cssValue])
+  useEffect(() => {
+    if (!cssEditing) setCssDraft(cssValue)
+  }, [cssValue, cssEditing])
 
   const hsl = color.hsl().array().map(value => Math.round(value))
   const [hslDraft, setHslDraft] = useState(hsl.map(String))
-  useEffect(() => setHslDraft(hsl.map(String)), [hsl.join(",")])
+  useEffect(() => {
+    if (!hslEditing) setHslDraft(hsl.map(String))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hsl.join(","), hslEditing])
 
   if (mode === "hex") {
     return (
@@ -443,6 +469,8 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
               // touch the picker's real color yet.
             }
           }}
+          onFocus={() => setHexEditing(true)}
+          onBlur={() => setHexEditing(false)}
           type="text"
           value={hexDraft}
         />
@@ -474,6 +502,8 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
                 applyColor(Color.rgb(parsed[0], parsed[1], parsed[2]).alpha(alpha / 100))
               }
             }}
+            onFocus={() => setRgbEditing(true)}
+            onBlur={() => setRgbEditing(false)}
             type="text"
             value={value}
           />
@@ -499,6 +529,8 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
               // Incomplete/invalid css string while typing.
             }
           }}
+          onFocus={() => setCssEditing(true)}
+          onBlur={() => setCssEditing(false)}
           type="text"
           value={cssDraft}
           {...(props as any)}
@@ -533,6 +565,8 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
                 setLightness(parsed[2])
               }
             }}
+            onFocus={() => setHslEditing(true)}
+            onBlur={() => setHslEditing(false)}
             type="text"
             value={value}
           />
