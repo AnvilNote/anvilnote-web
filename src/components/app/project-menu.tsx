@@ -7,6 +7,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -22,7 +25,7 @@ export function ProjectMenu({
   triggerClassName,
 }: {
   onDelete: () => void;
-  onExport?: () => void;
+  onExport?: (format: "markdown" | "anvilnote") => void;
   exportDisabled?: boolean;
   triggerClassName?: string;
 }) {
@@ -45,10 +48,20 @@ export function ProjectMenu({
       <DropdownMenuContent align="end" className="w-44">
         {onExport ? (
           <>
-            <DropdownMenuItem disabled={exportDisabled} onSelect={onExport}>
-              <FileDown className="size-4" />
-              {t("projects.exportZip")}
-            </DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger disabled={exportDisabled}>
+                <FileDown className="size-4" />
+                {t("projects.exportZip")}
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem onSelect={() => onExport("markdown")}>
+                  {t("projects.exportZipMarkdown")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => onExport("anvilnote")}>
+                  {t("projects.exportZipAnvilNote")}
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
             <DropdownMenuSeparator />
           </>
         ) : null}

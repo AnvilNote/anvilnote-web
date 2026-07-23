@@ -23,10 +23,13 @@ import { buildExportPayload } from "@/lib/export";
 import { deliverPdf } from "@/lib/export-pdf";
 import { deliverDocx } from "@/lib/export-docx";
 import { exportDocumentMarkdown } from "@/lib/export/backup";
+import { exportDocumentAnvilNote } from "@/lib/export/anvilnote-backup";
+import { documentJsonFilename, documentToAnvilNoteJson } from "@/lib/export/anvilnote-format";
+import { deliverFile } from "@/lib/export-target";
 import { resolveExportFolder } from "@/lib/export-folder";
 import type { ExportFormat, ExportPayload } from "@/types/export";
 
-const EXPORT_FORMATS: ExportFormat[] = ["pdf", "markdown", "docx"];
+const EXPORT_FORMATS: ExportFormat[] = ["pdf", "markdown", "docx", "json", "anvilnote"];
 
 export function ExportPanel({ documentId }: { documentId: string }) {
   const t = useTranslations();
@@ -108,13 +111,38 @@ export function ExportPanel({ documentId }: { documentId: string }) {
     );
   }
 
+  async function handleExportAnvilNote() {
+    if (!doc) return;
+    const delivered = await exportDocumentAnvilNote(doc, exportFolder);
+    toast.success(
+      delivered.kind === "folder"
+        ? t("toast.exportSavedTo", { path: delivered.path })
+        : t("toast.exportDownloaded", { name: delivered.fileName }),
+    );
+  }
+
+  async function handleExportJson() {
+    if (!doc) return;
+    const blob = new Blob([documentToAnvilNoteJson(doc)], {
+      type: "application/json;charset=utf-8",
+    });
+    const delivered = await deliverFile(blob, documentJsonFilename(doc), exportFolder);
+    toast.success(
+      delivered.kind === "folder"
+        ? t("toast.exportSavedTo", { path: delivered.path })
+        : t("toast.exportDownloaded", { name: delivered.fileName }),
+    );
+  }
+
   async function handleExport() {
     if (!doc) return;
     setLoading(true);
     try {
       if (format === "pdf") await handleExportPdf();
       else if (format === "markdown") await handleExportMarkdown();
-      else await handleExportDocx();
+      else if (format === "docx") await handleExportDocx();
+      else if (format === "json") await handleExportJson();
+      else await handleExportAnvilNote();
     } catch (error) {
       toast.error(
         error instanceof Error

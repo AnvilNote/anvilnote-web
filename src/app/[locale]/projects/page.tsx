@@ -38,6 +38,7 @@ import { DocumentActions } from "@/components/app/document-actions";
 import { IconPicker } from "@/components/app/icon-picker";
 import { ProjectMenu } from "@/components/app/project-menu";
 import { exportProjectBackup } from "@/lib/export/backup";
+import { exportProjectAnvilNoteBackup } from "@/lib/export/anvilnote-backup";
 import { randomProjectIcon } from "@/lib/lucide-icon";
 import { documentDragProps, useProjectDropTarget } from "@/lib/dnd/document-drag";
 import type { AnvilDocument } from "@/types/document";
@@ -133,9 +134,16 @@ export default function ProjectsPage() {
     router.push(`/documents/${doc.id}`);
   }
 
-  async function handleExportProject(docs: AnvilDocument[], projectName: string) {
+  async function handleExportProject(
+    docs: AnvilDocument[],
+    projectName: string,
+    format: "markdown" | "anvilnote",
+  ) {
     try {
-      const result = await exportProjectBackup(docs, projectName);
+      const result =
+        format === "markdown"
+          ? await exportProjectBackup(docs, projectName)
+          : await exportProjectAnvilNoteBackup(docs, projectName);
       toast.success(
         result.kind === "folder"
           ? t("toast.exportSavedTo", { path: result.path })
@@ -238,7 +246,7 @@ export default function ProjectsPage() {
                     onIconChange={(icon) => void updateProject(project.id, { icon })}
                     onNewDoc={() => void handleNewDocIn(project.id)}
                     onDelete={() => setDeleteTarget(project)}
-                    onExport={() => void handleExportProject(docs, project.name)}
+                    onExport={(format) => void handleExportProject(docs, project.name, format)}
                     onDropDocument={(documentId) => void moveDocumentToProject(documentId, project.id)}
                   />
                 );
@@ -360,7 +368,7 @@ function ProjectListItem({
   onIconChange: (icon: string | null) => void;
   onNewDoc: () => void;
   onDelete: () => void;
-  onExport: () => void;
+  onExport: (format: "markdown" | "anvilnote") => void;
   onDropDocument: (documentId: string) => void;
 }) {
   const t = useTranslations();

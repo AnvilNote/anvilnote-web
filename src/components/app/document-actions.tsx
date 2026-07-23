@@ -28,6 +28,9 @@ import { Label } from "@/components/ui/label";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useProjectStore } from "@/lib/stores/project-store";
 import { exportDocumentMarkdown } from "@/lib/export/backup";
+import { exportDocumentAnvilNote } from "@/lib/export/anvilnote-backup";
+import { documentJsonFilename, documentToAnvilNoteJson } from "@/lib/export/anvilnote-format";
+import { deliverFile } from "@/lib/export-target";
 import { resolveExportFolder } from "@/lib/export-folder";
 import { LucideIcon } from "@/lib/lucide-icon";
 import type { AnvilDocument } from "@/types/document";
@@ -94,6 +97,42 @@ export function DocumentActions({
     }
   }
 
+  async function exportAnvilNote() {
+    try {
+      const result = await exportDocumentAnvilNote(
+        doc,
+        resolveExportFolder(doc, projects, t("projects.unfiled")),
+      );
+      toast.success(
+        result.kind === "folder"
+          ? t("toast.exportSavedTo", { path: result.path })
+          : t("toast.exportDownloaded", { name: result.fileName }),
+      );
+    } catch {
+      toast.error(t("toast.exportFailed"));
+    }
+  }
+
+  async function exportJson() {
+    try {
+      const blob = new Blob([documentToAnvilNoteJson(doc)], {
+        type: "application/json;charset=utf-8",
+      });
+      const result = await deliverFile(
+        blob,
+        documentJsonFilename(doc),
+        resolveExportFolder(doc, projects, t("projects.unfiled")),
+      );
+      toast.success(
+        result.kind === "folder"
+          ? t("toast.exportSavedTo", { path: result.path })
+          : t("toast.exportDownloaded", { name: result.fileName }),
+      );
+    } catch {
+      toast.error(t("toast.exportFailed"));
+    }
+  }
+
   return (
     <>
       <DropdownMenu>
@@ -121,10 +160,23 @@ export function DocumentActions({
             <Copy className="size-4" />
             {t("common.duplicate")}
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => void exportMarkdown()}>
-            <FileDown className="size-4" />
-            {t("documents.exportMarkdown")}
-          </DropdownMenuItem>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <FileDown className="size-4" />
+              {t("documents.export")}
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem onSelect={() => void exportMarkdown()}>
+                {t("documents.exportMarkdown")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => void exportAnvilNote()}>
+                {t("documents.exportAnvilNote")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => void exportJson()}>
+                {t("documents.exportJson")}
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
               <FolderInput className="size-4" />

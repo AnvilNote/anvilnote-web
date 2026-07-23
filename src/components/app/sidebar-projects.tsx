@@ -33,6 +33,7 @@ import { ProjectMenu } from "@/components/app/project-menu";
 import { randomProjectIcon } from "@/lib/lucide-icon";
 import { documentDragProps, useProjectDropTarget } from "@/lib/dnd/document-drag";
 import { exportProjectBackup } from "@/lib/export/backup";
+import { exportProjectAnvilNoteBackup } from "@/lib/export/anvilnote-backup";
 import type { AnvilDocument } from "@/types/document";
 import type { AnvilProject } from "@/types/project";
 import { cn } from "@/lib/utils";
@@ -146,9 +147,16 @@ export function SidebarProjects() {
     router.push(`/documents/${doc.id}`);
   }
 
-  async function exportProject(docs: AnvilDocument[], projectName: string) {
+  async function exportProject(
+    docs: AnvilDocument[],
+    projectName: string,
+    format: "markdown" | "anvilnote",
+  ) {
     try {
-      const result = await exportProjectBackup(docs, projectName);
+      const result =
+        format === "markdown"
+          ? await exportProjectBackup(docs, projectName)
+          : await exportProjectAnvilNoteBackup(docs, projectName);
       toast.success(
         result.kind === "folder"
           ? t("toast.exportSavedTo", { path: result.path })
@@ -244,7 +252,7 @@ export function SidebarProjects() {
                     onIconChange={(icon) => void updateProject(project.id, { icon })}
                     onNewDoc={() => void newDocIn(project.id)}
                     onDelete={() => setDeleteTarget(project)}
-                    onExport={() => void exportProject(docs, project.name)}
+                    onExport={(format) => void exportProject(docs, project.name, format)}
                     onDropDocument={(documentId) => void moveDocumentToProject(documentId, project.id)}
                     renderDocs={renderDocs}
                   />
@@ -359,7 +367,7 @@ function ProjectRow({
   onIconChange: (icon: string | null) => void;
   onNewDoc: () => void;
   onDelete: () => void;
-  onExport: () => void;
+  onExport: (format: "markdown" | "anvilnote") => void;
   onDropDocument: (documentId: string) => void;
   renderDocs: (list: AnvilDocument[]) => React.ReactNode;
 }) {

@@ -55,6 +55,7 @@ import { useProjectStore } from "@/lib/stores/project-store";
 import { selectHasUpdate, useUpdateStore } from "@/lib/stores/update-store";
 import { LATEST_RELEASE_PAGE_URL } from "@/lib/update-check";
 import { exportAllBackup } from "@/lib/export/backup";
+import { exportAllAnvilNoteBackup } from "@/lib/export/anvilnote-backup";
 import type { ExportFontPreset, ExportPageSize } from "@/types/export";
 import {
   useSettingsDialogStore,
@@ -113,6 +114,7 @@ export function SettingsDialog() {
   const documents = useDocumentStore((s) => s.documents);
   const projects = useProjectStore((s) => s.projects);
   const [backingUp, setBackingUp] = useState(false);
+  const [backupFormat, setBackupFormat] = useState<"markdown" | "anvilnote">("markdown");
   const version = useAppVersion();
   const hasUpdate = useUpdateStore(selectHasUpdate(version));
   const isDesktop = isDesktopShell();
@@ -168,7 +170,10 @@ export function SettingsDialog() {
   async function backupAll() {
     setBackingUp(true);
     try {
-      const result = await exportAllBackup(documents, projects, t("projects.unfiled"));
+      const result =
+        backupFormat === "markdown"
+          ? await exportAllBackup(documents, projects, t("projects.unfiled"))
+          : await exportAllAnvilNoteBackup(documents, projects, t("projects.unfiled"));
       toast.success(
         result.kind === "folder"
           ? t("toast.exportSavedTo", { path: result.path })
@@ -436,18 +441,32 @@ export function SettingsDialog() {
             label={t("settings.backup.allDocuments")}
             hint={t("settings.backup.allDocumentsHint", { count: documents.length })}
             control={
-              <Button
-                onClick={() => void backupAll()}
-                disabled={backingUp || documents.length === 0}
-                className="gap-1.5"
-              >
-                {backingUp ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <DatabaseBackup className="size-4" />
-                )}
-                {t("settings.backup.button")}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Select
+                  value={backupFormat}
+                  onValueChange={(v) => setBackupFormat(v as "markdown" | "anvilnote")}
+                >
+                  <SelectTrigger size="sm" aria-label={t("settings.backup.format")}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    <SelectItem value="markdown">{t("export.formats.markdown")}</SelectItem>
+                    <SelectItem value="anvilnote">{t("export.formats.anvilnote")}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  onClick={() => void backupAll()}
+                  disabled={backingUp || documents.length === 0}
+                  className="gap-1.5"
+                >
+                  {backingUp ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <DatabaseBackup className="size-4" />
+                  )}
+                  {t("settings.backup.button")}
+                </Button>
+              </div>
             }
           />
           <SettingsRow
