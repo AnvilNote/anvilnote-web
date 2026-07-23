@@ -592,7 +592,10 @@
     "defaultTitle": "Заметки без названия",
     "defaultHeading": "Лекция начинается здесь",
     "defaultBody": "Начните писать заметку здесь.",
+    "export": "Экспорт",
     "exportMarkdown": "Экспорт в Markdown",
+    "exportJson": "Экспорт в JSON",
+    "exportAnvilNote": "Экспорт в .anvilnote",
     "filterAll": "Все проекты"
   },
   "projects": {
@@ -617,7 +620,9 @@
     "unfiled": "Без проекта",
     "deleteTitle": "Удалить проект",
     "deleteDescription": "«{name}» будет удалён. Его документы станут без проекта.",
-    "exportZip": "Экспорт в zip"
+    "exportZip": "Экспорт в zip",
+    "exportZipMarkdown": "Markdown",
+    "exportZipAnvilNote": ".anvilnote"
   },
   "templates": {
     "title": "Шаблоны",
@@ -861,12 +866,16 @@
     "formats": {
       "pdf": "PDF",
       "markdown": "Markdown",
-      "docx": "Word (.docx)"
+      "docx": "Word (.docx)",
+      "anvilnote": ".anvilnote",
+      "json": "JSON"
     },
     "buttons": {
       "pdf": "Экспорт в PDF",
       "markdown": "Экспорт в Markdown",
-      "docx": "Экспорт в Word"
+      "docx": "Экспорт в Word",
+      "anvilnote": "Экспорт в .anvilnote",
+      "json": "Экспорт в JSON"
     },
     "fonts": {
       "sans": "Без засечек",
@@ -914,12 +923,13 @@
     "save": "Сохранить",
     "backup": {
       "title": "Резервное копирование",
-      "description": "Экспортируйте документы в Markdown для сохранности.",
+      "description": "Экспортируйте документы в Markdown или .anvilnote для сохранности — оба формата можно восстановить позже.",
       "allDocuments": "Резервная копия всего",
       "allDocumentsHint": "Экспортирует все {count} документов, сгруппированных по проектам, в zip-архив файлов Markdown.",
+      "format": "Формат",
       "button": "Создать резервную копию",
       "import": "Импорт",
-      "importHint": "Восстановление из файла .md или резервной копии .zip.",
+      "importHint": "Восстановление из файла .md, .json, .anvilnote или резервной копии .zip.",
       "importButton": "Выбрать файл…"
     },
     "update": {

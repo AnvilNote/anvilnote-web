@@ -3,7 +3,7 @@ import type { AnvilMetadataValue } from "./document";
 
 export type ExportPageSize = "A4" | "Letter";
 export type ExportFontPreset = "sans" | "serif" | "mono";
-export type ExportFormat = "pdf" | "markdown" | "docx";
+export type ExportFormat = "pdf" | "markdown" | "docx" | "json" | "anvilnote";
 
 export type ExportOptions = {
   pageSize: ExportPageSize;

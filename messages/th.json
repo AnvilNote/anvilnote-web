@@ -592,7 +592,10 @@
     "defaultTitle": "โน้ตไม่มีชื่อ",
     "defaultHeading": "การบรรยายเริ่มต้นที่นี่",
     "defaultBody": "เริ่มเขียนโน้ตของคุณที่นี่",
+    "export": "ส่งออก",
     "exportMarkdown": "ส่งออกเป็น Markdown",
+    "exportJson": "ส่งออกเป็น JSON",
+    "exportAnvilNote": "ส่งออกเป็น .anvilnote",
     "filterAll": "ทุกโปรเจกต์"
   },
   "projects": {
@@ -617,7 +620,9 @@
     "unfiled": "ไม่จัดกลุ่ม",
     "deleteTitle": "ลบโปรเจกต์",
     "deleteDescription": "“{name}” จะถูกลบ เอกสารภายในจะกลายเป็นยังไม่จัดกลุ่ม",
-    "exportZip": "ส่งออกเป็น zip"
+    "exportZip": "ส่งออกเป็น zip",
+    "exportZipMarkdown": "Markdown",
+    "exportZipAnvilNote": ".anvilnote"
   },
   "templates": {
     "title": "เทมเพลต",
@@ -861,12 +866,16 @@
     "formats": {
       "pdf": "PDF",
       "markdown": "Markdown",
-      "docx": "Word (.docx)"
+      "docx": "Word (.docx)",
+      "anvilnote": ".anvilnote",
+      "json": "JSON"
     },
     "buttons": {
       "pdf": "ส่งออก PDF",
       "markdown": "ส่งออก Markdown",
-      "docx": "ส่งออก Word"
+      "docx": "ส่งออก Word",
+      "anvilnote": "ส่งออก .anvilnote",
+      "json": "ส่งออก JSON"
     },
     "fonts": {
       "sans": "ไม่มีเชิง",
@@ -914,12 +923,13 @@
     "save": "บันทึก",
     "backup": {
       "title": "สำรองข้อมูล",
-      "description": "ส่งออกเอกสารเป็น Markdown เพื่อเก็บสำรองไว้",
+      "description": "ส่งออกเอกสารเป็น Markdown หรือ .anvilnote เพื่อเก็บสำรองไว้ ทั้งสองรูปแบบสามารถกู้คืนได้ภายหลัง",
       "allDocuments": "สำรองข้อมูลทั้งหมด",
       "allDocumentsHint": "ส่งออกเอกสารทั้งหมด {count} ฉบับ จัดกลุ่มตามโปรเจกต์ เป็น zip ของไฟล์ Markdown",
+      "format": "รูปแบบ",
       "button": "สำรองข้อมูลตอนนี้",
       "import": "นำเข้า",
-      "importHint": "กู้คืนจากไฟล์ .md หรือไฟล์สำรอง .zip",
+      "importHint": "กู้คืนจากไฟล์ .md, .json, .anvilnote หรือไฟล์สำรอง .zip",
       "importButton": "เลือกไฟล์…"
     },
     "update": {

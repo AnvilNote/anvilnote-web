@@ -818,7 +818,10 @@
     "defaultTitle": "Untitled Notes",
     "defaultHeading": "Your lecture starts here",
     "defaultBody": "Start writing your note here.",
+    "export": "Export",
     "exportMarkdown": "Export as Markdown",
+    "exportJson": "Export as JSON",
+    "exportAnvilNote": "Export as .anvilnote",
     "filterAll": "All projects"
   },
   "projects": {
@@ -843,7 +846,9 @@
     "unfiled": "Unfiled",
     "deleteTitle": "Delete project",
     "deleteDescription": "“{name}” will be deleted. Its documents become unfiled.",
-    "exportZip": "Export as zip"
+    "exportZip": "Export as zip",
+    "exportZipMarkdown": "Markdown",
+    "exportZipAnvilNote": ".anvilnote"
   },
   "templates": {
     "title": "Templates",
@@ -1087,12 +1092,16 @@
     "formats": {
       "pdf": "PDF",
       "markdown": "Markdown",
-      "docx": "Word (.docx)"
+      "docx": "Word (.docx)",
+      "anvilnote": ".anvilnote",
+      "json": "JSON"
     },
     "buttons": {
       "pdf": "Export PDF",
       "markdown": "Export Markdown",
-      "docx": "Export Word"
+      "docx": "Export Word",
+      "anvilnote": "Export .anvilnote",
+      "json": "Export JSON"
     },
     "fonts": {
       "sans": "Sans",
@@ -1140,12 +1149,13 @@
     "save": "Save",
     "backup": {
       "title": "Backup",
-      "description": "Export your documents as Markdown for safekeeping.",
+      "description": "Export your documents as Markdown or .anvilnote for safekeeping — both formats can be restored later.",
       "allDocuments": "Back up everything",
       "allDocumentsHint": "Exports all {count} documents as a zip of Markdown files, organized by project.",
+      "format": "Format",
       "button": "Back up now",
       "import": "Import",
-      "importHint": "Restore from a .md file or a backup .zip.",
+      "importHint": "Restore from a .md, .json, or .anvilnote file, or a backup .zip.",
       "importButton": "Choose file…"
     },
     "update": {

@@ -5,6 +5,7 @@ import {
   documentAnvilNoteFilename,
   documentJsonFilename,
   documentToAnvilNoteJson,
+  isAnvilNoteFilename,
   parseAnvilNoteFile,
   serializeDocumentToAnvilNote,
 } from "@/lib/export/anvilnote-format";
@@ -120,5 +121,17 @@ describe("filename helpers", () => {
 
   it("falls back to Untitled for an empty title", () => {
     expect(documentAnvilNoteFilename(makeDoc({ title: "" }))).toBe("Untitled.anvilnote");
+  });
+});
+
+describe("isAnvilNoteFilename", () => {
+  it("matches .anvilnote and .json, case-insensitively", () => {
+    expect(isAnvilNoteFilename("Note.anvilnote")).toBe(true);
+    expect(isAnvilNoteFilename("note.JSON")).toBe(true);
+  });
+
+  it("rejects other extensions", () => {
+    expect(isAnvilNoteFilename("note.md")).toBe(false);
+    expect(isAnvilNoteFilename("note.zip")).toBe(false);
   });
 });

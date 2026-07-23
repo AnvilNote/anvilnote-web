@@ -592,7 +592,10 @@
     "defaultTitle": "無題のノート",
     "defaultHeading": "講義はここから",
     "defaultBody": "ここからノートを書き始めましょう。",
+    "export": "エクスポート",
     "exportMarkdown": "Markdown としてエクスポート",
+    "exportJson": "JSON としてエクスポート",
+    "exportAnvilNote": ".anvilnote としてエクスポート",
     "filterAll": "すべてのプロジェクト"
   },
   "projects": {
@@ -617,7 +620,9 @@
     "unfiled": "未分類",
     "deleteTitle": "プロジェクトを削除",
     "deleteDescription": "「{name}」を削除します。中のドキュメントは未分類になります。",
-    "exportZip": "zip としてエクスポート"
+    "exportZip": "zip としてエクスポート",
+    "exportZipMarkdown": "Markdown",
+    "exportZipAnvilNote": ".anvilnote"
   },
   "templates": {
     "title": "テンプレート",
@@ -861,12 +866,16 @@
     "formats": {
       "pdf": "PDF",
       "markdown": "Markdown",
-      "docx": "Word (.docx)"
+      "docx": "Word (.docx)",
+      "anvilnote": ".anvilnote",
+      "json": "JSON"
     },
     "buttons": {
       "pdf": "PDF を書き出す",
       "markdown": "Markdown を書き出す",
-      "docx": "Word を書き出す"
+      "docx": "Word を書き出す",
+      "anvilnote": ".anvilnote を書き出す",
+      "json": "JSON を書き出す"
     },
     "fonts": {
       "sans": "ゴシック",
@@ -914,12 +923,13 @@
     "save": "保存",
     "backup": {
       "title": "バックアップ",
-      "description": "文書を Markdown としてエクスポートして保管します。",
+      "description": "文書を Markdown または .anvilnote としてエクスポートして保管します。どちらの形式も後で復元できます。",
       "allDocuments": "すべてバックアップ",
       "allDocumentsHint": "全 {count} 件の文書をプロジェクト別に整理し、Markdown ファイルの zip としてエクスポートします。",
+      "format": "形式",
       "button": "今すぐバックアップ",
       "import": "インポート",
-      "importHint": ".md ファイルまたはバックアップ .zip から復元します。",
+      "importHint": ".md、.json、.anvilnote ファイル、またはバックアップ .zip から復元します。",
       "importButton": "ファイルを選択…"
     },
     "update": {

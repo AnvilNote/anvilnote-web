@@ -25,7 +25,7 @@ export function ImportBackupButton({
       <input
         ref={inputRef}
         type="file"
-        accept=".md,.zip"
+        accept=".md,.json,.anvilnote,.zip"
         className="hidden"
         onChange={handleInputChange}
       />

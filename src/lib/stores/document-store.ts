@@ -132,6 +132,11 @@ type DocumentState = {
     templateSettings: Record<string, AnvilMetadataValue>;
     templateId: string;
     projectId: string | null;
+    numberedHeadings?: boolean;
+    marginTopCm?: number | null;
+    marginBottomCm?: number | null;
+    marginLeftCm?: number | null;
+    marginRightCm?: number | null;
   }) => Promise<AnvilDocument>;
   setDocumentProject: (id: string, projectId: string | null) => Promise<void>;
   unfileDocuments: (projectId: string) => void;

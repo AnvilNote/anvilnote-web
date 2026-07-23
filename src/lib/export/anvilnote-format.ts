@@ -103,3 +103,11 @@ export function documentAnvilNoteFilename(doc: AnvilDocument): string {
 export function documentJsonFilename(doc: AnvilDocument): string {
   return `${sanitizeFilename(doc.title || "Untitled")}.json`;
 }
+
+/** Whether a filename should be parsed via parseAnvilNoteFile rather than
+ * the Markdown importer — shared by the zip reader and the single-file
+ * import dispatcher so the two never disagree on the extension list. */
+export function isAnvilNoteFilename(name: string): boolean {
+  const lower = name.toLowerCase();
+  return lower.endsWith(".anvilnote") || lower.endsWith(".json");
+}

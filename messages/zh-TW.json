@@ -818,7 +818,10 @@
     "defaultTitle": "未命名文件",
     "defaultHeading": "講義從此開始",
     "defaultBody": "在這裡開始撰寫筆記。",
+    "export": "匯出",
     "exportMarkdown": "匯出為 Markdown",
+    "exportJson": "匯出為 JSON",
+    "exportAnvilNote": "匯出為 .anvilnote",
     "filterAll": "全部專案"
   },
   "projects": {
@@ -843,7 +846,9 @@
     "unfiled": "未分類",
     "deleteTitle": "刪除專案",
     "deleteDescription": "「{name}」將被刪除，裡面的文件會變成未分類。",
-    "exportZip": "匯出為 zip"
+    "exportZip": "匯出為 zip",
+    "exportZipMarkdown": "Markdown",
+    "exportZipAnvilNote": ".anvilnote"
   },
   "templates": {
     "title": "範本",
@@ -1087,12 +1092,16 @@
     "formats": {
       "pdf": "PDF",
       "markdown": "Markdown",
-      "docx": "Word (.docx)"
+      "docx": "Word (.docx)",
+      "anvilnote": ".anvilnote",
+      "json": "JSON"
     },
     "buttons": {
       "pdf": "匯出 PDF",
       "markdown": "匯出 Markdown",
-      "docx": "匯出 Word"
+      "docx": "匯出 Word",
+      "anvilnote": "匯出 .anvilnote",
+      "json": "匯出 JSON"
     },
     "fonts": {
       "sans": "無襯線",
@@ -1140,12 +1149,13 @@
     "save": "儲存",
     "backup": {
       "title": "備份",
-      "description": "將文件匯出為 Markdown 以妥善保存。",
+      "description": "將文件匯出成 Markdown 或 .anvilnote 以妥善保存，兩種格式都能匯入還原。",
       "allDocuments": "備份全部",
       "allDocumentsHint": "將全部 {count} 篇文件依專案分類，匯出成一個 Markdown 檔案的 zip。",
+      "format": "格式",
       "button": "立即備份",
       "import": "匯入",
-      "importHint": "從 .md 檔案或備份 .zip 還原。",
+      "importHint": "從 .md、.json、.anvilnote 檔案或備份 .zip 還原。",
       "importButton": "選擇檔案…"
     },
     "update": {
