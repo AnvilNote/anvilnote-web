@@ -29,8 +29,10 @@ export const AnvilCallout = Node.create({
   // for the same reason as image — an atom node, no separate renderer-side
   // handling needed. imageRow included so side-by-side subfigures can sit
   // inside a callout too — its own tiptap-to-typst.ts case handles the
-  // subpar.grid() emission regardless of nesting depth.
-  content: "(paragraph|bulletList|orderedList|codeBlock|blockMath|image|proof|mermaid|imageRow)+",
+  // subpar.grid() emission regardless of nesting depth. table included for
+  // the same reason — renderTable() is called generically from renderBlocks()
+  // regardless of nesting, same as every other case here.
+  content: "(paragraph|bulletList|orderedList|codeBlock|blockMath|image|proof|mermaid|imageRow|table)+",
   defining: true,
   isolating: true,
 
