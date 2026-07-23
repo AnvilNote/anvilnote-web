@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Plus, Trash2, X } from "lucide-react";
+import { ChevronRight, Plus, Trash2, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,6 +39,18 @@ export function ColorPalettesSettings() {
   const removePalette = useCustomPalettesStore((s) => s.removePalette);
   const [newPaletteName, setNewPaletteName] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<CustomPalette | null>(null);
+  // Empty by default — every palette starts collapsed, same as projects in
+  // the document sidebar.
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  function toggleExpanded(id: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   function handleAddPalette() {
     addPalette(newPaletteName.trim() || t("newPalettePlaceholder"));
@@ -78,6 +91,8 @@ export function ColorPalettesSettings() {
             <PaletteEditor
               key={palette.id}
               palette={palette}
+              isExpanded={expanded.has(palette.id)}
+              onToggleExpanded={() => toggleExpanded(palette.id)}
               onRequestDelete={() => setDeleteTarget(palette)}
             />
           ))}
@@ -112,9 +127,13 @@ export function ColorPalettesSettings() {
 
 function PaletteEditor({
   palette,
+  isExpanded,
+  onToggleExpanded,
   onRequestDelete,
 }: {
   palette: CustomPalette;
+  isExpanded: boolean;
+  onToggleExpanded: () => void;
   onRequestDelete: () => void;
 }) {
   const t = useTranslations("settings.colorPalettes");
@@ -122,27 +141,65 @@ function PaletteEditor({
   const addColor = useCustomPalettesStore((s) => s.addColor);
   const updateColor = useCustomPalettesStore((s) => s.updateColor);
   const removeColor = useCustomPalettesStore((s) => s.removeColor);
-  // Local draft so every keystroke doesn't rename in the store — commits
-  // on blur, same "don't fight the user mid-edit" shape as elsewhere.
+  // Click-to-rename, same pattern as documents/projects elsewhere: a plain
+  // button showing the name until clicked, then a borderless autofocus
+  // Input that commits on blur/Enter and reverts on Escape — no permanent
+  // input field sitting there.
+  const [isRenaming, setIsRenaming] = useState(false);
   const [nameDraft, setNameDraft] = useState(palette.name);
   const [openColorIndex, setOpenColorIndex] = useState<number | null>(null);
 
   const atMax = palette.colors.length >= MAX_CUSTOM_PALETTE_COLORS;
 
+  function startRename() {
+    setNameDraft(palette.name);
+    setIsRenaming(true);
+  }
+
+  function commitRename() {
+    const trimmed = nameDraft.trim();
+    if (trimmed && trimmed !== palette.name) renamePalette(palette.id, trimmed);
+    setIsRenaming(false);
+  }
+
   return (
     <div className="space-y-2 border-t pt-4">
-      <div className="flex items-center gap-2">
-        <Input
-          value={nameDraft}
-          onChange={(event) => setNameDraft(event.target.value)}
-          onBlur={() => {
-            const trimmed = nameDraft.trim();
-            if (trimmed && trimmed !== palette.name) renamePalette(palette.id, trimmed);
-            else setNameDraft(palette.name);
-          }}
-          aria-label={t("renamePalette")}
-          className="h-8 max-w-48 text-sm font-medium"
-        />
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={onToggleExpanded}
+          aria-expanded={isExpanded}
+          aria-label={palette.name}
+          className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent"
+        >
+          <ChevronRight className={cn("size-3.5 transition-transform", isExpanded && "rotate-90")} />
+        </button>
+        {isRenaming ? (
+          <Input
+            value={nameDraft}
+            autoFocus
+            onChange={(event) => setNameDraft(event.target.value)}
+            onBlur={commitRename}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                commitRename();
+              } else if (event.key === "Escape") {
+                setIsRenaming(false);
+              }
+            }}
+            className="h-7 max-w-48 flex-1 rounded border-0 bg-transparent px-1 py-0 text-sm font-medium shadow-none focus-visible:ring-0 dark:bg-transparent"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={startRename}
+            title={palette.name}
+            className="max-w-48 truncate rounded px-1 py-1 text-left text-sm font-medium hover:bg-accent/40"
+          >
+            {palette.name}
+          </button>
+        )}
         <span className="text-xs text-muted-foreground">
           {t("colorCount", { count: palette.colors.length, max: MAX_CUSTOM_PALETTE_COLORS })}
         </span>
@@ -158,6 +215,7 @@ function PaletteEditor({
         </Button>
       </div>
 
+      {isExpanded ? (
       <div className="flex flex-wrap items-center gap-2">
         {palette.colors.map((color, index) => (
           <Popover
@@ -233,7 +291,8 @@ function PaletteEditor({
           {t("addColor")}
         </Button>
       </div>
-      {atMax ? (
+      ) : null}
+      {isExpanded && atMax ? (
         <p className="text-xs text-muted-foreground">
           {t("maxColorsReached", { max: MAX_CUSTOM_PALETTE_COLORS })}
         </p>
