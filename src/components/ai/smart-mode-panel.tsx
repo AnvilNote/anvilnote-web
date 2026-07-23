@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { JSONContent } from "@tiptap/core";
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "@/lib/i18n/navigation";
 import { toast } from "sonner";
 import {
   Check,
@@ -68,6 +67,7 @@ import { useDocumentStore } from "@/lib/stores/document-store";
 import { useEditorBridge } from "@/lib/stores/editor-bridge";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import { useSmartModeUIStore } from "@/lib/stores/smart-mode-ui-store";
+import { useSettingsDialogStore } from "@/lib/stores/ui-store";
 
 const MAX_INSTRUCTION_CHARACTERS = 6_000;
 const ACCEPTED_EXTENSIONS = new Set(["txt", "md", "markdown", "pdf", "docx"]);
@@ -242,7 +242,7 @@ export function SmartModePanel({
 }) {
   const t = useTranslations("ai");
   const locale = useLocale();
-  const router = useRouter();
+  const openSettings = useSettingsDialogStore((s) => s.openSettings);
   const editor = useEditorBridge((state) => state.editor);
   const documentId = useEditorBridge((state) => state.documentId);
   const settings = useSettingsStore();
@@ -960,7 +960,7 @@ export function SmartModePanel({
       <div data-testid="smart-mode-message-area" className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
         {!credential?.configured ? <div className="rounded-2xl border border-dashed p-4">
           <p className="font-medium">{t("smart.notConfigured")}</p>
-          <Button className="mt-3" onClick={() => router.push("/settings")}>{t("smart.openSettings")}</Button>
+          <Button className="mt-3" onClick={() => openSettings("ai")}>{t("smart.openSettings")}</Button>
         </div> : null}
         {activeConversationId && messageCursor ? <div className="mb-3 text-center"><Button type="button" size="sm" variant="ghost" disabled={messagesLoading} onClick={() => void loadMessages(activeConversationId, messageCursor)}>{messagesLoading ? <Loader2 className="size-4 animate-spin" /> : null}{t("smart.loadEarlier")}</Button></div> : null}
         {messages.length === 0 && activeConversationId ? <p className="py-8 text-center text-sm text-muted-foreground">{t("smart.emptyConversation")}</p> : null}

@@ -23,7 +23,7 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import { usePathname, useRouter } from "@/lib/i18n/navigation";
-import { useUiStore } from "@/lib/stores/ui-store";
+import { useSettingsDialogStore, useUiStore } from "@/lib/stores/ui-store";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useProjectStore } from "@/lib/stores/project-store";
 import { useSettingsStore } from "@/lib/stores/settings-store";
@@ -88,6 +88,7 @@ export function CommandMenu() {
 
   const open = useUiStore((s) => s.commandOpen);
   const setOpen = useUiStore((s) => s.setCommandOpen);
+  const openSettings = useSettingsDialogStore((s) => s.openSettings);
 
   const createDocument = useDocumentStore((s) => s.createDocument);
   const renderDocument = useDocumentStore((s) => s.renderDocument);
@@ -251,7 +252,7 @@ export function CommandMenu() {
               <LayoutTemplate className="size-4" />
               {t("command.goTemplates")}
             </CommandItem>
-            <CommandItem onSelect={() => run(() => router.push("/settings"))}>
+            <CommandItem onSelect={() => run(() => openSettings())}>
               <Settings className="size-4" />
               {t("command.goSettings")}
             </CommandItem>

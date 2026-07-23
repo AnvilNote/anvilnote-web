@@ -146,9 +146,9 @@ export function SidebarProjects() {
     router.push(`/documents/${doc.id}`);
   }
 
-  async function exportProject(docs: AnvilDocument[]) {
+  async function exportProject(docs: AnvilDocument[], projectName: string) {
     try {
-      const result = await exportProjectBackup(docs);
+      const result = await exportProjectBackup(docs, projectName);
       toast.success(
         result.kind === "folder"
           ? t("toast.exportSavedTo", { path: result.path })
@@ -244,7 +244,7 @@ export function SidebarProjects() {
                     onIconChange={(icon) => void updateProject(project.id, { icon })}
                     onNewDoc={() => void newDocIn(project.id)}
                     onDelete={() => setDeleteTarget(project)}
-                    onExport={() => void exportProject(docs)}
+                    onExport={() => void exportProject(docs, project.name)}
                     onDropDocument={(documentId) => void moveDocumentToProject(documentId, project.id)}
                     renderDocs={renderDocs}
                   />

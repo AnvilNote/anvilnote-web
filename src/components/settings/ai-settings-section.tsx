@@ -31,6 +31,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -40,7 +41,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { SettingsRow, SettingsSection } from "./settings-section";
+import { SettingsRow, SettingsSubheading } from "./settings-section";
 import {
   AIClientError,
   aiClient,
@@ -66,7 +67,11 @@ function safeMessageKey(error: unknown): string {
   return error instanceof AIClientError ? error.shape.messageKey : "ai.errors.unknown_error";
 }
 
-export function AISettingsSection() {
+export function AISettingsSection({
+  highlightedRowId,
+}: {
+  highlightedRowId?: string | null;
+}) {
   const t = useTranslations("ai");
   const settings = useSettingsStore();
   const [metadata, setMetadata] = useState<AIProviderMetadata | null>(null);
@@ -230,18 +235,18 @@ export function AISettingsSection() {
   }
 
   return (
-    <SettingsSection
-      title={t("settings.title")}
-      description={t("settings.description")}
-    >
+    <div className="space-y-6">
+      <div>
       <SettingsRow
+        id="ai-provider"
+        highlighted={highlightedRowId === "ai-provider"}
         label={t("settings.provider")}
         control={
           <Select value="openai" disabled={loading}>
             <SelectTrigger className="w-48" aria-label={t("settings.provider")}>
               <SelectValue placeholder={t("settings.loading")} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper">
               {metadata?.providers
                 .filter((candidate) => candidate.enabled)
                 .map((candidate) => (
@@ -255,6 +260,8 @@ export function AISettingsSection() {
       />
 
       <SettingsRow
+        id="ai-model"
+        highlighted={highlightedRowId === "ai-model"}
         label={t("settings.model")}
         control={
           <Select
@@ -265,7 +272,7 @@ export function AISettingsSection() {
             <SelectTrigger className="w-48" aria-label={t("settings.model")}>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper">
               {provider?.models
                 .filter((candidate) => candidate.enabled)
                 .map((candidate) => (
@@ -277,10 +284,16 @@ export function AISettingsSection() {
           </Select>
         }
       />
+      </div>
 
-      <div className="space-y-3 rounded-lg border px-4 py-3">
+      <div id="ai-api-key" className="scroll-mt-4 space-y-3 border-t pt-4">
         <div className="space-y-0.5">
-          <p className="text-sm font-medium">{t("settings.apiKey")}</p>
+          <p
+            className={`text-sm font-medium ${highlightedRowId === "ai-api-key" ? "underline decoration-wavy decoration-2 underline-offset-4" : ""}`}
+            style={highlightedRowId === "ai-api-key" ? { textDecorationColor: "#939bc9" } : undefined}
+          >
+            {t("settings.apiKey")}
+          </p>
           {credential?.configured && capability?.runtime !== "desktop" ? (
             <p className="text-xs text-muted-foreground">
               {t("settings.configuredEnding", { lastFour: credential.lastFour ?? "••••" })}
@@ -290,6 +303,21 @@ export function AISettingsSection() {
           )}
           {storageText ? <p className="text-xs text-muted-foreground">{storageText}</p> : null}
         </div>
+        {capability?.runtime === "desktop" ? (
+          <div className="space-y-1">
+            <Label htmlFor="ai-key-label" className="text-xs text-muted-foreground">
+              {t("settings.keyLabel")}
+            </Label>
+            <Input
+              id="ai-key-label"
+              className="sm:max-w-xs"
+              maxLength={120}
+              onChange={(event) => setKeyLabel(event.target.value)}
+              placeholder={t("settings.keyLabelPlaceholder")}
+              value={keyLabel}
+            />
+          </div>
+        ) : null}
           <div className="flex flex-col gap-2 sm:flex-row">
           <div className="relative min-w-0 flex-1">
             <Input
@@ -314,16 +342,6 @@ export function AISettingsSection() {
               {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </Button>
           </div>
-          {capability?.runtime === "desktop" ? (
-            <Input
-              aria-label={t("settings.keyLabel")}
-              className="sm:w-48"
-              maxLength={120}
-              onChange={(event) => setKeyLabel(event.target.value)}
-              placeholder={t("settings.keyLabelPlaceholder")}
-              value={keyLabel}
-            />
-          ) : null}
           <Button
             type="button"
             variant="outline"
@@ -339,30 +357,16 @@ export function AISettingsSection() {
               <FlaskConical className="size-4" />
             )}
           </Button>
-          {capability?.runtime === "desktop" ? (
-            <Button
-              type="button"
-              disabled={!canSave || saving}
-              onClick={() => void saveKey()}
-            >
-              {saving ? <Loader2 className="size-4 animate-spin" /> : t("settings.saveKey")}
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              size="icon"
-              disabled={!canSave || saving}
-              aria-label={t("settings.useForSession")}
-              title={t("settings.useForSession")}
-              onClick={() => void saveKey()}
-            >
-              {saving ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Play className="size-4" />
-              )}
-            </Button>
-          )}
+          <Button
+            type="button"
+            size="icon"
+            disabled={!canSave || saving}
+            aria-label={capability?.runtime === "desktop" ? t("settings.saveKey") : t("settings.useForSession")}
+            title={capability?.runtime === "desktop" ? t("settings.saveKey") : t("settings.useForSession")}
+            onClick={() => void saveKey()}
+          >
+            {saving ? <Loader2 className="size-4 animate-spin" /> : <Play className="size-4" />}
+          </Button>
         </div>
         <div className="flex items-center justify-between gap-3">
           {guide ? (
@@ -450,11 +454,11 @@ export function AISettingsSection() {
       </div>
 
       {capability?.runtime === "desktop" ? (
-        <section className="space-y-3 rounded-lg border px-4 py-3">
+        <section className="space-y-3 border-t pt-4">
           <div className="flex items-center gap-2">
             <KeyRound className="size-4 text-muted-foreground" />
             <div>
-              <p className="text-sm font-medium">{t("settings.keyProfiles")}</p>
+              <SettingsSubheading>{t("settings.keyProfiles")}</SettingsSubheading>
               <p className="text-xs text-muted-foreground">{t("settings.keyProfilesHint")}</p>
             </div>
           </div>
@@ -477,7 +481,10 @@ export function AISettingsSection() {
         </section>
       ) : null}
 
+      <div className="border-t pt-4">
       <SettingsRow
+        id="ai-default-style"
+        highlighted={highlightedRowId === "ai-default-style"}
         label={t("settings.defaultStyle")}
         control={
           <Select
@@ -487,7 +494,7 @@ export function AISettingsSection() {
             <SelectTrigger className="w-48" aria-label={t("settings.defaultStyle")}>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper">
               {WRITING_STYLES.map((style) => (
                 <SelectItem key={style} value={style}>{t(`writingStyle.${style}` as never)}</SelectItem>
               ))}
@@ -495,18 +502,19 @@ export function AISettingsSection() {
           </Select>
         }
       />
+      </div>
 
-      <section className="overflow-hidden rounded-lg border">
+      <section className="border-t pt-4">
         <button
           type="button"
-          className="flex w-full items-center justify-between px-4 py-3 text-left"
+          className="flex w-full items-center justify-between text-left"
           aria-expanded={advancedOpen}
           onClick={() => setAdvancedOpen((value) => !value)}
         >
           <span className="text-sm font-medium">{t("settings.advanced")}</span>
           <ChevronDown className={`size-4 text-muted-foreground transition-transform ${advancedOpen ? "rotate-180" : ""}`} />
         </button>
-        {advancedOpen ? <div className="border-t px-4 py-3">
+        {advancedOpen ? <div className="pt-3">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5">
               <p className="text-sm font-medium">{t("settings.humanizer")}</p>
@@ -522,7 +530,7 @@ export function AISettingsSection() {
       </section>
 
       {model?.pricing ? (
-        <div className="space-y-3 rounded-lg border px-4 py-3 text-sm">
+        <div className="space-y-3 border-t pt-4 text-sm">
           <div>
             <p className="font-medium">{t("settings.estimatedPricing")}</p>
             <p className="text-xs text-muted-foreground">{model.displayName}</p>
@@ -567,6 +575,6 @@ export function AISettingsSection() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </SettingsSection>
+    </div>
   );
 }

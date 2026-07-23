@@ -19,6 +19,38 @@ export const useUiStore = create<UiState>((set) => ({
   setMobilePanelOpen: (open) => set({ mobilePanelOpen: open }),
 }));
 
+export type SettingsCategoryId =
+  | "appearance"
+  | "language"
+  | "ai"
+  | "documentDefaults"
+  | "versionHistory"
+  | "export"
+  | "backup"
+  | "update";
+
+type SettingsDialogState = {
+  open: boolean;
+  category: SettingsCategoryId;
+  // `category` param is optional so callers that don't care which panel is
+  // showing (most of them) don't have to think about it; opening always
+  // jumps to a specific panel rather than remembering the last one, since
+  // e.g. the "AI not configured" prompt in smart-mode-panel always wants
+  // the AI panel regardless of what was open last time.
+  openSettings: (category?: SettingsCategoryId) => void;
+  closeSettings: () => void;
+  setSettingsCategory: (category: SettingsCategoryId) => void;
+};
+
+export const useSettingsDialogStore = create<SettingsDialogState>((set) => ({
+  open: false,
+  category: "appearance",
+  openSettings: (category) =>
+    set((s) => ({ open: true, category: category ?? s.category })),
+  closeSettings: () => set({ open: false }),
+  setSettingsCategory: (category) => set({ category }),
+}));
+
 const RIGHT_PANEL_TAB_STORAGE_KEY = "anvilnote.right-panel-tab";
 
 type RightPanelTabState = {

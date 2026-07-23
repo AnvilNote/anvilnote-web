@@ -55,6 +55,10 @@ export function backupZipFilename(date = new Date()): string {
   return `AnvilNote-backup-${exportTimestamp(date)}.zip`;
 }
 
+export function projectBackupZipFilename(projectName: string, date = new Date()): string {
+  return `AnvilNote-${sanitizeFilename(projectName)}-backups-${exportTimestamp(date)}.zip`;
+}
+
 /** Export a single document as a standalone .md file. */
 export async function exportDocumentMarkdown(
   doc: AnvilDocument,
@@ -97,11 +101,12 @@ function uniqueFolderName(used: Set<string>, base: string): string {
 /** Export every document in one project as a single zip of .md files. */
 export async function exportProjectBackup(
   documents: AnvilDocument[],
+  projectName: string,
 ): Promise<DeliverResult> {
   const zip = new JSZip();
   addDocumentsToZip(zip, documents);
   const blob = await zip.generateAsync({ type: "blob" });
-  return deliverFile(blob, backupZipFilename());
+  return deliverFile(blob, projectBackupZipFilename(projectName));
 }
 
 /**

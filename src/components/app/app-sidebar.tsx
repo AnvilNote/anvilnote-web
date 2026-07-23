@@ -18,7 +18,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Link } from "@/lib/i18n/navigation";
-import { useUiStore } from "@/lib/stores/ui-store";
+import { useSettingsDialogStore, useUiStore } from "@/lib/stores/ui-store";
 import { useTransitionStore } from "@/lib/stores/transition-store";
 import { SidebarProjects } from "@/components/app/sidebar-projects";
 import { AppVersion } from "@/components/app/app-version";
@@ -30,6 +30,7 @@ export function AppSidebar() {
   const holiday = getActiveHoliday();
 
   const setCommandOpen = useUiStore((s) => s.setCommandOpen);
+  const openSettings = useSettingsDialogStore((s) => s.openSettings);
   const startTransition = useTransitionStore((s) => s.start);
 
   function closeMobile() {
@@ -50,7 +51,6 @@ export function AppSidebar() {
     { href: "/documents", label: t("nav.documents"), icon: FileText },
     { href: "/templates", label: t("nav.templates"), icon: LayoutTemplate },
     { href: "/about", label: t("nav.about"), icon: Info },
-    { href: "/settings", label: t("nav.settings"), icon: Settings },
   ];
 
   return (
@@ -132,6 +132,18 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip={t("nav.settings")}
+                  onClick={() => {
+                    closeMobile();
+                    openSettings();
+                  }}
+                >
+                  <Settings className="size-4" />
+                  <span>{t("nav.settings")}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

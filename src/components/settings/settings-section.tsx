@@ -1,38 +1,44 @@
 import type { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
-export function SettingsSection({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description: string;
-  children: ReactNode;
-}) {
-  return (
-    <section className="grid gap-6 border-b py-8 last:border-b-0 md:grid-cols-[240px_1fr]">
-      <div className="space-y-1">
-        <h2 className="text-sm font-medium">{title}</h2>
-        <p className="text-sm text-muted-foreground">{description}</p>
-      </div>
-      <div className="space-y-4">{children}</div>
-    </section>
-  );
+// A small bold label used to group a few rows under one heading within a
+// settings category (e.g. "Key management", "Advanced") — text only, no
+// box, so grouped rows don't turn into another card nested inside the
+// category's own panel.
+export function SettingsSubheading({ children }: { children: ReactNode }) {
+  return <p className="text-sm font-medium">{children}</p>;
 }
 
 export function SettingsRow({
+  id,
   label,
   hint,
   control,
+  highlighted,
 }: {
+  // Search target: settings-dialog's fuzzy search scrolls to and briefly
+  // highlights the row with this id after navigating to it.
+  id?: string;
   label: string;
   hint?: string;
   control: ReactNode;
+  highlighted?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg border px-4 py-3">
+    <div
+      id={id}
+      className="flex scroll-mt-4 items-center justify-between gap-4 border-b py-3 first:pt-0 last:border-b-0"
+    >
       <div className="space-y-0.5">
-        <p className="text-sm font-medium">{label}</p>
+        <p
+          className={cn(
+            "text-sm font-medium transition-colors",
+            highlighted && "underline decoration-wavy decoration-2 underline-offset-4",
+          )}
+          style={highlighted ? { textDecorationColor: "#939bc9" } : undefined}
+        >
+          {label}
+        </p>
         {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
       </div>
       <div className="shrink-0">{control}</div>

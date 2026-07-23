@@ -10,6 +10,7 @@ import { CommandMenu } from "@/components/app/command-menu";
 import { TourOverlay } from "@/components/tour/tour-overlay";
 import { TourReplayButton } from "@/components/tour/tour-replay-button";
 import { SmartModeLauncher } from "@/components/ai/smart-mode-launcher";
+import { SettingsDialog } from "@/components/settings/settings-dialog";
 import { useLastRouteStore } from "@/lib/stores/ui-store";
 
 // Must match the fixed boot URL anvilnote-desktop/src/main/main.ts loads on
@@ -57,6 +58,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <TourOverlay />
         <TourReplayButton />
         <SmartModeLauncher />
+        <SettingsDialog />
       </SidebarProvider>
     </TooltipProvider>
   );
