@@ -6,6 +6,7 @@ import { useProjectStore } from "@/lib/stores/project-store";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import { useTemplatesStore } from "@/lib/stores/templates-store";
 import { useLastRouteStore, useRightPanelTabStore } from "@/lib/stores/ui-store";
+import { useCustomPalettesStore } from "@/lib/stores/custom-palettes-store";
 
 export function StoreHydrator({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
@@ -14,6 +15,7 @@ export function StoreHydrator({ children }: { children: React.ReactNode }) {
     Promise.resolve(useSettingsStore.persist.rehydrate())
       .then(() => useRightPanelTabStore.persist.rehydrate())
       .then(() => useLastRouteStore.persist.rehydrate())
+      .then(() => useCustomPalettesStore.persist.rehydrate())
       // Templates must be loaded before documents so seeding and template
       // switches can read manifest fields synchronously.
       .then(() => useTemplatesStore.getState().load())

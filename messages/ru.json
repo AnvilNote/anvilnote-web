@@ -406,6 +406,7 @@
       },
       "colorPalette": "Цветовая палитра",
       "colorPaletteCustom": "Своя",
+      "colorPalettesCustomGroup": "Мои палитры",
       "colorPalettes": {
         "tableau10": "Tableau 10",
         "d3Category10": "D3 Category 10",
@@ -943,6 +944,22 @@
       "author": "Автор по умолчанию",
       "authorHint": "Подставляется в поле «Автор» нового документа для шаблонов, где оно есть.",
       "authorPlaceholder": "Ваше имя"
+    },
+    "colorPalettes": {
+      "title": "Свои палитры",
+      "description": "Создавайте собственные цветовые палитры и применяйте их прямо из меню палитр статистических диаграмм.",
+      "newPalette": "Новая палитра",
+      "newPalettePlaceholder": "Название палитры",
+      "noPalettes": "Пока нет ни одной палитры.",
+      "colorCount": "{count}/{max} цветов",
+      "addColor": "Добавить цвет",
+      "maxColorsReached": "Достигнут лимит ({max} цветов).",
+      "colorNamePlaceholder": "Название цвета (необязательно)",
+      "removeColor": "Удалить цвет",
+      "removePalette": "Удалить палитру",
+      "removePaletteTitle": "Удалить палитру «{name}»?",
+      "removePaletteDescription": "Палитра и все цвета в ней будут удалены навсегда.",
+      "renamePalette": "Переименовать палитру"
     }
   },
   "command": {

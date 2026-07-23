@@ -12,6 +12,7 @@ import {
   Loader2,
   Moon,
   Palette,
+  Paintbrush,
   RefreshCw,
   Search,
   Sparkles,
@@ -39,6 +40,7 @@ import {
 import { SettingsRow } from "@/components/settings/settings-section";
 import { FolderPicker } from "@/components/settings/folder-picker";
 import { AISettingsSection } from "@/components/settings/ai-settings-section";
+import { ColorPalettesSettings } from "@/components/settings/color-palettes-settings";
 import { LocaleSwitcher } from "@/components/app/locale-switcher";
 import { ImportBackupButton } from "@/components/app/import-backup-button";
 import { isDesktopShell, useAppVersion } from "@/components/app/app-version";
@@ -68,6 +70,7 @@ const CATEGORY_ICONS: Record<SettingsCategoryId, typeof Palette> = {
   documentDefaults: FileText,
   versionHistory: History,
   export: Download,
+  colorPalettes: Paintbrush,
   backup: DatabaseBackup,
   update: RefreshCw,
 };
@@ -414,6 +417,12 @@ export function SettingsDialog() {
           </div>
         </>
       ),
+    },
+    {
+      id: "colorPalettes",
+      title: t("settings.colorPalettes.title"),
+      description: t("settings.colorPalettes.description"),
+      content: <ColorPalettesSettings />,
     },
     {
       id: "backup",

@@ -406,6 +406,7 @@
       },
       "colorPalette": "配色",
       "colorPaletteCustom": "カスタム",
+      "colorPalettesCustomGroup": "自分のパレット",
       "colorPalettes": {
         "tableau10": "Tableau 10",
         "d3Category10": "D3 カテゴリ 10",
@@ -943,6 +944,22 @@
       "author": "デフォルトの著者",
       "authorHint": "「著者」欄がある範本で、新しい文書に自動入力されます。",
       "authorPlaceholder": "あなたの名前"
+    },
+    "colorPalettes": {
+      "title": "カスタムパレット",
+      "description": "自分だけの配色パレットを作成し、統計グラフの配色メニューから直接適用できます。",
+      "newPalette": "パレットを追加",
+      "newPalettePlaceholder": "パレット名",
+      "noPalettes": "まだパレットがありません。",
+      "colorCount": "{count}/{max} 色",
+      "addColor": "色を追加",
+      "maxColorsReached": "上限に達しました（{max} 色）。",
+      "colorNamePlaceholder": "色の名前（任意）",
+      "removeColor": "色を削除",
+      "removePalette": "パレットを削除",
+      "removePaletteTitle": "「{name}」パレットを削除しますか？",
+      "removePaletteDescription": "このパレットと中の色がすべて完全に削除されます。",
+      "renamePalette": "パレット名を変更"
     }
   },
   "command": {

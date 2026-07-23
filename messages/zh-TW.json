@@ -632,6 +632,7 @@
       },
       "colorPalette": "調色盤",
       "colorPaletteCustom": "自訂",
+      "colorPalettesCustomGroup": "我的色盤",
       "colorPalettes": {
         "tableau10": "Tableau 10",
         "d3Category10": "D3 分類 10",
@@ -1169,6 +1170,22 @@
       "author": "預設作者",
       "authorHint": "帶入新文件的「作者」欄位（限有該欄位的範本）。",
       "authorPlaceholder": "你的名字"
+    },
+    "colorPalettes": {
+      "title": "自訂色盤",
+      "description": "建立自己的色盤，統計圖的調色盤選單裡可以直接套用。",
+      "newPalette": "新增色盤",
+      "newPalettePlaceholder": "色盤名稱",
+      "noPalettes": "尚未建立任何色盤。",
+      "colorCount": "{count}/{max} 個顏色",
+      "addColor": "新增顏色",
+      "maxColorsReached": "已達上限（{max} 個顏色）。",
+      "colorNamePlaceholder": "顏色名稱（選填）",
+      "removeColor": "移除顏色",
+      "removePalette": "移除色盤",
+      "removePaletteTitle": "要移除「{name}」這個色盤嗎？",
+      "removePaletteDescription": "這會永久刪除這個色盤和裡面的所有顏色。",
+      "renamePalette": "重新命名色盤"
     }
   },
   "command": {

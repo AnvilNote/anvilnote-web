@@ -406,6 +406,7 @@
       },
       "colorPalette": "ชุดสี",
       "colorPaletteCustom": "กำหนดเอง",
+      "colorPalettesCustomGroup": "ชุดสีของฉัน",
       "colorPalettes": {
         "tableau10": "Tableau 10",
         "d3Category10": "D3 Category 10",
@@ -943,6 +944,22 @@
       "author": "ผู้เขียนเริ่มต้น",
       "authorHint": "กรอกให้อัตโนมัติในช่อง \"ผู้เขียน\" ของเอกสารใหม่ สำหรับเทมเพลตที่มีช่องนี้",
       "authorPlaceholder": "ชื่อของคุณ"
+    },
+    "colorPalettes": {
+      "title": "ชุดสีกำหนดเอง",
+      "description": "สร้างชุดสีของคุณเองเพื่อนำไปใช้ได้ทันทีจากเมนูชุดสีของแผนภูมิสถิติ",
+      "newPalette": "เพิ่มชุดสี",
+      "newPalettePlaceholder": "ชื่อชุดสี",
+      "noPalettes": "ยังไม่มีชุดสี",
+      "colorCount": "{count}/{max} สี",
+      "addColor": "เพิ่มสี",
+      "maxColorsReached": "ถึงจำนวนสูงสุดแล้ว ({max} สี)",
+      "colorNamePlaceholder": "ชื่อสี (ไม่บังคับ)",
+      "removeColor": "ลบสี",
+      "removePalette": "ลบชุดสี",
+      "removePaletteTitle": "ลบชุดสี \"{name}\" หรือไม่?",
+      "removePaletteDescription": "การกระทำนี้จะลบชุดสีนี้และสีทั้งหมดในนั้นอย่างถาวร",
+      "renamePalette": "เปลี่ยนชื่อชุดสี"
     }
   },
   "command": {

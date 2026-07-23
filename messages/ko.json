@@ -406,6 +406,7 @@
       },
       "colorPalette": "색상 팔레트",
       "colorPaletteCustom": "사용자 지정",
+      "colorPalettesCustomGroup": "내 팔레트",
       "colorPalettes": {
         "tableau10": "Tableau 10",
         "d3Category10": "D3 카테고리 10",
@@ -943,6 +944,22 @@
       "author": "기본 작성자",
       "authorHint": "작성자 필드가 있는 템플릿의 새 문서에 자동으로 입력됩니다.",
       "authorPlaceholder": "이름"
+    },
+    "colorPalettes": {
+      "title": "사용자 지정 팔레트",
+      "description": "나만의 색상 팔레트를 만들어 통계 차트의 색상 팔레트 메뉴에서 바로 적용할 수 있습니다.",
+      "newPalette": "팔레트 추가",
+      "newPalettePlaceholder": "팔레트 이름",
+      "noPalettes": "아직 만든 팔레트가 없습니다.",
+      "colorCount": "{count}/{max}개 색상",
+      "addColor": "색상 추가",
+      "maxColorsReached": "최대 개수에 도달했습니다 ({max}개).",
+      "colorNamePlaceholder": "색상 이름 (선택 사항)",
+      "removeColor": "색상 삭제",
+      "removePalette": "팔레트 삭제",
+      "removePaletteTitle": "\"{name}\" 팔레트를 삭제할까요?",
+      "removePaletteDescription": "이 팔레트와 안에 있는 모든 색상이 영구적으로 삭제됩니다.",
+      "renamePalette": "팔레트 이름 변경"
     }
   },
   "command": {

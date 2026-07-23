@@ -104,3 +104,10 @@ export function colorFromPalette(id: ColorPaletteId, index: number): string {
   if (!palette || palette.colors.length === 0) return "#000000";
   return palette.colors[index % palette.colors.length];
 }
+
+// Same cycling rule as colorFromPalette, for a user-authored color list
+// instead of one of the named presets above.
+export function colorFromCustomPalette(colors: string[], index: number): string {
+  if (colors.length === 0) return "#000000";
+  return colors[index % colors.length];
+}

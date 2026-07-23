@@ -17,7 +17,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -51,7 +54,8 @@ import {
   parseStackedSpreadsheet,
 } from "@/lib/stats-chart-import";
 import { parseNumericInput, numericInputValue } from "@/lib/numeric-input";
-import { COLOR_PALETTES, colorFromPalette, type ColorPaletteId } from "@/colors/palettes";
+import { COLOR_PALETTES, colorFromCustomPalette, colorFromPalette, type ColorPaletteId } from "@/colors/palettes";
+import { useCustomPalettesStore } from "@/lib/stores/custom-palettes-store";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useTemplatesStore } from "@/lib/stores/templates-store";
 import { DEFAULT_TEMPLATE_ID } from "@/lib/templates/templates";
@@ -227,7 +231,13 @@ function StatsChartForm({
   // (applyColorPalette below); it doesn't track/reflect whether the current
   // colors happen to already match a palette, so picking the same palette
   // twice or hand-editing one entry afterward doesn't need special-casing.
-  const [selectedPalette, setSelectedPalette] = useState<ColorPaletteId | "custom">("custom");
+  // A user-defined palette (managed in Settings) is selected as
+  // `custom:<paletteId>`, distinguishing it from the built-in ColorPaletteId
+  // values without needing a second piece of state.
+  const [selectedPalette, setSelectedPalette] = useState<ColorPaletteId | "custom" | `custom:${string}`>(
+    "custom",
+  );
+  const customPalettes = useCustomPalettesStore((s) => s.palettes);
   const [seriesLabels, setSeriesLabels] = useState<string[]>(initialStackedSeriesLabels);
   const [seriesColors, setSeriesColors] = useState<string[]>(
     initialSpec.chartType === "stackedBar" || initialSpec.chartType === "stackedColumn"
@@ -580,16 +590,25 @@ function StatsChartForm({
     setSeriesColors((prev) => prev.map((existing, i) => (i === index ? color : existing)));
   }
 
-  // Batch-recolors every entry/series at once from a named palette, cycling
-  // through its colors by index the same way defaultEntryColor cycles
-  // DEFAULT_COLOR_CYCLE. Picking "custom" from the dropdown is a no-op —
-  // it's just "stop applying a palette", not "clear existing colors".
-  function applyColorPalette(paletteId: ColorPaletteId) {
+  // Batch-recolors every entry/series at once from a named (built-in or
+  // user-defined) palette, cycling through its colors by index the same
+  // way defaultEntryColor cycles DEFAULT_COLOR_CYCLE. Picking "custom" from
+  // the dropdown is a no-op — it's just "stop applying a palette", not
+  // "clear existing colors".
+  function applyColorPalette(value: ColorPaletteId | `custom:${string}`) {
+    const colorAt = value.startsWith("custom:")
+      ? (index: number) => {
+          const paletteId = value.slice("custom:".length);
+          const colors = customPalettes.find((p) => p.id === paletteId)?.colors.map((c) => c.hex) ?? [];
+          return colorFromCustomPalette(colors, index);
+        }
+      : (index: number) => colorFromPalette(value as ColorPaletteId, index);
+
     if (isStacked) {
-      setSeriesColors(seriesLabels.map((_, index) => colorFromPalette(paletteId, index)));
+      setSeriesColors(seriesLabels.map((_, index) => colorAt(index)));
     } else {
       setCategoricalData((prev) =>
-        prev.map((entry, index) => ({ ...entry, color: colorFromPalette(paletteId, index) })),
+        prev.map((entry, index) => ({ ...entry, color: colorAt(index) })),
       );
     }
   }
@@ -1391,7 +1410,7 @@ function StatsChartForm({
                     </label>
                     <Select
                       onValueChange={(value) => {
-                        const next = value as ColorPaletteId | "custom";
+                        const next = value as ColorPaletteId | "custom" | `custom:${string}`;
                         setSelectedPalette(next);
                         if (next !== "custom") applyColorPalette(next);
                       }}
@@ -1407,6 +1426,19 @@ function StatsChartForm({
                             {t(`colorPalettes.${palette.id}`)}
                           </SelectItem>
                         ))}
+                        {customPalettes.length > 0 ? (
+                          <>
+                            <SelectSeparator />
+                            <SelectGroup>
+                              <SelectLabel>{t("colorPalettesCustomGroup")}</SelectLabel>
+                              {customPalettes.map((palette) => (
+                                <SelectItem key={palette.id} value={`custom:${palette.id}`}>
+                                  {palette.name}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </>
+                        ) : null}
                       </SelectContent>
                     </Select>
                   </div>

@@ -632,6 +632,7 @@
       },
       "colorPalette": "Color palette",
       "colorPaletteCustom": "Custom",
+      "colorPalettesCustomGroup": "My palettes",
       "colorPalettes": {
         "tableau10": "Tableau 10",
         "d3Category10": "D3 Category 10",
@@ -1169,6 +1170,22 @@
       "author": "Default author",
       "authorHint": "Filled into a new document's Author field, for templates that have one.",
       "authorPlaceholder": "Your name"
+    },
+    "colorPalettes": {
+      "title": "Custom palettes",
+      "description": "Build your own color palettes to apply directly from the stats-chart color palette menu.",
+      "newPalette": "New palette",
+      "newPalettePlaceholder": "Palette name",
+      "noPalettes": "No palettes yet.",
+      "colorCount": "{count}/{max} colors",
+      "addColor": "Add color",
+      "maxColorsReached": "Limit reached ({max} colors).",
+      "colorNamePlaceholder": "Color name (optional)",
+      "removeColor": "Remove color",
+      "removePalette": "Remove palette",
+      "removePaletteTitle": "Remove the \"{name}\" palette?",
+      "removePaletteDescription": "This permanently deletes the palette and every color in it.",
+      "renamePalette": "Rename palette"
     }
   },
   "command": {

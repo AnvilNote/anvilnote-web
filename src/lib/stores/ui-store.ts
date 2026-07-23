@@ -26,6 +26,7 @@ export type SettingsCategoryId =
   | "documentDefaults"
   | "versionHistory"
   | "export"
+  | "colorPalettes"
   | "backup"
   | "update";
 
