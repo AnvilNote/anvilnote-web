@@ -404,6 +404,15 @@
         "scatter": "분산형",
         "boxwhisker": "상자수염 그림"
       },
+      "colorPalette": "색상 팔레트",
+      "colorPaletteCustom": "사용자 지정",
+      "colorPalettes": {
+        "tableau10": "Tableau 10",
+        "d3Category10": "D3 카테고리 10",
+        "okabeIto": "색맹 안전 (Okabe–Ito)",
+        "colorBrewerSet2": "ColorBrewer Set2",
+        "colorBrewerDark2": "ColorBrewer Dark2"
+      },
       "label": "레이블",
       "value": "값",
       "entryColor": "색상",
@@ -417,16 +426,16 @@
       "q3": "$Q_3$",
       "max": "최댓값",
       "horizontal": "가로",
-      "showLegend": "범례 표시",
-      "showPercentage": "비율 표시",
+      "showLegend": "범례",
+      "showPercentage": "비율",
       "percentagePlacement": {
         "none": "표시 안 함",
         "onSlice": "조각 위",
         "beside": "레이블 옆"
       },
-      "showValues": "값 표시",
-      "showGridLines": "격자선 표시",
-      "showBorder": "테두리 표시",
+      "showValues": "값",
+      "showGridLines": "격자선",
+      "showBorder": "테두리",
       "customWidthRatio": "너비(텍스트 너비 대비 %)",
       "auto": "자동",
       "customSizeRangeWarning": "크기는 {min}~{max}cm 사이여야 합니다.",

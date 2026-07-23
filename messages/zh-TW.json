@@ -630,6 +630,15 @@
         "scatter": "散佈圖",
         "boxwhisker": "箱形圖"
       },
+      "colorPalette": "調色盤",
+      "colorPaletteCustom": "自訂",
+      "colorPalettes": {
+        "tableau10": "Tableau 10",
+        "d3Category10": "D3 分類 10",
+        "okabeIto": "色盲安全（Okabe–Ito）",
+        "colorBrewerSet2": "ColorBrewer Set2",
+        "colorBrewerDark2": "ColorBrewer Dark2"
+      },
       "label": "標籤",
       "value": "數值",
       "entryColor": "顏色",
@@ -643,16 +652,16 @@
       "q3": "$Q_3$",
       "max": "最大值",
       "horizontal": "橫向",
-      "showLegend": "顯示圖例",
-      "showPercentage": "顯示百分比",
+      "showLegend": "圖例",
+      "showPercentage": "百分比",
       "percentagePlacement": {
         "none": "不顯示",
         "onSlice": "圓餅上",
         "beside": "文字旁"
       },
-      "showValues": "顯示數值",
-      "showGridLines": "顯示格線",
-      "showBorder": "顯示外框",
+      "showValues": "數值",
+      "showGridLines": "格線",
+      "showBorder": "外框",
       "customWidthRatio": "寬度(文字寬的百分比)",
       "auto": "自動",
       "customSizeRangeWarning": "尺寸需介於 {min} 到 {max} 公分之間。",

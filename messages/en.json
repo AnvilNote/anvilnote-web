@@ -630,6 +630,15 @@
         "scatter": "Scatter",
         "boxwhisker": "Box & whisker"
       },
+      "colorPalette": "Color palette",
+      "colorPaletteCustom": "Custom",
+      "colorPalettes": {
+        "tableau10": "Tableau 10",
+        "d3Category10": "D3 Category 10",
+        "okabeIto": "Colorblind-safe (Okabe–Ito)",
+        "colorBrewerSet2": "ColorBrewer Set2",
+        "colorBrewerDark2": "ColorBrewer Dark2"
+      },
       "label": "Label",
       "value": "Value",
       "entryColor": "Color",
@@ -643,16 +652,16 @@
       "q3": "$Q_3$",
       "max": "Max",
       "horizontal": "Horizontal",
-      "showLegend": "Show legend",
-      "showPercentage": "Show percentage",
+      "showLegend": "Legend",
+      "showPercentage": "Percentage",
       "percentagePlacement": {
         "none": "None",
         "onSlice": "On slice",
         "beside": "By label"
       },
-      "showValues": "Show values",
-      "showGridLines": "Show gridlines",
-      "showBorder": "Show border",
+      "showValues": "Values",
+      "showGridLines": "Gridlines",
+      "showBorder": "Border",
       "customWidthRatio": "Width (% of text width)",
       "auto": "Auto",
       "customSizeRangeWarning": "Size must be between {min} and {max} cm.",

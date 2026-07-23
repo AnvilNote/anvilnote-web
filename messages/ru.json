@@ -404,6 +404,15 @@
         "scatter": "Точечная",
         "boxwhisker": "Ящик с усами"
       },
+      "colorPalette": "Цветовая палитра",
+      "colorPaletteCustom": "Своя",
+      "colorPalettes": {
+        "tableau10": "Tableau 10",
+        "d3Category10": "D3 Category 10",
+        "okabeIto": "Безопасно для дальтоников (Okabe–Ito)",
+        "colorBrewerSet2": "ColorBrewer Set2",
+        "colorBrewerDark2": "ColorBrewer Dark2"
+      },
       "label": "Подпись",
       "value": "Значение",
       "entryColor": "Цвет",
@@ -417,16 +426,16 @@
       "q3": "$Q_3$",
       "max": "Макс.",
       "horizontal": "Горизонтально",
-      "showLegend": "Показать легенду",
-      "showPercentage": "Показать проценты",
+      "showLegend": "Легенда",
+      "showPercentage": "Проценты",
       "percentagePlacement": {
         "none": "Не показывать",
         "onSlice": "На сегменте",
         "beside": "У подписи"
       },
-      "showValues": "Показать значения",
-      "showGridLines": "Показать сетку",
-      "showBorder": "Показать рамку",
+      "showValues": "Значения",
+      "showGridLines": "Сетка",
+      "showBorder": "Рамка",
       "customWidthRatio": "Ширина (% от ширины текста)",
       "auto": "Авто",
       "customSizeRangeWarning": "Размер должен быть от {min} до {max} см.",

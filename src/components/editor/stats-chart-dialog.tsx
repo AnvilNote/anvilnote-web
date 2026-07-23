@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Upload } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -51,6 +51,7 @@ import {
   parseStackedSpreadsheet,
 } from "@/lib/stats-chart-import";
 import { parseNumericInput, numericInputValue } from "@/lib/numeric-input";
+import { COLOR_PALETTES, colorFromPalette, type ColorPaletteId } from "@/colors/palettes";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useTemplatesStore } from "@/lib/stores/templates-store";
 import { DEFAULT_TEMPLATE_ID } from "@/lib/templates/templates";
@@ -221,6 +222,12 @@ function StatsChartForm({
         defaultStackedEntry(initialStackedSeriesLabels.length),
       ),
   );
+  // "custom" means "whatever's in categoricalData/seriesColors right now" —
+  // this only ever WRITES a batch of colors when a named palette is picked
+  // (applyColorPalette below); it doesn't track/reflect whether the current
+  // colors happen to already match a palette, so picking the same palette
+  // twice or hand-editing one entry afterward doesn't need special-casing.
+  const [selectedPalette, setSelectedPalette] = useState<ColorPaletteId | "custom">("custom");
   const [seriesLabels, setSeriesLabels] = useState<string[]>(initialStackedSeriesLabels);
   const [seriesColors, setSeriesColors] = useState<string[]>(
     initialSpec.chartType === "stackedBar" || initialSpec.chartType === "stackedColumn"
@@ -571,6 +578,20 @@ function StatsChartForm({
 
   function updateSeriesColor(index: number, color: string) {
     setSeriesColors((prev) => prev.map((existing, i) => (i === index ? color : existing)));
+  }
+
+  // Batch-recolors every entry/series at once from a named palette, cycling
+  // through its colors by index the same way defaultEntryColor cycles
+  // DEFAULT_COLOR_CYCLE. Picking "custom" from the dropdown is a no-op —
+  // it's just "stop applying a palette", not "clear existing colors".
+  function applyColorPalette(paletteId: ColorPaletteId) {
+    if (isStacked) {
+      setSeriesColors(seriesLabels.map((_, index) => colorFromPalette(paletteId, index)));
+    } else {
+      setCategoricalData((prev) =>
+        prev.map((entry, index) => ({ ...entry, color: colorFromPalette(paletteId, index) })),
+      );
+    }
   }
 
   function addSeries() {
@@ -1315,73 +1336,90 @@ function StatsChartForm({
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-end gap-4">
-              <div className="flex-1 space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground" htmlFor="stats-chart-type">
-                  {t("chartType")}
-                </label>
-                <Select
-                  onValueChange={(value) => {
-                    const group = value as ChartTypeGroup;
-                    // Switching groups can switch which underlying dataset
-                    // is active (categorical vs. box-whisker), so any
-                    // selected row indices from the PREVIOUS dataset no
-                    // longer make sense against the new one.
-                    setSelectedIndices(new Set());
-                    if (group === "bar") {
-                      // Defaults to vertical (column) for a freshly-selected
-                      // bar-chart group; preserves the existing orientation if
-                      // the group was already active (switching pie -> bar and
-                      // bar(horizontal) -> pie -> bar should restore horizontal).
-                      setChartTypeRaw((prev) => (prev === "bar" || prev === "column" ? prev : "column"));
-                    } else if (group === "stackedBar") {
-                      setChartTypeRaw((prev) =>
-                        prev === "stackedBar" || prev === "stackedColumn" ? prev : "stackedColumn",
-                      );
-                    } else {
-                      setChartTypeRaw(group);
-                    }
-                  }}
-                  value={chartTypeGroup(chartType)}
-                >
-                  <SelectTrigger id="stats-chart-type">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CHART_TYPE_GROUPS.map((group) => (
-                      <SelectItem key={group} value={group}>
-                        {t(`chartTypes.${group}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+          {/* Spans both columns — chart type/palette/orientation/import
+              controls read as one toolbar above the split, not squeezed
+              into just the left (data-entry) column's own width, so
+              "import file" pinned to the far right actually lands at the
+              dialog's real right edge instead of a narrower column's. */}
+          <div className="flex flex-col gap-2 sm:col-span-2">
+            <div className="flex items-end justify-between gap-4">
+              <div className="flex items-end gap-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground" htmlFor="stats-chart-type">
+                    {t("chartType")}
+                  </label>
+                  <Select
+                    onValueChange={(value) => {
+                      const group = value as ChartTypeGroup;
+                      // Switching groups can switch which underlying dataset
+                      // is active (categorical vs. box-whisker), so any
+                      // selected row indices from the PREVIOUS dataset no
+                      // longer make sense against the new one.
+                      setSelectedIndices(new Set());
+                      if (group === "bar") {
+                        // Defaults to vertical (column) for a freshly-selected
+                        // bar-chart group; preserves the existing orientation if
+                        // the group was already active (switching pie -> bar and
+                        // bar(horizontal) -> pie -> bar should restore horizontal).
+                        setChartTypeRaw((prev) => (prev === "bar" || prev === "column" ? prev : "column"));
+                      } else if (group === "stackedBar") {
+                        setChartTypeRaw((prev) =>
+                          prev === "stackedBar" || prev === "stackedColumn" ? prev : "stackedColumn",
+                        );
+                      } else {
+                        setChartTypeRaw(group);
+                      }
+                    }}
+                    value={chartTypeGroup(chartType)}
+                  >
+                    <SelectTrigger id="stats-chart-type" size="sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent position="popper">
+                      {CHART_TYPE_GROUPS.map((group) => (
+                        <SelectItem key={group} value={group}>
+                          {t(`chartTypes.${group}`)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {!isBoxWhisker && !isScatter ? (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-muted-foreground" htmlFor="stats-chart-palette">
+                      {t("colorPalette")}
+                    </label>
+                    <Select
+                      onValueChange={(value) => {
+                        const next = value as ColorPaletteId | "custom";
+                        setSelectedPalette(next);
+                        if (next !== "custom") applyColorPalette(next);
+                      }}
+                      value={selectedPalette}
+                    >
+                      <SelectTrigger id="stats-chart-palette" size="sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent position="popper">
+                        <SelectItem value="custom">{t("colorPaletteCustom")}</SelectItem>
+                        {COLOR_PALETTES.map((palette) => (
+                          <SelectItem key={palette.id} value={palette.id}>
+                            {t(`colorPalettes.${palette.id}`)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : null}
               </div>
-              {chartTypeGroup(chartType) === "bar" ? (
-                <label className="flex items-center gap-2 pb-2 text-sm">
-                  <Switch
-                    checked={chartType === "bar"}
-                    onCheckedChange={(checked) => setChartTypeRaw(checked ? "bar" : "column")}
-                  />
-                  {t("horizontal")}
-                </label>
-              ) : null}
-              {chartTypeGroup(chartType) === "stackedBar" ? (
-                <label className="flex items-center gap-2 pb-2 text-sm">
-                  <Switch
-                    checked={chartType === "stackedBar"}
-                    onCheckedChange={(checked) => setChartTypeRaw(checked ? "stackedBar" : "stackedColumn")}
-                  />
-                  {t("horizontal")}
-                </label>
-              ) : null}
               <Button
-                className="mb-0.5"
+                className="gap-1.5"
                 onClick={() => fileInputRef.current?.click()}
                 size="sm"
                 type="button"
                 variant="outline"
               >
+                <Upload className="size-3.5" />
                 {t("importFile")}
               </Button>
               <input
@@ -1393,7 +1431,9 @@ function StatsChartForm({
               />
             </div>
             {importError ? <p className="text-destructive text-sm">{importError}</p> : null}
+          </div>
 
+          <div className="flex flex-col gap-3">
             {/* Spreadsheet-style grid (bordered cells, no per-field labels) —
                 replaces an earlier one-Input-per-line layout per explicit
                 feedback that it didn't read as "a place to enter data" the
@@ -1426,7 +1466,7 @@ function StatsChartForm({
                   <SelectTrigger className="h-8 w-28 text-xs">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper">
                     <SelectItem value="none">{t("trendLineKinds.none")}</SelectItem>
                     <SelectItem value="linear">{t("trendLineKinds.linear")}</SelectItem>
                     <SelectItem value="lowess">{t("trendLineKinds.lowess")}</SelectItem>
@@ -1495,6 +1535,26 @@ function StatsChartForm({
                 column/stacked; values: bar/column only; yLabelRotated:
                 whichever chart types have axis labels at all). */}
             <div className="absolute inset-x-2 top-2 z-10 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+              {chartTypeGroup(chartType) === "bar" ? (
+                <label className="flex items-center gap-1.5">
+                  <Switch
+                    checked={chartType === "bar"}
+                    onCheckedChange={(checked) => setChartTypeRaw(checked ? "bar" : "column")}
+                    className="scale-90"
+                  />
+                  {t("horizontal")}
+                </label>
+              ) : null}
+              {chartTypeGroup(chartType) === "stackedBar" ? (
+                <label className="flex items-center gap-1.5">
+                  <Switch
+                    checked={chartType === "stackedBar"}
+                    onCheckedChange={(checked) => setChartTypeRaw(checked ? "stackedBar" : "stackedColumn")}
+                    className="scale-90"
+                  />
+                  {t("horizontal")}
+                </label>
+              ) : null}
               {chartType === "bar" ||
                 chartType === "column" ||
                 chartType === "stackedBar" ||

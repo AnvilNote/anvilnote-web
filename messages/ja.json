@@ -404,6 +404,15 @@
         "scatter": "散布図",
         "boxwhisker": "箱ひげ図"
       },
+      "colorPalette": "配色",
+      "colorPaletteCustom": "カスタム",
+      "colorPalettes": {
+        "tableau10": "Tableau 10",
+        "d3Category10": "D3 カテゴリ 10",
+        "okabeIto": "色覚多様性に配慮（岡部・伊藤配色）",
+        "colorBrewerSet2": "ColorBrewer Set2",
+        "colorBrewerDark2": "ColorBrewer Dark2"
+      },
       "label": "ラベル",
       "value": "値",
       "entryColor": "色",
@@ -417,16 +426,16 @@
       "q3": "$Q_3$",
       "max": "最大値",
       "horizontal": "横向き",
-      "showLegend": "凡例を表示",
-      "showPercentage": "割合を表示",
+      "showLegend": "凡例",
+      "showPercentage": "割合",
       "percentagePlacement": {
         "none": "表示しない",
         "onSlice": "扇形の上",
         "beside": "ラベルの横"
       },
-      "showValues": "数値を表示",
-      "showGridLines": "目盛線を表示",
-      "showBorder": "枠線を表示",
+      "showValues": "数値",
+      "showGridLines": "目盛線",
+      "showBorder": "枠線",
       "customWidthRatio": "幅(テキスト幅に対する割合)",
       "auto": "自動",
       "customSizeRangeWarning": "サイズは{min}〜{max}cmの範囲で指定してください。",

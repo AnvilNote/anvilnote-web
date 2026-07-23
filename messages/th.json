@@ -404,6 +404,15 @@
         "scatter": "แผนภาพการกระจาย",
         "boxwhisker": "กล่องและหนวด"
       },
+      "colorPalette": "ชุดสี",
+      "colorPaletteCustom": "กำหนดเอง",
+      "colorPalettes": {
+        "tableau10": "Tableau 10",
+        "d3Category10": "D3 Category 10",
+        "okabeIto": "ปลอดภัยสำหรับตาบอดสี (Okabe–Ito)",
+        "colorBrewerSet2": "ColorBrewer Set2",
+        "colorBrewerDark2": "ColorBrewer Dark2"
+      },
       "label": "ป้ายกำกับ",
       "value": "ค่า",
       "entryColor": "สี",
@@ -417,16 +426,16 @@
       "q3": "$Q_3$",
       "max": "สูงสุด",
       "horizontal": "แนวนอน",
-      "showLegend": "แสดงคำอธิบายสัญลักษณ์",
-      "showPercentage": "แสดงเปอร์เซ็นต์",
+      "showLegend": "คำอธิบายสัญลักษณ์",
+      "showPercentage": "เปอร์เซ็นต์",
       "percentagePlacement": {
         "none": "ไม่แสดง",
         "onSlice": "บนชิ้นส่วน",
         "beside": "ข้างป้ายกำกับ"
       },
-      "showValues": "แสดงค่าตัวเลข",
-      "showGridLines": "แสดงเส้นกริด",
-      "showBorder": "แสดงกรอบ",
+      "showValues": "ค่าตัวเลข",
+      "showGridLines": "เส้นกริด",
+      "showBorder": "กรอบ",
       "customWidthRatio": "ความกว้าง (% ของความกว้างข้อความ)",
       "auto": "อัตโนมัติ",
       "customSizeRangeWarning": "ขนาดต้องอยู่ระหว่าง {min} ถึง {max} ซม.",
