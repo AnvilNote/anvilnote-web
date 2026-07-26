@@ -178,6 +178,81 @@ describe("editor Tab behavior", () => {
     }
   });
 
+  it("nests a list item on Tab inside a callout", () => {
+    const editor = createEditor({
+      type: "doc",
+      content: [
+        {
+          type: "callout",
+          attrs: {
+            kind: "note",
+            title: "Note",
+            titleTouched: false,
+          },
+          content: [
+            {
+              type: "orderedList",
+              content: [
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      content: [{ type: "text", text: "First callout item" }],
+                    },
+                  ],
+                },
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      content: [{ type: "text", text: "Second callout item" }],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    try {
+      editor.commands.setTextSelection(textPosition(editor, "Second callout item"));
+
+      pressTab(editor);
+
+      const document = editor.getJSON() as unknown as {
+        content?: Array<{
+          type?: string;
+          content?: Array<{
+            type?: string;
+            content?: Array<{ content?: unknown[] }>;
+          }>;
+        }>;
+      };
+      const callout = document.content?.find((node) => node.type === "callout");
+      const firstItem = callout?.content?.[0]?.content?.[0];
+      expect(firstItem?.content?.[1]).toMatchObject({
+        type: "orderedList",
+        content: [
+          {
+            type: "listItem",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Second callout item" }],
+              },
+            ],
+          },
+        ],
+      });
+    } finally {
+      editor.destroy();
+    }
+  });
+
   it("keeps Tab inside a first list item when there is no previous item to nest under", () => {
     const editor = createEditor({
       type: "doc",
