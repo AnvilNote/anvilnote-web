@@ -18,9 +18,13 @@ function makeDecorations(
   if (from < 0 || to < from || to > doc.content.size) return DecorationSet.empty;
   const replacement = document.createElement("span");
   replacement.className = "anvil-ai-inline-replacement";
+  replacement.style.color = "#939bc9";
   replacement.textContent = replacementText;
   return DecorationSet.create(doc, [
-    Decoration.inline(from, to, { class: "anvil-ai-inline-original" }),
+    Decoration.inline(from, to, {
+      class: "anvil-ai-inline-original",
+      style: "color: #dc2626; text-decoration: line-through;",
+    }),
     Decoration.widget(to, replacement, { side: 1, key: "anvil-ai-inline-replacement" }),
   ]);
 }

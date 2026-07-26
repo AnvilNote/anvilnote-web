@@ -1,8 +1,11 @@
 import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
+import { buildEditSnapshot } from "@anvilnote/ai-writer";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { tiptapDocumentToAiSnapshotSource } from "@/lib/ai/document/converters";
 import { tiptapSelectionToEditSnapshot } from "@/lib/ai/document/selection-snapshot";
+import { useDocumentStore } from "@/lib/stores/document-store";
 import { useSmartModeUIStore } from "@/lib/stores/smart-mode-ui-store";
 
 const client = vi.hoisted(() => ({ executeConversationTurn: vi.fn() }));
@@ -37,6 +40,10 @@ function createEditor() {
 describe("TiptapBubbleMenu inline Smart Mode", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useDocumentStore.setState({
+      snapshotBeforeAIInsert: vi.fn().mockResolvedValue(undefined),
+      persistAcceptedEditContent: vi.fn().mockResolvedValue(undefined),
+    });
     useSmartModeUIStore.setState({
       open: false,
       activeConversationByDocument: {},
@@ -391,7 +398,30 @@ describe("TiptapBubbleMenu inline Smart Mode", () => {
     editor.destroy();
   });
 
-  it("hands a structural inline result and its exact selection to Smart Mode without showing a false unsupported-selection error", async () => {
+  it("keeps a multi-operation result inline, previews the diff colors, and applies it only after Accept", async () => {
+    const editor = new Editor({
+      extensions: [StarterKit],
+      content: {
+        type: "doc",
+        content: [{ type: "paragraph", content: [{ type: "text", text: "Selected ordinary text" }] }],
+      },
+    });
+    const range = { from: 1, to: 1 + "Selected ordinary text".length };
+    editor.commands.setTextSelection(range);
+    document.body.appendChild(editor.view.dom);
+    const before = editor.getJSON();
+    const candidate = {
+      type: "doc" as const,
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "First explanation" }] },
+        { type: "paragraph", content: [{ type: "text", text: "Second explanation" }] },
+        { type: "paragraph", content: [{ type: "text", text: "Third explanation" }] },
+      ],
+    };
+    const baseDocumentHash =
+      buildEditSnapshot(tiptapDocumentToAiSnapshotSource(before)).baseDocumentHash;
+    const baseSelectionHash =
+      tiptapSelectionToEditSnapshot(editor, range).baseSelectionHash;
     client.executeConversationTurn.mockResolvedValue({
       conversation: {
         id: "conversation-1",
@@ -408,7 +438,7 @@ describe("TiptapBubbleMenu inline Smart Mode", () => {
           sequence: 1,
           role: "user",
           intent: "rewrite-selection",
-          content: "Turn this into a table",
+          content: "Explain this in three paragraphs",
           createdAt: "2026-07-19T00:00:00.000Z",
         },
         {
@@ -417,29 +447,34 @@ describe("TiptapBubbleMenu inline Smart Mode", () => {
           sequence: 2,
           role: "assistant",
           intent: "rewrite-selection",
-          content: "Draft",
+          content: "Applied 3 edits.",
           createdAt: "2026-07-19T00:00:00.000Z",
           draft: {
             kind: "edit-operations",
             version: "anvilnote.ai.edit-operations.v1",
-            baseDocumentHash: "0".repeat(64),
-            baseSelectionHash: "1".repeat(64),
+            baseDocumentHash,
+            baseSelectionHash,
             operations: [
-              { type: "deleteNode", targetRef: "n1" },
+              { type: "replaceText", targetRef: "n2", text: "First explanation", marks: [] },
               {
                 type: "insertNode",
                 parentRef: "n0",
-                index: 0,
-                node: { type: "table", content: [] },
+                index: 1,
+                node: { type: "paragraph", content: [{ type: "text", text: "Second explanation" }] },
+              },
+              {
+                type: "insertNode",
+                parentRef: "n0",
+                index: 2,
+                node: { type: "paragraph", content: [{ type: "text", text: "Third explanation" }] },
               },
             ],
-            summary: { operationCount: 2, addedNodeCount: 1, totalCharacterCount: 0 },
-            candidate: [],
+            summary: { operationCount: 3, addedNodeCount: 2, totalCharacterCount: 57 },
+            candidate: [candidate],
           },
         },
       ],
     });
-    const editor = createEditor();
     render(
       <TiptapBubbleMenu
         editor={editor}
@@ -451,19 +486,30 @@ describe("TiptapBubbleMenu inline Smart Mode", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "smart.inline" }));
     fireEvent.change(screen.getByPlaceholderText("smart.inlinePlaceholder"), {
-      target: { value: "Turn this into a table" },
+      target: { value: "Explain this in three paragraphs" },
     });
     fireEvent.click(screen.getByRole("button", { name: "smart.rewrite" }));
 
-    await waitFor(() => expect(useSmartModeUIStore.getState().open).toBe(true));
-    expect(useSmartModeUIStore.getState().inlineFallbackInstructionByDocument["doc-1"]).toBeUndefined();
-    expect(
-      useSmartModeUIStore.getState().pendingEditOperationsByMessage["message-2"],
-    ).toMatchObject({
-      documentId: "doc-1",
-      selectionSnapshot: { from: 1, to: 9 },
-    });
-    expect(screen.queryByRole("button", { name: "smart.accept" })).not.toBeInTheDocument();
+    const accept = await screen.findByRole("button", { name: "smart.accept" });
+    const original = editor.view.dom.querySelector<HTMLElement>(".anvil-ai-inline-original");
+    const replacement = editor.view.dom.querySelector<HTMLElement>(".anvil-ai-inline-replacement");
+    expect(useSmartModeUIStore.getState().open).toBe(false);
+    expect(original?.textContent).toBe("Selected ordinary text");
+    expect(original?.style.color).toBe("rgb(220, 38, 38)");
+    expect(original?.style.textDecoration).toContain("line-through");
+    expect(replacement?.textContent).toBe(
+      "First explanation\nSecond explanation\nThird explanation",
+    );
+    expect(replacement?.style.color).toBe("rgb(147, 155, 201)");
+    expect(editor.getJSON()).toEqual(before);
+
+    fireEvent.click(accept);
+    await waitFor(() => expect(editor.getJSON()).toEqual(candidate));
+    expect(useDocumentStore.getState().snapshotBeforeAIInsert).toHaveBeenCalledWith("doc-1", before);
+    expect(useDocumentStore.getState().persistAcceptedEditContent).toHaveBeenCalledWith(
+      "doc-1",
+      candidate,
+    );
     editor.destroy();
   });
 

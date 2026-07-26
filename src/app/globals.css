@@ -2011,14 +2011,14 @@ body:has(.anvil-drag-handle[data-dragging="true"]) .anvil-footnotes-panel {
 }
 
 .anvil-ai-inline-original {
-  color: oklch(0.52 0.2 25);
+  color: #dc2626;
   text-decoration: line-through;
   text-decoration-thickness: 1.5px;
 }
 
 .anvil-ai-inline-replacement {
   margin-inline-start: 0.18em;
-  color: var(--foreground);
+  color: #939bc9;
   font: inherit;
   white-space: pre-wrap;
 }

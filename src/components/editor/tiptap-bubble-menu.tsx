@@ -10,7 +10,10 @@ import { Bot, Check, Code, Bold, Italic, Link2, Loader2, Send, Sigma, Strikethro
 import { cn } from "@/lib/utils";
 import type { MathClickMode } from "@/lib/tiptap/extensions";
 import type { AiEditOperationV1 } from "@anvilnote/ai-writer";
-import { aiClient } from "@/lib/ai/runtime-client";
+import {
+  aiClient,
+  type AIConversationEditOperationsDraft,
+} from "@/lib/ai/runtime-client";
 import { inlineAIErrorMessageKey } from "@/lib/ai/inline-error";
 import {
   anvilNoteFragmentToTiptap,
@@ -18,7 +21,11 @@ import {
   UnsupportedAIContentError,
 } from "@/lib/ai/document/converters";
 import { marksFromSnapshot } from "@/lib/ai/document/core-node-converters";
-import { applyInlineAIBlocks, applyInlineAIContent } from "@/lib/ai/document/editor-operations";
+import {
+  acceptVerifiedEditDraft,
+  applyInlineAIBlocks,
+  applyInlineAIContent,
+} from "@/lib/ai/document/editor-operations";
 import {
   clearInlineAIDiff,
   showInlineAIDiff,
@@ -44,6 +51,7 @@ import {
   tiptapSelectionToEditSnapshot,
   type SelectionSnapshot,
 } from "@/lib/ai/document/selection-snapshot";
+import { useDocumentStore } from "@/lib/stores/document-store";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import { useSmartModeUIStore } from "@/lib/stores/smart-mode-ui-store";
 
@@ -81,6 +89,44 @@ function inlineReplaceTextFromOperations(
   const marks = marksFromSnapshot(op.marks as unknown as JSONContent["marks"]) ?? [];
   if (marks.some((mark) => !SUPPORTED_INLINE_MARKS.has(mark.type))) return null;
   return { text: op.text, marks };
+}
+
+/**
+ * An edit-operations draft carries the full verified candidate document.
+ * Inline review only needs the candidate text that replaced the original
+ * selection, so remove the unchanged text before and after that range.
+ */
+function inlineReplacementTextFromCandidate(
+  editor: Editor,
+  draft: AIConversationEditOperationsDraft,
+  range: InlineAISelectionRange,
+): string | null {
+  const candidate = draft.candidate[0];
+  if (!candidate) return null;
+  try {
+    const candidateDocument = editor.schema.nodeFromJSON(candidate);
+    const liveDocument = editor.state.doc;
+    const prefix = liveDocument.textBetween(0, range.from, "\n");
+    const suffix = liveDocument.textBetween(range.to, liveDocument.content.size, "\n");
+    const candidateText = candidateDocument.textBetween(
+      0,
+      candidateDocument.content.size,
+      "\n",
+    );
+    if (
+      !candidateText.startsWith(prefix)
+      || !candidateText.endsWith(suffix)
+      || candidateText.length < prefix.length + suffix.length
+    ) {
+      return null;
+    }
+    return candidateText.slice(
+      prefix.length,
+      suffix.length ? candidateText.length - suffix.length : undefined,
+    );
+  } catch {
+    return null;
+  }
 }
 
 function MenuButton({
@@ -160,22 +206,32 @@ export function TiptapBubbleMenu({
   const [inlineComposerLineCount, setInlineComposerLineCount] = useState(1);
   const [inlineSelectionRange, setInlineSelectionRange] = useState<InlineAISelectionRange | null>(null);
   const inlineComposerRef = useRef<HTMLTextAreaElement>(null);
-  const [pending, setPending] = useState<{
-    mode: "inline" | "blocks";
-    content: JSONContent[];
-    snapshot: SelectionSnapshot;
-  } | null>(null);
+  const [pending, setPending] = useState<
+    | {
+        mode: "inline" | "blocks";
+        content: JSONContent[];
+        snapshot: SelectionSnapshot;
+      }
+    | {
+        mode: "verified";
+        draft: AIConversationEditOperationsDraft;
+        snapshot: SelectionSnapshot;
+      }
+    | null
+  >(null);
   const pendingRef = useRef<typeof pending>(null);
   const locale = useLocale();
   const settings = useSettingsStore();
+  const snapshotBeforeAIInsert = useDocumentStore((state) => state.snapshotBeforeAIInsert);
+  const persistAcceptedEditContent = useDocumentStore(
+    (state) => state.persistAcceptedEditContent,
+  );
   const activeConversationId = useSmartModeUIStore((state) =>
     documentId ? state.activeConversationByDocument[documentId] ?? null : null,
   );
   const setActiveConversation = useSmartModeUIStore((state) => state.setActiveConversation);
   const smartModeOpen = useSmartModeUIStore((state) => state.open);
-  const setSmartModeOpen = useSmartModeUIStore((state) => state.setOpen);
   const notifyConversationChanged = useSmartModeUIStore((state) => state.notifyConversationChanged);
-  const setPendingEditOperation = useSmartModeUIStore((state) => state.setPendingEditOperation);
 
   useEffect(() => {
     pendingRef.current = pending;
@@ -379,17 +435,17 @@ export function TiptapBubbleMenu({
           return;
         }
 
-        // Structural results are reviewed in Smart Mode, but accepting one
-        // still has to use the exact selection that initiated this inline
-        // request. Hand that safety snapshot to the panel under the persisted
-        // assistant message id so opening/remounting the panel cannot silently
-        // turn a selection-scoped draft into a document-scoped one.
-        setPendingEditOperation(assistant.id, {
-          documentId,
-          documentHash: snapshot.documentHash,
-          selectionSnapshot: snapshot,
-        });
-        setSmartModeOpen(true);
+        const replacementText = inlineReplacementTextFromCandidate(
+          editor,
+          assistant.draft,
+          { from, to },
+        );
+        if (replacementText === null) {
+          setInlineError("ai.errors.conversion_failed");
+          return;
+        }
+        showInlineAIDiff(editor, { from, to, replacementText });
+        setPending({ mode: "verified", draft: assistant.draft, snapshot });
         setInlineSelectionRange(null);
         setInlineOpen(false);
         return;
@@ -420,21 +476,39 @@ export function TiptapBubbleMenu({
     setInlineOpen(true);
   }
 
-  function acceptInline() {
+  async function acceptInline() {
     if (!pending) return;
     const snapshot = pending.snapshot;
     try {
+      setInlineBusy(true);
       if (snapshot.to > editor.state.doc.content.size || hasSelectionConflict(snapshot, {
         document: editor.getJSON(),
         selectedContent: editor.state.doc.slice(snapshot.from, snapshot.to).content.toJSON(),
       })) throw new Error("selection_conflict");
-      clearInlineAIDiff(editor);
-      const applied = pending.mode === "blocks"
-        ? applyInlineAIBlocks(editor, { from: snapshot.from, to: snapshot.to }, pending.content)
-        : applyInlineAIContent(editor, { from: snapshot.from, to: snapshot.to }, pending.content);
-      if (!applied) {
-        throw new Error("conversion_failed");
+      if (pending.mode === "verified") {
+        await acceptVerifiedEditDraft(
+          editor,
+          {
+            baseDocumentHash: pending.draft.baseDocumentHash,
+            baseSelectionHash: pending.draft.baseSelectionHash,
+            selectionRange: { from: snapshot.from, to: snapshot.to },
+            candidate: pending.draft.candidate,
+          },
+          {
+            createVersion: (live) => snapshotBeforeAIInsert(documentId!, live),
+            saveDocument: (json) => persistAcceptedEditContent(documentId!, json),
+          },
+        );
+      } else {
+        clearInlineAIDiff(editor);
+        const applied = pending.mode === "blocks"
+          ? applyInlineAIBlocks(editor, { from: snapshot.from, to: snapshot.to }, pending.content)
+          : applyInlineAIContent(editor, { from: snapshot.from, to: snapshot.to }, pending.content);
+        if (!applied) {
+          throw new Error("conversion_failed");
+        }
       }
+      clearInlineAIDiff(editor);
       setPending(null);
       setInlineSelectionRange(null);
       setInlineInstruction("");
@@ -454,6 +528,8 @@ export function TiptapBubbleMenu({
       setInlineSelectionRange({ from: snapshot.from, to: snapshot.to });
       setInlineOpen(true);
       setInlineError(inlineAIErrorMessageKey(error));
+    } finally {
+      setInlineBusy(false);
     }
   }
 
@@ -485,8 +561,8 @@ export function TiptapBubbleMenu({
     >
       {pending ? <>
         <span className="px-1 text-xs text-muted-foreground">{tSmart("smart.reviewResult")}</span>
-        <button type="button" className="inline-flex h-8 items-center gap-1 rounded-lg bg-primary px-2 text-xs text-primary-foreground" onMouseDown={(event) => event.preventDefault()} onClick={acceptInline}><Check className="size-3.5" />{tSmart("smart.accept")}</button>
-        <button type="button" className="inline-flex h-8 items-center gap-1 rounded-lg px-2 text-xs hover:bg-muted" onMouseDown={(event) => event.preventDefault()} onClick={rejectInline}><X className="size-3.5" />{tSmart("smart.reject")}</button>
+        <button type="button" disabled={inlineBusy} className="inline-flex h-8 items-center gap-1 rounded-lg bg-primary px-2 text-xs text-primary-foreground disabled:opacity-50" onMouseDown={(event) => event.preventDefault()} onClick={() => void acceptInline()}><Check className="size-3.5" />{tSmart("smart.accept")}</button>
+        <button type="button" disabled={inlineBusy} className="inline-flex h-8 items-center gap-1 rounded-lg px-2 text-xs hover:bg-muted disabled:opacity-50" onMouseDown={(event) => event.preventDefault()} onClick={rejectInline}><X className="size-3.5" />{tSmart("smart.reject")}</button>
       </> : inlineOpen ? <>
         <textarea
           autoFocus
