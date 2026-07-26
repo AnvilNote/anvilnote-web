@@ -3,7 +3,10 @@ import StarterKit from "@tiptap/starter-kit";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { buildEditSnapshot } from "@anvilnote/ai-writer";
 import { Sheet } from "@/components/ui/sheet";
+import { tiptapDocumentToAiSnapshotSource } from "@/lib/ai/document/converters";
+import { useDocumentStore } from "@/lib/stores/document-store";
 import { useEditorBridge } from "@/lib/stores/editor-bridge";
 import { useSmartModeUIStore } from "@/lib/stores/smart-mode-ui-store";
 
@@ -22,6 +25,11 @@ const client = vi.hoisted(() => ({
   deleteConversation: vi.fn(),
 }));
 
+const api = vi.hoisted(() => ({
+  updateDocument: vi.fn(),
+  createDocumentVersion: vi.fn(),
+}));
+
 vi.mock("next-intl", () => ({
   useLocale: () => "en",
   useTranslations: () => (key: string, values?: Record<string, unknown>) =>
@@ -32,6 +40,11 @@ vi.mock("@/lib/ai/runtime-client", async (importOriginal) => {
   const original = await importOriginal<typeof import("@/lib/ai/runtime-client")>();
   return { ...original, aiClient: client };
 });
+vi.mock("@/lib/api", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/api")>()),
+  updateDocument: api.updateDocument,
+  createDocumentVersion: api.createDocumentVersion,
+}));
 
 import { SmartModePanel } from "./smart-mode-panel";
 
@@ -616,6 +629,212 @@ describe("SmartModePanel", () => {
     expect(screen.getByRole("button", { name: "smart.accept" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "smart.reject" })).toBeEnabled();
     expect(editor.getJSON()).toEqual(beforeMutation);
+    editor.destroy();
+  });
+
+  function seedDocumentStoreDoc(content: object) {
+    useDocumentStore.setState({
+      documents: [{
+        id: "doc-1",
+        title: "Untitled",
+        content: content as never,
+        metadata: {},
+        templateSettings: {},
+        templateId: "plain-note",
+        numberedHeadings: true,
+        marginTopCm: null,
+        marginBottomCm: null,
+        marginLeftCm: null,
+        marginRightCm: null,
+        projectId: null,
+        createdAt: "2026-07-19T00:00:00.000Z",
+        updatedAt: "2026-07-19T00:00:00.000Z",
+      }],
+      saveStateById: { "doc-1": "saved" },
+      restoreNonceById: {},
+      versionsById: {},
+    });
+  }
+
+  it("accepts a verified edit-operations draft: checkpoints a version, applies it live, then persists it — without remounting the editor", async () => {
+    const editor = createEditor();
+    const originalContent = editor.getJSON();
+    const expectedCandidate = {
+      type: "doc",
+      content: [{ type: "paragraph", content: [{ type: "text", text: "Accepted content" }] }],
+    };
+    useEditorBridge.setState({ editor, documentId: "doc-1" });
+    seedDocumentStoreDoc(originalContent);
+    api.createDocumentVersion.mockResolvedValue({
+      id: "version-1",
+      documentId: "doc-1",
+      title: "Untitled",
+      createdAt: "2026-07-19T00:00:00.000Z",
+    });
+    api.updateDocument.mockImplementation(async (_id: string, patch: { content?: unknown }) => ({
+      id: "doc-1",
+      title: "Untitled",
+      content: patch.content ?? originalContent,
+      templateId: "plain-note",
+      numberedHeadings: true,
+      createdAt: "2026-07-19T00:00:00.000Z",
+      updatedAt: "2026-07-19T02:00:00.000Z",
+    }));
+    client.getCredentialStatus.mockResolvedValue({ configured: true, lastFour: "1234", storage: "os-secure-storage" });
+    client.listConversations.mockResolvedValue({
+      data: [{ id: "conversation-1", documentId: "doc-1", title: "Structural", lastMessageAt: "2026-07-19T00:00:00.000Z", createdAt: "2026-07-19T00:00:00.000Z", updatedAt: "2026-07-19T00:00:00.000Z" }],
+      nextCursor: null,
+    });
+    const baseDocumentHash = buildEditSnapshot(tiptapDocumentToAiSnapshotSource(originalContent)).baseDocumentHash;
+    client.listConversationMessages.mockResolvedValue({
+      data: [{
+        id: "message-2",
+        conversationId: "conversation-1",
+        sequence: 2,
+        role: "assistant",
+        intent: "rewrite-selection",
+        content: "Inserted a paragraph.",
+        createdAt: "2026-07-19T00:00:00.000Z",
+        draft: {
+          kind: "edit-operations",
+          version: "anvilnote.ai.edit-operations.v1",
+          baseDocumentHash,
+          baseSelectionHash: null,
+          operations: [{
+            type: "insertNode",
+            parentRef: "n0",
+            index: 0,
+            node: { type: "paragraph", content: [{ type: "text", text: "Accepted content" }] },
+          }],
+          summary: { operationCount: 1, addedNodeCount: 1, totalCharacterCount: 16 },
+          candidate: [expectedCandidate],
+        },
+      }],
+      nextCursor: null,
+    });
+
+    render(<Sheet open><SmartModePanel open /></Sheet>);
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: "smart.accept" }));
+
+    await waitFor(() => expect(editor.getJSON()).toEqual(expectedCandidate));
+    expect(api.updateDocument).toHaveBeenCalledTimes(2);
+    // Version checkpoint of the PRE-accept content happens first (the same
+    // snapshotBeforeAIInsert-backed sequencing the OLD insertDraft flow
+    // already uses), strictly before the accepted content's own PATCH.
+    expect(api.updateDocument.mock.calls[0]?.[1]).toMatchObject({ content: originalContent });
+    expect(api.createDocumentVersion).toHaveBeenCalledWith("doc-1");
+    expect(api.updateDocument.mock.invocationCallOrder[0]).toBeLessThan(
+      api.createDocumentVersion.mock.invocationCallOrder[0]!,
+    );
+    expect(api.createDocumentVersion.mock.invocationCallOrder[0]).toBeLessThan(
+      api.updateDocument.mock.invocationCallOrder[1]!,
+    );
+    expect(api.updateDocument.mock.calls[1]?.[1]).toEqual({ content: expectedCandidate });
+    // Never a remount: no version-history/restore signal was bumped for
+    // this document by the Accept flow (the live in-place transaction
+    // already updated the editor, so the OLD remount-based mechanism
+    // (replaceWholeDocumentFromAI's restoreNonceById bump) must not fire).
+    expect(useDocumentStore.getState().restoreNonceById["doc-1"]).toBeUndefined();
+    editor.destroy();
+  });
+
+  it("rejects a stale edit-operations draft before any write, leaving the editor and API untouched", async () => {
+    const editor = createEditor();
+    const originalContent = editor.getJSON();
+    useEditorBridge.setState({ editor, documentId: "doc-1" });
+    seedDocumentStoreDoc(originalContent);
+    client.getCredentialStatus.mockResolvedValue({ configured: true, lastFour: "1234", storage: "os-secure-storage" });
+    client.listConversations.mockResolvedValue({
+      data: [{ id: "conversation-1", documentId: "doc-1", title: "Structural", lastMessageAt: "2026-07-19T00:00:00.000Z", createdAt: "2026-07-19T00:00:00.000Z", updatedAt: "2026-07-19T00:00:00.000Z" }],
+      nextCursor: null,
+    });
+    client.listConversationMessages.mockResolvedValue({
+      data: [{
+        id: "message-2",
+        conversationId: "conversation-1",
+        sequence: 2,
+        role: "assistant",
+        intent: "rewrite-selection",
+        content: "Inserted a paragraph.",
+        createdAt: "2026-07-19T00:00:00.000Z",
+        draft: {
+          kind: "edit-operations",
+          version: "anvilnote.ai.edit-operations.v1",
+          // Deliberately wrong: the live document's real hash will never
+          // equal 64 zeros, simulating the user having kept editing after
+          // this turn returned.
+          baseDocumentHash: "0".repeat(64),
+          baseSelectionHash: null,
+          operations: [{
+            type: "insertNode",
+            parentRef: "n0",
+            index: 0,
+            node: { type: "paragraph", content: [{ type: "text", text: "Accepted content" }] },
+          }],
+          summary: { operationCount: 1, addedNodeCount: 1, totalCharacterCount: 16 },
+          candidate: [{ type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Accepted content" }] }] }],
+        },
+      }],
+      nextCursor: null,
+    });
+
+    render(<Sheet open><SmartModePanel open /></Sheet>);
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: "smart.accept" }));
+
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+    expect(api.updateDocument).not.toHaveBeenCalled();
+    expect(api.createDocumentVersion).not.toHaveBeenCalled();
+    expect(editor.getJSON()).toEqual(originalContent);
+    editor.destroy();
+  });
+
+  it("rejects a structural draft with a purely local, no-op handler", async () => {
+    const editor = createEditor();
+    const originalContent = editor.getJSON();
+    useEditorBridge.setState({ editor, documentId: "doc-1" });
+    seedDocumentStoreDoc(originalContent);
+    client.getCredentialStatus.mockResolvedValue({ configured: true, lastFour: "1234", storage: "os-secure-storage" });
+    client.listConversations.mockResolvedValue({
+      data: [{ id: "conversation-1", documentId: "doc-1", title: "Structural", lastMessageAt: "2026-07-19T00:00:00.000Z", createdAt: "2026-07-19T00:00:00.000Z", updatedAt: "2026-07-19T00:00:00.000Z" }],
+      nextCursor: null,
+    });
+    const baseDocumentHash = buildEditSnapshot(tiptapDocumentToAiSnapshotSource(originalContent)).baseDocumentHash;
+    client.listConversationMessages.mockResolvedValue({
+      data: [{
+        id: "message-2",
+        conversationId: "conversation-1",
+        sequence: 2,
+        role: "assistant",
+        intent: "rewrite-selection",
+        content: "Inserted a paragraph.",
+        createdAt: "2026-07-19T00:00:00.000Z",
+        draft: {
+          kind: "edit-operations",
+          version: "anvilnote.ai.edit-operations.v1",
+          baseDocumentHash,
+          baseSelectionHash: null,
+          operations: [{
+            type: "insertNode",
+            parentRef: "n0",
+            index: 0,
+            node: { type: "paragraph", content: [{ type: "text", text: "Accepted content" }] },
+          }],
+          summary: { operationCount: 1, addedNodeCount: 1, totalCharacterCount: 16 },
+          candidate: [{ type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Accepted content" }] }] }],
+        },
+      }],
+      nextCursor: null,
+    });
+
+    render(<Sheet open><SmartModePanel open /></Sheet>);
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: "smart.reject" }));
+
+    expect(api.updateDocument).not.toHaveBeenCalled();
+    expect(api.createDocumentVersion).not.toHaveBeenCalled();
+    expect(editor.getJSON()).toEqual(originalContent);
     editor.destroy();
   });
 

@@ -57,7 +57,7 @@ import {
   tiptapSelectionToAnvilNote,
   UnsupportedAIContentError,
 } from "@/lib/ai/document/converters";
-import { applyAIContent } from "@/lib/ai/document/editor-operations";
+import { acceptVerifiedEditDraft, applyAIContent } from "@/lib/ai/document/editor-operations";
 import { buildOperationPreview, type OperationPreviewModel } from "@/lib/ai/document/operation-preview";
 import { ProtectedSelectionRegistry } from "@/lib/ai/document/protected-selection";
 import {
@@ -254,24 +254,30 @@ function DraftCard({
 // Renders a "edit-operations" draft's structural change cards, built
 // ENTIRELY from a detached clone of the live document via
 // buildOperationPreview — never mutates `editor` before the person clicks
-// Accept. Accept/Reject are wired to stubs here (logged, not persisted):
-// Task 24.3 (not this task) wires the real accept-flow — versioning,
-// hashing, the single-transaction atomic apply, Undo — directly onto this
-// same AiOperationPreview markup.
+// Accept. Accept/Reject themselves are owned by SmartModePanel (mirroring
+// DraftCard's own onInsert/onReplace prop convention below) — this
+// component only renders the preview and forwards clicks.
 function EditOperationsDraftCard({
   editor,
+  message,
   draft,
   disabled,
+  onAccept,
+  onReject,
 }: {
   editor: NonNullable<ReturnType<typeof useEditorBridge.getState>["editor"]>;
+  message: AIConversationMessage;
   draft: AIConversationEditOperationsDraft;
   disabled: boolean;
+  onAccept: (message: AIConversationMessage) => void;
+  onReject: (message: AIConversationMessage) => void;
 }) {
   const t = useTranslations("ai");
   // Recomputed only when the draft or the live document identity changes —
-  // a stale conflict is Task 24.3's concern (it owns baseDocumentHash
-  // comparison against the live document before Accept can ever apply
-  // anything); this card only ever needs a best-effort, up-to-date preview.
+  // a stale conflict is acceptVerifiedEditDraft's own concern (it owns the
+  // real baseDocumentHash comparison against the live document before
+  // Accept can ever apply anything); this card only ever needs a
+  // best-effort, up-to-date preview.
   const model = useMemo<OperationPreviewModel | null>(() => {
     try {
       return buildOperationPreview(editor.getJSON(), draft);
@@ -292,12 +298,8 @@ function EditOperationsDraftCard({
     <AiOperationPreview
       model={model}
       disabled={disabled}
-      onAccept={() => {
-        // TODO(Task 24.3): wire real accept-flow persistence here.
-      }}
-      onReject={() => {
-        // TODO(Task 24.3): wire real reject handling here.
-      }}
+      onAccept={() => onAccept(message)}
+      onReject={() => onReject(message)}
     />
   );
 }
@@ -315,6 +317,7 @@ export function SmartModePanel({
   const settings = useSettingsStore();
   const snapshotBeforeAIInsert = useDocumentStore((state) => state.snapshotBeforeAIInsert);
   const replaceWholeDocumentFromAI = useDocumentStore((state) => state.replaceWholeDocumentFromAI);
+  const persistAcceptedEditContent = useDocumentStore((state) => state.persistAcceptedEditContent);
   const activeConversationId = useSmartModeUIStore((state) =>
     documentId ? state.activeConversationByDocument[documentId] ?? null : null,
   );
@@ -746,6 +749,81 @@ export function SmartModePanel({
     }
   }
 
+  // Task 24.3's real Accept flow for a structural "edit-operations" draft.
+  // Delegates all of the actual guarded-transaction logic to
+  // acceptVerifiedEditDraft (editor-operations.ts) — this function's own
+  // job is purely to supply that library function's three arguments from
+  // this component's own state, following the SAME conventions the OLD
+  // insertDraft/replaceDraft flows above already establish:
+  // `applyingDraftsRef` reentrancy guard, `setErrorMessageKey(errorKey(...))`
+  // on failure, clearing the message's `operations` entry on success.
+  //
+  // `selectionRange` (for the optional selection-hash re-check) comes from
+  // this SAME `operations` tracking map the OLD flow already populates for
+  // every assistant message in `submit()` (not a new mechanism) — `null`
+  // whenever this message has no tracked selection snapshot (a
+  // document-scoped turn, or a historical message loaded via loadMessages,
+  // which — like the OLD flow's own rewrite-selection case — never
+  // reconstructs a selection snapshot after the fact).
+  //
+  // `dependencies.createVersion`/`saveDocument` intentionally reuse
+  // `snapshotBeforeAIInsert`/`persistAcceptedEditContent` (document-store.ts)
+  // rather than `replaceWholeDocumentFromAI`: that function persists AND
+  // triggers a live-editor REMOUNT (via `restoreNonceById`), which would
+  // fight with/discard the in-place ProseMirror transaction
+  // acceptVerifiedEditDraft already dispatched to make Undo work (spec
+  // 20.6's "one Undo undoes the whole AI change" requirement) — see this
+  // file's own header comment / this task's report for the full reasoning.
+  async function acceptEditOperationsDraft(message: AIConversationMessage) {
+    if (!editor || !documentId || message.draft?.kind !== "edit-operations") return;
+    if (applyingDraftsRef.current.has(message.id)) return;
+    const draft = message.draft;
+    const operation = operations.get(message.id);
+    const selectionRange = operation?.selectionSnapshot
+      ? { from: operation.selectionSnapshot.from, to: operation.selectionSnapshot.to }
+      : null;
+    applyingDraftsRef.current.add(message.id);
+    try {
+      await acceptVerifiedEditDraft(
+        editor,
+        {
+          baseDocumentHash: draft.baseDocumentHash,
+          baseSelectionHash: draft.baseSelectionHash,
+          selectionRange,
+          candidate: draft.candidate,
+        },
+        {
+          createVersion: (live) => snapshotBeforeAIInsert(documentId, live),
+          saveDocument: (json) => persistAcceptedEditContent(documentId, json),
+        },
+      );
+      setOperations((current) => {
+        const next = new Map(current);
+        next.delete(message.id);
+        return next;
+      });
+      editor.commands.focus();
+    } catch (error) {
+      setErrorMessageKey(errorKey(error));
+    } finally {
+      applyingDraftsRef.current.delete(message.id);
+    }
+  }
+
+  // A trivial, local-state-only handler: declining a structural draft never
+  // touches the live editor or makes any network call (there is nothing to
+  // roll back — Accept is the only path that ever mutates anything) — it
+  // only clears this message's tracked operation, mirroring how a
+  // successful insertDraft/replaceDraft/acceptEditOperationsDraft above
+  // clears the SAME map entry on their own success path.
+  function rejectEditOperationsDraft(message: AIConversationMessage) {
+    setOperations((current) => {
+      const next = new Map(current);
+      next.delete(message.id);
+      return next;
+    });
+  }
+
   async function renameConversation() {
     if (!documentId || !activeConversation || renamePendingRef.current) return;
     const nextTitle = renameTitle.trim();
@@ -1035,7 +1113,16 @@ export function SmartModePanel({
           {messages.map((message) => <div key={message.id} className={message.role === "user" ? "ml-10" : "mr-4"}>
             {message.role === "user" ? <UserMessage message={message} /> : <div className="rounded-2xl rounded-bl-md bg-muted px-3 py-2 text-sm">{message.content}</div>}
             {message.role === "assistant" && message.draft?.kind === "edit-operations"
-              ? (editor ? <EditOperationsDraftCard editor={editor} draft={message.draft} disabled={state === "submitting"} /> : null)
+              ? (editor ? (
+                  <EditOperationsDraftCard
+                    editor={editor}
+                    message={message}
+                    draft={message.draft}
+                    disabled={state === "submitting"}
+                    onAccept={(value) => void acceptEditOperationsDraft(value)}
+                    onReject={(value) => rejectEditOperationsDraft(value)}
+                  />
+                ) : null)
               : null}
             {message.role === "assistant" && message.draft?.kind !== "edit-operations"
               ? <DraftCard message={message} operation={operations.get(message.id)} disabled={state === "submitting"} onInsert={(value) => void insertDraft(value)} onReplace={(value) => void replaceDraft(value)} />

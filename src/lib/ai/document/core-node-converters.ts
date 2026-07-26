@@ -16,6 +16,32 @@ import { AiSnapshotConversionError } from "./ai-snapshot-errors";
 // targets renames it to "mathBlock"; that renaming is V1-only and must NOT
 // be carried over here. Verified directly against the real v2 source above.
 //
+// Task 24.3 finding: every optional attrs key in the forward ("toSnapshot")
+// direction below must be UNCONDITIONALLY present (falling back to `null`/a
+// concrete default, never simply omitted) to byte-match
+// anvilnote-api/src/modules/ai-conversations/persisted-document-node-mappers.ts's
+// own `mapPersistedNodeToV2` — the two independently-written mappers must
+// produce identical `canonicalJSONStringify` output for
+// `buildEditSnapshot`'s `baseDocumentHash` to agree between this repo (the
+// Accept flow's client-side staleness check) and the API (which computed
+// `draft.baseDocumentHash` from the persisted document at turn time).
+// Confirmed empirically (not just by inspection) by running both mappers
+// over the same input document and diffing their sanitized snapshot output
+// byte-for-byte: the OLD code here used a truthy/typeof-non-empty check
+// (`localRef ? {localRef} : {}`, `refName ? {refName} : {}`, etc.) that
+// OMITTED the key whenever the real editor attr held its own default value
+// (id/refName null, author/source ""), while the API's mapper always
+// forwards the key whenever the source attr is merely `!== undefined` —
+// which is virtually always true, since Tiptap's `getJSON()` always
+// serializes every node's full declared attrs object, defaults included.
+// Every real document containing an un-referenced blockMath (no refName)
+// or a table/blockquote with default styling would previously desync the
+// two hashes, making the Accept flow's staleness check spuriously fail.
+// Confirmed schema-safe: v2's own Zod schemas declare these fields
+// `.nullable()`/`.optional()` (verified directly in
+// anvilnote-ai-writer/src/document/v2/*.ts), and the API's own mapper
+// already emits exactly these null/default values today.
+//
 // localRef/id round-tripping: heading/blockMath both carry a real, global
 // `id` attribute (backfilled by cross-ref.ts's CrossRefTargetIds plugin) —
 // the stable id a crossRef's `targetId` points at. AiHeadingNodeV2/
@@ -129,12 +155,15 @@ export function coreBlockToSnapshot(
     case "paragraph":
       return { type: "paragraph", content: content.map((child) => ctx.inline(child)) };
     case "heading": {
-      const localRef = localRefAttr(values.id);
       return {
         type: "heading",
         attrs: {
           level: Number(values.level) as 1 | 2 | 3,
-          ...(localRef ? { localRef } : {}),
+          // Task 24.3 fix: always present (with a `null` fallback), never
+          // conditionally omitted — see this file's own updated header
+          // comment for why. Applies to every localRef/refName/optional
+          // attrs key touched below for the same reason.
+          localRef: localRefAttr(values.id) ?? null,
         },
         content: content.map((child) => ctx.inline(child)),
       };
@@ -150,9 +179,18 @@ export function coreBlockToSnapshot(
     case "listItem":
       return { type: "listItem", content: content.map((child) => ctx.block(child)) };
     case "blockquote": {
-      const author = typeof values.author === "string" && values.author.length > 0 ? values.author : undefined;
-      const source = typeof values.source === "string" && values.source.length > 0 ? values.source : undefined;
-      const blockquoteAttrs = { ...(author ? { author } : {}), ...(source ? { source } : {}) };
+      // Present whenever the real attr is defined at all (Tiptap always
+      // serializes a declared attr, defaulting author/source to "" when
+      // unset) — matches anvilnote-api's own
+      // persisted-document-node-mappers.ts mapPersistedNodeToV2 gate
+      // exactly (`attrs.author !== undefined`), not a truthy/non-empty
+      // check, which previously dropped the key whenever the value was ""
+      // and desynced this function's own baseDocumentHash output from the
+      // server's (Task 24.3 finding).
+      const blockquoteAttrs = {
+        ...(values.author !== undefined ? { author: values.author } : {}),
+        ...(values.source !== undefined ? { source: values.source } : {}),
+      };
       return {
         type: "blockquote",
         ...(Object.keys(blockquoteAttrs).length ? { attrs: blockquoteAttrs } : {}),
@@ -166,14 +204,12 @@ export function coreBlockToSnapshot(
         content: content.map((child) => ctx.inline(child)),
       };
     case "blockMath": {
-      const localRef = localRefAttr(values.id);
-      const refName = localRefAttr(values.refName);
       return {
         type: "blockMath",
         attrs: {
           latex: String(values.latex ?? ""),
-          ...(refName ? { refName } : {}),
-          ...(localRef ? { localRef } : {}),
+          refName: localRefAttr(values.refName) ?? null,
+          localRef: localRefAttr(values.id) ?? null,
         },
       };
     }

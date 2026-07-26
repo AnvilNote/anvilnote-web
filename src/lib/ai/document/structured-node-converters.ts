@@ -93,19 +93,25 @@ function requiredNumber(value: unknown, field: string): number {
   return value;
 }
 
+// Task 24.3 finding: every field below is now unconditionally present
+// (`null` fallback), matching anvilnote-api's own
+// persisted-document-node-mappers.ts `mapPersistedNodeToV2` exactly — see
+// core-node-converters.ts's header comment for the full rationale (a
+// baseDocumentHash parity bug, confirmed empirically). The OLD code
+// conditionally omitted colwidth/fill/stroke/inset/breakable/verticalAlign
+// whenever a cell used no custom styling — the overwhelmingly common case —
+// which desynced this hash from the server's for nearly every real table.
 function cellAttrsToSnapshot(node: JSONContent): Record<string, unknown> {
   const values = attrsOf(node);
   return {
     colspan: Number(values.colspan ?? 1),
     rowspan: Number(values.rowspan ?? 1),
-    ...(values.colwidth !== undefined && values.colwidth !== null
-      ? { colwidth: values.colwidth as number[] }
-      : {}),
-    ...(typeof values.fill === "string" ? { fill: values.fill } : {}),
-    ...(typeof values.stroke === "string" ? { stroke: values.stroke } : {}),
-    ...(typeof values.inset === "string" ? { inset: values.inset } : {}),
-    ...(typeof values.breakable === "boolean" ? { breakable: values.breakable } : {}),
-    ...(typeof values.verticalAlign === "string" ? { verticalAlign: values.verticalAlign } : {}),
+    colwidth: Array.isArray(values.colwidth) ? (values.colwidth as number[]) : null,
+    fill: typeof values.fill === "string" ? values.fill : null,
+    stroke: typeof values.stroke === "string" ? values.stroke : null,
+    inset: typeof values.inset === "string" ? values.inset : null,
+    breakable: typeof values.breakable === "boolean" ? values.breakable : null,
+    verticalAlign: typeof values.verticalAlign === "string" ? values.verticalAlign : null,
   };
 }
 
@@ -150,7 +156,6 @@ export function structuredNodeToSnapshot(
           "A hidden stashed choice cannot be forwarded to Smart Mode without data loss.",
         );
       }
-      const localRef = localRefAttr(values.id);
       return {
         type: "questionItem",
         attrs: {
@@ -166,7 +171,9 @@ export function structuredNodeToSnapshot(
               ? null
               : requiredNumber(values.writtenHeightCm, "questionItem.writtenHeightCm"),
           multiForceOneColumn: Boolean(values.multiForceOneColumn),
-          ...(localRef ? { localRef } : {}),
+          // Task 24.3 fix: always present with a `null` fallback — see
+          // core-node-converters.ts's header comment.
+          localRef: localRefAttr(values.id) ?? null,
         },
         content: content.map((child) => ctx.block(child)),
       };
@@ -176,27 +183,25 @@ export function structuredNodeToSnapshot(
     case "choiceItem":
       return { type: "choiceItem", content: content.map((child) => ctx.block(child)) };
     case "table": {
-      const localRef = localRefAttr(values.id);
-      const tableAttrs = {
-        ...(typeof values.caption === "string" && values.caption.length > 0
-          ? { caption: values.caption }
-          : {}),
-        ...(values.variant !== undefined ? { variant: values.variant } : {}),
-        ...(values.align !== undefined ? { align: values.align } : {}),
-        ...(localRef ? { localRef } : {}),
-      };
+      // Task 24.3 fix: `attrs` (and every key inside it) is now
+      // unconditionally present, matching the API's own mapper — see
+      // core-node-converters.ts's header comment.
       return {
         type: "table",
-        ...(Object.keys(tableAttrs).length ? { attrs: tableAttrs } : {}),
+        attrs: {
+          caption: typeof values.caption === "string" ? values.caption : "",
+          variant: values.variant !== undefined ? values.variant : "normal",
+          align: values.align !== undefined ? values.align : "center",
+          localRef: localRefAttr(values.id) ?? null,
+        },
         content: content.map((child) => ctx.block(child)),
       };
     }
     case "tableRow":
+      // Task 24.3 fix: `attrs` is now unconditionally present.
       return {
         type: "tableRow",
-        ...(values.rowHeight !== undefined && values.rowHeight !== null
-          ? { attrs: { rowHeight: values.rowHeight } }
-          : {}),
+        attrs: { rowHeight: values.rowHeight ?? null },
         content: content.map((child) => ctx.block(child)),
       };
     case "tableHeader":

@@ -151,14 +151,18 @@ export function visualBlockToSnapshot(
 
   switch (node.type) {
     case "mermaid": {
-      const primaryColor = typeof values.primaryColor === "string" ? values.primaryColor : undefined;
       const width = typeof values.width === "number" ? values.width : undefined;
       return {
         type: "mermaid",
         attrs: {
           source: String(values.source ?? ""),
           theme: typeof values.theme === "string" ? values.theme : "default",
-          ...(primaryColor ? { primaryColor } : {}),
+          // Task 24.3 fix: unconditionally present (`null` fallback) —
+          // matches the API's own mapper; see
+          // core-node-converters.ts's header comment. `width` is left as a
+          // conditional key since BOTH mappers already agree on that gate
+          // (`typeof === "number"`), so no hash-parity bug exists there.
+          primaryColor: typeof values.primaryColor === "string" ? values.primaryColor : null,
           ...(width !== undefined ? { width } : {}),
         },
       };

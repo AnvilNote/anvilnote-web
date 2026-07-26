@@ -149,6 +149,18 @@ type DocumentState = {
     content: JSONContent,
     suggestedTitle?: string | null,
   ) => Promise<AnvilDocument | undefined>;
+  // Task 24.3's Accept-flow persistence step (see
+  // lib/ai/document/editor-operations.ts's `acceptVerifiedEditDraft`,
+  // wired via smart-mode-panel.tsx). Deliberately does NOT bump
+  // `restoreNonceById` the way `replaceWholeDocumentFromAI` does: the
+  // caller has ALREADY dispatched the new content to the live editor via
+  // one in-place ProseMirror transaction (so Undo works) before this runs,
+  // and a remount here would discard that live transaction/its undo
+  // history for no reason. See this method's own implementation comment.
+  persistAcceptedEditContent: (
+    id: string,
+    content: JSONContent,
+  ) => Promise<AnvilDocument | undefined>;
   setMetadataField: (id: string, key: string, value: AnvilMetadataValue) => void;
   setTemplateSettingField: (id: string, key: string, value: AnvilMetadataValue) => void;
   setNumberedHeadings: (id: string, value: boolean) => void;
@@ -556,6 +568,50 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
         saveStateById: { ...state.saveStateById, [id]: "failed" },
       }));
       throw new Error("Failed to save AI document replacement");
+    }
+  },
+
+  // Persists an edit-operations Accept that the caller has ALREADY applied
+  // to the live editor via one in-place transaction (unlike
+  // replaceWholeDocumentFromAI above, which persists first and relies on a
+  // remount to update the editor). Cancel any autosave the live transaction
+  // may have queued, PATCH just the new content in one call, and let
+  // maybeSnapshotVersion's own normal throttled/content-diffed check decide
+  // whether this moment ALSO warrants a periodic snapshot — it will not
+  // fire redundantly here in practice, since acceptVerifiedEditDraft's own
+  // caller already took an explicit checkpoint (via snapshotBeforeAIInsert)
+  // immediately before this runs.
+  persistAcceptedEditContent: async (id, content) => {
+    const current = get().documents.find((document) => document.id === id);
+    if (!current) return undefined;
+
+    const queued = saveTimers.get(id);
+    if (queued) {
+      clearTimeout(queued);
+      saveTimers.delete(id);
+    }
+
+    const replacement = touch(current, { content });
+
+    set((state) => ({
+      saveStateById: { ...state.saveStateById, [id]: "saving" },
+    }));
+
+    try {
+      const saved = await updateDocumentRequest(id, { content: replacement.content });
+      set((state) => ({
+        documents: state.documents.map((document) =>
+          document.id === id ? { ...replacement, updatedAt: saved.updatedAt } : document,
+        ),
+        saveStateById: { ...state.saveStateById, [id]: "saved" },
+      }));
+      maybeSnapshotVersion(replacement);
+      return saved;
+    } catch {
+      set((state) => ({
+        saveStateById: { ...state.saveStateById, [id]: "failed" },
+      }));
+      throw new Error("Failed to save accepted AI edit");
     }
   },
 

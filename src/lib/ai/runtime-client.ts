@@ -15,6 +15,7 @@ import type {
   AiEditOperationV1,
   EditDraftSummaryV1,
 } from "@anvilnote/ai-writer";
+import type { AiEditAcceptCandidateDocument } from "@/lib/ai/document/editor-operations";
 import {
   getBrowserSessionCredential,
   getBrowserSessionCredentialStatus,
@@ -108,13 +109,7 @@ export interface AIKeyProfile {
 // and displays via the OLD `DraftCard`/`AIDocumentPreview` path; nothing on
 // the new-turn path constructs them anymore. Mirrors `anvilnote-api`'s own
 // `AIConversationEditOperationsDraft` (ai-conversation.types.ts) field for
-// field — including `candidate: unknown`, since that field's real shape
-// (a one-element `[{type:"doc",...}]` array of already-rehydrated, real
-// persisted Tiptap JSON — see that repo's own
-// `editSnapshotCandidateToPersistedDocument`) is a concern for whichever
-// task actually consumes it (Task 24.3's Accept flow), not this one:
-// Task 24.2's own `buildOperationPreview` builds every card exclusively
-// from `operations` + the LIVE document, never from `candidate`.
+// field.
 //
 // Judgment call (this file is not in Task 24.2's own plan file list, same
 // kind of call a prior task in this same plan already had to make): the
@@ -123,6 +118,16 @@ export interface AIKeyProfile {
 // to SEE that draft kind come back from the API at all — the real
 // dependency graph requires this type update here even though the plan's
 // file list doesn't name it.
+//
+// `candidate` (Task 24.3): was `unknown` through Task 24.2, since that
+// task's own `buildOperationPreview` builds every card exclusively from
+// `operations` + the LIVE document, never from `candidate`. Now typed
+// concretely as the real wire shape — a one-element `[{type:"doc",...}]`
+// array of already-rehydrated, real persisted Tiptap JSON (confirmed by
+// reading `anvilnote-api`'s own `editSnapshotCandidateToPersistedDocument`)
+// — since the Accept flow (`acceptVerifiedEditDraft`,
+// `lib/ai/document/editor-operations.ts`) needs to read
+// `candidate[0].content` directly to build its replacement transaction.
 export interface AIConversationEditOperationsDraft {
   kind: "edit-operations";
   version: typeof AI_EDIT_OPERATIONS_V1_VERSION;
@@ -130,7 +135,7 @@ export interface AIConversationEditOperationsDraft {
   baseSelectionHash: string | null;
   operations: readonly AiEditOperationV1[];
   summary: EditDraftSummaryV1;
-  candidate: unknown;
+  candidate: readonly [AiEditAcceptCandidateDocument];
 }
 
 export type AIConversationDraft =

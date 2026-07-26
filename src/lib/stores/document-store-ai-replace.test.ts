@@ -95,6 +95,54 @@ describe("AI whole-document replacement", () => {
   });
 });
 
+describe("persistAcceptedEditContent (Task 24.3 accept-flow persistence)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    api.updateDocument.mockResolvedValue({ ...original, updatedAt: "2026-07-19T01:00:00.000Z" });
+    api.createDocumentVersion.mockResolvedValue({ id: "version-1" });
+    useDocumentStore.setState({
+      documents: [structuredClone(original)],
+      saveStateById: { "doc-1": "saved" },
+      restoreNonceById: {},
+    });
+  });
+
+  it("persists only the new content, in one PATCH, without remounting the editor", async () => {
+    const content = { type: "doc", content: [{ type: "heading", attrs: { level: 1 }, content: [{ type: "text", text: "Accepted" }] }] };
+
+    await useDocumentStore.getState().persistAcceptedEditContent("doc-1", content);
+
+    expect(api.updateDocument).toHaveBeenCalledTimes(1);
+    expect(api.updateDocument).toHaveBeenCalledWith("doc-1", { content });
+    const stored = useDocumentStore.getState().getDocument("doc-1")!;
+    expect(stored).toMatchObject({
+      content,
+      title: original.title,
+      metadata: original.metadata,
+      templateSettings: original.templateSettings,
+      templateId: original.templateId,
+      projectId: original.projectId,
+    });
+    // The defining difference from replaceWholeDocumentFromAI: no remount
+    // signal, since the caller already applied this content to the live
+    // editor itself via an in-place transaction.
+    expect(useDocumentStore.getState().restoreNonceById["doc-1"]).toBeUndefined();
+    expect(useDocumentStore.getState().saveStateById["doc-1"]).toBe("saved");
+  });
+
+  it("marks the save as failed and leaves the stored document untouched when the PATCH fails", async () => {
+    api.updateDocument.mockRejectedValueOnce(new Error("offline"));
+    const content = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Unsaved" }] }] };
+
+    await expect(
+      useDocumentStore.getState().persistAcceptedEditContent("doc-1", content),
+    ).rejects.toThrow("Failed to save accepted AI edit");
+
+    expect(useDocumentStore.getState().getDocument("doc-1")).toEqual(original);
+    expect(useDocumentStore.getState().saveStateById["doc-1"]).toBe("failed");
+  });
+});
+
 describe("AI insertion snapshots", () => {
   beforeEach(() => {
     vi.clearAllMocks();
