@@ -78,6 +78,54 @@ describe("editor Tab behavior", () => {
     }
   });
 
+  it("indents and outdents a paragraph inside a callout", () => {
+    const editor = createEditor({
+      type: "doc",
+      content: [
+        {
+          type: "callout",
+          attrs: {
+            kind: "note",
+            title: "Note",
+            titleTouched: false,
+          },
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "Callout paragraph" }],
+            },
+          ],
+        },
+      ],
+    });
+
+    try {
+      const cursor = textPosition(editor, "Callout paragraph");
+      editor.commands.setTextSelection(cursor);
+      const paragraphAttrs = () => {
+        const document = editor.getJSON() as unknown as {
+          content?: Array<{
+            type?: string;
+            content?: Array<{ attrs?: Record<string, unknown> }>;
+          }>;
+        };
+        return document.content?.find((node) => node.type === "callout")?.content?.[0]?.attrs;
+      };
+
+      pressTab(editor);
+
+      expect(paragraphAttrs()).toMatchObject({ indent: 1 });
+      expect(editor.state.selection.from).toBe(cursor);
+
+      pressTab(editor, true);
+
+      expect(paragraphAttrs()).toMatchObject({ indent: 0 });
+      expect(editor.state.selection.from).toBe(cursor);
+    } finally {
+      editor.destroy();
+    }
+  });
+
   it("nests a list item on Tab instead of navigating to the next text block", () => {
     const editor = createEditor({
       type: "doc",

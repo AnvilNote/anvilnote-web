@@ -32,7 +32,18 @@ export const ParagraphIndent = Extension.create({
   addKeyboardShortcuts() {
     const changeIndent = (delta: number) => {
       const { $from, empty } = this.editor.state.selection;
-      if (!empty || $from.depth !== 1 || $from.parent.type.name !== "paragraph") {
+      if (!empty || $from.parent.type.name !== "paragraph") {
+        return false;
+      }
+
+      const ancestorNames = Array.from(
+        { length: Math.max($from.depth - 1, 0) },
+        (_, index) => $from.node(index + 1).type.name,
+      );
+      const isTopLevel = $from.depth === 1;
+      const isCalloutParagraph =
+        ancestorNames.includes("callout") && !ancestorNames.includes("listItem");
+      if (!isTopLevel && !isCalloutParagraph) {
         return false;
       }
 
