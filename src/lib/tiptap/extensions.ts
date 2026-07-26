@@ -38,6 +38,7 @@ import { QuestionBlank } from "@/lib/tiptap/question-blank";
 import { QuestionBlankSuggestion } from "@/components/editor/question-blank-suggestion";
 import { InlineBlank } from "@/lib/tiptap/inline-blank";
 import { TabNavigation } from "@/lib/tiptap/tab-navigation";
+import { ParagraphIndent } from "@/lib/tiptap/paragraph-indent";
 import { AnvilDivider } from "@/lib/tiptap/divider";
 import { captionHasMath, renderCaptionHtml } from "@/lib/tiptap/caption-math";
 import { insertTrackSize, resizeTrackPair } from "@/lib/tiptap/table-geometry";
@@ -1037,6 +1038,7 @@ export function buildExtensions({
         HTMLAttributes: { rel: "noopener noreferrer", target: "_blank" },
       },
     }),
+    ParagraphIndent,
     AnvilDocument,
     AnvilBlockquote,
     AnvilDivider,

@@ -62,6 +62,14 @@ function attrsOf(node: JSONContent): Record<string, unknown> {
   return node.attrs ?? {};
 }
 
+function paragraphIndentAttrs(value: unknown): { attrs?: { indent: number } } {
+  if (value === undefined || value === null || value === 0) return {};
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0 || value > 8) {
+    throw new AiSnapshotConversionError("Paragraph indent must be an integer from 0 to 8.");
+  }
+  return { attrs: { indent: value } };
+}
+
 export interface SnapshotConversionContext {
   block(node: JSONContent): JSONContent;
   inline(node: JSONContent): JSONContent;
@@ -153,7 +161,11 @@ export function coreBlockToSnapshot(
 
   switch (node.type) {
     case "paragraph":
-      return { type: "paragraph", content: content.map((child) => ctx.inline(child)) };
+      return {
+        type: "paragraph",
+        ...paragraphIndentAttrs(values.indent),
+        content: content.map((child) => ctx.inline(child)),
+      };
     case "heading": {
       return {
         type: "heading",
@@ -261,7 +273,11 @@ export function coreBlockFromSnapshot(
 
   switch (node.type) {
     case "paragraph":
-      return { type: "paragraph", content: content.map((child) => ctx.inline(child)) };
+      return {
+        type: "paragraph",
+        ...paragraphIndentAttrs(values.indent),
+        content: content.map((child) => ctx.inline(child)),
+      };
     case "heading":
       return {
         type: "heading",

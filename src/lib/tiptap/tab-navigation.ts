@@ -1,6 +1,6 @@
 import { Extension } from "@tiptap/core";
 import type { Node as PMNode } from "@tiptap/pm/model";
-import { TextSelection } from "@tiptap/pm/state";
+import { TextSelection, type EditorState } from "@tiptap/pm/state";
 
 const MATH_NODE_NAMES = new Set(["inlineMath", "blockMath"]);
 
@@ -70,9 +70,18 @@ function openMathAt(
   );
 }
 
-// Registered AFTER StarterKit in extensions.ts, so its own ListItem
-// Tab/Shift-Tab bindings (sink/lift) are tried first — this only fires as a
-// fallback (not in a list, or already at the list's own boundary).
+function selectionIsInsideListItem(state: EditorState) {
+  const { $from } = state.selection;
+  for (let depth = $from.depth; depth > 0; depth -= 1) {
+    if ($from.node(depth).type.name === "listItem") return true;
+  }
+  return false;
+}
+
+// This is deliberately lower-priority than structural and paragraph keymaps,
+// so ListItem's sink/lift commands and ParagraphIndent get first refusal.
+// Tiptap reverses equal-priority extensions when building ProseMirror plugins,
+// so registration order alone cannot make this a reliable fallback.
 //
 // Without this, pressing Tab inside the editor has no ProseMirror-level
 // handler at all, so it falls through to the browser's native DOM focus
@@ -87,6 +96,7 @@ function openMathAt(
 // to the last one.
 export const TabNavigation = Extension.create<TabNavigationOptions>({
   name: "tabNavigation",
+  priority: 50,
   addOptions() {
     return { onMathClick: () => {} };
   },
@@ -103,6 +113,11 @@ export const TabNavigation = Extension.create<TabNavigationOptions>({
       Tab: () => {
         const { view } = this.editor;
         const { state, dispatch } = view;
+        // ListItem's higher-priority sink command already had first refusal.
+        // If it declined (for example, the first item has no previous sibling
+        // to nest under), consume Tab here instead of turning that structural
+        // boundary into unrelated field navigation.
+        if (selectionIsInsideListItem(state)) return true;
         const target =
           findStopForward(state.doc, state.selection.to) ?? findStopForward(state.doc, 0);
         if (!target) return false;
@@ -119,6 +134,7 @@ export const TabNavigation = Extension.create<TabNavigationOptions>({
       "Shift-Tab": () => {
         const { view } = this.editor;
         const { state, dispatch } = view;
+        if (selectionIsInsideListItem(state)) return true;
         const target =
           findStopBackward(state.doc, state.selection.from) ??
           findStopBackward(state.doc, state.doc.content.size);

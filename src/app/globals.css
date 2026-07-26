@@ -1535,6 +1535,17 @@ body.anvil-resize-column * {
   min-height: 1.25rem;
 }
 
+/* Tab/Shift-Tab changes a top-level paragraph's persisted indent level.
+   Lists keep their own structural nesting commands instead. */
+.ProseMirror > p[data-indent="1"] { margin-inline-start: 2em; }
+.ProseMirror > p[data-indent="2"] { margin-inline-start: 4em; }
+.ProseMirror > p[data-indent="3"] { margin-inline-start: 6em; }
+.ProseMirror > p[data-indent="4"] { margin-inline-start: 8em; }
+.ProseMirror > p[data-indent="5"] { margin-inline-start: 10em; }
+.ProseMirror > p[data-indent="6"] { margin-inline-start: 12em; }
+.ProseMirror > p[data-indent="7"] { margin-inline-start: 14em; }
+.ProseMirror > p[data-indent="8"] { margin-inline-start: 16em; }
+
 .ProseMirror .selectedCell::after {
   position: absolute;
   inset: 0;

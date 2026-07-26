@@ -35,6 +35,7 @@ const richDocument: JSONContent = {
     },
     {
       type: "paragraph",
+      attrs: { indent: 2 },
       content: [
         { type: "text", text: "Visit " },
         {
@@ -570,6 +571,7 @@ const richDocumentV2: JSONContent = {
     },
     {
       type: "paragraph",
+      attrs: { indent: 2 },
       content: [
         { type: "text", text: "Visit " },
         {

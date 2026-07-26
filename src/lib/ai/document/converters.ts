@@ -58,6 +58,14 @@ function optionalString(value: unknown): string | null | undefined {
   return typeof value === "string" ? value : value === null ? null : undefined;
 }
 
+function paragraphIndent(node: JSONContent): number {
+  const value = attrs(node).indent ?? 0;
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0 || value > 8) {
+    throw new UnsupportedAIContentError(["paragraph.indent"]);
+  }
+  return value;
+}
+
 function calloutKind(value: unknown): AnvilNoteCalloutKindV1 {
   if (
     typeof value === "string" &&
@@ -247,8 +255,14 @@ function block(
     throw new UnsupportedAIContentError([node.type ?? "unknown"]);
   }
   switch (node.type) {
-    case "paragraph":
-      return { type: "paragraph", content: content.map((child) => inline(child, registry)) };
+    case "paragraph": {
+      const indent = paragraphIndent(node);
+      return {
+        type: "paragraph",
+        ...(indent > 0 ? { attrs: { indent } } : {}),
+        content: content.map((child) => inline(child, registry)),
+      };
+    }
     case "heading": {
       const values = attrs(node);
       return {
@@ -431,7 +445,11 @@ function tiptapInline(node: AnvilNoteInlineNodeV1): JSONContent {
 function tiptapBlock(node: AnvilNoteBlockNodeV1): JSONContent {
   switch (node.type) {
     case "paragraph":
-      return { type: "paragraph", content: node.content.map(tiptapInline) };
+      return {
+        type: "paragraph",
+        ...(node.attrs?.indent ? { attrs: { indent: node.attrs.indent } } : {}),
+        content: node.content.map(tiptapInline),
+      };
     case "heading":
       return { type: "heading", attrs: { ...node.attrs }, content: node.content.map(tiptapInline) };
     case "bulletList":
