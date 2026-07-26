@@ -187,6 +187,14 @@
       "delete": "Delete",
       "save": "Save"
     },
+    "edits": {
+      "errors": {
+        "invalid_edit_operation": "The AI edit could not be safely applied. Regenerate it.",
+        "invalid_reference": "The AI edit referenced content that is no longer available. Regenerate it.",
+        "unsupported_image_edit": "Smart Mode cannot directly add, remove, move, or change images.",
+        "request_too_large": "The AI edit is too large to apply safely. Shorten the request and try again."
+      }
+    },
     "errors": {
       "invalid_api_key": "The OpenAI API key is invalid.",
       "permission_denied": "The API key does not have permission to use this model.",

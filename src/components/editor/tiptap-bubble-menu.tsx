@@ -38,7 +38,12 @@ import {
   SUPPORTED_INLINE_MARKS,
 } from "@/lib/ai/document/inline-review";
 import { ProtectedSelectionRegistry } from "@/lib/ai/document/protected-selection";
-import { createSelectionSnapshot, hasSelectionConflict, type SelectionSnapshot } from "@/lib/ai/document/selection-snapshot";
+import {
+  createSelectionSnapshot,
+  hasSelectionConflict,
+  tiptapSelectionToEditSnapshot,
+  type SelectionSnapshot,
+} from "@/lib/ai/document/selection-snapshot";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import { useSmartModeUIStore } from "@/lib/stores/smart-mode-ui-store";
 
@@ -270,6 +275,7 @@ export function TiptapBubbleMenu({
         document: editor.getJSON(),
         selectedContent: content,
       });
+      const { baseSelectionHash } = tiptapSelectionToEditSnapshot(editor, { from, to });
       const completed = await aiClient.executeConversationTurn(documentId, {
         requestId,
         ...(activeConversationId ? { conversationId: activeConversationId } : {}),
@@ -279,6 +285,7 @@ export function TiptapBubbleMenu({
           locale,
           writingStyle: settings.aiWritingStyle,
           selectedContent,
+          baseSelectionHash,
         },
         options: { humanizerEnabled: settings.aiHumanizerEnabled },
       });

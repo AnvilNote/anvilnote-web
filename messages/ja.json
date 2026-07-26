@@ -1180,6 +1180,14 @@
       "delete": "削除",
       "save": "保存"
     },
+    "edits": {
+      "errors": {
+        "invalid_edit_operation": "AI の編集を安全に適用できませんでした。再生成してください。",
+        "invalid_reference": "AI の編集が存在しない内容を参照しています。再生成してください。",
+        "unsupported_image_edit": "スマートモードでは画像を直接追加、削除、移動、変更できません。",
+        "request_too_large": "AI の編集が大きすぎて安全に適用できません。指示を短くして再試行してください。"
+      }
+    },
     "errors": {
       "invalid_api_key": "OpenAI APIキーが無効です。",
       "permission_denied": "このAPIキーには、このモデルを使用する権限がありません。",

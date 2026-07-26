@@ -2,6 +2,7 @@ import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { tiptapSelectionToEditSnapshot } from "@/lib/ai/document/selection-snapshot";
 import { useSmartModeUIStore } from "@/lib/stores/smart-mode-ui-store";
 
 const client = vi.hoisted(() => ({ executeConversationTurn: vi.fn() }));
@@ -150,6 +151,34 @@ describe("TiptapBubbleMenu inline Smart Mode", () => {
     expect(screen.queryByText("errors.ai.errors.provider_error")).not.toBeInTheDocument();
     expect(useSmartModeUIStore.getState().open).toBe(false);
     expect(screen.getByRole("textbox")).toBeInTheDocument();
+    editor.destroy();
+  });
+
+  it("submits the canonical V2 selection hash with inline selected content", async () => {
+    client.executeConversationTurn.mockImplementation(() => new Promise(() => {}));
+    const editor = createEditor();
+    const range = { from: 1, to: 9 };
+    const expectedSelectionHash =
+      tiptapSelectionToEditSnapshot(editor, range).baseSelectionHash;
+    render(
+      <TiptapBubbleMenu
+        editor={editor}
+        documentId="doc-1"
+        onInsertMath={vi.fn()}
+        onEditLink={vi.fn()}
+        onEditColor={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "smart.inline" }));
+    fireEvent.change(screen.getByRole("textbox"), {
+      target: { value: "Make this longer" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "smart.rewrite" }));
+
+    await waitFor(() => expect(client.executeConversationTurn).toHaveBeenCalledTimes(1));
+    const request = client.executeConversationTurn.mock.calls[0]?.[1];
+    expect(request.context.selectedContent).toBeDefined();
+    expect(request.context.baseSelectionHash).toBe(expectedSelectionHash);
     editor.destroy();
   });
 

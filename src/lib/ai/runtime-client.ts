@@ -205,7 +205,9 @@ export interface AIConversationTurnRequest {
     | "writingStyle"
     | "selectedContent"
     | "attachments"
-  >;
+  > & {
+    baseSelectionHash?: string;
+  };
   options: AIWriterRequest["options"];
   attachmentIds?: string[];
 }

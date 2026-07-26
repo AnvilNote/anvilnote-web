@@ -64,6 +64,7 @@ import {
   createSelectionSnapshot,
   hasSelectionConflict,
   stableDocumentHash,
+  tiptapSelectionToEditSnapshot,
   type SelectionSnapshot,
 } from "@/lib/ai/document/selection-snapshot";
 import { useDocumentStore } from "@/lib/stores/document-store";
@@ -553,6 +554,7 @@ export function SmartModePanel({
     const currentSelection = selectedContent(editor);
     let registry: ProtectedSelectionRegistry | null = null;
     let selectedFragment: AnvilNoteDocumentFragmentV1 | undefined;
+    let baseSelectionHash: string | undefined;
     let selectionSnapshot: SelectionSnapshot | null = null;
     if (currentSelection) {
       registry = ProtectedSelectionRegistry.create();
@@ -565,6 +567,10 @@ export function SmartModePanel({
         document: editor.getJSON(),
         selectedContent: currentSelection.content,
       });
+      baseSelectionHash = tiptapSelectionToEditSnapshot(editor, {
+        from: currentSelection.from,
+        to: currentSelection.to,
+      }).baseSelectionHash;
     }
     const documentHash = stableDocumentHash(editor.getJSON());
     return {
@@ -577,6 +583,7 @@ export function SmartModePanel({
           locale,
           writingStyle: settings.aiWritingStyle,
           ...(selectedFragment ? { selectedContent: selectedFragment } : {}),
+          ...(baseSelectionHash ? { baseSelectionHash } : {}),
           ...(readyAttachments.length ? { attachments: readyAttachments } : {}),
         },
         options: { humanizerEnabled: settings.aiHumanizerEnabled },

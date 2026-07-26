@@ -187,6 +187,14 @@
       "delete": "刪除",
       "save": "儲存"
     },
+    "edits": {
+      "errors": {
+        "invalid_edit_operation": "無法安全套用 AI 編輯，請重新產生。",
+        "invalid_reference": "AI 編輯參照的內容已不存在，請重新產生。",
+        "unsupported_image_edit": "智慧模式無法直接新增、移除、移動或修改圖片。",
+        "request_too_large": "AI 編輯內容過大，無法安全套用。請縮短要求後再試。"
+      }
+    },
     "errors": {
       "invalid_api_key": "OpenAI API 金鑰無效。",
       "permission_denied": "此 API 金鑰沒有使用所選模型的權限。",

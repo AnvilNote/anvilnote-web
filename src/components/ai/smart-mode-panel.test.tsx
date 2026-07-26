@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildEditSnapshot } from "@anvilnote/ai-writer";
 import { Sheet } from "@/components/ui/sheet";
 import { tiptapDocumentToAiSnapshotSource } from "@/lib/ai/document/converters";
+import { tiptapSelectionToEditSnapshot } from "@/lib/ai/document/selection-snapshot";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useEditorBridge } from "@/lib/stores/editor-bridge";
 import { useSmartModeUIStore } from "@/lib/stores/smart-mode-ui-store";
@@ -106,6 +107,32 @@ describe("SmartModePanel", () => {
     expect(await screen.findByRole("button", { name: "smart.generate" })).toBeInTheDocument();
     expect(screen.queryByText(/Compose|Rewrite mode/)).not.toBeInTheDocument();
     expect(screen.queryByRole("switch", { name: "settings.humanizer" })).not.toBeInTheDocument();
+    editor.destroy();
+  });
+
+  it("submits the canonical V2 selection hash with selected content", async () => {
+    const editor = createEditor();
+    const range = { from: 1, to: 9 };
+    editor.commands.setTextSelection(range);
+    const expectedSelectionHash =
+      tiptapSelectionToEditSnapshot(editor, range).baseSelectionHash;
+    useEditorBridge.setState({ editor, documentId: "doc-1" });
+    client.getCredentialStatus.mockResolvedValue({
+      configured: true,
+      lastFour: "1234",
+      storage: "os-secure-storage",
+    });
+    client.executeConversationTurn.mockImplementation(() => new Promise(() => {}));
+    render(<Sheet open><SmartModePanel open /></Sheet>);
+
+    const composer = await screen.findByRole("textbox");
+    fireEvent.change(composer, { target: { value: "Make this longer" } });
+    fireEvent.click(screen.getByRole("button", { name: "smart.generate" }));
+
+    await waitFor(() => expect(client.executeConversationTurn).toHaveBeenCalledTimes(1));
+    const request = client.executeConversationTurn.mock.calls[0]?.[1];
+    expect(request.context.selectedContent).toBeDefined();
+    expect(request.context.baseSelectionHash).toBe(expectedSelectionHash);
     editor.destroy();
   });
 
