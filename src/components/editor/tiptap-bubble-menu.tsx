@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ComponentType } from "react";
 import type { Editor, JSONContent } from "@tiptap/core";
 import { BubbleMenu } from "@tiptap/react/menus";
 import { CellSelection } from "@tiptap/pm/tables";
+import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { useEditorState } from "@tiptap/react";
 import { useLocale, useTranslations } from "next-intl";
 import { Bot, Check, Code, Bold, Italic, Link2, Loader2, Send, Sigma, Strikethrough, X } from "lucide-react";
@@ -91,10 +92,61 @@ function inlineReplaceTextFromOperations(
   return { text: op.text, marks };
 }
 
+function canonicalJSON(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJSON).join(",")}]`;
+  if (value && typeof value === "object") {
+    return `{${Object.entries(value)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, nested]) => `${JSON.stringify(key)}:${canonicalJSON(nested)}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function previewTextFromNode(node: JSONContent): string {
+  if (node.type === "text") return node.text ?? "";
+  if (node.type === "hardBreak") return "\n";
+  if (node.type === "inlineMath" || node.type === "blockMath") {
+    return typeof node.attrs?.latex === "string" ? node.attrs.latex : "";
+  }
+  return (node.content ?? []).map(previewTextFromNode).join("");
+}
+
+function changedCandidateText(
+  liveContent: readonly JSONContent[],
+  candidateContent: readonly JSONContent[],
+): string {
+  let prefix = 0;
+  while (
+    prefix < liveContent.length
+    && prefix < candidateContent.length
+    && canonicalJSON(liveContent[prefix]) === canonicalJSON(candidateContent[prefix])
+  ) {
+    prefix += 1;
+  }
+
+  let suffix = 0;
+  while (
+    suffix < liveContent.length - prefix
+    && suffix < candidateContent.length - prefix
+    && canonicalJSON(liveContent[liveContent.length - 1 - suffix])
+      === canonicalJSON(candidateContent[candidateContent.length - 1 - suffix])
+  ) {
+    suffix += 1;
+  }
+
+  return candidateContent
+    .slice(prefix, suffix ? candidateContent.length - suffix : undefined)
+    .map(previewTextFromNode)
+    .join("\n");
+}
+
 /**
  * An edit-operations draft carries the full verified candidate document.
- * Inline review only needs the candidate text that replaced the original
- * selection, so remove the unchanged text before and after that range.
+ * Prefer removing unchanged text around the original selection. If the
+ * provider also rewrote adjacent selected-document blocks, fall back to the
+ * candidate's structurally changed top-level range so the person can still
+ * review the complete proposed text inline.
  */
 function inlineReplacementTextFromCandidate(
   editor: Editor,
@@ -104,26 +156,30 @@ function inlineReplacementTextFromCandidate(
   const candidate = draft.candidate[0];
   if (!candidate) return null;
   try {
-    const candidateDocument = editor.schema.nodeFromJSON(candidate);
     const liveDocument = editor.state.doc;
-    const prefix = liveDocument.textBetween(0, range.from, "\n");
-    const suffix = liveDocument.textBetween(range.to, liveDocument.content.size, "\n");
-    const candidateText = candidateDocument.textBetween(
-      0,
-      candidateDocument.content.size,
+    const leafText = (node: ProseMirrorNode) =>
+      node.type.name === "inlineMath" || node.type.name === "blockMath"
+        ? String(node.attrs.latex ?? "")
+        : "";
+    const prefix = liveDocument.textBetween(0, range.from, "\n", leafText);
+    const suffix = liveDocument.textBetween(
+      range.to,
+      liveDocument.content.size,
       "\n",
+      leafText,
     );
+    const candidateText = candidate.content.map(previewTextFromNode).join("\n");
     if (
-      !candidateText.startsWith(prefix)
-      || !candidateText.endsWith(suffix)
-      || candidateText.length < prefix.length + suffix.length
+      candidateText.startsWith(prefix)
+      && candidateText.endsWith(suffix)
+      && candidateText.length >= prefix.length + suffix.length
     ) {
-      return null;
+      return candidateText.slice(
+        prefix.length,
+        suffix.length ? candidateText.length - suffix.length : undefined,
+      );
     }
-    return candidateText.slice(
-      prefix.length,
-      suffix.length ? candidateText.length - suffix.length : undefined,
-    );
+    return changedCandidateText(editor.getJSON().content ?? [], candidate.content);
   } catch {
     return null;
   }

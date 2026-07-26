@@ -513,6 +513,111 @@ describe("TiptapBubbleMenu inline Smart Mode", () => {
     editor.destroy();
   });
 
+  it("previews a real rich candidate even when the provider changed every selected-document block", async () => {
+    const editor = new Editor({
+      extensions: [StarterKit],
+      content: {
+        type: "doc",
+        content: [
+          { type: "heading", attrs: { level: 1 }, content: [{ type: "text", text: "講義從此開始" }] },
+          { type: "paragraph", content: [{ type: "text", text: "在這裡開始撰寫筆記。" }] },
+          { type: "paragraph" },
+        ],
+      },
+    });
+    const range = { from: 1, to: 1 + "講義從此開始".length };
+    editor.commands.setTextSelection(range);
+    document.body.appendChild(editor.view.dom);
+    const before = editor.getJSON();
+    const candidate = {
+      type: "doc" as const,
+      content: [
+        { type: "heading", attrs: { level: 1 }, content: [{ type: "text", text: "微分規則與例題" }] },
+        {
+          type: "paragraph",
+          content: [
+            { type: "text", text: "冪次規則為 " },
+            { type: "inlineMath", attrs: { latex: "\\frac{d}{dx}x^n=nx^{n-1}" } },
+            { type: "text", text: "。" },
+          ],
+        },
+        { type: "paragraph", content: [{ type: "text", text: "乘法、商法與連鎖規則例題。" }] },
+      ],
+    };
+    const baseDocumentHash =
+      buildEditSnapshot(tiptapDocumentToAiSnapshotSource(before)).baseDocumentHash;
+    const baseSelectionHash =
+      tiptapSelectionToEditSnapshot(editor, range).baseSelectionHash;
+    client.executeConversationTurn.mockResolvedValue({
+      conversation: {
+        id: "conversation-rich",
+        documentId: "doc-1",
+        title: "微分",
+        lastMessageAt: "2026-07-26T09:41:29.000Z",
+        createdAt: "2026-07-26T09:41:29.000Z",
+        updatedAt: "2026-07-26T09:41:29.000Z",
+      },
+      messages: [
+        {
+          id: "message-user-rich",
+          conversationId: "conversation-rich",
+          sequence: 1,
+          role: "user",
+          intent: "rewrite-selection",
+          content: "講解微分規則，要有例子",
+          createdAt: "2026-07-26T09:41:29.000Z",
+        },
+        {
+          id: "message-assistant-rich",
+          conversationId: "conversation-rich",
+          sequence: 2,
+          role: "assistant",
+          intent: "rewrite-selection",
+          content: "Applied 3 edits.",
+          createdAt: "2026-07-26T09:41:29.000Z",
+          draft: {
+            kind: "edit-operations",
+            version: "anvilnote.ai.edit-operations.v1",
+            baseDocumentHash,
+            baseSelectionHash,
+            operations: [
+              { type: "replaceText", targetRef: "n2", text: "微分規則與例題", marks: [] },
+              { type: "replaceNode", targetRef: "n3", node: candidate.content[1] },
+              { type: "replaceNode", targetRef: "n5", node: candidate.content[2] },
+            ],
+            summary: { operationCount: 3, addedNodeCount: 5, totalCharacterCount: 38 },
+            candidate: [candidate],
+          },
+        },
+      ],
+    });
+
+    render(
+      <TiptapBubbleMenu
+        editor={editor}
+        documentId="doc-1"
+        onInsertMath={vi.fn()}
+        onEditLink={vi.fn()}
+        onEditColor={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "smart.inline" }));
+    fireEvent.change(screen.getByPlaceholderText("smart.inlinePlaceholder"), {
+      target: { value: "講解微分規則，要有例子" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "smart.rewrite" }));
+
+    expect(await screen.findByRole("button", { name: "smart.accept" })).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(
+      editor.view.dom.querySelector(".anvil-ai-inline-replacement")?.textContent,
+    ).toContain("微分規則與例題");
+    expect(
+      editor.view.dom.querySelector(".anvil-ai-inline-replacement")?.textContent,
+    ).toContain("\\frac{d}{dx}x^n=nx^{n-1}");
+    editor.destroy();
+  });
+
   it("applies a multi-paragraph reply when the whole paragraph was selected", async () => {
     client.executeConversationTurn.mockResolvedValue({
       conversation: {
