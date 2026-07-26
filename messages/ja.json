@@ -256,7 +256,13 @@
       "mermaid": "Mermaid 図",
       "functionPlot": "関数グラフ",
       "statsChart": "統計グラフ",
-      "questionBlock": "問題ブロック"
+      "questionBlock": "問題ブロック",
+      "pageBreak": "改ページ",
+      "pageBreakDelete": "改ページを削除",
+      "pageBreakForced": "強制改ページ",
+      "pageBreakForcedHint": "必ず次のページから開始します",
+      "pageBreakWeak": "スマート改ページ",
+      "pageBreakWeakHint": "ページ先頭では改ページを重ねません"
     },
     "slash": {
       "text": "テキスト",

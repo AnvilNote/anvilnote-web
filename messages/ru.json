@@ -256,7 +256,13 @@
       "mermaid": "Диаграмма Mermaid",
       "functionPlot": "График функции",
       "statsChart": "Статистическая диаграмма",
-      "questionBlock": "Блок вопроса"
+      "questionBlock": "Блок вопроса",
+      "pageBreak": "Разрыв страницы",
+      "pageBreakDelete": "Удалить разрыв страницы",
+      "pageBreakForced": "Принудительный разрыв",
+      "pageBreakForcedHint": "Всегда начинать со следующей страницы",
+      "pageBreakWeak": "Умный разрыв",
+      "pageBreakWeakHint": "Не добавлять разрыв в начале страницы"
     },
     "slash": {
       "text": "Текст",

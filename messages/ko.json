@@ -256,7 +256,13 @@
       "mermaid": "Mermaid 다이어그램",
       "functionPlot": "함수 그래프",
       "statsChart": "통계 차트",
-      "questionBlock": "문제 블록"
+      "questionBlock": "문제 블록",
+      "pageBreak": "페이지 나누기",
+      "pageBreakDelete": "페이지 나누기 삭제",
+      "pageBreakForced": "강제 페이지 나누기",
+      "pageBreakForcedHint": "항상 다음 페이지에서 시작합니다",
+      "pageBreakWeak": "스마트 페이지 나누기",
+      "pageBreakWeakHint": "페이지 맨 위에서는 다시 나누지 않습니다"
     },
     "slash": {
       "text": "텍스트",

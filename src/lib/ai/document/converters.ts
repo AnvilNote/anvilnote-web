@@ -393,6 +393,11 @@ function block(
             }
           : {}),
       };
+    case "pageBreak":
+      return {
+        type: "pageBreak",
+        attrs: { weak: attrs(node).weak === true },
+      };
     default:
       throw new UnsupportedAIContentError([node.type ?? "unknown"]);
   }
@@ -495,6 +500,8 @@ function tiptapBlock(node: AnvilNoteBlockNodeV1): JSONContent {
       return { type: node.type, attrs: { ...node.attrs }, content: node.content.map(tiptapBlock) };
     case "horizontalRule":
       return { type: "horizontalRule", ...(node.attrs ? { attrs: { ...node.attrs } } : {}) };
+    case "pageBreak":
+      return { type: "pageBreak", attrs: { weak: node.attrs.weak } };
   }
 }
 

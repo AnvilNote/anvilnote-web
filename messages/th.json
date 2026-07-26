@@ -256,7 +256,13 @@
       "mermaid": "แผนภาพ Mermaid",
       "functionPlot": "กราฟฟังก์ชัน",
       "statsChart": "แผนภูมิสถิติ",
-      "questionBlock": "บล็อกคำถาม"
+      "questionBlock": "บล็อกคำถาม",
+      "pageBreak": "ตัวแบ่งหน้า",
+      "pageBreakDelete": "ลบตัวแบ่งหน้า",
+      "pageBreakForced": "บังคับแบ่งหน้า",
+      "pageBreakForcedHint": "เริ่มที่หน้าถัดไปเสมอ",
+      "pageBreakWeak": "แบ่งหน้าอัจฉริยะ",
+      "pageBreakWeakHint": "ไม่แบ่งซ้ำเมื่ออยู่ต้นหน้าแล้ว"
     },
     "slash": {
       "text": "ข้อความ",

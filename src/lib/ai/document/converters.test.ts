@@ -98,6 +98,8 @@ const richDocument: JSONContent = {
       ],
     },
     { type: "horizontalRule", attrs: { thicknessPt: 1.5, lineStyle: "dashed" } },
+    { type: "pageBreak", attrs: { weak: false } },
+    { type: "pageBreak", attrs: { weak: true } },
   ],
 };
 
@@ -621,6 +623,8 @@ const richDocumentV2: JSONContent = {
     },
     { type: "blockMath", attrs: { latex: "E=mc^2", id: "eq-1", equationNumber: "1", refName: "energy" } },
     { type: "horizontalRule", attrs: { thicknessPt: 1.5, lineStyle: "dashed" } },
+    { type: "pageBreak", attrs: { weak: false } },
+    { type: "pageBreak", attrs: { weak: true } },
     {
       type: "table",
       attrs: { id: "table-1", caption: "Values", variant: "three-line", align: "center" },

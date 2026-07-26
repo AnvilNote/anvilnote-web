@@ -235,6 +235,11 @@ export function coreBlockToSnapshot(
         ...(Object.keys(hrAttrs).length ? { attrs: hrAttrs } : {}),
       };
     }
+    case "pageBreak":
+      return {
+        type: "pageBreak",
+        attrs: { weak: values.weak === true },
+      };
     default:
       return undefined;
   }
@@ -332,6 +337,11 @@ export function coreBlockFromSnapshot(
           thicknessPt: typeof values.thicknessPt === "number" ? values.thicknessPt : 0.5,
           lineStyle: typeof values.lineStyle === "string" ? values.lineStyle : "solid",
         },
+      };
+    case "pageBreak":
+      return {
+        type: "pageBreak",
+        attrs: { weak: values.weak === true },
       };
     default:
       return undefined;

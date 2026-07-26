@@ -507,7 +507,13 @@
       "mermaid": "Mermaid diagram",
       "functionPlot": "Function plot",
       "statsChart": "Stats chart",
-      "questionBlock": "Question block"
+      "questionBlock": "Question block",
+      "pageBreak": "Page break",
+      "pageBreakDelete": "Delete page break",
+      "pageBreakForced": "Forced page break",
+      "pageBreakForcedHint": "Always start on the next page",
+      "pageBreakWeak": "Smart page break",
+      "pageBreakWeakHint": "Avoid another break when already at the top"
     },
     "slash": {
       "text": "Text",

@@ -507,7 +507,13 @@
       "mermaid": "Mermaid 圖表",
       "functionPlot": "函數圖",
       "statsChart": "統計圖",
-      "questionBlock": "問題方塊"
+      "questionBlock": "問題方塊",
+      "pageBreak": "分頁",
+      "pageBreakDelete": "刪除分頁",
+      "pageBreakForced": "強制分頁",
+      "pageBreakForcedHint": "一律從下一頁開始",
+      "pageBreakWeak": "智慧分頁",
+      "pageBreakWeakHint": "已在頁首時不重複分頁"
     },
     "slash": {
       "text": "內文",

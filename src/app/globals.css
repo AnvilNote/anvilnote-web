@@ -160,7 +160,13 @@
    margin so the text stays flush with the title; it fades in on hover. */
 .anvil-drag-handle {
   opacity: 0;
-  transition: opacity 0.12s ease;
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+}
+
+.anvil-drag-handle--list {
+  transform: translateX(-1rem);
 }
 
 .anvil-editor:hover .anvil-drag-handle {
@@ -1214,6 +1220,57 @@
 .ProseMirror li[data-list-marker]::marker {
   content: attr(data-list-marker) " ";
   color: var(--foreground);
+}
+
+.anvil-page-break {
+  display: flex;
+  height: 1.5rem;
+  align-items: center;
+  margin: 1rem 0;
+  cursor: default;
+}
+
+.anvil-page-break__line {
+  min-width: 0;
+  flex: 1;
+  border-top: 1pt solid #b8b8b8;
+  transition: border-color 0.12s ease;
+}
+
+.anvil-page-break.is-selected .anvil-page-break__line {
+  border-color: var(--primary);
+}
+
+.anvil-page-break__delete {
+  display: inline-flex;
+  width: 0;
+  height: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0.375rem;
+  color: var(--muted-foreground);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    width 0.12s ease,
+    margin-left 0.12s ease,
+    color 0.12s ease,
+    background-color 0.12s ease,
+    opacity 0.12s ease;
+}
+
+.anvil-page-break:hover .anvil-page-break__delete,
+.anvil-page-break:focus-within .anvil-page-break__delete {
+  width: 1.5rem;
+  margin-left: 0.5rem;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.anvil-page-break__delete:hover {
+  color: var(--destructive);
+  background: color-mix(in oklab, var(--destructive) 10%, transparent);
 }
 
 .ProseMirror a {

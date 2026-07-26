@@ -38,6 +38,30 @@ function buildTestEditor() {
 }
 
 describe("production editor extensions", () => {
+  it("stores strong and weak page breaks as atomic document nodes", () => {
+    const editor = buildTestEditor();
+    try {
+      editor.commands.setContent({
+        type: "doc",
+        content: [
+          { type: "pageBreak", attrs: { weak: false } },
+          { type: "pageBreak", attrs: { weak: true } },
+        ],
+      });
+
+      expect(editor.getJSON()).toEqual({
+        type: "doc",
+        content: [
+          { type: "pageBreak", attrs: { weak: false } },
+          { type: "pageBreak", attrs: { weak: true } },
+          { type: "paragraph", attrs: { indent: 0 } },
+        ],
+      });
+    } finally {
+      editor.destroy();
+    }
+  });
+
   it("installs the inline AI decoration plugin when the editor is created", () => {
     const extensions = buildExtensions({
       placeholder: "Write",

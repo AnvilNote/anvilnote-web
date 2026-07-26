@@ -56,6 +56,7 @@ import { pickAndInsertImage } from "@/lib/tiptap/image";
 import { insertCallout } from "@/lib/tiptap/callout";
 import { insertQuestion } from "@/lib/tiptap/question";
 import { QuestionKindMenu } from "@/components/editor/question-kind-menu";
+import { PageBreakMenu } from "@/components/editor/page-break-menu";
 import { insertMermaid } from "@/lib/tiptap/mermaid";
 import { insertFunctionPlot } from "@/lib/tiptap/function-plot";
 import { insertStatsChart } from "@/lib/tiptap/stats-chart";
@@ -473,6 +474,16 @@ export function TiptapToolbar({
           icon={ImagePlus}
           label={t("image")}
           onClick={() => pickAndInsertImage(editor, onImageError)}
+        />
+        <PageBreakMenu
+          editor={editor}
+          labels={{
+            trigger: t("pageBreak"),
+            forced: t("pageBreakForced"),
+            forcedHint: t("pageBreakForcedHint"),
+            weak: t("pageBreakWeak"),
+            weakHint: t("pageBreakWeakHint"),
+          }}
         />
       </div>
 

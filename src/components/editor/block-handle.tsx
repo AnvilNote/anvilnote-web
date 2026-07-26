@@ -1,30 +1,38 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import type { Editor } from "@tiptap/core";
 import type { Node as PMNode } from "@tiptap/pm/model";
 import { DragHandle } from "@tiptap/extension-drag-handle-react";
 import { useTranslations } from "next-intl";
 import { GripVertical } from "lucide-react";
 
+const LIST_ITEM_NODE_TYPES = new Set(["listItem", "taskItem"]);
+
 export function BlockHandle({ editor }: { editor: Editor }) {
   const t = useTranslations("editor.block");
+  const [isListItem, setIsListItem] = useState(false);
 
   // onNodeChange must stay referentially stable — DragHandle re-registers
   // its ProseMirror plugin whenever this prop's identity changes, and a
   // plugin re-registration resets every other plugin, tearing down an open
-  // "/" suggestion popup. It's a no-op now that there's no per-node state
-  // to track (the click-to-delete/color-change menu was removed — it fought
-  // with native drag gesture detection on the same button, since Radix's
-  // trigger has to react on pointerdown, before the browser can tell a
-  // click apart from the start of a drag), but the empty-and-stable
-  // callback is still required by the same constraint.
-  const handleNodeChange = useCallback((_data: { node: PMNode | null; pos: number }) => {}, []);
+  // "/" suggestion popup. State is limited to the list-specific horizontal
+  // offset; the callback identity itself never changes.
+  const handleNodeChange = useCallback(
+    ({ node }: { node: PMNode | null; pos: number }) => {
+      const nextIsListItem =
+        node !== null && LIST_ITEM_NODE_TYPES.has(node.type.name);
+      setIsListItem((current) =>
+        current === nextIsListItem ? current : nextIsListItem,
+      );
+    },
+    [],
+  );
 
   return (
     <DragHandle
       editor={editor}
-      className="anvil-drag-handle"
+      className={`anvil-drag-handle${isListItem ? " anvil-drag-handle--list" : ""}`}
       onNodeChange={handleNodeChange}
       // nested.enabled: true — NOT the extension's own default. Read the
       // extension's source directly to settle this (two contradictory doc
