@@ -192,7 +192,8 @@
         "invalid_edit_operation": "The AI edit could not be safely applied. Regenerate it.",
         "invalid_reference": "The AI edit referenced content that is no longer available. Regenerate it.",
         "unsupported_image_edit": "Smart Mode cannot directly add, remove, move, or change images.",
-        "request_too_large": "The AI edit is too large to apply safely. Shorten the request and try again."
+        "request_too_large": "The AI edit is too large to apply safely. Shorten the request and try again.",
+        "stale_document": "The document changed since this AI edit was generated. Regenerate it."
       }
     },
     "errors": {

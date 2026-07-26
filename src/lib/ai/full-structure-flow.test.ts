@@ -1,9 +1,14 @@
 import { Editor, type JSONContent } from "@tiptap/core";
-import { buildEditSnapshot } from "@anvilnote/ai-writer";
+import {
+  buildEditSnapshot,
+  type AiEditOperationV1,
+  type EditSnapshotV1,
+} from "@anvilnote/ai-writer";
 import { describe, expect, it, vi } from "vitest";
 import { buildExtensions } from "@/lib/tiptap/extensions";
 import { acceptVerifiedEditDraft } from "./document/editor-operations";
 import { tiptapDocumentToAiSnapshotSource } from "./document/converters";
+import { buildOperationPreview } from "./document/operation-preview";
 import { tiptapSelectionToEditSnapshot } from "./document/selection-snapshot";
 
 interface MutableJSONNode {
@@ -113,16 +118,55 @@ function documentHash(editor: Editor): string {
   ).baseDocumentHash;
 }
 
-function candidateWithBothChanges(editor: Editor): JSONContent {
+function findRef(snapshot: EditSnapshotV1, path: readonly number[]): string {
+  for (const [ref, candidatePath] of snapshot.nodeRefs) {
+    if (
+      candidatePath.length === path.length
+      && candidatePath.every((index, position) => index === path[position])
+    ) {
+      return ref;
+    }
+  }
+  throw new Error(`No snapshot ref found at path ${path.join(".")}`);
+}
+
+function verifiedDraftWithBothChanges(editor: Editor): {
+  operations: AiEditOperationV1[];
+  candidate: JSONContent;
+} {
+  const snapshot = buildEditSnapshot(
+    tiptapDocumentToAiSnapshotSource(editor.getJSON()),
+  );
+  const operations: AiEditOperationV1[] = [
+    {
+      type: "replaceText",
+      targetRef: findRef(snapshot, [0, 0]),
+      text: "這是一段變長的文字",
+      marks: [{ type: "textStyle", attrs: { color: "#336699" } }],
+    },
+    {
+      type: "insertNode",
+      parentRef: findRef(snapshot, []),
+      index: 3,
+      node: {
+        type: "paragraph",
+        content: [{ type: "text", text: "新增的結構段落" }],
+      },
+    },
+  ];
   const candidate = structuredClone(editor.getJSON()) as MutableJSONNode;
   const firstText = candidate.content?.[0]?.content?.[0];
   if (!firstText) throw new Error("Expected the leading colored text.");
-  firstText.text = "這是一段變長的文字";
+  const replaceText = operations[0];
+  const insertNode = operations[1];
+  if (replaceText.type !== "replaceText" || insertNode.type !== "insertNode") {
+    throw new Error("Expected the verified replaceText and insertNode operations.");
+  }
+  firstText.text = replaceText.text;
   candidate.content?.splice(-1, 0, {
-    type: "paragraph",
-    content: [{ type: "text", text: "新增的結構段落" }],
+    ...(insertNode.node as MutableJSONNode),
   });
-  return candidate as JSONContent;
+  return { operations, candidate: candidate as JSONContent };
 }
 
 describe("full-structure AI flow", () => {
@@ -132,12 +176,31 @@ describe("full-structure AI flow", () => {
     const selectionRange = rangeForText(editor, "尾段");
     const { baseSelectionHash } =
       tiptapSelectionToEditSnapshot(editor, selectionRange);
-    const candidate = candidateWithBothChanges(editor);
+    const { operations, candidate } = verifiedDraftWithBothChanges(editor);
     const dependencies = {
       createVersion: vi.fn().mockResolvedValue(undefined),
       saveDocument: vi.fn().mockResolvedValue(undefined),
     };
 
+    const preview = buildOperationPreview(editor.getJSON(), { operations });
+    expect(preview.cards).toHaveLength(2);
+    expect(preview.cards.map(({ action }) => action)).toEqual([
+      "replaceText",
+      "insertNode",
+    ]);
+    expect(preview.cards[0].before).toMatchObject({
+      type: "doc",
+      content: [{ content: [{ text: "短" }] }],
+    });
+    expect(preview.cards[0].after).toMatchObject({
+      type: "doc",
+      content: [{ content: [{ text: "這是一段變長的文字" }] }],
+    });
+    expect(preview.cards[1].before).toBeNull();
+    expect(preview.cards[1].after).toMatchObject({
+      type: "doc",
+      content: [{ content: [{ text: "新增的結構段落" }] }],
+    });
     expect(editor.getJSON()).toEqual(original);
     await acceptVerifiedEditDraft(editor, {
       baseDocumentHash: documentHash(editor),

@@ -10,15 +10,30 @@ describe("inlineAIErrorMessageKey", () => {
     );
   });
 
-  it("preserves every already-qualified ai.* message key", () => {
+  it("preserves known stable edit message keys", () => {
     expect(
       inlineAIErrorMessageKey(new Error("ai.edits.errors.invalid_edit_operation")),
     ).toBe("ai.edits.errors.invalid_edit_operation");
   });
 
+  it("fails closed for arbitrary or unknown qualified ai.* message keys", () => {
+    expect(inlineAIErrorMessageKey(new Error("ai.debug.raw_detail"))).toBe(
+      "ai.errors.unknown_error",
+    );
+    expect(inlineAIErrorMessageKey(new Error("ai.errors.provider_dump"))).toBe(
+      "ai.errors.unknown_error",
+    );
+    expect(
+      inlineAIErrorMessageKey(new Error("ai.edits.errors.provider_dump")),
+    ).toBe("ai.errors.unknown_error");
+  });
+
   it("qualifies local error codes and safely handles unknown values", () => {
     expect(inlineAIErrorMessageKey(new Error("selection_conflict"))).toBe(
       "ai.errors.selection_conflict",
+    );
+    expect(inlineAIErrorMessageKey(new Error("raw provider diagnostic"))).toBe(
+      "ai.errors.unknown_error",
     );
     expect(inlineAIErrorMessageKey(null)).toBe("ai.errors.unknown_error");
   });
@@ -29,6 +44,7 @@ describe("inlineAIErrorMessageKey", () => {
       "invalid_reference",
       "unsupported_image_edit",
       "request_too_large",
+      "stale_document",
     ];
     for (const locale of ["en", "ja", "ko", "ru", "th", "zh-TW"]) {
       const messages = JSON.parse(

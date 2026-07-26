@@ -192,7 +192,8 @@
         "invalid_edit_operation": "無法安全套用 AI 編輯，請重新產生。",
         "invalid_reference": "AI 編輯參照的內容已不存在，請重新產生。",
         "unsupported_image_edit": "智慧模式無法直接新增、移除、移動或修改圖片。",
-        "request_too_large": "AI 編輯內容過大，無法安全套用。請縮短要求後再試。"
+        "request_too_large": "AI 編輯內容過大，無法安全套用。請縮短要求後再試。",
+        "stale_document": "這份 AI 編輯產生後，文件已有變更。請重新產生。"
       }
     },
     "errors": {
