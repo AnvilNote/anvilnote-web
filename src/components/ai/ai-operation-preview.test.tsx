@@ -93,6 +93,22 @@ describe("AiOperationPreview", () => {
     expect(screen.getByRole("button", { name: "smart.reject" })).toBeDisabled();
   });
 
+  it("replaces the controls with a resolved status after acceptance", () => {
+    render(
+      <AiOperationPreview
+        model={baseModel()}
+        disabled={false}
+        resolution="accepted"
+        onAccept={vi.fn()}
+        onReject={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "smart.accept" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "smart.reject" })).not.toBeInTheDocument();
+    expect(screen.getByText("smart.accepted")).toBeInTheDocument();
+  });
+
   it("hides low-level operation labels behind one change summary", () => {
     const model: OperationPreviewModel = {
       cards: [

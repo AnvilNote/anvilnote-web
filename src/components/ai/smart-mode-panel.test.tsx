@@ -746,9 +746,17 @@ describe("SmartModePanel", () => {
 
     render(<Sheet open><SmartModePanel open /></Sheet>);
     const user = userEvent.setup();
+    expect(await screen.findByText("smart.changesReady")).toBeInTheDocument();
+    expect(screen.queryByText("Inserted a paragraph.")).not.toBeInTheDocument();
     await user.click(await screen.findByRole("button", { name: "smart.accept" }));
 
     await waitFor(() => expect(editor.getJSON()).toEqual(expectedCandidate));
+    await waitFor(() => {
+      expect(screen.queryByRole("button", { name: "smart.accept" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "smart.reject" })).not.toBeInTheDocument();
+    });
+    expect(screen.getByText("smart.changesApplied")).toBeInTheDocument();
+    expect(screen.getByText("smart.accepted")).toBeInTheDocument();
     expect(api.updateDocument).toHaveBeenCalledTimes(2);
     // Version checkpoint of the PRE-accept content happens first (the same
     // snapshotBeforeAIInsert-backed sequencing the OLD insertDraft flow

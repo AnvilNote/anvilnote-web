@@ -263,6 +263,7 @@ function EditOperationsDraftCard({
   message,
   draft,
   disabled,
+  resolution,
   onAccept,
   onReject,
 }: {
@@ -270,6 +271,7 @@ function EditOperationsDraftCard({
   message: AIConversationMessage;
   draft: AIConversationEditOperationsDraft;
   disabled: boolean;
+  resolution?: "accepted" | "rejected";
   onAccept: (message: AIConversationMessage) => void;
   onReject: (message: AIConversationMessage) => void;
 }) {
@@ -299,6 +301,7 @@ function EditOperationsDraftCard({
     <AiOperationPreview
       model={model}
       disabled={disabled}
+      resolution={resolution}
       onAccept={() => onAccept(message)}
       onReject={() => onReject(message)}
     />
@@ -345,6 +348,9 @@ export function SmartModePanel({
   const renamePendingRef = useRef(false);
   const applyingDraftsRef = useRef<Set<string>>(new Set());
   const [operations, setOperations] = useState<Map<string, DraftOperation>>(() => new Map());
+  const [resolvedEditOperations, setResolvedEditOperations] = useState<
+    Record<string, "accepted" | "rejected" | undefined>
+  >({});
   const initialConversationSelectionRef = useRef<string | null>(null);
   const currentDocumentIdRef = useRef(documentId);
 
@@ -498,6 +504,7 @@ export function SmartModePanel({
         compositionEndTimerRef.current = null;
       }
       setOperations(new Map());
+      setResolvedEditOperations({});
     };
   }, [documentId]);
 
@@ -821,6 +828,10 @@ export function SmartModePanel({
         return next;
       });
       setPendingEditOperation(message.id, null);
+      setResolvedEditOperations((current) => ({
+        ...current,
+        [message.id]: "accepted",
+      }));
       editor.commands.focus();
     } catch (error) {
       setErrorMessageKey(errorKey(error));
@@ -842,6 +853,10 @@ export function SmartModePanel({
       return next;
     });
     setPendingEditOperation(message.id, null);
+    setResolvedEditOperations((current) => ({
+      ...current,
+      [message.id]: "rejected",
+    }));
   }
 
   async function renameConversation() {
@@ -1130,8 +1145,28 @@ export function SmartModePanel({
         {activeConversationId && messageCursor ? <div className="mb-3 text-center"><Button type="button" size="sm" variant="ghost" disabled={messagesLoading} onClick={() => void loadMessages(activeConversationId, messageCursor)}>{messagesLoading ? <Loader2 className="size-4 animate-spin" /> : null}{t("smart.loadEarlier")}</Button></div> : null}
         {messages.length === 0 && activeConversationId ? <p className="py-8 text-center text-sm text-muted-foreground">{t("smart.emptyConversation")}</p> : null}
         <div className="space-y-4">
-          {messages.map((message) => <div key={message.id} className={message.role === "user" ? "ml-10" : "mr-4"}>
-            {message.role === "user" ? <UserMessage message={message} /> : <div className="rounded-2xl rounded-bl-md bg-muted px-3 py-2 text-sm">{message.content}</div>}
+          {messages.map((message) => {
+            const candidate = message.draft?.kind === "edit-operations"
+              ? message.draft.candidate[0]
+              : null;
+            const resolution = resolvedEditOperations[message.id]
+              ?? (
+                editor
+                && candidate
+                && stableDocumentHash(editor.getJSON()) === stableDocumentHash(candidate)
+                  ? "accepted"
+                  : undefined
+              );
+            return <div key={message.id} className={message.role === "user" ? "ml-10" : "mr-4"}>
+            {message.role === "user" ? <UserMessage message={message} /> : <div className="rounded-2xl rounded-bl-md bg-muted px-3 py-2 text-sm">
+              {message.draft?.kind === "edit-operations"
+                ? t(resolution === "accepted"
+                  ? "smart.changesApplied"
+                  : resolution === "rejected"
+                    ? "smart.changesRejected"
+                    : "smart.changesReady")
+                : message.content}
+            </div>}
             {message.role === "assistant" && message.draft?.kind === "edit-operations"
               ? (editor ? (
                   <EditOperationsDraftCard
@@ -1139,6 +1174,7 @@ export function SmartModePanel({
                     message={message}
                     draft={message.draft}
                     disabled={state === "submitting"}
+                    resolution={resolution}
                     onAccept={(value) => void acceptEditOperationsDraft(value)}
                     onReject={(value) => rejectEditOperationsDraft(value)}
                   />
@@ -1147,7 +1183,8 @@ export function SmartModePanel({
             {message.role === "assistant" && message.draft?.kind !== "edit-operations"
               ? <DraftCard message={message} operation={operations.get(message.id)} disabled={state === "submitting"} onInsert={(value) => void insertDraft(value)} onReplace={(value) => void replaceDraft(value)} />
               : null}
-          </div>)}
+          </div>;
+          })}
         </div>
         {state === "submitting" ? <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />{t("smart.submitting")}</div> : null}
         {errorMessageKey ? <p role="alert" className="mt-4 rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm">{t(errorMessageKey.replace(/^ai\./, "") as never)}</p> : null}

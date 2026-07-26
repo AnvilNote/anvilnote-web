@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import type { JSONContent } from "@tiptap/core";
 import { EditorContent, useEditor } from "@tiptap/react";
+import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { buildExtensions } from "@/lib/tiptap/extensions";
 import type { OperationPreviewCard, OperationPreviewModel } from "@/lib/ai/document/operation-preview";
@@ -161,11 +162,13 @@ function OperationBatchCard({ cards }: { cards: readonly OperationPreviewCard[] 
 export function AiOperationPreview({
   model,
   disabled,
+  resolution,
   onAccept,
   onReject,
 }: {
   model: OperationPreviewModel;
   disabled: boolean;
+  resolution?: "accepted" | "rejected";
   onAccept: () => void;
   onReject: () => void;
 }) {
@@ -174,12 +177,21 @@ export function AiOperationPreview({
     <div className="mt-2 space-y-2">
       <OperationBatchCard cards={model.cards} />
       <div className="flex justify-end gap-2 pt-1">
-        <Button size="sm" variant="ghost" disabled={disabled} onClick={onReject}>
-          {tSmart("smart.reject")}
-        </Button>
-        <Button size="sm" disabled={disabled} onClick={onAccept}>
-          {tSmart("smart.accept")}
-        </Button>
+        {resolution ? (
+          <span className="inline-flex items-center gap-1.5 px-1 py-1 text-xs text-muted-foreground">
+            {resolution === "accepted" ? <Check className="size-3.5" /> : <X className="size-3.5" />}
+            {tSmart(resolution === "accepted" ? "smart.accepted" : "smart.rejected")}
+          </span>
+        ) : (
+          <>
+            <Button size="sm" variant="ghost" disabled={disabled} onClick={onReject}>
+              {tSmart("smart.reject")}
+            </Button>
+            <Button size="sm" disabled={disabled} onClick={onAccept}>
+              {tSmart("smart.accept")}
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );
