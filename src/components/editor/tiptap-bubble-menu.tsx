@@ -175,7 +175,7 @@ export function TiptapBubbleMenu({
   const smartModeOpen = useSmartModeUIStore((state) => state.open);
   const setSmartModeOpen = useSmartModeUIStore((state) => state.setOpen);
   const notifyConversationChanged = useSmartModeUIStore((state) => state.notifyConversationChanged);
-  const setInlineFallbackInstruction = useSmartModeUIStore((state) => state.setInlineFallbackInstruction);
+  const setPendingEditOperation = useSmartModeUIStore((state) => state.setPendingEditOperation);
 
   useEffect(() => {
     pendingRef.current = pending;
@@ -379,20 +379,17 @@ export function TiptapBubbleMenu({
           return;
         }
 
-        // A genuinely structural result (inserts/deletes/moves nodes,
-        // touches tables/charts/mermaid/footnotes/cross-refs/questions, or
-        // more than one operation) can never be shown as a plain inline
-        // diff. The turn is ALREADY durably persisted in the conversation
-        // this component just pointed the panel at (above) — reopen the
-        // SAME existing escape hatch already used for
-        // UnsupportedAIContentError elsewhere in this component
-        // (setInlineFallbackInstruction) rather than inventing a second
-        // mechanism, and actually flip the panel open (this escape hatch on
-        // its own only ever repopulates the composer; opening the Sheet
-        // itself is a separate store flag the panel's own launcher already
-        // reads).
+        // Structural results are reviewed in Smart Mode, but accepting one
+        // still has to use the exact selection that initiated this inline
+        // request. Hand that safety snapshot to the panel under the persisted
+        // assistant message id so opening/remounting the panel cannot silently
+        // turn a selection-scoped draft into a document-scoped one.
+        setPendingEditOperation(assistant.id, {
+          documentId,
+          documentHash: snapshot.documentHash,
+          selectionSnapshot: snapshot,
+        });
         setSmartModeOpen(true);
-        setInlineFallbackInstruction(documentId, inlineInstruction.trim());
         setInlineSelectionRange(null);
         setInlineOpen(false);
         return;

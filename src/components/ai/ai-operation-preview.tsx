@@ -111,46 +111,53 @@ function FragmentPreview({ content }: { content: JSONContent | null }) {
   return <EditorContent editor={editor} />;
 }
 
-function OperationCard({ card }: { card: OperationPreviewCard }) {
+function mergeCardFragments(
+  cards: readonly OperationPreviewCard[],
+  side: "before" | "after",
+): JSONContent | null {
+  const content = cards.flatMap((card) => {
+    const fragment = card[side];
+    if (!fragment) return [];
+    if (fragment.type === "doc") return fragment.content ?? [];
+    return [fragment];
+  });
+  return content.length ? { type: "doc", content } : null;
+}
+
+function OperationBatchCard({ cards }: { cards: readonly OperationPreviewCard[] }) {
   const tSmart = useTranslations("ai");
+  const before = useMemo(() => mergeCardFragments(cards, "before"), [cards]);
+  const after = useMemo(() => mergeCardFragments(cards, "after"), [cards]);
   return (
     <article
       data-testid="ai-operation-card"
       className="overflow-hidden rounded-xl border border-border/80 bg-background"
     >
       <div className="flex items-center gap-2 border-b bg-muted/35 px-3 py-1.5 text-xs">
-        <span className="font-medium">{tSmart(`smart.operationLabels.${card.action}` as never)}</span>
-        <code className="rounded bg-muted px-1.5 py-0.5 text-[0.7rem] text-muted-foreground">
-          {card.nodeType}
-        </code>
+        <span className="font-medium">{tSmart("smart.changeSummary")}</span>
       </div>
       <div className="grid grid-cols-1 divide-y sm:grid-cols-2 sm:divide-x sm:divide-y-0">
         <div className="max-h-40 overflow-y-auto p-2">
           <p className="mb-1 text-[0.65rem] uppercase tracking-wide text-muted-foreground">
             {tSmart("smart.before")}
           </p>
-          <FragmentPreview content={card.before} />
+          <FragmentPreview content={before} />
         </div>
         <div className="max-h-40 overflow-y-auto p-2">
           <p className="mb-1 text-[0.65rem] uppercase tracking-wide text-muted-foreground">
             {tSmart("smart.after")}
           </p>
-          <FragmentPreview content={card.after} />
+          <FragmentPreview content={after} />
         </div>
       </div>
     </article>
   );
 }
 
-// Renders one OperationPreviewModel's ordered change cards plus the
-// Accept/Reject row for the whole batch. The click handlers are STUBS for
-// Task 24.2 — Task 24.3 wires real accept-flow persistence (versioning,
-// hashing, the single-transaction atomic apply, Undo) directly onto this
-// same markup, so the `role="button"`/accessible-name pair
-// (`smart.accept`/`smart.reject`, the SAME translation keys the existing
-// inline bubble-menu Accept/Reject controls already use) is deliberately
-// stable for that later task to hook into without touching this file's
-// structure again.
+// Renders one coherent before/after preview for the full ordered batch.
+// Individual operation cards are intentionally merged here: operation
+// boundaries are an implementation detail, while Accept/Reject still act
+// atomically on the verified batch.
 export function AiOperationPreview({
   model,
   disabled,
@@ -165,9 +172,7 @@ export function AiOperationPreview({
   const tSmart = useTranslations("ai");
   return (
     <div className="mt-2 space-y-2">
-      {model.cards.map((card) => (
-        <OperationCard key={card.operationIndex} card={card} />
-      ))}
+      <OperationBatchCard cards={model.cards} />
       <div className="flex justify-end gap-2 pt-1">
         <Button size="sm" variant="ghost" disabled={disabled} onClick={onReject}>
           {tSmart("smart.reject")}

@@ -26,7 +26,7 @@ function baseModel(overrides: Partial<OperationPreviewModel> = {}): OperationPre
 }
 
 describe("AiOperationPreview", () => {
-  it("renders one card per operation with an Accept and a Reject control", () => {
+  it("renders one preview for the whole batch with an Accept and a Reject control", () => {
     render(
       <AiOperationPreview model={baseModel()} disabled={false} onAccept={vi.fn()} onReject={vi.fn()} />,
     );
@@ -34,6 +34,44 @@ describe("AiOperationPreview", () => {
     expect(screen.getAllByTestId("ai-operation-card")).toHaveLength(1);
     expect(screen.getByRole("button", { name: "smart.accept" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "smart.reject" })).toBeEnabled();
+  });
+
+  it("combines a multi-operation batch into one coherent before/after preview", () => {
+    const model: OperationPreviewModel = {
+      cards: [
+        {
+          operationIndex: 0,
+          action: "replaceNode",
+          nodeType: "paragraph",
+          before: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Original" }] }] },
+          after: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "First paragraph" }] }] },
+        },
+        {
+          operationIndex: 1,
+          action: "insertNode",
+          nodeType: "paragraph",
+          before: null,
+          after: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Second paragraph" }] }] },
+        },
+        {
+          operationIndex: 2,
+          action: "insertNode",
+          nodeType: "paragraph",
+          before: null,
+          after: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Third paragraph" }] }] },
+        },
+      ],
+    };
+
+    render(
+      <AiOperationPreview model={model} disabled={false} onAccept={vi.fn()} onReject={vi.fn()} />,
+    );
+
+    expect(screen.getAllByTestId("ai-operation-card")).toHaveLength(1);
+    expect(screen.getByText("Original")).toBeInTheDocument();
+    expect(screen.getByText("First paragraph")).toBeInTheDocument();
+    expect(screen.getByText("Second paragraph")).toBeInTheDocument();
+    expect(screen.getByText("Third paragraph")).toBeInTheDocument();
   });
 
   it("calls the provided stub handlers when Accept/Reject are clicked", () => {
@@ -55,7 +93,7 @@ describe("AiOperationPreview", () => {
     expect(screen.getByRole("button", { name: "smart.reject" })).toBeDisabled();
   });
 
-  it("shows a translated label for every one of the six operation action kinds", () => {
+  it("hides low-level operation labels behind one change summary", () => {
     const model: OperationPreviewModel = {
       cards: [
         { operationIndex: 0, action: "insertNode", nodeType: "paragraph", before: null, after: { type: "doc", content: [{ type: "paragraph" }] } },
@@ -68,8 +106,10 @@ describe("AiOperationPreview", () => {
     };
     render(<AiOperationPreview model={model} disabled={false} onAccept={vi.fn()} onReject={vi.fn()} />);
 
+    expect(screen.getAllByTestId("ai-operation-card")).toHaveLength(1);
+    expect(screen.getByText("smart.changeSummary")).toBeInTheDocument();
     for (const action of ["insertNode", "replaceNode", "deleteNode", "moveNode", "updateAttrs", "replaceText"]) {
-      expect(screen.getByText(`smart.operationLabels.${action}`)).toBeInTheDocument();
+      expect(screen.queryByText(`smart.operationLabels.${action}`)).not.toBeInTheDocument();
     }
   });
 

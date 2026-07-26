@@ -1,15 +1,24 @@
 import { create } from "zustand";
+import type { SelectionSnapshot } from "@/lib/ai/document/selection-snapshot";
+
+interface PendingEditOperation {
+  documentId: string;
+  documentHash: string;
+  selectionSnapshot: SelectionSnapshot | null;
+}
 
 interface SmartModeUIState {
   open: boolean;
   activeConversationByDocument: Record<string, string | null | undefined>;
   inlineFallbackInstructionByDocument: Record<string, string | undefined>;
+  pendingEditOperationsByMessage: Record<string, PendingEditOperation | undefined>;
   // Bumps after an inline turn or a mutation made outside the right panel.
   // It deliberately carries no model-authored content or key data.
   conversationVersion: number;
   setOpen(open: boolean): void;
   setActiveConversation(documentId: string, conversationId: string | null): void;
   setInlineFallbackInstruction(documentId: string, instruction: string | null): void;
+  setPendingEditOperation(messageId: string, operation: PendingEditOperation | null): void;
   notifyConversationChanged(): void;
 }
 
@@ -22,6 +31,7 @@ export const useSmartModeUIStore = create<SmartModeUIState>((set) => ({
   open: false,
   activeConversationByDocument: {},
   inlineFallbackInstructionByDocument: {},
+  pendingEditOperationsByMessage: {},
   conversationVersion: 0,
   setOpen: (open) => set({ open }),
   setActiveConversation: (documentId, conversationId) => set((state) => ({
@@ -34,6 +44,12 @@ export const useSmartModeUIStore = create<SmartModeUIState>((set) => ({
     inlineFallbackInstructionByDocument: {
       ...state.inlineFallbackInstructionByDocument,
       ...(instruction ? { [documentId]: instruction } : { [documentId]: undefined }),
+    },
+  })),
+  setPendingEditOperation: (messageId, operation) => set((state) => ({
+    pendingEditOperationsByMessage: {
+      ...state.pendingEditOperationsByMessage,
+      [messageId]: operation ?? undefined,
     },
   })),
   notifyConversationChanged: () => set((state) => ({

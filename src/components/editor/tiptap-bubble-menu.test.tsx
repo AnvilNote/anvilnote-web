@@ -41,6 +41,7 @@ describe("TiptapBubbleMenu inline Smart Mode", () => {
       open: false,
       activeConversationByDocument: {},
       inlineFallbackInstructionByDocument: {},
+      pendingEditOperationsByMessage: {},
       conversationVersion: 0,
     });
   });
@@ -390,7 +391,7 @@ describe("TiptapBubbleMenu inline Smart Mode", () => {
     editor.destroy();
   });
 
-  it("routes a structural edit-operations result (more than one operation) to the Smart Mode panel instead of forcing an inline diff", async () => {
+  it("hands a structural inline result and its exact selection to Smart Mode without showing a false unsupported-selection error", async () => {
     client.executeConversationTurn.mockResolvedValue({
       conversation: {
         id: "conversation-1",
@@ -455,9 +456,13 @@ describe("TiptapBubbleMenu inline Smart Mode", () => {
     fireEvent.click(screen.getByRole("button", { name: "smart.rewrite" }));
 
     await waitFor(() => expect(useSmartModeUIStore.getState().open).toBe(true));
-    expect(useSmartModeUIStore.getState().inlineFallbackInstructionByDocument["doc-1"]).toBe(
-      "Turn this into a table",
-    );
+    expect(useSmartModeUIStore.getState().inlineFallbackInstructionByDocument["doc-1"]).toBeUndefined();
+    expect(
+      useSmartModeUIStore.getState().pendingEditOperationsByMessage["message-2"],
+    ).toMatchObject({
+      documentId: "doc-1",
+      selectionSnapshot: { from: 1, to: 9 },
+    });
     expect(screen.queryByRole("button", { name: "smart.accept" })).not.toBeInTheDocument();
     editor.destroy();
   });

@@ -328,6 +328,10 @@ export function SmartModePanel({
     documentId ? state.inlineFallbackInstructionByDocument[documentId] : undefined,
   );
   const setInlineFallbackInstruction = useSmartModeUIStore((state) => state.setInlineFallbackInstruction);
+  const pendingEditOperationsByMessage = useSmartModeUIStore(
+    (state) => state.pendingEditOperationsByMessage,
+  );
+  const setPendingEditOperation = useSmartModeUIStore((state) => state.setPendingEditOperation);
   const conversationVersion = useSmartModeUIStore((state) => state.conversationVersion);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
@@ -655,6 +659,13 @@ export function SmartModePanel({
       if (currentDocumentIdRef.current !== documentId) return;
       const assistant = completed.messages[1];
       setOperations((current) => new Map(current).set(assistant.id, operation));
+      if (assistant.draft?.kind === "edit-operations") {
+        setPendingEditOperation(assistant.id, {
+          documentId: documentId!,
+          documentHash: operation.documentHash,
+          selectionSnapshot: operation.selectionSnapshot,
+        });
+      }
       setConversations((current) => [completed.conversation, ...current.filter((item) => item.id !== completed.conversation.id)]);
       setActiveConversation(documentId!, completed.conversation.id);
       setMessages((current) => {
@@ -766,12 +777,9 @@ export function SmartModePanel({
   // on failure, clearing the message's `operations` entry on success.
   //
   // `selectionRange` (for the optional selection-hash re-check) comes from
-  // this SAME `operations` tracking map the OLD flow already populates for
-  // every assistant message in `submit()` (not a new mechanism) — `null`
-  // whenever this message has no tracked selection snapshot (a
-  // document-scoped turn, or a historical message loaded via loadMessages,
-  // which — like the OLD flow's own rewrite-selection case — never
-  // reconstructs a selection snapshot after the fact).
+  // either this panel's live operation or the shared inline-to-panel
+  // handoff keyed by assistant message id. Historical drafts never
+  // reconstruct a missing selection from the current cursor.
   //
   // `dependencies.createVersion`/`saveDocument` intentionally reuse
   // `snapshotBeforeAIInsert`/`persistAcceptedEditContent` (document-store.ts)
@@ -786,8 +794,11 @@ export function SmartModePanel({
     if (applyingDraftsRef.current.has(message.id)) return;
     const draft = message.draft;
     const operation = operations.get(message.id);
-    const selectionRange = operation?.selectionSnapshot
-      ? { from: operation.selectionSnapshot.from, to: operation.selectionSnapshot.to }
+    const pendingOperation = pendingEditOperationsByMessage[message.id];
+    const selectionSnapshot = operation?.selectionSnapshot
+      ?? (pendingOperation?.documentId === documentId ? pendingOperation.selectionSnapshot : null);
+    const selectionRange = selectionSnapshot
+      ? { from: selectionSnapshot.from, to: selectionSnapshot.to }
       : null;
     applyingDraftsRef.current.add(message.id);
     try {
@@ -809,6 +820,7 @@ export function SmartModePanel({
         next.delete(message.id);
         return next;
       });
+      setPendingEditOperation(message.id, null);
       editor.commands.focus();
     } catch (error) {
       setErrorMessageKey(errorKey(error));
@@ -829,6 +841,7 @@ export function SmartModePanel({
       next.delete(message.id);
       return next;
     });
+    setPendingEditOperation(message.id, null);
   }
 
   async function renameConversation() {
