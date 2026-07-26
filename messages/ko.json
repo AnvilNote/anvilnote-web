@@ -1129,6 +1129,17 @@
       "warnings": "경고",
       "accept": "수락",
       "reject": "거부",
+      "before": "변경 전",
+      "after": "변경 후",
+      "emptyFragment": "없음",
+      "operationLabels": {
+        "insertNode": "삽입",
+        "replaceNode": "교체",
+        "deleteNode": "삭제",
+        "moveNode": "이동",
+        "updateAttrs": "속성 업데이트",
+        "replaceText": "텍스트 교체"
+      },
       "insertAtCursor": "커서 위치에 삽입",
       "replaceEmpty": "빈 문서 대체",
       "suggestedTitle": "제안된 제목",

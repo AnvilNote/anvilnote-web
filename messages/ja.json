@@ -1129,6 +1129,17 @@
       "warnings": "警告",
       "accept": "承認",
       "reject": "却下",
+      "before": "変更前",
+      "after": "変更後",
+      "emptyFragment": "なし",
+      "operationLabels": {
+        "insertNode": "挿入",
+        "replaceNode": "置換",
+        "deleteNode": "削除",
+        "moveNode": "移動",
+        "updateAttrs": "更新",
+        "replaceText": "テキストを置換"
+      },
       "insertAtCursor": "カーソル位置に挿入",
       "replaceEmpty": "空のドキュメントを置き換え",
       "suggestedTitle": "提案されたタイトル",

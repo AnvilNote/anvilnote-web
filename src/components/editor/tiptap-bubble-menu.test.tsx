@@ -296,6 +296,143 @@ describe("TiptapBubbleMenu inline Smart Mode", () => {
     editor.destroy();
   });
 
+  it("shows an edit-operations single replaceText result via the existing inline diff, unchanged", async () => {
+    client.executeConversationTurn.mockResolvedValue({
+      conversation: {
+        id: "conversation-1",
+        documentId: "doc-1",
+        title: "Rewrite",
+        lastMessageAt: "2026-07-19T00:00:00.000Z",
+        createdAt: "2026-07-19T00:00:00.000Z",
+        updatedAt: "2026-07-19T00:00:00.000Z",
+      },
+      messages: [
+        {
+          id: "message-1",
+          conversationId: "conversation-1",
+          sequence: 1,
+          role: "user",
+          intent: "rewrite-selection",
+          content: "Make this clearer",
+          createdAt: "2026-07-19T00:00:00.000Z",
+        },
+        {
+          id: "message-2",
+          conversationId: "conversation-1",
+          sequence: 2,
+          role: "assistant",
+          intent: "rewrite-selection",
+          content: "Draft",
+          createdAt: "2026-07-19T00:00:00.000Z",
+          draft: {
+            kind: "edit-operations",
+            version: "anvilnote.ai.edit-operations.v1",
+            baseDocumentHash: "0".repeat(64),
+            baseSelectionHash: "1".repeat(64),
+            operations: [
+              { type: "replaceText", targetRef: "n2", text: "Clearer text", marks: [{ type: "bold" }] },
+            ],
+            summary: { operationCount: 1, addedNodeCount: 0, totalCharacterCount: 12 },
+            candidate: [],
+          },
+        },
+      ],
+    });
+    const editor = createEditor();
+    render(
+      <TiptapBubbleMenu
+        editor={editor}
+        documentId="doc-1"
+        onInsertMath={vi.fn()}
+        onEditLink={vi.fn()}
+        onEditColor={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "smart.inline" }));
+    fireEvent.change(screen.getByPlaceholderText("smart.inlinePlaceholder"), {
+      target: { value: "Make this clearer" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "smart.rewrite" }));
+
+    expect(await screen.findByRole("button", { name: "smart.accept" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "smart.reject" })).toBeInTheDocument();
+    expect(useSmartModeUIStore.getState().open).toBe(false);
+    expect(useSmartModeUIStore.getState().inlineFallbackInstructionByDocument["doc-1"]).toBeUndefined();
+    editor.destroy();
+  });
+
+  it("routes a structural edit-operations result (more than one operation) to the Smart Mode panel instead of forcing an inline diff", async () => {
+    client.executeConversationTurn.mockResolvedValue({
+      conversation: {
+        id: "conversation-1",
+        documentId: "doc-1",
+        title: "Rewrite",
+        lastMessageAt: "2026-07-19T00:00:00.000Z",
+        createdAt: "2026-07-19T00:00:00.000Z",
+        updatedAt: "2026-07-19T00:00:00.000Z",
+      },
+      messages: [
+        {
+          id: "message-1",
+          conversationId: "conversation-1",
+          sequence: 1,
+          role: "user",
+          intent: "rewrite-selection",
+          content: "Turn this into a table",
+          createdAt: "2026-07-19T00:00:00.000Z",
+        },
+        {
+          id: "message-2",
+          conversationId: "conversation-1",
+          sequence: 2,
+          role: "assistant",
+          intent: "rewrite-selection",
+          content: "Draft",
+          createdAt: "2026-07-19T00:00:00.000Z",
+          draft: {
+            kind: "edit-operations",
+            version: "anvilnote.ai.edit-operations.v1",
+            baseDocumentHash: "0".repeat(64),
+            baseSelectionHash: "1".repeat(64),
+            operations: [
+              { type: "deleteNode", targetRef: "n1" },
+              {
+                type: "insertNode",
+                parentRef: "n0",
+                index: 0,
+                node: { type: "table", content: [] },
+              },
+            ],
+            summary: { operationCount: 2, addedNodeCount: 1, totalCharacterCount: 0 },
+            candidate: [],
+          },
+        },
+      ],
+    });
+    const editor = createEditor();
+    render(
+      <TiptapBubbleMenu
+        editor={editor}
+        documentId="doc-1"
+        onInsertMath={vi.fn()}
+        onEditLink={vi.fn()}
+        onEditColor={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "smart.inline" }));
+    fireEvent.change(screen.getByPlaceholderText("smart.inlinePlaceholder"), {
+      target: { value: "Turn this into a table" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "smart.rewrite" }));
+
+    await waitFor(() => expect(useSmartModeUIStore.getState().open).toBe(true));
+    expect(useSmartModeUIStore.getState().inlineFallbackInstructionByDocument["doc-1"]).toBe(
+      "Turn this into a table",
+    );
+    expect(screen.queryByRole("button", { name: "smart.accept" })).not.toBeInTheDocument();
+    editor.destroy();
+  });
+
   it("applies a multi-paragraph reply when the whole paragraph was selected", async () => {
     client.executeConversationTurn.mockResolvedValue({
       conversation: {

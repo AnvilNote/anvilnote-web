@@ -136,6 +136,17 @@
       "warnings": "警告",
       "accept": "接受",
       "reject": "拒絕",
+      "before": "變更前",
+      "after": "變更後",
+      "emptyFragment": "無",
+      "operationLabels": {
+        "insertNode": "插入",
+        "replaceNode": "取代",
+        "deleteNode": "刪除",
+        "moveNode": "移動",
+        "updateAttrs": "更新屬性",
+        "replaceText": "取代文字"
+      },
       "insertAtCursor": "插入游標位置",
       "replaceEmpty": "取代空白文件",
       "suggestedTitle": "建議標題",

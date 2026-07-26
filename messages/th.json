@@ -1129,6 +1129,17 @@
       "warnings": "คำเตือน",
       "accept": "ยอมรับ",
       "reject": "ปฏิเสธ",
+      "before": "ก่อนแก้ไข",
+      "after": "หลังแก้ไข",
+      "emptyFragment": "ไม่มี",
+      "operationLabels": {
+        "insertNode": "แทรก",
+        "replaceNode": "แทนที่",
+        "deleteNode": "ลบ",
+        "moveNode": "ย้าย",
+        "updateAttrs": "อัปเดตคุณสมบัติ",
+        "replaceText": "แทนที่ข้อความ"
+      },
       "insertAtCursor": "แทรกที่ตำแหน่งเคอร์เซอร์",
       "replaceEmpty": "แทนที่เอกสารว่าง",
       "suggestedTitle": "ชื่อที่แนะนำ",

@@ -1129,6 +1129,17 @@
       "warnings": "Предупреждения",
       "accept": "Принять",
       "reject": "Отклонить",
+      "before": "До",
+      "after": "После",
+      "emptyFragment": "Нет",
+      "operationLabels": {
+        "insertNode": "Вставка",
+        "replaceNode": "Замена",
+        "deleteNode": "Удаление",
+        "moveNode": "Перемещение",
+        "updateAttrs": "Обновление",
+        "replaceText": "Замена текста"
+      },
       "insertAtCursor": "Вставить в позицию курсора",
       "replaceEmpty": "Заменить пустой документ",
       "suggestedTitle": "Предложенное название",

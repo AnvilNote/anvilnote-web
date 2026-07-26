@@ -1,6 +1,12 @@
 import type { Editor, JSONContent } from "@tiptap/core";
 
-const SUPPORTED_INLINE_MARKS = new Set([
+// Exported (Task 24.2) so the bubble menu's edit-operations routing
+// decision can check a `replaceText` operation's OWN result marks against
+// the exact same set this file already uses to gate the ORIGINAL
+// selection — one shared source of truth instead of a second literal list
+// drifting out of sync with this one. No existing behavior in this file
+// changes: this is a visibility-only change on an already-defined constant.
+export const SUPPORTED_INLINE_MARKS = new Set([
   "bold",
   "italic",
   "strike",

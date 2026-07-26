@@ -9,6 +9,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Bot, Check, Code, Bold, Italic, Link2, Loader2, Send, Sigma, Strikethrough, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MathClickMode } from "@/lib/tiptap/extensions";
+import type { AiEditOperationV1 } from "@anvilnote/ai-writer";
 import { aiClient } from "@/lib/ai/runtime-client";
 import { inlineAIErrorMessageKey } from "@/lib/ai/inline-error";
 import {
@@ -16,6 +17,7 @@ import {
   tiptapSelectionToAnvilNote,
   UnsupportedAIContentError,
 } from "@/lib/ai/document/converters";
+import { marksFromSnapshot } from "@/lib/ai/document/core-node-converters";
 import { applyInlineAIBlocks, applyInlineAIContent } from "@/lib/ai/document/editor-operations";
 import {
   clearInlineAIDiff,
@@ -33,6 +35,7 @@ import {
   isPlainTextSelection,
   isWholeBlockSelection,
   resolvePlainTextSelectionRange,
+  SUPPORTED_INLINE_MARKS,
 } from "@/lib/ai/document/inline-review";
 import { ProtectedSelectionRegistry } from "@/lib/ai/document/protected-selection";
 import { createSelectionSnapshot, hasSelectionConflict, type SelectionSnapshot } from "@/lib/ai/document/selection-snapshot";
@@ -53,6 +56,26 @@ function resizeInlineComposer(textarea: HTMLTextAreaElement) {
   textarea.style.height = `${nextHeight}px`;
   textarea.style.overflowY = textarea.scrollHeight > INLINE_COMPOSER_MAX_HEIGHT_PX ? "auto" : "hidden";
   return lineCount;
+}
+
+// A bubble-menu-initiated request always scopes to the current selection,
+// so its edit-operations result is only ever safe to show via the EXISTING
+// inline diff mechanism when it reduces to exactly the same shape the OLD
+// rewrite-selection path already accepted: one plain-text replacement with
+// marks the inline composer already knows how to decorate. Anything else
+// (zero or multiple operations, a structural op type — insertNode/
+// replaceNode/deleteNode/moveNode/updateAttrs — or a mark outside
+// SUPPORTED_INLINE_MARKS, e.g. textStyle) is a genuinely structural result
+// and must fall back to the Smart Mode panel instead.
+function inlineReplaceTextFromOperations(
+  operations: readonly AiEditOperationV1[],
+): { text: string; marks: NonNullable<JSONContent["marks"]> } | null {
+  if (operations.length !== 1) return null;
+  const [op] = operations;
+  if (op.type !== "replaceText") return null;
+  const marks = marksFromSnapshot(op.marks as unknown as JSONContent["marks"]) ?? [];
+  if (marks.some((mark) => !SUPPORTED_INLINE_MARKS.has(mark.type))) return null;
+  return { text: op.text, marks };
 }
 
 function MenuButton({
@@ -145,7 +168,9 @@ export function TiptapBubbleMenu({
   );
   const setActiveConversation = useSmartModeUIStore((state) => state.setActiveConversation);
   const smartModeOpen = useSmartModeUIStore((state) => state.open);
+  const setSmartModeOpen = useSmartModeUIStore((state) => state.setOpen);
   const notifyConversationChanged = useSmartModeUIStore((state) => state.notifyConversationChanged);
+  const setInlineFallbackInstruction = useSmartModeUIStore((state) => state.setInlineFallbackInstruction);
 
   useEffect(() => {
     pendingRef.current = pending;
@@ -258,9 +283,14 @@ export function TiptapBubbleMenu({
         options: { humanizerEnabled: settings.aiHumanizerEnabled },
       });
       const assistant = completed.messages[1];
-      if (assistant.draft?.kind !== "rewrite-selection") {
+      if (!assistant.draft) {
         throw new Error("invalid_structured_output");
       }
+      // Tracked and persisted regardless of which draft kind comes back —
+      // the turn already succeeded server-side by this point either way,
+      // and both routing branches below rely on the panel already pointing
+      // at this exact conversation (the structural fallback opens that
+      // SAME panel; the inline path just doesn't need it visually yet).
       setActiveConversation(documentId, completed.conversation.id);
       notifyConversationChanged();
       if (
@@ -272,45 +302,96 @@ export function TiptapBubbleMenu({
       ) {
         throw new Error("selection_conflict");
       }
-      const convertedReplacement = anvilNoteFragmentToTiptap(assistant.draft.replacement, registry);
-      const inlineContent = inlineReviewContent(convertedReplacement);
-      if (inlineContent) {
-        showInlineAIDiff(editor, {
-          from,
-          to,
-          replacementText: inlineReviewText(inlineContent),
-        });
-        setPending({ mode: "inline", content: inlineContent, snapshot });
+
+      if (assistant.draft.kind === "rewrite-selection") {
+        // OLD/legacy draft shape — kept for a previously persisted
+        // conversation whose turn was executed before Task 23.2's
+        // edit-operations turn path existed. The live turn-execution
+        // mechanism no longer produces this kind (see runtime-client.ts's
+        // AIConversationDraft comment), but a stale/replayed response is
+        // still handled exactly as before.
+        const convertedReplacement = anvilNoteFragmentToTiptap(assistant.draft.replacement, registry);
+        const inlineContent = inlineReviewContent(convertedReplacement);
+        if (inlineContent) {
+          showInlineAIDiff(editor, {
+            from,
+            to,
+            replacementText: inlineReviewText(inlineContent),
+          });
+          setPending({ mode: "inline", content: inlineContent, snapshot });
+          setInlineSelectionRange(null);
+          setInlineOpen(false);
+          return;
+        }
+
+        // The model split its reply into more than one paragraph/heading. The
+        // inline composer can still apply that, but only when the original
+        // selection was the block's entire content — the swap then lands at
+        // that block's own boundaries instead of splicing new blocks into the
+        // middle of running inline text the person didn't select.
+        const blocks = inlineReviewBlocks(convertedReplacement);
+        if (blocks && isWholeBlockSelection(editor, from, to)) {
+          const previewText = blocks
+            .map((block) => inlineReviewText(block.content ?? []))
+            .join("\n\n");
+          showInlineAIDiff(editor, { from, to, replacementText: previewText });
+          setPending({ mode: "blocks", content: blocks, snapshot });
+          setInlineSelectionRange(null);
+          setInlineOpen(false);
+          return;
+        }
+
+        setInlineError(
+          convertedReplacement.length > 1
+            ? "ai.errors.multi_paragraph_result"
+            : "ai.errors.unsupported_selection",
+        );
+        // The turn is saved server-side, and the right panel is the durable
+        // conversation view. Keep the temporary review beside the text without
+        // interrupting the person by opening that panel automatically.
+        return;
+      }
+
+      if (assistant.draft.kind === "edit-operations") {
+        // The turn-execution mechanism this repo actually calls always
+        // returns this draft kind now — a structural, targetRef-based
+        // operations list rather than the OLD "here's the whole replacement
+        // fragment" shape. Still routable through the EXISTING inline diff
+        // mechanism when (and only when) it reduces to exactly one
+        // plain-text replaceText with supported marks; anything else falls
+        // back to the Smart Mode panel.
+        const inlineResult = inlineReplaceTextFromOperations(assistant.draft.operations);
+        if (inlineResult) {
+          const inlineContent: JSONContent[] = [
+            { type: "text", text: inlineResult.text, marks: inlineResult.marks },
+          ];
+          showInlineAIDiff(editor, { from, to, replacementText: inlineReviewText(inlineContent) });
+          setPending({ mode: "inline", content: inlineContent, snapshot });
+          setInlineSelectionRange(null);
+          setInlineOpen(false);
+          return;
+        }
+
+        // A genuinely structural result (inserts/deletes/moves nodes,
+        // touches tables/charts/mermaid/footnotes/cross-refs/questions, or
+        // more than one operation) can never be shown as a plain inline
+        // diff. The turn is ALREADY durably persisted in the conversation
+        // this component just pointed the panel at (above) — reopen the
+        // SAME existing escape hatch already used for
+        // UnsupportedAIContentError elsewhere in this component
+        // (setInlineFallbackInstruction) rather than inventing a second
+        // mechanism, and actually flip the panel open (this escape hatch on
+        // its own only ever repopulates the composer; opening the Sheet
+        // itself is a separate store flag the panel's own launcher already
+        // reads).
+        setSmartModeOpen(true);
+        setInlineFallbackInstruction(documentId, inlineInstruction.trim());
         setInlineSelectionRange(null);
         setInlineOpen(false);
         return;
       }
 
-      // The model split its reply into more than one paragraph/heading. The
-      // inline composer can still apply that, but only when the original
-      // selection was the block's entire content — the swap then lands at
-      // that block's own boundaries instead of splicing new blocks into the
-      // middle of running inline text the person didn't select.
-      const blocks = inlineReviewBlocks(convertedReplacement);
-      if (blocks && isWholeBlockSelection(editor, from, to)) {
-        const previewText = blocks
-          .map((block) => inlineReviewText(block.content ?? []))
-          .join("\n\n");
-        showInlineAIDiff(editor, { from, to, replacementText: previewText });
-        setPending({ mode: "blocks", content: blocks, snapshot });
-        setInlineSelectionRange(null);
-        setInlineOpen(false);
-        return;
-      }
-
-      setInlineError(
-        convertedReplacement.length > 1
-          ? "ai.errors.multi_paragraph_result"
-          : "ai.errors.unsupported_selection",
-      );
-      // The turn is saved server-side, and the right panel is the durable
-      // conversation view. Keep the temporary review beside the text without
-      // interrupting the person by opening that panel automatically.
+      throw new Error("invalid_structured_output");
     } catch (error) {
       if (error instanceof UnsupportedAIContentError) {
         // An inline action never opens the conversation panel on the person's

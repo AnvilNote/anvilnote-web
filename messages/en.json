@@ -136,6 +136,17 @@
       "warnings": "Warnings",
       "accept": "Accept",
       "reject": "Reject",
+      "before": "Before",
+      "after": "After",
+      "emptyFragment": "None",
+      "operationLabels": {
+        "insertNode": "Insert",
+        "replaceNode": "Replace",
+        "deleteNode": "Delete",
+        "moveNode": "Move",
+        "updateAttrs": "Update",
+        "replaceText": "Replace text"
+      },
       "insertAtCursor": "Insert at cursor",
       "replaceEmpty": "Replace empty document",
       "suggestedTitle": "Suggested title",

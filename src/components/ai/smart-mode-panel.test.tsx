@@ -565,6 +565,60 @@ describe("SmartModePanel", () => {
     editor.destroy();
   });
 
+  it("renders a structural edit-operations draft as change cards, built from a detached clone, without ever mutating the live editor", async () => {
+    const editor = createEditor();
+    const beforeMutation = structuredClone(editor.getJSON());
+    useEditorBridge.setState({ editor, documentId: "doc-1" });
+    client.getCredentialStatus.mockResolvedValue({ configured: true, lastFour: "1234", storage: "os-secure-storage" });
+    client.listConversations.mockResolvedValue({
+      data: [{ id: "conversation-1", documentId: "doc-1", title: "Structural", lastMessageAt: "2026-07-19T00:00:00.000Z", createdAt: "2026-07-19T00:00:00.000Z", updatedAt: "2026-07-19T00:00:00.000Z" }],
+      nextCursor: null,
+    });
+    client.listConversationMessages.mockResolvedValue({
+      data: [{
+        id: "message-2",
+        conversationId: "conversation-1",
+        sequence: 2,
+        role: "assistant",
+        intent: "rewrite-selection",
+        content: "Inserted a diagram.",
+        createdAt: "2026-07-19T00:00:00.000Z",
+        draft: {
+          kind: "edit-operations",
+          version: "anvilnote.ai.edit-operations.v1",
+          baseDocumentHash: "0".repeat(64),
+          baseSelectionHash: null,
+          // "n0" is buildEditSnapshot's own first-assigned ref, always the
+          // document root regardless of content (edit-snapshot.ts registers
+          // it before mapping any real content) — a stable anchor for an
+          // insertNode fixture that doesn't depend on this editor's exact
+          // node layout.
+          operations: [
+            {
+              type: "insertNode",
+              parentRef: "n0",
+              index: 0,
+              node: { type: "mermaid", attrs: { source: "graph TD; A-->B", theme: "default" } },
+            },
+          ],
+          summary: { operationCount: 1, addedNodeCount: 1, totalCharacterCount: 0 },
+          candidate: [],
+        },
+      }],
+      nextCursor: null,
+    });
+
+    render(<Sheet open><SmartModePanel open /></Sheet>);
+
+    expect(await screen.findAllByTestId("ai-operation-card")).toHaveLength(1);
+    expect(screen.getByText("mermaid")).toBeInTheDocument();
+    expect(screen.getByText("smart.operationLabels.insertNode")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "smart.accept" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "smart.reject" })).toBeEnabled();
+    expect(editor.getJSON()).toEqual(beforeMutation);
+    editor.destroy();
+  });
+
   it("closes the writing-style menu without closing the chat panel when blank chat space is clicked", async () => {
     const editor = createEditor();
     useEditorBridge.setState({ editor, documentId: "doc-1" });

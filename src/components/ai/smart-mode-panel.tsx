@@ -37,12 +37,14 @@ import {
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { AIDocumentPreview } from "./ai-document-preview";
+import { AiOperationPreview } from "./ai-operation-preview";
 import {
   AIClientError,
   aiClient,
   type AIConversation,
   type AIConversationAttachment,
   type AIConversationDraft,
+  type AIConversationEditOperationsDraft,
   type AIConversationMessage,
   type AIConversationTurnRequest,
   type AIProviderMetadata,
@@ -56,6 +58,7 @@ import {
   UnsupportedAIContentError,
 } from "@/lib/ai/document/converters";
 import { applyAIContent } from "@/lib/ai/document/editor-operations";
+import { buildOperationPreview, type OperationPreviewModel } from "@/lib/ai/document/operation-preview";
 import { ProtectedSelectionRegistry } from "@/lib/ai/document/protected-selection";
 import {
   createSelectionSnapshot,
@@ -182,10 +185,18 @@ function errorKey(error: unknown): string {
   return "ai.errors.unknown_error";
 }
 
+// Only ever called with a "compose"/"rewrite-selection" draft in practice —
+// insertDraft/replaceDraft are exclusively reached through DraftCard's own
+// onInsert/onReplace, and DraftCard itself already returns null for an
+// "edit-operations" draft (routed to EditOperationsDraftCard instead). The
+// third arm below exists only so this stays exhaustive for the type
+// checker; it is not a reachable path.
 function draftContent(draft: AIConversationDraft) {
-  return draft.kind === "compose"
-    ? anvilNoteDocumentToTiptap(draft.document).content ?? []
-    : anvilNoteFragmentToTiptap(draft.replacement, ProtectedSelectionRegistry.create());
+  if (draft.kind === "compose") return anvilNoteDocumentToTiptap(draft.document).content ?? [];
+  if (draft.kind === "rewrite-selection") {
+    return anvilNoteFragmentToTiptap(draft.replacement, ProtectedSelectionRegistry.create());
+  }
+  return [];
 }
 
 function draftTitle(draft: AIConversationDraft): string | null {
@@ -208,6 +219,11 @@ function DraftCard({
   const t = useTranslations("ai");
   if (!message.draft) return null;
   const { draft } = message;
+  // Routed to EditOperationsDraftCard/AiOperationPreview instead (see the
+  // message-list rendering below) — DraftCard/AIDocumentPreview stay the
+  // OLD V1-only renderer for compose/rewrite-selection and never handle
+  // this kind.
+  if (draft.kind === "edit-operations") return null;
   const canApplySelectionRewrite = Boolean(
     operation?.selectionSnapshot && operation.registry,
   );
@@ -232,6 +248,57 @@ function DraftCard({
         </div> : null}
       </div>
     </article>
+  );
+}
+
+// Renders a "edit-operations" draft's structural change cards, built
+// ENTIRELY from a detached clone of the live document via
+// buildOperationPreview — never mutates `editor` before the person clicks
+// Accept. Accept/Reject are wired to stubs here (logged, not persisted):
+// Task 24.3 (not this task) wires the real accept-flow — versioning,
+// hashing, the single-transaction atomic apply, Undo — directly onto this
+// same AiOperationPreview markup.
+function EditOperationsDraftCard({
+  editor,
+  draft,
+  disabled,
+}: {
+  editor: NonNullable<ReturnType<typeof useEditorBridge.getState>["editor"]>;
+  draft: AIConversationEditOperationsDraft;
+  disabled: boolean;
+}) {
+  const t = useTranslations("ai");
+  // Recomputed only when the draft or the live document identity changes —
+  // a stale conflict is Task 24.3's concern (it owns baseDocumentHash
+  // comparison against the live document before Accept can ever apply
+  // anything); this card only ever needs a best-effort, up-to-date preview.
+  const model = useMemo<OperationPreviewModel | null>(() => {
+    try {
+      return buildOperationPreview(editor.getJSON(), draft);
+    } catch {
+      return null;
+    }
+  }, [editor, draft]);
+
+  if (!model) {
+    return (
+      <article className="mt-2 rounded-2xl border border-destructive/30 bg-destructive/5 p-3 text-xs text-muted-foreground">
+        {t("errors.unknown_error")}
+      </article>
+    );
+  }
+
+  return (
+    <AiOperationPreview
+      model={model}
+      disabled={disabled}
+      onAccept={() => {
+        // TODO(Task 24.3): wire real accept-flow persistence here.
+      }}
+      onReject={() => {
+        // TODO(Task 24.3): wire real reject handling here.
+      }}
+    />
   );
 }
 
@@ -967,7 +1034,12 @@ export function SmartModePanel({
         <div className="space-y-4">
           {messages.map((message) => <div key={message.id} className={message.role === "user" ? "ml-10" : "mr-4"}>
             {message.role === "user" ? <UserMessage message={message} /> : <div className="rounded-2xl rounded-bl-md bg-muted px-3 py-2 text-sm">{message.content}</div>}
-            {message.role === "assistant" ? <DraftCard message={message} operation={operations.get(message.id)} disabled={state === "submitting"} onInsert={(value) => void insertDraft(value)} onReplace={(value) => void replaceDraft(value)} /> : null}
+            {message.role === "assistant" && message.draft?.kind === "edit-operations"
+              ? (editor ? <EditOperationsDraftCard editor={editor} draft={message.draft} disabled={state === "submitting"} /> : null)
+              : null}
+            {message.role === "assistant" && message.draft?.kind !== "edit-operations"
+              ? <DraftCard message={message} operation={operations.get(message.id)} disabled={state === "submitting"} onInsert={(value) => void insertDraft(value)} onReplace={(value) => void replaceDraft(value)} />
+              : null}
           </div>)}
         </div>
         {state === "submitting" ? <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />{t("smart.submitting")}</div> : null}

@@ -10,6 +10,11 @@ import type {
   AnvilNoteDocumentFragmentV1,
   AnvilNoteDocumentV1,
 } from "@anvilnote/ai-writer/document";
+import type {
+  AI_EDIT_OPERATIONS_V1_VERSION,
+  AiEditOperationV1,
+  EditDraftSummaryV1,
+} from "@anvilnote/ai-writer";
 import {
   getBrowserSessionCredential,
   getBrowserSessionCredentialStatus,
@@ -96,6 +101,38 @@ export interface AIKeyProfile {
   updatedAt: string;
 }
 
+// The turn-execution mechanism this repo actually calls (Task 23.2's
+// `executeTurn`, wired through `aiClient.executeConversationTurn`) always
+// produces this draft kind now — `compose`/`rewrite-selection` stay in this
+// union only so a previously persisted conversation row still deserializes
+// and displays via the OLD `DraftCard`/`AIDocumentPreview` path; nothing on
+// the new-turn path constructs them anymore. Mirrors `anvilnote-api`'s own
+// `AIConversationEditOperationsDraft` (ai-conversation.types.ts) field for
+// field — including `candidate: unknown`, since that field's real shape
+// (a one-element `[{type:"doc",...}]` array of already-rehydrated, real
+// persisted Tiptap JSON — see that repo's own
+// `editSnapshotCandidateToPersistedDocument`) is a concern for whichever
+// task actually consumes it (Task 24.3's Accept flow), not this one:
+// Task 24.2's own `buildOperationPreview` builds every card exclusively
+// from `operations` + the LIVE document, never from `candidate`.
+//
+// Judgment call (this file is not in Task 24.2's own plan file list, same
+// kind of call a prior task in this same plan already had to make): the
+// component work this task actually does (rendering an `edit-operations`
+// draft's change cards) is meaningless without the client ever being able
+// to SEE that draft kind come back from the API at all — the real
+// dependency graph requires this type update here even though the plan's
+// file list doesn't name it.
+export interface AIConversationEditOperationsDraft {
+  kind: "edit-operations";
+  version: typeof AI_EDIT_OPERATIONS_V1_VERSION;
+  baseDocumentHash: string;
+  baseSelectionHash: string | null;
+  operations: readonly AiEditOperationV1[];
+  summary: EditDraftSummaryV1;
+  candidate: unknown;
+}
+
 export type AIConversationDraft =
   | {
       kind: "compose";
@@ -109,7 +146,8 @@ export type AIConversationDraft =
       schemaVersion: "anvilnote.ai.rewrite-result.v1";
       replacement: AnvilNoteDocumentFragmentV1;
       changeSummary: string;
-    };
+    }
+  | AIConversationEditOperationsDraft;
 
 export interface AIConversation {
   id: string;
