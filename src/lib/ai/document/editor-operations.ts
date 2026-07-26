@@ -1,7 +1,7 @@
 import type { Editor, JSONContent } from "@tiptap/core";
-import { closeHistory } from "@tiptap/pm/history";
+import { closeHistory, undo } from "@tiptap/pm/history";
 import { Fragment } from "@tiptap/pm/model";
-import { TextSelection } from "@tiptap/pm/state";
+import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import { buildEditSnapshot } from "@anvilnote/ai-writer";
 import { tiptapDocumentToAiSnapshotSource } from "./converters";
 import { tiptapSelectionToEditSnapshot } from "./selection-snapshot";
@@ -20,10 +20,11 @@ export function isEmptyEditorDocument(editor: Editor): boolean {
   );
 }
 
-export function applyAIContent(
+function applyAIContentTransaction(
   editor: Editor,
   range: AIApplyRange,
   content: JSONContent[],
+  transactionGuard?: { key: PluginKey; token: object },
 ): boolean {
   if (
     content.length === 0 ||
@@ -42,6 +43,9 @@ export function applyAIContent(
     .command(({ tr }) => {
       closeHistory(tr);
       tr.setMeta("addToHistory", true);
+      if (transactionGuard) {
+        tr.setMeta(transactionGuard.key, transactionGuard.token);
+      }
       return true;
     });
 
@@ -64,8 +68,22 @@ export function applyAIContent(
         })
         .run();
 
-  if (applied) editor.view.dispatch(closeHistory(editor.state.tr));
+  if (applied) {
+    const historyBoundary = closeHistory(editor.state.tr);
+    if (transactionGuard) {
+      historyBoundary.setMeta(transactionGuard.key, transactionGuard.token);
+    }
+    editor.view.dispatch(historyBoundary);
+  }
   return applied;
+}
+
+export function applyAIContent(
+  editor: Editor,
+  range: AIApplyRange,
+  content: JSONContent[],
+): boolean {
+  return applyAIContentTransaction(editor, range, content);
 }
 
 /**
@@ -250,6 +268,26 @@ function assertMatchingSelectionHash(
   }
 }
 
+function assertProtectedImagesUnchanged(
+  live: JSONContent,
+  candidate: AiEditAcceptCandidateDocument,
+): void {
+  try {
+    const expected = buildEditSnapshot(tiptapDocumentToAiSnapshotSource(live)).protectedImages;
+    const actual = buildEditSnapshot(tiptapDocumentToAiSnapshotSource(candidate)).protectedImages;
+    if (
+      actual.length !== expected.length ||
+      actual.some((record, index) => record.canonicalSubtree !== expected[index]?.canonicalSubtree)
+    ) {
+      throw new Error("conversion_failed");
+    }
+  } catch {
+    throw new Error("conversion_failed");
+  }
+}
+
+const activeAccepts = new WeakSet<Editor>();
+
 export async function acceptVerifiedEditDraft(
   editor: Editor,
   draft: AiEditAcceptDraft,
@@ -263,40 +301,71 @@ export async function acceptVerifiedEditDraft(
   if (!candidateDocument || candidateDocument.type !== "doc") {
     throw new Error("conversion_failed");
   }
+  assertProtectedImagesUnchanged(live, candidateDocument);
 
-  // Checkpoint the pre-accept state BEFORE mutating anything — mirrors
-  // applyAIContent's own callers (insertDraft's `snapshotBeforeAIInsert`),
-  // and per this task's own plan, must run and complete before the replace
-  // transaction is ever dispatched.
-  await dependencies.createVersion(live);
-
-  const range: AIApplyRange = { from: 0, to: editor.state.doc.content.size };
-  const applied = applyAIContent(editor, range, candidateDocument.content);
-  if (!applied) {
-    throw new Error("conversion_failed");
+  if (activeAccepts.has(editor)) {
+    throw new Error("selection_conflict");
   }
+  activeAccepts.add(editor);
 
+  const guardKey = new PluginKey("anvilnote-ai-accept-guard");
+  const guardToken = {};
+  const rollbackToken = {};
+  const wasEditable = editor.options.editable;
+  let guardInstalled = false;
   try {
-    await dependencies.saveDocument(editor.getJSON());
-  } catch (error) {
-    // Roll back to the exact pre-accept content. `applyAIContent`'s own
-    // whole-document-replace branch just dispatched exactly ONE closed
-    // undo group for the candidate (proved by this file's own "applies
-    // every AI step as one undo event" test above) — Tiptap/ProseMirror's
-    // own `undo` command is the correct, already-battle-tested way to
-    // invert exactly that group: it POPS the existing undo entry (onto the
-    // redo stack) rather than pushing a NEW one, so the rollback itself
-    // never becomes a second, separately-undoable action, and a user's
-    // next real Undo click reaches whatever came before Accept, not some
-    // broken half-reverted state. A hand-rolled `addToHistory:false`
-    // replace transaction was deliberately rejected: it would leave the
-    // ORIGINAL accept step sitting untouched at the top of the undo stack
-    // while silently changing the live doc back underneath it, so a later
-    // Undo would try to invert that step against a doc it was never
-    // computed against — a real correctness hazard, not just a style
-    // choice. Confirmed by this file's own
-    // "restores the exact pre-accept JSON...when saving fails" test.
-    editor.commands.undo();
-    throw error;
+    editor.registerPlugin(new Plugin({
+      key: guardKey,
+      filterTransaction(transaction) {
+        const token = transaction.getMeta(guardKey);
+        if (token === guardToken || token === rollbackToken) return true;
+        const appendedTransaction = transaction.getMeta("appendedTransaction");
+        const appendedToken = appendedTransaction?.getMeta(guardKey);
+        return appendedToken === guardToken || appendedToken === rollbackToken;
+      },
+    }));
+    guardInstalled = true;
+    editor.setEditable(false, false);
+
+    // Checkpoint the pre-accept state BEFORE mutating anything — mirrors
+    // applyAIContent's own callers (insertDraft's `snapshotBeforeAIInsert`),
+    // and per this task's own plan, must run and complete before the replace
+    // transaction is ever dispatched.
+    await dependencies.createVersion(live);
+
+    const range: AIApplyRange = { from: 0, to: editor.state.doc.content.size };
+    const applied = applyAIContentTransaction(
+      editor,
+      range,
+      candidateDocument.content,
+      { key: guardKey, token: guardToken },
+    );
+    if (!applied) {
+      throw new Error("conversion_failed");
+    }
+
+    try {
+      await dependencies.saveDocument(editor.getJSON());
+    } catch (error) {
+      // The guard makes the AI event deterministically newest: no UI,
+      // programmatic, or appended document transaction can land during
+      // either await unless it is derived from the tagged AI transaction.
+      // Tagging the history transaction with its own private token therefore
+      // pops exactly that one event and does not admit another synchronous
+      // programmatic write or add a rollback event of its own.
+      undo(editor.state, (transaction) => {
+        transaction.setMeta(guardKey, rollbackToken);
+        editor.view.dispatch(transaction);
+      });
+      throw error;
+    }
+  } finally {
+    if (guardInstalled) {
+      editor.unregisterPlugin(guardKey);
+    }
+    if (!editor.isDestroyed) {
+      editor.setEditable(wasEditable, false);
+    }
+    activeAccepts.delete(editor);
   }
 }

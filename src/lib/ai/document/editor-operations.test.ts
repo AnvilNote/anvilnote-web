@@ -3,6 +3,7 @@ import Image from "@tiptap/extension-image";
 import StarterKit from "@tiptap/starter-kit";
 import { describe, expect, it, vi } from "vitest";
 import { buildEditSnapshot } from "@anvilnote/ai-writer";
+import { AnvilImageRow } from "@/lib/tiptap/image-row";
 import { tiptapDocumentToAiSnapshotSource } from "./converters";
 import {
   acceptVerifiedEditDraft,
@@ -26,6 +27,16 @@ function noopDependencies(): AcceptEditDependencies {
     createVersion: vi.fn().mockResolvedValue(undefined),
     saveDocument: vi.fn().mockResolvedValue(undefined),
   };
+}
+
+function deferred<T = void>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, resolve, reject };
 }
 
 describe("AI editor operations", () => {
@@ -144,11 +155,16 @@ describe("acceptVerifiedEditDraft", () => {
         calls.push("saveDocument");
       }),
     };
+    const documentTransactions: object[] = [];
+    instance.on("transaction", ({ transaction }) => {
+      if (transaction.docChanged) documentTransactions.push(transaction);
+    });
 
     await acceptVerifiedEditDraft(instance, draft, dependencies);
 
     expect(calls).toEqual(["createVersion", "saveDocument"]);
     expect(instance.getJSON()).toEqual(expectedCandidate);
+    expect(documentTransactions).toHaveLength(1);
 
     expect(instance.commands.undo()).toBe(true);
     expect(instance.getJSON()).toEqual(originalDocument);
@@ -223,6 +239,11 @@ describe("acceptVerifiedEditDraft", () => {
 
     expect(dependencies.saveDocument).not.toHaveBeenCalled();
     expect(instance.getJSON()).toEqual(before);
+    instance.commands.insertContentAt(instance.state.doc.content.size, {
+      type: "paragraph",
+      content: [{ type: "text", text: "Editable after version failure" }],
+    });
+    expect(instance.getText()).toBe("Before\n\nEditable after version failure");
     instance.destroy();
   });
 
@@ -292,6 +313,188 @@ describe("acceptVerifiedEditDraft", () => {
     await acceptVerifiedEditDraft(instance, draft, dependencies);
 
     expect(instance.getJSON().content?.[1]).toEqual(originalImage);
+    instance.destroy();
+  });
+
+  it.each([
+    {
+      mutation: "alters an image",
+      mutate(candidate: AiEditAcceptDraft["candidate"][0]) {
+        candidate.content[1]!.attrs!.src = "data:image/png;base64,ALTERED";
+      },
+    },
+    {
+      mutation: "removes an image",
+      mutate(candidate: AiEditAcceptDraft["candidate"][0]) {
+        candidate.content.splice(1, 1);
+      },
+    },
+    {
+      mutation: "duplicates an image",
+      mutate(candidate: AiEditAcceptDraft["candidate"][0]) {
+        candidate.content.splice(2, 0, structuredClone(candidate.content[1]!));
+      },
+    },
+    {
+      mutation: "reorders images",
+      mutate(candidate: AiEditAcceptDraft["candidate"][0]) {
+        [candidate.content[1], candidate.content[2]] = [candidate.content[2]!, candidate.content[1]!];
+      },
+    },
+    {
+      mutation: "alters an imageRow",
+      mutate(candidate: AiEditAcceptDraft["candidate"][0]) {
+        candidate.content[3]!.content![0]!.attrs!.src = "data:image/png;base64,ALTERED-ROW";
+      },
+    },
+    {
+      mutation: "removes an imageRow",
+      mutate(candidate: AiEditAcceptDraft["candidate"][0]) {
+        candidate.content.splice(3, 1);
+      },
+    },
+    {
+      mutation: "duplicates an imageRow",
+      mutate(candidate: AiEditAcceptDraft["candidate"][0]) {
+        candidate.content.splice(4, 0, structuredClone(candidate.content[3]!));
+      },
+    },
+    {
+      mutation: "reorders imageRows",
+      mutate(candidate: AiEditAcceptDraft["candidate"][0]) {
+        [candidate.content[3], candidate.content[4]] = [candidate.content[4]!, candidate.content[3]!];
+      },
+    },
+  ])("rejects before all writes when the candidate $mutation", async ({ mutate }) => {
+    const instance = editor(
+      {
+        type: "doc",
+        content: [
+          { type: "paragraph", content: [{ type: "text", text: "Before" }] },
+          { type: "image", attrs: { src: "data:image/png;base64,IMAGE-A", alt: "A" } },
+          { type: "image", attrs: { src: "data:image/png;base64,IMAGE-B", alt: "B" } },
+          {
+            type: "imageRow",
+            attrs: { caption: "Row A" },
+            content: [
+              { type: "image", attrs: { src: "data:image/png;base64,ROW-A-1" } },
+              { type: "image", attrs: { src: "data:image/png;base64,ROW-A-2" } },
+            ],
+          },
+          {
+            type: "imageRow",
+            attrs: { caption: "Row B" },
+            content: [
+              { type: "image", attrs: { src: "data:image/png;base64,ROW-B-1" } },
+              { type: "image", attrs: { src: "data:image/png;base64,ROW-B-2" } },
+            ],
+          },
+        ],
+      },
+      [StarterKit, Image, AnvilImageRow],
+    );
+    const before = instance.getJSON();
+    const candidate = structuredClone(before) as AiEditAcceptDraft["candidate"][0];
+    candidate.content[0] = {
+      type: "paragraph",
+      content: [{ type: "text", text: "After" }],
+    };
+    mutate(candidate);
+    const dependencies = noopDependencies();
+
+    await expect(acceptVerifiedEditDraft(instance, {
+      baseDocumentHash: documentHashOf(instance),
+      baseSelectionHash: null,
+      selectionRange: null,
+      candidate: [candidate],
+    }, dependencies)).rejects.toThrow("conversion_failed");
+
+    expect(dependencies.createVersion).not.toHaveBeenCalled();
+    expect(dependencies.saveDocument).not.toHaveBeenCalled();
+    expect(instance.getJSON()).toEqual(before);
+    instance.destroy();
+  });
+
+  it("guards the editor while createVersion is pending, then restores editing after success", async () => {
+    const instance = editor({
+      type: "doc",
+      content: [{ type: "paragraph", content: [{ type: "text", text: "Before" }] }],
+    });
+    const before = instance.getJSON();
+    const version = deferred();
+    const dependencies: AcceptEditDependencies = {
+      createVersion: vi.fn().mockReturnValue(version.promise),
+      saveDocument: vi.fn().mockResolvedValue(undefined),
+    };
+    const accepting = acceptVerifiedEditDraft(instance, {
+      baseDocumentHash: documentHashOf(instance),
+      baseSelectionHash: null,
+      selectionRange: null,
+      candidate: [{
+        type: "doc",
+        content: [{ type: "paragraph", content: [{ type: "text", text: "After" }] }],
+      }],
+    }, dependencies);
+
+    expect(dependencies.createVersion).toHaveBeenCalledOnce();
+    instance.commands.insertContentAt(instance.state.doc.content.size, {
+      type: "paragraph",
+      content: [{ type: "text", text: "Blocked while versioning" }],
+    });
+    expect(instance.getJSON()).toEqual(before);
+
+    version.resolve();
+    await accepting;
+
+    expect(instance.getText()).toBe("After");
+    instance.commands.insertContentAt(instance.state.doc.content.size, {
+      type: "paragraph",
+      content: [{ type: "text", text: "Editable again" }],
+    });
+    expect(instance.getText()).toBe("After\n\nEditable again");
+    instance.destroy();
+  });
+
+  it("guards the editor while saveDocument is pending and rolls back only the AI history event on failure", async () => {
+    const instance = editor({
+      type: "doc",
+      content: [{ type: "paragraph", content: [{ type: "text", text: "Before" }] }],
+    });
+    instance.commands.insertContentAt(7, { type: "text", text: " kept" });
+    const before = instance.getJSON();
+    const save = deferred();
+    const dependencies: AcceptEditDependencies = {
+      createVersion: vi.fn().mockResolvedValue(undefined),
+      saveDocument: vi.fn().mockReturnValue(save.promise),
+    };
+    const accepting = acceptVerifiedEditDraft(instance, {
+      baseDocumentHash: documentHashOf(instance),
+      baseSelectionHash: null,
+      selectionRange: null,
+      candidate: [{
+        type: "doc",
+        content: [{ type: "paragraph", content: [{ type: "text", text: "After" }] }],
+      }],
+    }, dependencies);
+
+    await vi.waitFor(() => expect(dependencies.saveDocument).toHaveBeenCalledOnce());
+    instance.commands.insertContentAt(instance.state.doc.content.size, {
+      type: "paragraph",
+      content: [{ type: "text", text: "Blocked while saving" }],
+    });
+    expect(instance.getText()).toBe("After");
+
+    save.reject(new Error("offline"));
+    await expect(accepting).rejects.toThrow("offline");
+
+    expect(instance.getJSON()).toEqual(before);
+    expect(instance.commands.undo()).toBe(true);
+    expect(instance.getText()).toBe("Before");
+    instance.commands.insertContentAt(instance.state.doc.content.size, {
+      type: "paragraph",
+      content: [{ type: "text", text: "Editable after rollback" }],
+    });
+    expect(instance.getText()).toBe("Before\n\nEditable after rollback");
     instance.destroy();
   });
 });
