@@ -60,6 +60,24 @@ describe("production editor extensions", () => {
     expect(extensions.map((extension) => extension.name)).toContain("anvilNoteInlineAIDiff");
   });
 
+  it("renders historical malformed math without KaTeX strict-mode warning spam", () => {
+    const editor = buildTestEditor();
+    try {
+      expect(
+        editor.extensionManager.extensions.find(
+          (extension) => extension.name === "inlineMath",
+        )?.options.katexOptions,
+      ).toMatchObject({ throwOnError: false, strict: false });
+      expect(
+        editor.extensionManager.extensions.find(
+          (extension) => extension.name === "blockMath",
+        )?.options.katexOptions,
+      ).toMatchObject({ throwOnError: false, strict: false });
+    } finally {
+      editor.destroy();
+    }
+  });
+
   it("has an AI capability entry for every node/mark the real editor schema registers", () => {
     const editor = buildTestEditor();
     try {

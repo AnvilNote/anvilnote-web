@@ -493,6 +493,7 @@
       "image": "圖片",
       "inlineMath": "行內公式",
       "blockMath": "區塊公式",
+      "mathSelectionContainsText": "選取內容包含一般文字，請只選取公式後再轉為數學模式。",
       "undo": "復原",
       "redo": "重做",
       "linkPrompt": "輸入網址",

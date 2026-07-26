@@ -1,5 +1,6 @@
 import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
+import { Mathematics } from "@tiptap/extension-mathematics";
 import { buildEditSnapshot } from "@anvilnote/ai-writer";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -23,7 +24,10 @@ vi.mock("@tiptap/react/menus", () => ({
   }) => <div data-plugin-key={pluginKey} className={className}>{children}</div>,
 }));
 
-import { TiptapBubbleMenu } from "./tiptap-bubble-menu";
+import {
+  containsNaturalLanguageInMathSelection,
+  TiptapBubbleMenu,
+} from "./tiptap-bubble-menu";
 
 function createEditor() {
   const editor = new Editor({
@@ -38,6 +42,11 @@ function createEditor() {
 }
 
 describe("TiptapBubbleMenu inline Smart Mode", () => {
+  it("distinguishes a formula from natural-language text before inline-math conversion", () => {
+    expect(containsNaturalLanguageInMathSelection("G \\times G \\to G")).toBe(false);
+    expect(containsNaturalLanguageInMathSelection("若 G 為有限群")).toBe(true);
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     useDocumentStore.setState({
@@ -187,6 +196,67 @@ describe("TiptapBubbleMenu inline Smart Mode", () => {
     const request = client.executeConversationTurn.mock.calls[0]?.[1];
     expect(request.context.selectedContent).toBeDefined();
     expect(request.context.baseSelectionHash).toBe(expectedSelectionHash);
+    editor.destroy();
+  });
+
+  it("submits a whole mixed prose-and-math paragraph through inline Ask AI", async () => {
+    client.executeConversationTurn.mockImplementation(() => new Promise(() => {}));
+    const editor = new Editor({
+      extensions: [
+        StarterKit,
+        Mathematics.configure({
+          katexOptions: { throwOnError: false, strict: false },
+        }),
+      ],
+      content: {
+        type: "doc",
+        content: [{
+          type: "paragraph",
+          content: [
+            { type: "text", text: "若 " },
+            { type: "inlineMath", attrs: { latex: "a,b\\in G" } },
+            { type: "text", text: "，則 " },
+            { type: "inlineMath", attrs: { latex: "a*b=b*a" } },
+            { type: "text", text: "。" },
+          ],
+        }],
+      },
+    });
+    editor.commands.setTextSelection({
+      from: 1,
+      to: editor.state.doc.content.size - 1,
+    });
+
+    render(
+      <TiptapBubbleMenu
+        editor={editor}
+        documentId="doc-1"
+        onInsertMath={vi.fn()}
+        onEditLink={vi.fn()}
+        onEditColor={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "smart.inline" }));
+    fireEvent.change(screen.getByRole("textbox"), {
+      target: { value: "修改整段" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "smart.rewrite" }));
+
+    await waitFor(() => expect(client.executeConversationTurn).toHaveBeenCalledTimes(1));
+    const selected = client.executeConversationTurn.mock.calls[0]?.[1].context
+      .selectedContent;
+    expect(selected.content[0].content).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: "inlineMath",
+          attrs: { latex: "a,b\\in G" },
+        }),
+        expect.objectContaining({
+          type: "inlineMath",
+          attrs: { latex: "a*b=b*a" },
+        }),
+      ]),
+    );
     editor.destroy();
   });
 

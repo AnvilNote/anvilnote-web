@@ -242,6 +242,7 @@
       "image": "画像",
       "inlineMath": "インライン数式",
       "blockMath": "ブロック数式",
+      "mathSelectionContainsText": "選択範囲に通常の文章が含まれています。数式だけを選択してから数式モードに変換してください。",
       "undo": "元に戻す",
       "redo": "やり直す",
       "linkPrompt": "URLを入力",

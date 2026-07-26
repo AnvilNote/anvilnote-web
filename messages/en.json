@@ -493,6 +493,7 @@
       "image": "Image",
       "inlineMath": "Inline math",
       "blockMath": "Block math",
+      "mathSelectionContainsText": "The selection contains regular text. Select only the formula before converting it to math.",
       "undo": "Undo",
       "redo": "Redo",
       "linkPrompt": "Enter a URL",

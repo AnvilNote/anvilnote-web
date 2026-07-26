@@ -1140,7 +1140,13 @@ export function buildExtensions({
     AnvilTableHeader,
     AnvilTableCell,
     Mathematics.configure({
-      katexOptions: { throwOnError: false },
+      katexOptions: {
+        throwOnError: false,
+        // Historical documents may contain Unicode prose inside a math node.
+        // Keep rendering fail-soft without flooding DevTools; new toolbar and
+        // AI paths prevent creating that malformed shape.
+        strict: false,
+      },
       inlineOptions: {
         onClick: (node, pos) =>
           onMathClick("inline", pos, String(node.attrs.latex ?? "")),

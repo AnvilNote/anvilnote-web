@@ -18,7 +18,12 @@ export const SUPPORTED_INLINE_MARKS = new Set([
 function isReviewableBlock(block: JSONContent): boolean {
   if (block.type !== "paragraph" && block.type !== "heading") return false;
   const content = block.content ?? [];
-  return content.every((node) => node.type === "text" || node.type === "hardBreak");
+  return content.every(
+    (node) =>
+      node.type === "text"
+      || node.type === "hardBreak"
+      || node.type === "inlineMath",
+  );
 }
 
 /**
@@ -47,7 +52,13 @@ export function inlineReviewBlocks(fragment: JSONContent[]): JSONContent[] | nul
 }
 
 export function inlineReviewText(content: JSONContent[]): string {
-  return content.map((node) => node.type === "hardBreak" ? "\n" : node.text ?? "").join("");
+  return content.map((node) => {
+    if (node.type === "hardBreak") return "\n";
+    if (node.type === "inlineMath") {
+      return typeof node.attrs?.latex === "string" ? node.attrs.latex : "";
+    }
+    return node.text ?? "";
+  }).join("");
 }
 
 /**
@@ -80,7 +91,10 @@ export function isPlainTextSelection(editor: Editor, from: number, to: number): 
       if (node.marks.some((mark) => !SUPPORTED_INLINE_MARKS.has(mark.type.name))) {
         valid = false;
       }
-    } else if (node.type.name !== "hardBreak") {
+    } else if (
+      node.type.name !== "hardBreak"
+      && node.type.name !== "inlineMath"
+    ) {
       valid = false;
     }
     return valid;

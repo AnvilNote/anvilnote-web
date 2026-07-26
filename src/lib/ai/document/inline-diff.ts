@@ -58,6 +58,7 @@ function renderMathNode(node: JSONContent, displayMode: boolean): HTMLElement {
     displayMode,
     throwOnError: false,
     output: "html",
+    strict: false,
   });
   return element;
 }

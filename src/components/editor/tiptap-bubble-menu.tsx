@@ -8,6 +8,7 @@ import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { useEditorState } from "@tiptap/react";
 import { useLocale, useTranslations } from "next-intl";
 import { Bot, Check, Code, Bold, Italic, Link2, Loader2, Send, Sigma, Strikethrough, X } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { MathClickMode } from "@/lib/tiptap/extensions";
 import type { AiEditOperationV1 } from "@anvilnote/ai-writer";
@@ -58,6 +59,12 @@ import { useSmartModeUIStore } from "@/lib/stores/smart-mode-ui-store";
 
 const FORMATTING_BUBBLE_PLUGIN_KEY = "anvilnote-formatting-bubble";
 const INLINE_COMPOSER_MAX_HEIGHT_PX = 88;
+const NATURAL_LANGUAGE_SCRIPT =
+  /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Thai}\p{Script=Cyrillic}\p{Script=Arabic}\p{Script=Hebrew}\p{Script=Devanagari}]/u;
+
+export function containsNaturalLanguageInMathSelection(value: string): boolean {
+  return NATURAL_LANGUAGE_SCRIPT.test(value);
+}
 
 function resizeInlineComposer(textarea: HTMLTextAreaElement) {
   textarea.style.height = "auto";
@@ -505,6 +512,7 @@ export function TiptapBubbleMenu({
             from,
             to,
             replacementText: inlineReviewText(inlineContent),
+            replacementContent: inlineContent,
           });
           setPending({ mode: "inline", content: inlineContent, snapshot });
           setInlineSelectionRange(null);
@@ -522,7 +530,12 @@ export function TiptapBubbleMenu({
           const previewText = blocks
             .map((block) => inlineReviewText(block.content ?? []))
             .join("\n\n");
-          showInlineAIDiff(editor, { from, to, replacementText: previewText });
+          showInlineAIDiff(editor, {
+            from,
+            to,
+            replacementText: previewText,
+            replacementContent: blocks,
+          });
           setPending({ mode: "blocks", content: blocks, snapshot });
           setInlineSelectionRange(null);
           setInlineOpen(false);
@@ -765,6 +778,10 @@ export function TiptapBubbleMenu({
           const text = editor.state.doc.textBetween(from, to, " ").trim();
           if (!text) {
             onInsertMath("inline");
+            return;
+          }
+          if (containsNaturalLanguageInMathSelection(text)) {
+            toast.error(t("mathSelectionContainsText"));
             return;
           }
           editor.chain().focus().deleteSelection().insertInlineMath({ latex: text }).run();
