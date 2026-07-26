@@ -541,7 +541,7 @@ describe("TiptapBubbleMenu inline Smart Mode", () => {
             { type: "text", text: "。" },
           ],
         },
-        { type: "paragraph", content: [{ type: "text", text: "乘法、商法與連鎖規則例題。" }] },
+        { type: "blockMath", attrs: { latex: "\\int_0^1 x^2\\,dx=\\frac{1}{3}" } },
       ],
     };
     const baseDocumentHash =
@@ -613,8 +613,14 @@ describe("TiptapBubbleMenu inline Smart Mode", () => {
       editor.view.dom.querySelector(".anvil-ai-inline-replacement")?.textContent,
     ).toContain("微分規則與例題");
     expect(
-      editor.view.dom.querySelector(".anvil-ai-inline-replacement")?.textContent,
-    ).toContain("\\frac{d}{dx}x^n=nx^{n-1}");
+      editor.view.dom.querySelector('[data-type="inline-math"]'),
+    ).toHaveAttribute("data-latex", "\\frac{d}{dx}x^n=nx^{n-1}");
+    expect(
+      editor.view.dom.querySelector('[data-type="inline-math"] .katex'),
+    ).toBeInTheDocument();
+    expect(
+      editor.view.dom.querySelector('[data-type="block-math"] .katex-display'),
+    ).toBeInTheDocument();
     editor.destroy();
   });
 

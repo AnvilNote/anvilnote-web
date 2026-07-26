@@ -112,10 +112,10 @@ function previewTextFromNode(node: JSONContent): string {
   return (node.content ?? []).map(previewTextFromNode).join("");
 }
 
-function changedCandidateText(
+function changedCandidateContent(
   liveContent: readonly JSONContent[],
   candidateContent: readonly JSONContent[],
-): string {
+): JSONContent[] {
   let prefix = 0;
   while (
     prefix < liveContent.length
@@ -135,10 +135,64 @@ function changedCandidateText(
     suffix += 1;
   }
 
-  return candidateContent
-    .slice(prefix, suffix ? candidateContent.length - suffix : undefined)
-    .map(previewTextFromNode)
-    .join("\n");
+  return candidateContent.slice(
+    prefix,
+    suffix ? candidateContent.length - suffix : undefined,
+  );
+}
+
+type PreviewLeaf = {
+  text: string;
+  node: JSONContent;
+};
+
+function previewLeavesFromNode(node: JSONContent): PreviewLeaf[] {
+  if (
+    node.type === "text"
+    || node.type === "hardBreak"
+    || node.type === "inlineMath"
+    || node.type === "blockMath"
+  ) {
+    return [{ text: previewTextFromNode(node), node }];
+  }
+  return (node.content ?? []).flatMap(previewLeavesFromNode);
+}
+
+function sliceCandidatePreviewContent(
+  content: readonly JSONContent[],
+  from: number,
+  to: number,
+): JSONContent[] {
+  const leaves = content.flatMap((node, index) => [
+    ...(index ? [{ text: "\n", node: { type: "hardBreak" } }] : []),
+    ...previewLeavesFromNode(node),
+  ]);
+  const sliced: JSONContent[] = [];
+  let offset = 0;
+
+  for (const leaf of leaves) {
+    const leafFrom = offset;
+    const leafTo = offset + leaf.text.length;
+    offset = leafTo;
+    const overlapFrom = Math.max(from, leafFrom);
+    const overlapTo = Math.min(to, leafTo);
+    if (overlapFrom >= overlapTo) continue;
+
+    const completeLeaf = overlapFrom === leafFrom && overlapTo === leafTo;
+    if (completeLeaf && leaf.node.type !== "text") {
+      sliced.push(leaf.node);
+      continue;
+    }
+    const text = leaf.text.slice(overlapFrom - leafFrom, overlapTo - leafFrom);
+    if (text) {
+      sliced.push({
+        type: "text",
+        text,
+        ...(leaf.node.marks ? { marks: leaf.node.marks } : {}),
+      });
+    }
+  }
+  return sliced.length ? [{ type: "inlinePreview", content: sliced }] : [];
 }
 
 /**
@@ -148,11 +202,11 @@ function changedCandidateText(
  * candidate's structurally changed top-level range so the person can still
  * review the complete proposed text inline.
  */
-function inlineReplacementTextFromCandidate(
+function inlineReplacementFromCandidate(
   editor: Editor,
   draft: AIConversationEditOperationsDraft,
   range: InlineAISelectionRange,
-): string | null {
+): { text: string; content?: JSONContent[] } | null {
   const candidate = draft.candidate[0];
   if (!candidate) return null;
   try {
@@ -174,12 +228,27 @@ function inlineReplacementTextFromCandidate(
       && candidateText.endsWith(suffix)
       && candidateText.length >= prefix.length + suffix.length
     ) {
-      return candidateText.slice(
-        prefix.length,
-        suffix.length ? candidateText.length - suffix.length : undefined,
-      );
+      const replacementFrom = prefix.length;
+      const replacementTo = suffix.length
+        ? candidateText.length - suffix.length
+        : candidateText.length;
+      return {
+        text: candidateText.slice(replacementFrom, replacementTo),
+        content: sliceCandidatePreviewContent(
+          candidate.content,
+          replacementFrom,
+          replacementTo,
+        ),
+      };
     }
-    return changedCandidateText(editor.getJSON().content ?? [], candidate.content);
+    const content = changedCandidateContent(
+      editor.getJSON().content ?? [],
+      candidate.content,
+    );
+    return {
+      text: content.map(previewTextFromNode).join("\n"),
+      content,
+    };
   } catch {
     return null;
   }
@@ -491,16 +560,21 @@ export function TiptapBubbleMenu({
           return;
         }
 
-        const replacementText = inlineReplacementTextFromCandidate(
+        const replacement = inlineReplacementFromCandidate(
           editor,
           assistant.draft,
           { from, to },
         );
-        if (replacementText === null) {
+        if (replacement === null) {
           setInlineError("ai.errors.conversion_failed");
           return;
         }
-        showInlineAIDiff(editor, { from, to, replacementText });
+        showInlineAIDiff(editor, {
+          from,
+          to,
+          replacementText: replacement.text,
+          replacementContent: replacement.content,
+        });
         setPending({ mode: "verified", draft: assistant.draft, snapshot });
         setInlineSelectionRange(null);
         setInlineOpen(false);

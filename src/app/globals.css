@@ -2023,6 +2023,26 @@ body:has(.anvil-drag-handle[data-dragging="true"]) .anvil-footnotes-panel {
   white-space: pre-wrap;
 }
 
+.anvil-ai-inline-replacement__block,
+.anvil-ai-inline-replacement__block-math {
+  display: block;
+}
+
+.anvil-ai-inline-replacement__block + .anvil-ai-inline-replacement__block,
+.anvil-ai-inline-replacement__block + .anvil-ai-inline-replacement__block-math,
+.anvil-ai-inline-replacement__block-math + .anvil-ai-inline-replacement__block {
+  margin-block-start: 0.35em;
+}
+
+.anvil-ai-inline-replacement [data-type="inline-math"] {
+  display: inline;
+}
+
+.anvil-ai-inline-replacement [data-type="block-math"] {
+  margin-block: 0.35em;
+  overflow-x: auto;
+}
+
 @keyframes holiday-fall {
   0% {
     /* translateY must be viewport-relative (vh), not a percentage — a

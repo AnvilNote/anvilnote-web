@@ -1,25 +1,129 @@
-import { Extension, type Editor } from "@tiptap/core";
+import { Extension, type Editor, type JSONContent } from "@tiptap/core";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
+import katex from "katex";
 
 type InlineDiffAction =
   | { type: "show-selection"; from: number; to: number }
-  | { type: "show"; from: number; to: number; replacementText: string }
+  | {
+      type: "show";
+      from: number;
+      to: number;
+      replacementText: string;
+      replacementContent?: JSONContent[];
+    }
   | { type: "clear" };
 
 export const inlineAIDiffPluginKey = new PluginKey<DecorationSet>("anvilnote-ai-inline-diff");
+
+function safeLinkHref(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  try {
+    const url = new URL(value, window.location.origin);
+    return ["http:", "https:", "mailto:", "tel:"].includes(url.protocol) ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function applyPreviewMarks(node: Node, marks: JSONContent["marks"]): Node {
+  return (marks ?? []).reduce<Node>((content, mark) => {
+    let wrapper: HTMLElement | null = null;
+    if (mark.type === "bold") wrapper = document.createElement("strong");
+    if (mark.type === "italic") wrapper = document.createElement("em");
+    if (mark.type === "strike") wrapper = document.createElement("s");
+    if (mark.type === "code") wrapper = document.createElement("code");
+    if (mark.type === "underline") wrapper = document.createElement("u");
+    if (mark.type === "link") {
+      const href = safeLinkHref(mark.attrs?.href);
+      if (href) {
+        const link = document.createElement("a");
+        link.href = href;
+        wrapper = link;
+      }
+    }
+    if (!wrapper) return content;
+    wrapper.append(content);
+    return wrapper;
+  }, node);
+}
+
+function renderMathNode(node: JSONContent, displayMode: boolean): HTMLElement {
+  const element = document.createElement("span");
+  const latex = typeof node.attrs?.latex === "string" ? node.attrs.latex : "";
+  element.dataset.type = displayMode ? "block-math" : "inline-math";
+  element.dataset.latex = latex;
+  if (displayMode) element.className = "anvil-ai-inline-replacement__block-math";
+  katex.render(latex, element, {
+    displayMode,
+    throwOnError: false,
+    output: "html",
+  });
+  return element;
+}
+
+function appendPreviewNode(parent: Node, node: JSONContent): void {
+  if (node.type === "text") {
+    parent.appendChild(
+      applyPreviewMarks(document.createTextNode(node.text ?? ""), node.marks),
+    );
+    return;
+  }
+  if (node.type === "hardBreak") {
+    parent.appendChild(document.createTextNode("\n"));
+    return;
+  }
+  if (node.type === "inlineMath" || node.type === "blockMath") {
+    parent.appendChild(renderMathNode(node, node.type === "blockMath"));
+    return;
+  }
+
+  const block = [
+    "paragraph",
+    "heading",
+    "blockquote",
+    "codeBlock",
+    "bulletList",
+    "orderedList",
+    "listItem",
+  ].includes(node.type ?? "");
+  const container = document.createElement("span");
+  if (block) container.className = "anvil-ai-inline-replacement__block";
+  for (const child of node.content ?? []) appendPreviewNode(container, child);
+  parent.appendChild(container);
+}
+
+function renderReplacement(
+  replacement: HTMLElement,
+  replacementText: string,
+  replacementContent?: readonly JSONContent[],
+): void {
+  if (!replacementContent?.length) {
+    replacement.textContent = replacementText;
+    return;
+  }
+  try {
+    replacementContent.forEach((node, index) => {
+      if (index) replacement.appendChild(document.createTextNode("\n"));
+      appendPreviewNode(replacement, node);
+    });
+  } catch {
+    replacement.replaceChildren(document.createTextNode(replacementText));
+  }
+}
 
 function makeDecorations(
   doc: Parameters<typeof DecorationSet.create>[0],
   from: number,
   to: number,
   replacementText: string,
+  replacementContent?: readonly JSONContent[],
 ): DecorationSet {
   if (from < 0 || to < from || to > doc.content.size) return DecorationSet.empty;
   const replacement = document.createElement("span");
   replacement.className = "anvil-ai-inline-replacement";
   replacement.style.color = "#939bc9";
-  replacement.textContent = replacementText;
+  renderReplacement(replacement, replacementText, replacementContent);
   return DecorationSet.create(doc, [
     Decoration.inline(from, to, {
       class: "anvil-ai-inline-original",
@@ -57,6 +161,7 @@ function createInlineAIDiffPlugin() {
             action.from,
             action.to,
             action.replacementText,
+            action.replacementContent,
           );
         }
         return previous;
@@ -105,7 +210,12 @@ export function showInlineAISelection(
  */
 export function showInlineAIDiff(
   editor: Editor,
-  input: { from: number; to: number; replacementText: string },
+  input: {
+    from: number;
+    to: number;
+    replacementText: string;
+    replacementContent?: JSONContent[];
+  },
 ): void {
   if (!installed(editor)) editor.registerPlugin(createInlineAIDiffPlugin());
   editor.view.dispatch(editor.state.tr.setMeta(inlineAIDiffPluginKey, {
