@@ -50,7 +50,54 @@ function pressTab(editor: Editor, shiftKey = false) {
   );
 }
 
+function nestedList(
+  type: "orderedList" | "bulletList",
+  labels: string[],
+): Record<string, unknown> {
+  const [label, ...rest] = labels;
+  return {
+    type,
+    content: [
+      {
+        type: "listItem",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: label }],
+          },
+          ...(rest.length > 0 ? [nestedList(type, rest)] : []),
+        ],
+      },
+    ],
+  };
+}
+
 describe("editor Tab behavior", () => {
+  it("renders the configured marker for every ordered and bullet list depth", () => {
+    const editor = createEditor({
+      type: "doc",
+      content: [
+        nestedList("orderedList", [
+          "Ordered 1",
+          "Ordered 2",
+          "Ordered 3",
+          "Ordered 4",
+          "Ordered 5",
+        ]),
+        nestedList("bulletList", ["Bullet 1", "Bullet 2", "Bullet 3", "Bullet 4"]),
+      ],
+    });
+
+    try {
+      const markers = Array.from(editor.view.dom.querySelectorAll("li")).map((item) =>
+        item.getAttribute("data-list-marker"),
+      );
+      expect(markers).toEqual(["1.", "(1)", "①", "a.", "(a)", "•", "◦", "▪", "–"]);
+    } finally {
+      editor.destroy();
+    }
+  });
+
   it("indents and outdents the current top-level paragraph without moving focus", () => {
     const editor = createEditor({
       type: "doc",
@@ -173,6 +220,96 @@ describe("editor Tab behavior", () => {
           },
         ],
       });
+    } finally {
+      editor.destroy();
+    }
+  });
+
+  it.each([
+    ["bulletList", "orderedList"],
+    ["orderedList", "bulletList"],
+  ] as const)("nests a %s item under a preceding %s item", (childType, parentType) => {
+    const editor = createEditor({
+      type: "doc",
+      content: [
+        {
+          type: parentType,
+          content: [
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [{ type: "text", text: "Parent item" }],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: childType,
+          content: [
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [{ type: "text", text: "Mixed child item" }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    try {
+      editor.commands.setTextSelection(textPosition(editor, "Mixed child item"));
+
+      pressTab(editor);
+
+      const document = editor.getJSON() as unknown as {
+        content?: Array<Record<string, unknown>>;
+      };
+      expect(document.content?.[0]).toMatchObject({
+        type: parentType,
+        content: [
+          {
+            type: "listItem",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Parent item" }],
+              },
+              {
+                type: childType,
+                content: [
+                  {
+                    type: "listItem",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          { type: "text", text: "Mixed child item" },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+
+      const parentTag = parentType === "orderedList" ? "ol" : "ul";
+      const childTag = childType === "orderedList" ? "ol" : "ul";
+      const childItem = editor.view.dom.querySelector(
+        `${parentTag} > li > ${childTag} > li`,
+      );
+      expect(childItem?.getAttribute("data-list-marker")).toBe(
+        childType === "orderedList" ? "1." : "•",
+      );
     } finally {
       editor.destroy();
     }

@@ -1196,112 +1196,23 @@
   color: #7ee787;
 }
 
-@counter-style anvil-decimal {
-  system: extends decimal;
-  suffix: ". ";
-}
-
-@counter-style anvil-parenthesized-decimal {
-  system: extends decimal;
-  prefix: "(";
-  suffix: ") ";
-}
-
-@counter-style anvil-circled-decimal {
-  system: fixed 1;
-  symbols: "①" "②" "③" "④" "⑤" "⑥" "⑦" "⑧" "⑨" "⑩" "⑪" "⑫" "⑬" "⑭"
-    "⑮" "⑯" "⑰" "⑱" "⑲" "⑳";
-  suffix: " ";
-  fallback: decimal;
-}
-
-@counter-style anvil-lower-alpha {
-  system: extends lower-alpha;
-  suffix: ". ";
-}
-
-@counter-style anvil-parenthesized-lower-alpha {
-  system: extends lower-alpha;
-  prefix: "(";
-  suffix: ") ";
-}
-
-@counter-style anvil-bullet {
-  system: cyclic;
-  symbols: "•";
-  suffix: " ";
-}
-
-@counter-style anvil-hollow-bullet {
-  system: cyclic;
-  symbols: "◦";
-  suffix: " ";
-}
-
-@counter-style anvil-square-bullet {
-  system: cyclic;
-  symbols: "▪";
-  suffix: " ";
-}
-
-@counter-style anvil-dash-bullet {
-  system: cyclic;
-  symbols: "–";
-  suffix: " ";
-}
-
 .ProseMirror ul,
 .ProseMirror ol {
   padding-left: 1.5rem;
   margin: 0.5rem 0;
 }
 
-.ProseMirror ul {
-  list-style-type: anvil-bullet;
-}
-
-.ProseMirror :is(ol, ul) ul {
-  list-style-type: anvil-hollow-bullet;
-}
-
-.ProseMirror :is(ol, ul) :is(ol, ul) ul {
-  list-style-type: anvil-square-bullet;
-}
-
-.ProseMirror :is(ol, ul) :is(ol, ul) :is(ol, ul) ul {
-  list-style-type: anvil-dash-bullet;
-}
-
+.ProseMirror ul:not([data-type="taskList"]),
 .ProseMirror ol {
-  list-style-type: anvil-decimal;
-}
-
-.ProseMirror :is(ol, ul) ol {
-  list-style-type: anvil-parenthesized-decimal;
-}
-
-.ProseMirror :is(ol, ul) :is(ol, ul) ol {
-  list-style-type: anvil-circled-decimal;
-}
-
-.ProseMirror :is(ol, ul) :is(ol, ul) :is(ol, ul) ol {
-  list-style-type: anvil-lower-alpha;
-}
-
-.ProseMirror
-  :is(ol, ul)
-  :is(ol, ul)
-  :is(ol, ul)
-  :is(ol, ul)
-  ol {
-  list-style-type: anvil-parenthesized-lower-alpha;
+  list-style-type: none;
 }
 
 .ProseMirror li {
   margin: 0.2rem 0;
 }
 
-.ProseMirror li::marker {
+.ProseMirror li[data-list-marker]::marker {
+  content: attr(data-list-marker) " ";
   color: var(--foreground);
 }
 

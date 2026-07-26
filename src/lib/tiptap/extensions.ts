@@ -39,6 +39,7 @@ import { QuestionBlankSuggestion } from "@/components/editor/question-blank-sugg
 import { InlineBlank } from "@/lib/tiptap/inline-blank";
 import { TabNavigation } from "@/lib/tiptap/tab-navigation";
 import { ParagraphIndent } from "@/lib/tiptap/paragraph-indent";
+import { ListMarkers } from "@/lib/tiptap/list-markers";
 import { AnvilDivider } from "@/lib/tiptap/divider";
 import { captionHasMath, renderCaptionHtml } from "@/lib/tiptap/caption-math";
 import { insertTrackSize, resizeTrackPair } from "@/lib/tiptap/table-geometry";
@@ -1039,6 +1040,7 @@ export function buildExtensions({
       },
     }),
     ParagraphIndent,
+    ListMarkers,
     AnvilDocument,
     AnvilBlockquote,
     AnvilDivider,

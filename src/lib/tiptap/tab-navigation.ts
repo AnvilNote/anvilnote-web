@@ -1,6 +1,10 @@
 import { Extension } from "@tiptap/core";
 import type { Node as PMNode } from "@tiptap/pm/model";
-import { TextSelection, type EditorState } from "@tiptap/pm/state";
+import {
+  TextSelection,
+  type EditorState,
+  type Transaction,
+} from "@tiptap/pm/state";
 
 const MATH_NODE_NAMES = new Set(["inlineMath", "blockMath"]);
 
@@ -78,6 +82,86 @@ function selectionIsInsideListItem(state: EditorState) {
   return false;
 }
 
+function sinkIntoPreviousMixedList(
+  state: EditorState,
+  dispatch: (transaction: Transaction) => void,
+) {
+  const { $from, empty } = state.selection;
+  if (!empty) return false;
+
+  let itemDepth = -1;
+  for (let depth = $from.depth; depth > 0; depth -= 1) {
+    if ($from.node(depth).type.name === "listItem") {
+      itemDepth = depth;
+      break;
+    }
+  }
+  if (itemDepth < 2) return false;
+
+  const listDepth = itemDepth - 1;
+  const containerDepth = listDepth - 1;
+  const currentList = $from.node(listDepth);
+  if (
+    (currentList.type.name !== "bulletList" &&
+      currentList.type.name !== "orderedList") ||
+    $from.index(listDepth) !== 0
+  ) {
+    return false;
+  }
+
+  const currentListIndex = $from.index(containerDepth);
+  if (currentListIndex === 0) return false;
+
+  const container = $from.node(containerDepth);
+  const previousList = container.child(currentListIndex - 1);
+  if (
+    (previousList.type.name !== "bulletList" &&
+      previousList.type.name !== "orderedList") ||
+    previousList.type === currentList.type
+  ) {
+    return false;
+  }
+
+  const currentItem = currentList.firstChild;
+  const previousItem = previousList.lastChild;
+  if (!currentItem || previousItem?.type.name !== "listItem") return false;
+
+  const currentListStart = $from.before(listDepth);
+  const currentListEnd = $from.after(listDepth);
+  const currentItemStart = $from.before(itemDepth);
+  const currentItemEnd = $from.after(itemDepth);
+  const previousListStart = currentListStart - previousList.nodeSize;
+  const previousItemStart =
+    previousListStart + 1 + previousList.content.size - previousItem.nodeSize;
+  const previousItemLastChild = previousItem.lastChild;
+  const existingNestedList =
+    previousItemLastChild?.type === currentList.type ? previousItemLastChild : null;
+  const insertPos = existingNestedList
+    ? previousItemStart + previousItem.content.size
+    : previousItemStart + previousItem.nodeSize - 1;
+  const deleteFrom =
+    currentList.childCount === 1 ? currentListStart : currentItemStart;
+  const deleteTo = currentList.childCount === 1 ? currentListEnd : currentItemEnd;
+  const selectionOffset = state.selection.from - currentItemStart;
+  const transaction = state.tr.delete(deleteFrom, deleteTo);
+
+  if (existingNestedList) {
+    transaction.insert(insertPos, currentItem);
+    transaction.setSelection(
+      TextSelection.create(transaction.doc, insertPos + selectionOffset),
+    );
+  } else {
+    const nestedList = currentList.type.create(currentList.attrs, [currentItem]);
+    transaction.insert(insertPos, nestedList);
+    transaction.setSelection(
+      TextSelection.create(transaction.doc, insertPos + 1 + selectionOffset),
+    );
+  }
+
+  dispatch(transaction.scrollIntoView());
+  return true;
+}
+
 // This is deliberately lower-priority than structural and paragraph keymaps,
 // so ListItem's sink/lift commands and ParagraphIndent get first refusal.
 // Tiptap reverses equal-priority extensions when building ProseMirror plugins,
@@ -117,7 +201,10 @@ export const TabNavigation = Extension.create<TabNavigationOptions>({
         // If it declined (for example, the first item has no previous sibling
         // to nest under), consume Tab here instead of turning that structural
         // boundary into unrelated field navigation.
-        if (selectionIsInsideListItem(state)) return true;
+        if (selectionIsInsideListItem(state)) {
+          if (sinkIntoPreviousMixedList(state, dispatch)) view.focus();
+          return true;
+        }
         const target =
           findStopForward(state.doc, state.selection.to) ?? findStopForward(state.doc, 0);
         if (!target) return false;
