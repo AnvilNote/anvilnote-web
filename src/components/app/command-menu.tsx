@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import {
+  Clock3,
   FileDown,
   FileText,
   LayoutTemplate,
@@ -32,6 +33,18 @@ import { deliverPdf } from "@/lib/export-pdf";
 import { resolveExportFolder } from "@/lib/export-folder";
 import { getNodeText } from "@/lib/tiptap/serialization";
 import { locales } from "@/lib/i18n/routing";
+import { isDesktopShell } from "@/components/app/app-version";
+import { FeatureSearchGroup } from "@/components/app/feature-search-group";
+import {
+  resolveFeatureCatalog,
+  type FeatureTranslator,
+} from "@/lib/features/feature-catalog";
+import {
+  startFeatureGuide,
+  type FeatureGuideStartResult,
+} from "@/lib/features/feature-guide";
+import type { ResolvedFeature } from "@/lib/features/feature-search";
+import { useRecentSearchStore } from "@/lib/stores/recent-search-store";
 
 // Cap how much body text feeds the fuzzy index (perf) and snippet context size.
 const BODY_INDEX_LIMIT = 4000;
@@ -96,9 +109,15 @@ export function CommandMenu() {
   const setActiveDocument = useDocumentStore((s) => s.setActive);
   const projects = useProjectStore((s) => s.projects);
   const settings = useSettingsStore();
+  const recentSearches = useRecentSearchStore((s) => s.searches);
+  const addRecentSearch = useRecentSearchStore((s) => s.addSearch);
 
   // Track the query so we can show a body snippet for content matches.
   const [query, setQuery] = useState("");
+  const featureCatalog = useMemo(
+    () => resolveFeatureCatalog(t as unknown as FeatureTranslator),
+    [t],
+  );
 
   // Pre-extract each document's plain body text once for fuzzy search.
   const docIndex = useMemo(
@@ -123,8 +142,34 @@ export function CommandMenu() {
   }, []);
 
   function run(action: () => void) {
+    if (query.trim()) addRecentSearch(query);
     setOpen(false);
     action();
+  }
+
+  function showGuideError(result: FeatureGuideStartResult) {
+    if (result.ok) return;
+    toast.info(
+      result.reason === "document-required"
+        ? t("featureFinder.documentRequired")
+        : t("featureFinder.desktopRequired"),
+    );
+  }
+
+  function selectFeature(feature: ResolvedFeature) {
+    if (query.trim()) addRecentSearch(query);
+    setOpen(false);
+
+    window.setTimeout(() => {
+      const documentId =
+        typeof params.documentId === "string" ? params.documentId : null;
+      showGuideError(
+        startFeatureGuide(feature, {
+          documentId,
+          isDesktop: isDesktopShell(),
+        }),
+      );
+    }, 0);
   }
 
   async function exportCurrent() {
@@ -173,6 +218,7 @@ export function CommandMenu() {
       }}
       title={t("app.name")}
       description={t("command.placeholder")}
+      className="top-1/2 h-[30rem] max-h-[calc(100dvh-2rem)] w-[40rem] max-w-[calc(100vw-2rem)] -translate-y-1/2 sm:max-w-[calc(100vw-2rem)]"
     >
       <Command>
         <CommandInput
@@ -180,10 +226,37 @@ export function CommandMenu() {
           onValueChange={setQuery}
           placeholder={t("command.placeholder")}
         />
-        <CommandList>
-          <CommandEmpty>{t("command.empty")}</CommandEmpty>
+        <CommandList className="min-h-0 max-h-none flex-1">
+          {query.trim() ? (
+            <CommandEmpty>{t("featureFinder.noMatch")}</CommandEmpty>
+          ) : null}
 
-          {documents.length > 0 ? (
+          {!query.trim() && recentSearches.length > 0 ? (
+            <>
+              <CommandGroup heading={t("featureFinder.recentSearches")}>
+                {recentSearches.slice(0, 5).map((recentQuery) => (
+                  <CommandItem
+                    key={recentQuery}
+                    value={`recent ${recentQuery}`}
+                    onSelect={() => setQuery(recentQuery)}
+                  >
+                    <Clock3 className="size-4 text-muted-foreground" />
+                    <span className="truncate">{recentQuery}</span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+              <CommandSeparator />
+            </>
+          ) : null}
+
+          <FeatureSearchGroup
+            query={query}
+            features={featureCatalog}
+            onSelect={selectFeature}
+          />
+          {query.trim() ? <CommandSeparator /> : null}
+
+          {query.trim() && documents.length > 0 ? (
             <>
               <CommandGroup heading={t("nav.documents")}>
                 {docIndex.map(({ doc, title, body }) => {
@@ -218,65 +291,77 @@ export function CommandMenu() {
             </>
           ) : null}
 
-          <CommandGroup heading={t("command.groups.actions")}>
-            <CommandItem
-              onSelect={() =>
-                run(() => {
-                  void createDocument(undefined, t("documents.defaultTitle"), {
-                    heading: t("documents.defaultHeading"),
-                    body: t("documents.defaultBody"),
-                  }).then((doc) => {
-                    router.push(`/documents/${doc.id}`);
-                    toast.success(t("toast.documentCreated"));
-                  });
-                })
-              }
-            >
-              <Plus className="size-4" />
-              {t("command.newDocument")}
-            </CommandItem>
-            <CommandItem onSelect={() => run(() => void exportCurrent())}>
-              <FileDown className="size-4" />
-              {t("command.export")}
-            </CommandItem>
-          </CommandGroup>
-
-          <CommandSeparator />
-
-          <CommandGroup heading={t("command.groups.navigation")}>
-            <CommandItem onSelect={() => run(() => router.push("/documents"))}>
-              <FileText className="size-4" />
-              {t("command.goDocuments")}
-            </CommandItem>
-            <CommandItem onSelect={() => run(() => router.push("/templates"))}>
-              <LayoutTemplate className="size-4" />
-              {t("command.goTemplates")}
-            </CommandItem>
-            <CommandItem onSelect={() => run(() => openSettings())}>
-              <Settings className="size-4" />
-              {t("command.goSettings")}
-            </CommandItem>
-          </CommandGroup>
-
-          <CommandSeparator />
-
-          <CommandGroup heading={t("command.groups.language")}>
-            {locales
-              .filter((l) => l !== locale)
-              .map((l) => (
+          {query.trim() ? (
+            <>
+              <CommandGroup heading={t("command.groups.actions")}>
                 <CommandItem
-                  key={l}
                   onSelect={() =>
-                    run(() => router.replace(pathname, { locale: l }))
+                    run(() => {
+                      void createDocument(
+                        undefined,
+                        t("documents.defaultTitle"),
+                        {
+                          heading: t("documents.defaultHeading"),
+                          body: t("documents.defaultBody"),
+                        },
+                      ).then((doc) => {
+                        router.push(`/documents/${doc.id}`);
+                        toast.success(t("toast.documentCreated"));
+                      });
+                    })
                   }
                 >
-                  <Languages className="size-4" />
-                  {t("command.switchLocale", {
-                    locale: t(`locale.${l}` as never),
-                  })}
+                  <Plus className="size-4" />
+                  {t("command.newDocument")}
                 </CommandItem>
-              ))}
-          </CommandGroup>
+                <CommandItem onSelect={() => run(() => void exportCurrent())}>
+                  <FileDown className="size-4" />
+                  {t("command.export")}
+                </CommandItem>
+              </CommandGroup>
+
+              <CommandSeparator />
+
+              <CommandGroup heading={t("command.groups.navigation")}>
+                <CommandItem
+                  onSelect={() => run(() => router.push("/documents"))}
+                >
+                  <FileText className="size-4" />
+                  {t("command.goDocuments")}
+                </CommandItem>
+                <CommandItem
+                  onSelect={() => run(() => router.push("/templates"))}
+                >
+                  <LayoutTemplate className="size-4" />
+                  {t("command.goTemplates")}
+                </CommandItem>
+                <CommandItem onSelect={() => run(() => openSettings())}>
+                  <Settings className="size-4" />
+                  {t("command.goSettings")}
+                </CommandItem>
+              </CommandGroup>
+
+              <CommandSeparator />
+
+              <CommandGroup heading={t("command.groups.language")}>
+                {locales
+                  .filter((l) => l !== locale)
+                  .map((l) => (
+                    <CommandItem
+                      key={l}
+                      onSelect={() =>
+                        run(() => router.replace(pathname, { locale: l }))
+                      }
+                    >
+                      <Languages className="size-4" />
+                      {t("command.switchLocale", {
+                        locale: t(`locale.${l}` as never),
+                      })}
+                    </CommandItem>
+                  ))}
+              </CommandGroup>
+            </>
+          ) : null}
         </CommandList>
       </Command>
     </CommandDialog>

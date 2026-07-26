@@ -822,7 +822,7 @@
       "dark": "다크",
       "us-letter": "레터"
     },
-    "previewTemplate": "템플릿 보기",
+    "previewTemplate": "문서 미리보기",
     "templatePreview": "미리보기",
     "useThisTemplate": "이 템플릿 적용",
     "noPreviewAvailable": "이 템플릿의 미리보기가 아직 없습니다",
@@ -983,6 +983,58 @@
       "removePaletteTitle": "\"{name}\" 팔레트를 삭제할까요?",
       "removePaletteDescription": "이 팔레트와 안에 있는 모든 색상이 영구적으로 삭제됩니다.",
       "renamePalette": "팔레트 이름 변경"
+    }
+  },
+  "featureFinder": {
+    "group": "기능",
+    "recentSearches": "최근 검색",
+    "here": "{feature} 기능은 여기 있습니다",
+    "noMatch": "원하는 기능을 찾을 수 없나요? 다른 키워드를 사용해 보세요.",
+    "documentRequired": "문서를 연 다음 다시 검색해 주세요.",
+    "desktopRequired": "이 기능은 데스크톱 앱에서만 사용할 수 있습니다.",
+    "targetUnavailable": "지금은 기능 위치를 표시할 수 없습니다. 다시 시도해 주세요.",
+    "labels": {
+      "aiSettings": "AI 설정"
+    },
+    "paths": {
+      "editorToolbar": "편집기 › 도구 모음",
+      "editorSlash": "편집기 › / 명령",
+      "sidebar": "사이드바",
+      "rightPanel": "편집기 › 오른쪽 패널",
+      "settings": "설정",
+      "help": "도움말"
+    },
+    "descriptions": {
+      "openSection": "이 섹션 열기",
+      "insertBlock": "문서에 이 콘텐츠 블록 삽입",
+      "ai": "스마트 모드로 문서 작성, 재작성 및 정리 지원",
+      "help": "튜토리얼, 단축키 및 기능 도움말 보기"
+    },
+    "keywords": {
+      "documents": ["노트", "파일"],
+      "projects": ["분류", "폴더"],
+      "templates": ["레이아웃", "스타일"],
+      "templatePreview": ["미리보기", "눈", "템플릿 보기"],
+      "settings": ["환경설정", "옵션"],
+      "heading": ["제목", "헤딩"],
+      "bold": ["굵게", "bold"],
+      "list": ["글머리표", "번호", "목록"],
+      "question": ["문제", "시험", "선택지"],
+      "chart": ["차트", "통계", "그래프"],
+      "table": ["표", "행", "열"],
+      "image": ["이미지", "사진"],
+      "pageBreak": ["새 페이지", "페이지 나누기", "page break"],
+      "pageBreakSmart": ["스마트 페이지 나누기", "빈 페이지 방지"],
+      "math": ["수학", "수식", "LaTeX"],
+      "ai": ["AI", "스마트 모드"],
+      "proof": ["증명", "proof"],
+      "divider": ["구분선", "가로선"],
+      "history": ["버전", "기록", "스냅샷", "복원"],
+      "export": ["내보내기", "PDF", "DOCX", "Markdown"],
+      "palette": ["팔레트", "색상", "배색"],
+      "backup": ["백업", "복원", "가져오기"],
+      "update": ["업데이트", "업그레이드", "버전"],
+      "help": ["튜토리얼", "도움말", "단축키"]
     }
   },
   "command": {

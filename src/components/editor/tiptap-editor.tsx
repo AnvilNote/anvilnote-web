@@ -44,6 +44,7 @@ import {
 } from "@/components/editor/math-editor-dialog";
 import {
   createSlashCommand,
+  SlashList,
   type SlashItem,
 } from "@/components/editor/slash-command-menu";
 import { TableSizeDialog } from "@/components/editor/table-size-picker";
@@ -69,6 +70,7 @@ import { emptyTiptapContent } from "@/lib/tiptap/default-content";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import { useEditorBridge } from "@/lib/stores/editor-bridge";
+import { useFeatureGuideStore } from "@/lib/stores/feature-guide-store";
 
 export function TiptapEditor({ documentId }: { documentId: string }) {
   const t = useTranslations();
@@ -83,6 +85,8 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
 
   const register = useEditorBridge((s) => s.register);
   const unregister = useEditorBridge((s) => s.unregister);
+  const featureGuide = useFeatureGuideStore((s) => s.active);
+  const dismissFeatureGuide = useFeatureGuideStore((s) => s.dismiss);
 
   const handleImageError = useCallback(
     (kind: "unsupported" | "pdfRenderFailed") => {
@@ -320,6 +324,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         },
       },
       {
+        featureId: "editor.slash.divider",
         title: tt("divider"),
         subtitle: tt("dividerHint"),
         icon: SeparatorHorizontal,
@@ -329,6 +334,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         run: run((c) => c.setHorizontalRule().run()),
       },
       {
+        featureId: "editor.slash.proof",
         title: tt("proof"),
         subtitle: tt("proofHint"),
         icon: Square,
@@ -489,6 +495,13 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
     },
   });
 
+  const featureSlashMenuOpen =
+    featureGuide?.reveal?.kind === "slash-menu";
+
+  useEffect(() => {
+    if (featureSlashMenuOpen) editor?.commands.focus();
+  }, [editor, featureSlashMenuOpen, featureGuide?.requestId]);
+
   // Expose this editor to the global command menu while it's mounted.
   useEffect(() => {
     if (!editor) return;
@@ -582,7 +595,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
 
       <div
         data-tour="editor-area"
-        className="anvil-editor mx-auto w-full max-w-[820px] flex-1 pl-12 pr-3 pb-24 lg:pb-32"
+        className="anvil-editor relative mx-auto w-full max-w-[820px] flex-1 pl-12 pr-3 pb-24 lg:pb-32"
         onClick={(event) => {
           if (!editor) return;
           // The footnotes panel is `position: fixed` (pinned to the bottom
@@ -633,6 +646,18 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
             .run();
         }}
       >
+        {editor && featureSlashMenuOpen ? (
+          <div className="absolute top-2 left-12 z-50">
+            <SlashList
+              items={slashItems}
+              command={(item) => {
+                const { from, to } = editor.state.selection;
+                item.run({ editor, range: { from, to } });
+                dismissFeatureGuide();
+              }}
+            />
+          </div>
+        ) : null}
         {editor ? (
           <>
             <TiptapBubbleMenu

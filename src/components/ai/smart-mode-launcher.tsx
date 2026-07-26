@@ -37,6 +37,7 @@ export function SmartModeLauncher() {
               aria-label={t("smart.open")}
               aria-expanded={open}
               aria-controls="smart-mode-panel"
+              data-feature-id="editor.smartMode"
             >
               <Bot className="size-5" />
             </Button>

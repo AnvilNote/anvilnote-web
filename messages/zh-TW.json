@@ -1073,7 +1073,7 @@
       "dark": "深色",
       "us-letter": "美式信紙"
     },
-    "previewTemplate": "查看範本",
+    "previewTemplate": "預覽文件",
     "templatePreview": "預覽",
     "useThisTemplate": "套用這個範本",
     "noPreviewAvailable": "此範本尚無預覽",
@@ -1234,6 +1234,58 @@
       "removePaletteTitle": "要移除「{name}」這個色盤嗎？",
       "removePaletteDescription": "這會永久刪除這個色盤和裡面的所有顏色。",
       "renamePalette": "重新命名色盤"
+    }
+  },
+  "featureFinder": {
+    "group": "功能",
+    "recentSearches": "最近搜尋",
+    "here": "{feature} 在這裡",
+    "noMatch": "找不到想要的功能？換其他關鍵字試試？",
+    "documentRequired": "請先開啟文件後再次找尋",
+    "desktopRequired": "此功能僅支援桌面版。",
+    "targetUnavailable": "暫時無法顯示功能位置，請稍後再試。",
+    "labels": {
+      "aiSettings": "AI 設定"
+    },
+    "paths": {
+      "editorToolbar": "編輯器 › 工具列",
+      "editorSlash": "編輯器 › / 指令",
+      "sidebar": "側邊欄",
+      "rightPanel": "編輯器 › 右側面板",
+      "settings": "設定",
+      "help": "說明"
+    },
+    "descriptions": {
+      "openSection": "開啟這個功能區",
+      "insertBlock": "在文件中插入這個內容區塊",
+      "ai": "使用智慧模式協助撰寫、改寫與整理文件",
+      "help": "查看教學、快捷鍵與功能說明"
+    },
+    "keywords": {
+      "documents": ["筆記", "檔案"],
+      "projects": ["分類", "資料夾"],
+      "templates": ["版型", "樣式"],
+      "templatePreview": ["預覽", "預覽文件", "眼睛", "查看範本"],
+      "settings": ["偏好設定", "選項"],
+      "heading": ["標題", "大標", "小標"],
+      "bold": ["加粗", "粗字", "bold"],
+      "list": ["列點", "項目符號", "編號"],
+      "question": ["題目", "考卷", "選擇題"],
+      "chart": ["圖表", "統計", "chart"],
+      "table": ["表格", "欄列"],
+      "image": ["圖片", "照片", "插圖"],
+      "pageBreak": ["換頁", "新頁", "page break"],
+      "pageBreakSmart": ["智慧換頁", "避免空白頁"],
+      "math": ["數學", "公式", "LaTeX"],
+      "ai": ["AI", "人工智慧", "智慧模式", "問問 AI"],
+      "proof": ["證明", "proof"],
+      "divider": ["分隔線", "水平線"],
+      "history": ["版本", "歷史", "快照", "還原"],
+      "export": ["匯出", "PDF", "DOCX", "Markdown"],
+      "palette": ["色盤", "配色", "顏色"],
+      "backup": ["備份", "還原", "匯入", "backup"],
+      "update": ["更新", "升級", "版本"],
+      "help": ["教學", "說明", "小抄", "快捷鍵"]
     }
   },
   "command": {

@@ -8,6 +8,7 @@ import type { AnvilTemplate } from "@/types/template";
 import type { AnvilDocument } from "@/types/document";
 import { TemplatePreviewDialog } from "@/components/templates/template-preview-dialog";
 import { cn } from "@/lib/utils";
+import { useFeatureGuideStore } from "@/lib/stores/feature-guide-store";
 
 export function TemplatePreviewButton({
   template,
@@ -26,6 +27,9 @@ export function TemplatePreviewButton({
 }) {
   const t = useTranslations("templates");
   const [open, setOpen] = useState(false);
+  const guided = useFeatureGuideStore(
+    (state) => state.active?.targetId === "panel.templatePreview",
+  );
 
   return (
     <>
@@ -34,7 +38,12 @@ export function TemplatePreviewButton({
         variant="ghost"
         size="icon"
         aria-label={t("previewTemplate")}
-        className={cn("text-muted-foreground hover:text-foreground", className)}
+        data-feature-id="panel.templatePreview"
+        className={cn(
+          "text-muted-foreground hover:text-foreground",
+          className,
+          guided && "opacity-100",
+        )}
         onClick={(event) => {
           // Cards may be clickable; don't trigger their select handler.
           event.stopPropagation();

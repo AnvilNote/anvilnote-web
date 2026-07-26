@@ -822,7 +822,7 @@
       "dark": "ダーク",
       "us-letter": "レターサイズ"
     },
-    "previewTemplate": "テンプレートを見る",
+    "previewTemplate": "文書をプレビュー",
     "templatePreview": "プレビュー",
     "useThisTemplate": "このテンプレートを適用",
     "noPreviewAvailable": "このテンプレートのプレビューはまだありません",
@@ -983,6 +983,58 @@
       "removePaletteTitle": "「{name}」パレットを削除しますか？",
       "removePaletteDescription": "このパレットと中の色がすべて完全に削除されます。",
       "renamePalette": "パレット名を変更"
+    }
+  },
+  "featureFinder": {
+    "group": "機能",
+    "recentSearches": "最近の検索",
+    "here": "{feature} はここです",
+    "noMatch": "機能が見つかりませんか？別のキーワードを試してください。",
+    "documentRequired": "文書を開いてから、もう一度検索してください。",
+    "desktopRequired": "この機能はデスクトップ版のみ対応しています。",
+    "targetUnavailable": "現在この機能の場所を表示できません。後でもう一度お試しください。",
+    "labels": {
+      "aiSettings": "AI 設定"
+    },
+    "paths": {
+      "editorToolbar": "エディター › ツールバー",
+      "editorSlash": "エディター › / コマンド",
+      "sidebar": "サイドバー",
+      "rightPanel": "エディター › 右パネル",
+      "settings": "設定",
+      "help": "ヘルプ"
+    },
+    "descriptions": {
+      "openSection": "このセクションを開きます",
+      "insertBlock": "このコンテンツブロックを文書に挿入します",
+      "ai": "スマートモードで文書の作成、書き換え、整理を支援します",
+      "help": "チュートリアル、ショートカット、機能説明を表示します"
+    },
+    "keywords": {
+      "documents": ["ノート", "ファイル"],
+      "projects": ["分類", "フォルダー"],
+      "templates": ["レイアウト", "スタイル"],
+      "templatePreview": ["プレビュー", "目", "テンプレートを見る"],
+      "settings": ["環境設定", "オプション"],
+      "heading": ["見出し", "タイトル"],
+      "bold": ["太字", "bold"],
+      "list": ["箇条書き", "番号"],
+      "question": ["問題", "テスト", "選択肢"],
+      "chart": ["グラフ", "統計", "chart"],
+      "table": ["表", "行", "列"],
+      "image": ["画像", "写真"],
+      "pageBreak": ["改ページ", "新しいページ", "page break"],
+      "pageBreakSmart": ["スマート改ページ", "空白ページ回避"],
+      "math": ["数式", "数学", "LaTeX"],
+      "ai": ["AI", "スマートモード"],
+      "proof": ["証明", "proof"],
+      "divider": ["区切り線", "水平線"],
+      "history": ["バージョン", "履歴", "スナップショット"],
+      "export": ["書き出し", "PDF", "DOCX", "Markdown"],
+      "palette": ["パレット", "配色", "色"],
+      "backup": ["バックアップ", "復元", "読み込み"],
+      "update": ["更新", "アップグレード", "バージョン"],
+      "help": ["チュートリアル", "ヘルプ", "ショートカット"]
     }
   },
   "command": {

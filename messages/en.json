@@ -1073,7 +1073,7 @@
       "dark": "Dark",
       "us-letter": "US Letter"
     },
-    "previewTemplate": "View template",
+    "previewTemplate": "Preview document",
     "templatePreview": "Preview",
     "useThisTemplate": "Apply this template",
     "noPreviewAvailable": "No preview for this template yet",
@@ -1234,6 +1234,58 @@
       "removePaletteTitle": "Remove the \"{name}\" palette?",
       "removePaletteDescription": "This permanently deletes the palette and every color in it.",
       "renamePalette": "Rename palette"
+    }
+  },
+  "featureFinder": {
+    "group": "Features",
+    "recentSearches": "Recent searches",
+    "here": "{feature} is here",
+    "noMatch": "Can't find the feature? Try another keyword.",
+    "documentRequired": "Open a document, then search again.",
+    "desktopRequired": "This feature is available only in the desktop app.",
+    "targetUnavailable": "This feature's location cannot be shown right now. Try again.",
+    "labels": {
+      "aiSettings": "AI settings"
+    },
+    "paths": {
+      "editorToolbar": "Editor › Toolbar",
+      "editorSlash": "Editor › / commands",
+      "sidebar": "Sidebar",
+      "rightPanel": "Editor › Right panel",
+      "settings": "Settings",
+      "help": "Help"
+    },
+    "descriptions": {
+      "openSection": "Open this section",
+      "insertBlock": "Insert this content block into the document",
+      "ai": "Use Smart Mode to write, rewrite, and organize documents",
+      "help": "View tutorials, shortcuts, and feature help"
+    },
+    "keywords": {
+      "documents": ["notes", "files"],
+      "projects": ["folders", "organize"],
+      "templates": ["layout", "style"],
+      "templatePreview": ["preview", "eye", "view template"],
+      "settings": ["preferences", "options"],
+      "heading": ["title", "heading", "section"],
+      "bold": ["bold", "strong", "thick text"],
+      "list": ["bullets", "numbering", "list"],
+      "question": ["quiz", "exam", "question"],
+      "chart": ["chart", "statistics", "graph"],
+      "table": ["table", "rows", "columns"],
+      "image": ["image", "photo", "picture"],
+      "pageBreak": ["new page", "page break"],
+      "pageBreakSmart": ["smart break", "avoid blank page"],
+      "math": ["math", "formula", "LaTeX"],
+      "ai": ["AI", "smart mode", "ask AI"],
+      "proof": ["proof", "theorem"],
+      "divider": ["divider", "horizontal rule"],
+      "history": ["version", "history", "snapshot", "restore"],
+      "export": ["export", "PDF", "DOCX", "Markdown"],
+      "palette": ["palette", "colors", "theme"],
+      "backup": ["backup", "restore", "import"],
+      "update": ["update", "upgrade", "version"],
+      "help": ["tutorial", "help", "cheat sheet", "shortcuts"]
     }
   },
   "command": {
