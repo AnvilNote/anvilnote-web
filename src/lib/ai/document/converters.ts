@@ -493,3 +493,13 @@ export function anvilNoteFragmentToTiptap(
   const converted = fragment.content.map(tiptapBlock);
   return registry ? registry.restore(converted) : converted;
 }
+
+// V2 canonical AST conversion (Task 24.1): implementation lives in
+// ai-snapshot-converters.ts (kept out of this file to stay under ~500
+// lines alongside the OLD V1 code above) — re-exported so callers can
+// still `import ... from "./converters"`. See that module's header for
+// the full design.
+export {
+  aiSnapshotCandidateToTiptap,
+  tiptapDocumentToAiSnapshotSource,
+} from "./ai-snapshot-converters";
