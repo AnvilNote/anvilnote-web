@@ -6,7 +6,7 @@
 // node's `pdfSrc` attribute) so export to Typst — which CAN embed a PDF
 // natively as of Typst 0.14 — still gets the crisp vector original instead
 // of this rasterized stand-in.
-export async function renderPdfFirstPageToPng(file: File): Promise<string> {
+async function renderPdfBufferToPng(buffer: ArrayBuffer): Promise<string> {
   const pdfjs = await import("pdfjs-dist");
   // Same worker-resolution pattern as template-pdf-viewer.tsx: the
   // `import.meta.url` form lets the bundler emit the worker as a static
@@ -16,7 +16,6 @@ export async function renderPdfFirstPageToPng(file: File): Promise<string> {
     import.meta.url,
   ).toString();
 
-  const buffer = await file.arrayBuffer();
   const pdf = await pdfjs.getDocument({ data: buffer }).promise;
   const page = await pdf.getPage(1);
   // 2x scale for a reasonably crisp preview on high-DPI screens; this is
@@ -34,4 +33,17 @@ export async function renderPdfFirstPageToPng(file: File): Promise<string> {
 
   await page.render({ canvas, canvasContext: context, viewport }).promise;
   return canvas.toDataURL("image/png");
+}
+
+export async function renderPdfFirstPageToPng(file: File): Promise<string> {
+  return renderPdfBufferToPng(await file.arrayBuffer());
+}
+
+export async function renderPdfBase64ToPng(base64: string): Promise<string> {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return renderPdfBufferToPng(bytes.buffer);
 }

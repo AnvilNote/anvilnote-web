@@ -1,27 +1,33 @@
-// AnvilNote's design system is deliberately grayscale (globals.css's
-// --primary/--accent have zero chroma) — new curves default to black/dark
-// gray + a cycling dash pattern instead of introducing new hues, matching
-// that visual language. Users can still pick any color via the per-curve
-// color picker.
-export const DASH_CYCLE = ["solid", "dashed", "dotted", "dash-dot"] as const;
-export const COLOR_CYCLE = ["#000000", "#595959"] as const;
-export const MAX_CURVES = 6;
-// Compact-view row cap in function-plot-dialog.tsx, matching
-// stats-chart-dialog.tsx's VISIBLE_ROW_LIMIT pattern.
+export type FunctionPlotMode = "1d" | "2d" | "3d-surface" | "3d-contour";
+
+export const MAX_CURVES_BY_MODE: Record<FunctionPlotMode, number> = {
+  "1d": 5,
+  "2d": 5,
+  "3d-surface": 1,
+  "3d-contour": 1,
+};
+
+export const DEFAULT_COLOR = "#000000";
+export const DEFAULT_GRID_STEP = 1;
 export const CURVE_PREVIEW_LIMIT = 3;
-// Matches anvilnote-charts's own curve schema default (points) — used both
-// as a new curve's initial stroke width and as the display fallback for
-// older saved curves that predate this field.
-export const DEFAULT_THICKNESS = 1.5;
-export const MIN_THICKNESS = 0.5;
-export const MAX_THICKNESS = 4;
 
-export type DashStyle = (typeof DASH_CYCLE)[number];
+// Default names cycle f, g, h, i, j -- matches the max curve count (5) so
+// every row gets a distinct, editable starting name; a user is always free
+// to rename or clear it (empty means no label drawn at all).
+const DEFAULT_LABEL_CYCLE = ["f", "g", "h", "i", "j"];
 
-export function defaultCurveStyle(index: number): { color: string; dash: DashStyle; thickness: number } {
+export function defaultCurve(index = 0): {
+  expr: string;
+  color: string;
+  label: string | null;
+  labelOffsetX: number;
+  labelOffsetY: number;
+} {
   return {
-    dash: DASH_CYCLE[index % DASH_CYCLE.length],
-    color: COLOR_CYCLE[Math.floor(index / DASH_CYCLE.length) % COLOR_CYCLE.length],
-    thickness: DEFAULT_THICKNESS,
+    expr: "",
+    color: DEFAULT_COLOR,
+    label: DEFAULT_LABEL_CYCLE[index % DEFAULT_LABEL_CYCLE.length],
+    labelOffsetX: 0,
+    labelOffsetY: 0,
   };
 }

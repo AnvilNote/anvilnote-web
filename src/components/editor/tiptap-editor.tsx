@@ -288,8 +288,8 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
           insertMermaid(editor);
         },
       },
-      // Hidden per explicit request alongside the toolbar button — see
-      // tiptap-toolbar.tsx's matching comment for why.
+      // Hidden from the slash menu alongside its toolbar entry point --
+      // see tiptap-toolbar.tsx's own comment for why.
       // {
       //   title: tt("functionPlot"),
       //   subtitle: tt("functionPlotHint"),
