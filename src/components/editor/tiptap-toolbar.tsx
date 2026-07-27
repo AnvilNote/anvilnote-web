@@ -56,6 +56,7 @@ import { pickAndInsertImage } from "@/lib/tiptap/image";
 import { insertCallout } from "@/lib/tiptap/callout";
 import { insertQuestion } from "@/lib/tiptap/question";
 import { QuestionKindMenu } from "@/components/editor/question-kind-menu";
+import { PageBreakMenu } from "@/components/editor/page-break-menu";
 import { insertMermaid } from "@/lib/tiptap/mermaid";
 import { insertFunctionPlot } from "@/lib/tiptap/function-plot";
 import { insertStatsChart } from "@/lib/tiptap/stats-chart";
@@ -65,6 +66,7 @@ import type {
   TableAlign,
   TableVariant,
 } from "@/lib/tiptap/extensions";
+import { useFeatureMenuReveal } from "@/lib/features/use-feature-menu-reveal";
 
 function ToolbarButton({
   icon: Icon,
@@ -73,6 +75,7 @@ function ToolbarButton({
   disabled,
   onClick,
   dataTour,
+  featureId,
 }: {
   icon: ComponentType<{ className?: string }>;
   label: string;
@@ -83,6 +86,7 @@ function ToolbarButton({
    *  of the much larger generic editor-area anchor — only set on buttons a
    *  tour step actually points at. */
   dataTour?: string;
+  featureId?: string;
 }) {
   return (
     <button
@@ -93,6 +97,7 @@ function ToolbarButton({
       disabled={disabled}
       onClick={onClick}
       data-tour={dataTour}
+      data-feature-id={featureId}
       className={cn(
         "inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors md:size-8",
         "hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-40",
@@ -118,23 +123,25 @@ function HeadingDropdown({
   active: { h1: boolean; h2: boolean; h3: boolean };
   labels: { heading1: string; heading2: string; heading3: string };
 }) {
+  const { open, setOpen } = useFeatureMenuReveal("editor.heading");
   const entries = [
-    { level: 1 as const, icon: Heading1, label: labels.heading1, isActive: active.h1 },
-    { level: 2 as const, icon: Heading2, label: labels.heading2, isActive: active.h2 },
-    { level: 3 as const, icon: Heading3, label: labels.heading3, isActive: active.h3 },
+    { level: 1 as const, id: "editor.heading1", icon: Heading1, label: labels.heading1, isActive: active.h1 },
+    { level: 2 as const, id: "editor.heading2", icon: Heading2, label: labels.heading2, isActive: active.h2 },
+    { level: 3 as const, id: "editor.heading3", icon: Heading3, label: labels.heading3, isActive: active.h3 },
   ];
   const activeEntry = entries.find((entry) => entry.isActive);
   const TriggerIcon = activeEntry?.icon ?? Heading;
   const isActive = Boolean(activeEntry);
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
           aria-label={activeEntry?.label ?? "Heading"}
           title={activeEntry?.label ?? "Heading"}
           aria-pressed={isActive}
+          data-feature-id="editor.heading"
           className={cn(
             "inline-flex h-7 shrink-0 items-center gap-0.5 rounded-md px-1 text-muted-foreground transition-colors md:h-8",
             "hover:bg-accent hover:text-foreground",
@@ -146,9 +153,10 @@ function HeadingDropdown({
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-40">
-        {entries.map(({ level, icon: Icon, label, isActive: entryActive }) => (
+        {entries.map(({ level, id, icon: Icon, label, isActive: entryActive }) => (
           <DropdownMenuItem
             key={level}
+            data-feature-id={id}
             onSelect={() => editor.chain().focus().toggleHeading({ level }).run()}
           >
             <Icon className="size-4" />
@@ -175,20 +183,22 @@ function MathDropdown({
   labels: { inlineMath: string; blockMath: string };
   onInsertMath: (mode: MathClickMode) => void;
 }) {
+  const { open, setOpen } = useFeatureMenuReveal("editor.math");
   const entries = [
-    { mode: "inline" as const, icon: Sigma, label: labels.inlineMath, isActive: active.inlineMath },
-    { mode: "block" as const, icon: SquareSigma, label: labels.blockMath, isActive: active.blockMath },
+    { mode: "inline" as const, id: "editor.inlineMath", icon: Sigma, label: labels.inlineMath, isActive: active.inlineMath },
+    { mode: "block" as const, id: "editor.blockMath", icon: SquareSigma, label: labels.blockMath, isActive: active.blockMath },
   ];
   const activeEntry = entries.find((entry) => entry.isActive);
   const TriggerIcon = activeEntry?.icon ?? Sigma;
   const isActive = Boolean(activeEntry);
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <button
           aria-label={activeEntry?.label ?? labels.inlineMath}
           aria-pressed={isActive}
+          data-feature-id="editor.math"
           className={cn(
             "inline-flex h-7 shrink-0 items-center gap-0.5 rounded-md px-1 text-muted-foreground transition-colors md:h-8",
             "hover:bg-accent hover:text-foreground",
@@ -202,8 +212,8 @@ function MathDropdown({
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-48">
-        {entries.map(({ mode, icon: Icon, label, isActive: entryActive }) => (
-          <DropdownMenuItem key={mode} onSelect={() => onInsertMath(mode)}>
+        {entries.map(({ mode, id, icon: Icon, label, isActive: entryActive }) => (
+          <DropdownMenuItem data-feature-id={id} key={mode} onSelect={() => onInsertMath(mode)}>
             <Icon className="size-4" />
             {label}
             <Check className={cn("ml-auto size-4", entryActive ? "opacity-100" : "opacity-0")} />
@@ -236,6 +246,7 @@ function TableSizePicker({
           type="button"
           title={label}
           aria-label={label}
+          data-feature-id="editor.table"
           className={cn(
             "inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors md:size-8",
             "hover:bg-accent hover:text-foreground",
@@ -319,6 +330,7 @@ export function TiptapToolbar({
         <ToolbarButton
           icon={Pilcrow}
           label={t("paragraph")}
+          featureId="editor.paragraph"
           active={s.paragraph}
           onClick={() => editor.chain().focus().setParagraph().run()}
         />
@@ -335,30 +347,35 @@ export function TiptapToolbar({
         <ToolbarButton
           icon={Bold}
           label={t("bold")}
+          featureId="editor.bold"
           active={s.bold}
           onClick={() => editor.chain().focus().toggleBold().run()}
         />
         <ToolbarButton
           icon={Italic}
           label={t("italic")}
+          featureId="editor.italic"
           active={s.italic}
           onClick={() => editor.chain().focus().toggleItalic().run()}
         />
         <ToolbarButton
           icon={SquareAsterisk}
           label={t("footnote")}
+          featureId="editor.footnote"
           onClick={() => editor.chain().focus().addFootnote().run()}
           dataTour="footnote-btn"
         />
         <ToolbarButton
           icon={Strikethrough}
           label={t("strike")}
+          featureId="editor.strike"
           active={s.strike}
           onClick={() => editor.chain().focus().toggleStrike().run()}
         />
         <ToolbarButton
           icon={Code}
           label={t("code")}
+          featureId="editor.code"
           active={s.code}
           onClick={() => editor.chain().focus().toggleCode().run()}
         />
@@ -370,12 +387,14 @@ export function TiptapToolbar({
         <ToolbarButton
           icon={List}
           label={t("bulletList")}
+          featureId="editor.bulletList"
           active={s.bulletList}
           onClick={() => editor.chain().focus().toggleBulletList().run()}
         />
         <ToolbarButton
           icon={ListOrdered}
           label={t("orderedList")}
+          featureId="editor.orderedList"
           active={s.orderedList}
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
         />
@@ -387,12 +406,14 @@ export function TiptapToolbar({
         <ToolbarButton
           icon={Quote}
           label={t("blockquote")}
+          featureId="editor.blockquote"
           active={s.blockquote}
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
         />
         <ToolbarButton
           icon={MessageSquareWarning}
           label={t("callout")}
+          featureId="editor.callout"
           active={s.callout}
           onClick={() =>
             insertCallout(
@@ -411,6 +432,7 @@ export function TiptapToolbar({
               aria-label={t("questionBlock")}
               aria-pressed={s.question}
               data-tour="question-block-btn"
+              data-feature-id="editor.question"
               className={cn(
                 "inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors md:size-8",
                 "hover:bg-accent hover:text-foreground",
@@ -424,6 +446,7 @@ export function TiptapToolbar({
         <ToolbarButton
           icon={Workflow}
           label={t("mermaid")}
+          featureId="editor.mermaid"
           active={s.mermaid}
           onClick={() => insertMermaid(editor)}
         />
@@ -441,12 +464,14 @@ export function TiptapToolbar({
         <ToolbarButton
           icon={BarChart3}
           label={t("statsChart")}
+          featureId="editor.statsChart"
           active={s.statsChart}
           onClick={() => insertStatsChart(editor)}
         />
         <ToolbarButton
           icon={Code2}
           label={t("codeBlock")}
+          featureId="editor.codeBlock"
           active={s.codeBlock}
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
         />
@@ -469,7 +494,18 @@ export function TiptapToolbar({
         <ToolbarButton
           icon={ImagePlus}
           label={t("image")}
+          featureId="editor.image"
           onClick={() => pickAndInsertImage(editor, onImageError)}
+        />
+        <PageBreakMenu
+          editor={editor}
+          labels={{
+            trigger: t("pageBreak"),
+            forced: t("pageBreakForced"),
+            forcedHint: t("pageBreakForcedHint"),
+            weak: t("pageBreakWeak"),
+            weakHint: t("pageBreakWeakHint"),
+          }}
         />
       </div>
 
@@ -489,12 +525,14 @@ export function TiptapToolbar({
         <ToolbarButton
           icon={Undo2}
           label={t("undo")}
+          featureId="editor.undo"
           disabled={!s.canUndo}
           onClick={() => editor.chain().focus().undo().run()}
         />
         <ToolbarButton
           icon={Redo2}
           label={t("redo")}
+          featureId="editor.redo"
           disabled={!s.canRedo}
           onClick={() => editor.chain().focus().redo().run()}
         />

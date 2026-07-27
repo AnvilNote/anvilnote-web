@@ -136,6 +136,22 @@
       "warnings": "警告",
       "accept": "接受",
       "reject": "拒絕",
+      "accepted": "已接受",
+      "rejected": "已拒絕",
+      "changesReady": "以下是修改的內容，請查看預覽，如有疑問請跟我說！",
+      "changesApplied": "修改已套用。",
+      "changesRejected": "已拒絕這次修改。",
+      "before": "變更前",
+      "after": "變更後",
+      "emptyFragment": "無",
+      "operationLabels": {
+        "insertNode": "插入",
+        "replaceNode": "取代",
+        "deleteNode": "刪除",
+        "moveNode": "移動",
+        "updateAttrs": "更新屬性",
+        "replaceText": "取代文字"
+      },
       "insertAtCursor": "插入游標位置",
       "replaceEmpty": "取代空白文件",
       "suggestedTitle": "建議標題",
@@ -175,6 +191,15 @@
       "rename": "重新命名",
       "delete": "刪除",
       "save": "儲存"
+    },
+    "edits": {
+      "errors": {
+        "invalid_edit_operation": "無法安全套用 AI 編輯，請重新產生。",
+        "invalid_reference": "AI 編輯參照的內容已不存在，請重新產生。",
+        "unsupported_image_edit": "智慧模式無法直接新增、移除、移動或修改圖片。",
+        "request_too_large": "AI 編輯內容過大，無法安全套用。請縮短要求後再試。",
+        "stale_document": "這份 AI 編輯產生後，文件已有變更。請重新產生。"
+      }
     },
     "errors": {
       "invalid_api_key": "OpenAI API 金鑰無效。",
@@ -468,6 +493,7 @@
       "image": "圖片",
       "inlineMath": "行內公式",
       "blockMath": "區塊公式",
+      "mathSelectionContainsText": "選取內容包含一般文字，請只選取公式後再轉為數學模式。",
       "undo": "復原",
       "redo": "重做",
       "linkPrompt": "輸入網址",
@@ -481,7 +507,13 @@
       "mermaid": "Mermaid 圖表",
       "functionPlot": "函數圖",
       "statsChart": "統計圖",
-      "questionBlock": "問題方塊"
+      "questionBlock": "問題方塊",
+      "pageBreak": "分頁",
+      "pageBreakDelete": "刪除分頁",
+      "pageBreakForced": "強制分頁",
+      "pageBreakForcedHint": "一律從下一頁開始",
+      "pageBreakWeak": "智慧分頁",
+      "pageBreakWeakHint": "已在頁首時不重複分頁"
     },
     "slash": {
       "text": "內文",
@@ -1073,7 +1105,7 @@
       "dark": "深色",
       "us-letter": "美式信紙"
     },
-    "previewTemplate": "查看範本",
+    "previewTemplate": "預覽文件",
     "templatePreview": "預覽",
     "useThisTemplate": "套用這個範本",
     "noPreviewAvailable": "此範本尚無預覽",
@@ -1234,6 +1266,58 @@
       "removePaletteTitle": "要移除「{name}」這個色盤嗎？",
       "removePaletteDescription": "這會永久刪除這個色盤和裡面的所有顏色。",
       "renamePalette": "重新命名色盤"
+    }
+  },
+  "featureFinder": {
+    "group": "功能",
+    "recentSearches": "最近搜尋",
+    "here": "{feature} 在這裡",
+    "noMatch": "找不到想要的功能？換其他關鍵字試試？",
+    "documentRequired": "請先開啟文件後再次找尋",
+    "desktopRequired": "此功能僅支援桌面版。",
+    "targetUnavailable": "暫時無法顯示功能位置，請稍後再試。",
+    "labels": {
+      "aiSettings": "AI 設定"
+    },
+    "paths": {
+      "editorToolbar": "編輯器 › 工具列",
+      "editorSlash": "編輯器 › / 指令",
+      "sidebar": "側邊欄",
+      "rightPanel": "編輯器 › 右側面板",
+      "settings": "設定",
+      "help": "說明"
+    },
+    "descriptions": {
+      "openSection": "開啟這個功能區",
+      "insertBlock": "在文件中插入這個內容區塊",
+      "ai": "使用智慧模式協助撰寫、改寫與整理文件",
+      "help": "查看教學、快捷鍵與功能說明"
+    },
+    "keywords": {
+      "documents": ["筆記", "檔案"],
+      "projects": ["分類", "資料夾"],
+      "templates": ["版型", "樣式"],
+      "templatePreview": ["預覽", "預覽文件", "眼睛", "查看範本"],
+      "settings": ["偏好設定", "選項"],
+      "heading": ["標題", "大標", "小標"],
+      "bold": ["加粗", "粗字", "bold"],
+      "list": ["列點", "項目符號", "編號"],
+      "question": ["題目", "考卷", "選擇題"],
+      "chart": ["圖表", "統計", "chart"],
+      "table": ["表格", "欄列"],
+      "image": ["圖片", "照片", "插圖"],
+      "pageBreak": ["換頁", "新頁", "page break"],
+      "pageBreakSmart": ["智慧換頁", "避免空白頁"],
+      "math": ["數學", "公式", "LaTeX"],
+      "ai": ["AI", "人工智慧", "智慧模式", "問問 AI"],
+      "proof": ["證明", "proof"],
+      "divider": ["分隔線", "水平線"],
+      "history": ["版本", "歷史", "快照", "還原"],
+      "export": ["匯出", "PDF", "DOCX", "Markdown"],
+      "palette": ["色盤", "配色", "顏色"],
+      "backup": ["備份", "還原", "匯入", "backup"],
+      "update": ["更新", "升級", "版本"],
+      "help": ["教學", "說明", "小抄", "快捷鍵"]
     }
   },
   "command": {

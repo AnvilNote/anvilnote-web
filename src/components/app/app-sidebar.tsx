@@ -47,10 +47,10 @@ export function AppSidebar() {
   }
 
   const navItems = [
-    { href: "/projects", label: t("nav.projects"), icon: FolderKanban },
-    { href: "/documents", label: t("nav.documents"), icon: FileText },
-    { href: "/templates", label: t("nav.templates"), icon: LayoutTemplate },
-    { href: "/about", label: t("nav.about"), icon: Info },
+    { href: "/projects", label: t("nav.projects"), icon: FolderKanban, featureId: "nav.projects" },
+    { href: "/documents", label: t("nav.documents"), icon: FileText, featureId: "nav.documents" },
+    { href: "/templates", label: t("nav.templates"), icon: LayoutTemplate, featureId: "nav.templates" },
+    { href: "/about", label: t("nav.about"), icon: Info, featureId: undefined },
   ];
 
   return (
@@ -125,7 +125,11 @@ export function AppSidebar() {
                     asChild
                     tooltip={item.label}
                   >
-                    <Link href={item.href} onClick={closeMobile}>
+                    <Link
+                      href={item.href}
+                      onClick={closeMobile}
+                      data-feature-id={item.featureId}
+                    >
                       <item.icon className="size-4" />
                       <span>{item.label}</span>
                     </Link>
@@ -135,6 +139,7 @@ export function AppSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   tooltip={t("nav.settings")}
+                  data-feature-id="nav.settings"
                   onClick={() => {
                     closeMobile();
                     openSettings();

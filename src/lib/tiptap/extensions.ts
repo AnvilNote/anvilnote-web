@@ -38,6 +38,9 @@ import { QuestionBlank } from "@/lib/tiptap/question-blank";
 import { QuestionBlankSuggestion } from "@/components/editor/question-blank-suggestion";
 import { InlineBlank } from "@/lib/tiptap/inline-blank";
 import { TabNavigation } from "@/lib/tiptap/tab-navigation";
+import { ParagraphIndent } from "@/lib/tiptap/paragraph-indent";
+import { ListMarkers } from "@/lib/tiptap/list-markers";
+import { PageBreak } from "@/lib/tiptap/page-break";
 import { AnvilDivider } from "@/lib/tiptap/divider";
 import { captionHasMath, renderCaptionHtml } from "@/lib/tiptap/caption-math";
 import { insertTrackSize, resizeTrackPair } from "@/lib/tiptap/table-geometry";
@@ -1037,9 +1040,12 @@ export function buildExtensions({
         HTMLAttributes: { rel: "noopener noreferrer", target: "_blank" },
       },
     }),
+    ParagraphIndent,
+    ListMarkers,
     AnvilDocument,
     AnvilBlockquote,
     AnvilDivider,
+    PageBreak,
     AnvilFootnotes,
     AnvilFootnote,
     FootnoteReference,
@@ -1140,7 +1146,13 @@ export function buildExtensions({
     AnvilTableHeader,
     AnvilTableCell,
     Mathematics.configure({
-      katexOptions: { throwOnError: false },
+      katexOptions: {
+        throwOnError: false,
+        // Historical documents may contain Unicode prose inside a math node.
+        // Keep rendering fail-soft without flooding DevTools; new toolbar and
+        // AI paths prevent creating that malformed shape.
+        strict: false,
+      },
       inlineOptions: {
         onClick: (node, pos) =>
           onMathClick("inline", pos, String(node.attrs.latex ?? "")),

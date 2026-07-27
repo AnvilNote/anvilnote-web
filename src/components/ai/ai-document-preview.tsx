@@ -108,6 +108,17 @@ function block(node: AnvilNoteBlockNodeV1, key: string): ReactNode {
     case "tableHeader": return <th key={key} colSpan={node.attrs.colspan} rowSpan={node.attrs.rowspan} className="border bg-muted p-2 text-left">{node.content.map((item, index) => block(item, `${key}-${index}`))}</th>;
     case "tableCell": return <td key={key} colSpan={node.attrs.colspan} rowSpan={node.attrs.rowspan} className="border p-2 align-top">{node.content.map((item, index) => block(item, `${key}-${index}`))}</td>;
     case "horizontalRule": return <hr key={key} />;
+    case "pageBreak":
+      return (
+        <div
+          key={key}
+          className="my-4 border-t border-dashed border-border text-center"
+        >
+          <code className="relative -top-2 bg-background px-2 text-xs text-muted-foreground">
+            {node.attrs.weak ? "#pagebreak(weak: true)" : "#pagebreak()"}
+          </code>
+        </div>
+      );
   }
 }
 

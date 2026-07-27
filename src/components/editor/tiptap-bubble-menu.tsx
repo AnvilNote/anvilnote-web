@@ -4,19 +4,30 @@ import { useEffect, useRef, useState, type ComponentType } from "react";
 import type { Editor, JSONContent } from "@tiptap/core";
 import { BubbleMenu } from "@tiptap/react/menus";
 import { CellSelection } from "@tiptap/pm/tables";
+import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { useEditorState } from "@tiptap/react";
 import { useLocale, useTranslations } from "next-intl";
 import { Bot, Check, Code, Bold, Italic, Link2, Loader2, Send, Sigma, Strikethrough, X } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { MathClickMode } from "@/lib/tiptap/extensions";
-import { aiClient } from "@/lib/ai/runtime-client";
+import type { AiEditOperationV1 } from "@anvilnote/ai-writer";
+import {
+  aiClient,
+  type AIConversationEditOperationsDraft,
+} from "@/lib/ai/runtime-client";
 import { inlineAIErrorMessageKey } from "@/lib/ai/inline-error";
 import {
   anvilNoteFragmentToTiptap,
   tiptapSelectionToAnvilNote,
   UnsupportedAIContentError,
 } from "@/lib/ai/document/converters";
-import { applyInlineAIBlocks, applyInlineAIContent } from "@/lib/ai/document/editor-operations";
+import { marksFromSnapshot } from "@/lib/ai/document/core-node-converters";
+import {
+  acceptVerifiedEditDraft,
+  applyInlineAIBlocks,
+  applyInlineAIContent,
+} from "@/lib/ai/document/editor-operations";
 import {
   clearInlineAIDiff,
   showInlineAIDiff,
@@ -33,14 +44,27 @@ import {
   isPlainTextSelection,
   isWholeBlockSelection,
   resolvePlainTextSelectionRange,
+  SUPPORTED_INLINE_MARKS,
 } from "@/lib/ai/document/inline-review";
 import { ProtectedSelectionRegistry } from "@/lib/ai/document/protected-selection";
-import { createSelectionSnapshot, hasSelectionConflict, type SelectionSnapshot } from "@/lib/ai/document/selection-snapshot";
+import {
+  createSelectionSnapshot,
+  hasSelectionConflict,
+  tiptapSelectionToEditSnapshot,
+  type SelectionSnapshot,
+} from "@/lib/ai/document/selection-snapshot";
+import { useDocumentStore } from "@/lib/stores/document-store";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import { useSmartModeUIStore } from "@/lib/stores/smart-mode-ui-store";
 
 const FORMATTING_BUBBLE_PLUGIN_KEY = "anvilnote-formatting-bubble";
 const INLINE_COMPOSER_MAX_HEIGHT_PX = 88;
+const NATURAL_LANGUAGE_SCRIPT =
+  /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Thai}\p{Script=Cyrillic}\p{Script=Arabic}\p{Script=Hebrew}\p{Script=Devanagari}]/u;
+
+export function containsNaturalLanguageInMathSelection(value: string): boolean {
+  return NATURAL_LANGUAGE_SCRIPT.test(value);
+}
 
 function resizeInlineComposer(textarea: HTMLTextAreaElement) {
   textarea.style.height = "auto";
@@ -53,6 +77,188 @@ function resizeInlineComposer(textarea: HTMLTextAreaElement) {
   textarea.style.height = `${nextHeight}px`;
   textarea.style.overflowY = textarea.scrollHeight > INLINE_COMPOSER_MAX_HEIGHT_PX ? "auto" : "hidden";
   return lineCount;
+}
+
+// A bubble-menu-initiated request always scopes to the current selection,
+// so its edit-operations result is only ever safe to show via the EXISTING
+// inline diff mechanism when it reduces to exactly the same shape the OLD
+// rewrite-selection path already accepted: one plain-text replacement with
+// marks the inline composer already knows how to decorate. Anything else
+// (zero or multiple operations, a structural op type — insertNode/
+// replaceNode/deleteNode/moveNode/updateAttrs — or a mark outside
+// SUPPORTED_INLINE_MARKS, e.g. textStyle) is a genuinely structural result
+// and must fall back to the Smart Mode panel instead.
+function inlineReplaceTextFromOperations(
+  operations: readonly AiEditOperationV1[],
+): { text: string; marks: NonNullable<JSONContent["marks"]> } | null {
+  if (operations.length !== 1) return null;
+  const [op] = operations;
+  if (op.type !== "replaceText") return null;
+  const marks = marksFromSnapshot(op.marks as unknown as JSONContent["marks"]) ?? [];
+  if (marks.some((mark) => !SUPPORTED_INLINE_MARKS.has(mark.type))) return null;
+  return { text: op.text, marks };
+}
+
+function canonicalJSON(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJSON).join(",")}]`;
+  if (value && typeof value === "object") {
+    return `{${Object.entries(value)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, nested]) => `${JSON.stringify(key)}:${canonicalJSON(nested)}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function previewTextFromNode(node: JSONContent): string {
+  if (node.type === "text") return node.text ?? "";
+  if (node.type === "hardBreak") return "\n";
+  if (node.type === "inlineMath" || node.type === "blockMath") {
+    return typeof node.attrs?.latex === "string" ? node.attrs.latex : "";
+  }
+  return (node.content ?? []).map(previewTextFromNode).join("");
+}
+
+function changedCandidateContent(
+  liveContent: readonly JSONContent[],
+  candidateContent: readonly JSONContent[],
+): JSONContent[] {
+  let prefix = 0;
+  while (
+    prefix < liveContent.length
+    && prefix < candidateContent.length
+    && canonicalJSON(liveContent[prefix]) === canonicalJSON(candidateContent[prefix])
+  ) {
+    prefix += 1;
+  }
+
+  let suffix = 0;
+  while (
+    suffix < liveContent.length - prefix
+    && suffix < candidateContent.length - prefix
+    && canonicalJSON(liveContent[liveContent.length - 1 - suffix])
+      === canonicalJSON(candidateContent[candidateContent.length - 1 - suffix])
+  ) {
+    suffix += 1;
+  }
+
+  return candidateContent.slice(
+    prefix,
+    suffix ? candidateContent.length - suffix : undefined,
+  );
+}
+
+type PreviewLeaf = {
+  text: string;
+  node: JSONContent;
+};
+
+function previewLeavesFromNode(node: JSONContent): PreviewLeaf[] {
+  if (
+    node.type === "text"
+    || node.type === "hardBreak"
+    || node.type === "inlineMath"
+    || node.type === "blockMath"
+  ) {
+    return [{ text: previewTextFromNode(node), node }];
+  }
+  return (node.content ?? []).flatMap(previewLeavesFromNode);
+}
+
+function sliceCandidatePreviewContent(
+  content: readonly JSONContent[],
+  from: number,
+  to: number,
+): JSONContent[] {
+  const leaves = content.flatMap((node, index) => [
+    ...(index ? [{ text: "\n", node: { type: "hardBreak" } }] : []),
+    ...previewLeavesFromNode(node),
+  ]);
+  const sliced: JSONContent[] = [];
+  let offset = 0;
+
+  for (const leaf of leaves) {
+    const leafFrom = offset;
+    const leafTo = offset + leaf.text.length;
+    offset = leafTo;
+    const overlapFrom = Math.max(from, leafFrom);
+    const overlapTo = Math.min(to, leafTo);
+    if (overlapFrom >= overlapTo) continue;
+
+    const completeLeaf = overlapFrom === leafFrom && overlapTo === leafTo;
+    if (completeLeaf && leaf.node.type !== "text") {
+      sliced.push(leaf.node);
+      continue;
+    }
+    const text = leaf.text.slice(overlapFrom - leafFrom, overlapTo - leafFrom);
+    if (text) {
+      sliced.push({
+        type: "text",
+        text,
+        ...(leaf.node.marks ? { marks: leaf.node.marks } : {}),
+      });
+    }
+  }
+  return sliced.length ? [{ type: "inlinePreview", content: sliced }] : [];
+}
+
+/**
+ * An edit-operations draft carries the full verified candidate document.
+ * Prefer removing unchanged text around the original selection. If the
+ * provider also rewrote adjacent selected-document blocks, fall back to the
+ * candidate's structurally changed top-level range so the person can still
+ * review the complete proposed text inline.
+ */
+function inlineReplacementFromCandidate(
+  editor: Editor,
+  draft: AIConversationEditOperationsDraft,
+  range: InlineAISelectionRange,
+): { text: string; content?: JSONContent[] } | null {
+  const candidate = draft.candidate[0];
+  if (!candidate) return null;
+  try {
+    const liveDocument = editor.state.doc;
+    const leafText = (node: ProseMirrorNode) =>
+      node.type.name === "inlineMath" || node.type.name === "blockMath"
+        ? String(node.attrs.latex ?? "")
+        : "";
+    const prefix = liveDocument.textBetween(0, range.from, "\n", leafText);
+    const suffix = liveDocument.textBetween(
+      range.to,
+      liveDocument.content.size,
+      "\n",
+      leafText,
+    );
+    const candidateText = candidate.content.map(previewTextFromNode).join("\n");
+    if (
+      candidateText.startsWith(prefix)
+      && candidateText.endsWith(suffix)
+      && candidateText.length >= prefix.length + suffix.length
+    ) {
+      const replacementFrom = prefix.length;
+      const replacementTo = suffix.length
+        ? candidateText.length - suffix.length
+        : candidateText.length;
+      return {
+        text: candidateText.slice(replacementFrom, replacementTo),
+        content: sliceCandidatePreviewContent(
+          candidate.content,
+          replacementFrom,
+          replacementTo,
+        ),
+      };
+    }
+    const content = changedCandidateContent(
+      editor.getJSON().content ?? [],
+      candidate.content,
+    );
+    return {
+      text: content.map(previewTextFromNode).join("\n"),
+      content,
+    };
+  } catch {
+    return null;
+  }
 }
 
 function MenuButton({
@@ -132,14 +338,26 @@ export function TiptapBubbleMenu({
   const [inlineComposerLineCount, setInlineComposerLineCount] = useState(1);
   const [inlineSelectionRange, setInlineSelectionRange] = useState<InlineAISelectionRange | null>(null);
   const inlineComposerRef = useRef<HTMLTextAreaElement>(null);
-  const [pending, setPending] = useState<{
-    mode: "inline" | "blocks";
-    content: JSONContent[];
-    snapshot: SelectionSnapshot;
-  } | null>(null);
+  const [pending, setPending] = useState<
+    | {
+        mode: "inline" | "blocks";
+        content: JSONContent[];
+        snapshot: SelectionSnapshot;
+      }
+    | {
+        mode: "verified";
+        draft: AIConversationEditOperationsDraft;
+        snapshot: SelectionSnapshot;
+      }
+    | null
+  >(null);
   const pendingRef = useRef<typeof pending>(null);
   const locale = useLocale();
   const settings = useSettingsStore();
+  const snapshotBeforeAIInsert = useDocumentStore((state) => state.snapshotBeforeAIInsert);
+  const persistAcceptedEditContent = useDocumentStore(
+    (state) => state.persistAcceptedEditContent,
+  );
   const activeConversationId = useSmartModeUIStore((state) =>
     documentId ? state.activeConversationByDocument[documentId] ?? null : null,
   );
@@ -245,6 +463,7 @@ export function TiptapBubbleMenu({
         document: editor.getJSON(),
         selectedContent: content,
       });
+      const { baseSelectionHash } = tiptapSelectionToEditSnapshot(editor, { from, to });
       const completed = await aiClient.executeConversationTurn(documentId, {
         requestId,
         ...(activeConversationId ? { conversationId: activeConversationId } : {}),
@@ -254,13 +473,19 @@ export function TiptapBubbleMenu({
           locale,
           writingStyle: settings.aiWritingStyle,
           selectedContent,
+          baseSelectionHash,
         },
         options: { humanizerEnabled: settings.aiHumanizerEnabled },
       });
       const assistant = completed.messages[1];
-      if (assistant.draft?.kind !== "rewrite-selection") {
+      if (!assistant.draft) {
         throw new Error("invalid_structured_output");
       }
+      // Tracked and persisted regardless of which draft kind comes back —
+      // the turn already succeeded server-side by this point either way,
+      // and both routing branches below rely on the panel already pointing
+      // at this exact conversation (the structural fallback opens that
+      // SAME panel; the inline path just doesn't need it visually yet).
       setActiveConversation(documentId, completed.conversation.id);
       notifyConversationChanged();
       if (
@@ -272,45 +497,104 @@ export function TiptapBubbleMenu({
       ) {
         throw new Error("selection_conflict");
       }
-      const convertedReplacement = anvilNoteFragmentToTiptap(assistant.draft.replacement, registry);
-      const inlineContent = inlineReviewContent(convertedReplacement);
-      if (inlineContent) {
+
+      if (assistant.draft.kind === "rewrite-selection") {
+        // OLD/legacy draft shape — kept for a previously persisted
+        // conversation whose turn was executed before Task 23.2's
+        // edit-operations turn path existed. The live turn-execution
+        // mechanism no longer produces this kind (see runtime-client.ts's
+        // AIConversationDraft comment), but a stale/replayed response is
+        // still handled exactly as before.
+        const convertedReplacement = anvilNoteFragmentToTiptap(assistant.draft.replacement, registry);
+        const inlineContent = inlineReviewContent(convertedReplacement);
+        if (inlineContent) {
+          showInlineAIDiff(editor, {
+            from,
+            to,
+            replacementText: inlineReviewText(inlineContent),
+            replacementContent: inlineContent,
+          });
+          setPending({ mode: "inline", content: inlineContent, snapshot });
+          setInlineSelectionRange(null);
+          setInlineOpen(false);
+          return;
+        }
+
+        // The model split its reply into more than one paragraph/heading. The
+        // inline composer can still apply that, but only when the original
+        // selection was the block's entire content — the swap then lands at
+        // that block's own boundaries instead of splicing new blocks into the
+        // middle of running inline text the person didn't select.
+        const blocks = inlineReviewBlocks(convertedReplacement);
+        if (blocks && isWholeBlockSelection(editor, from, to)) {
+          const previewText = blocks
+            .map((block) => inlineReviewText(block.content ?? []))
+            .join("\n\n");
+          showInlineAIDiff(editor, {
+            from,
+            to,
+            replacementText: previewText,
+            replacementContent: blocks,
+          });
+          setPending({ mode: "blocks", content: blocks, snapshot });
+          setInlineSelectionRange(null);
+          setInlineOpen(false);
+          return;
+        }
+
+        setInlineError(
+          convertedReplacement.length > 1
+            ? "ai.errors.multi_paragraph_result"
+            : "ai.errors.unsupported_selection",
+        );
+        // The turn is saved server-side, and the right panel is the durable
+        // conversation view. Keep the temporary review beside the text without
+        // interrupting the person by opening that panel automatically.
+        return;
+      }
+
+      if (assistant.draft.kind === "edit-operations") {
+        // The turn-execution mechanism this repo actually calls always
+        // returns this draft kind now — a structural, targetRef-based
+        // operations list rather than the OLD "here's the whole replacement
+        // fragment" shape. Still routable through the EXISTING inline diff
+        // mechanism when (and only when) it reduces to exactly one
+        // plain-text replaceText with supported marks; anything else falls
+        // back to the Smart Mode panel.
+        const inlineResult = inlineReplaceTextFromOperations(assistant.draft.operations);
+        if (inlineResult) {
+          const inlineContent: JSONContent[] = [
+            { type: "text", text: inlineResult.text, marks: inlineResult.marks },
+          ];
+          showInlineAIDiff(editor, { from, to, replacementText: inlineReviewText(inlineContent) });
+          setPending({ mode: "inline", content: inlineContent, snapshot });
+          setInlineSelectionRange(null);
+          setInlineOpen(false);
+          return;
+        }
+
+        const replacement = inlineReplacementFromCandidate(
+          editor,
+          assistant.draft,
+          { from, to },
+        );
+        if (replacement === null) {
+          setInlineError("ai.errors.conversion_failed");
+          return;
+        }
         showInlineAIDiff(editor, {
           from,
           to,
-          replacementText: inlineReviewText(inlineContent),
+          replacementText: replacement.text,
+          replacementContent: replacement.content,
         });
-        setPending({ mode: "inline", content: inlineContent, snapshot });
+        setPending({ mode: "verified", draft: assistant.draft, snapshot });
         setInlineSelectionRange(null);
         setInlineOpen(false);
         return;
       }
 
-      // The model split its reply into more than one paragraph/heading. The
-      // inline composer can still apply that, but only when the original
-      // selection was the block's entire content — the swap then lands at
-      // that block's own boundaries instead of splicing new blocks into the
-      // middle of running inline text the person didn't select.
-      const blocks = inlineReviewBlocks(convertedReplacement);
-      if (blocks && isWholeBlockSelection(editor, from, to)) {
-        const previewText = blocks
-          .map((block) => inlineReviewText(block.content ?? []))
-          .join("\n\n");
-        showInlineAIDiff(editor, { from, to, replacementText: previewText });
-        setPending({ mode: "blocks", content: blocks, snapshot });
-        setInlineSelectionRange(null);
-        setInlineOpen(false);
-        return;
-      }
-
-      setInlineError(
-        convertedReplacement.length > 1
-          ? "ai.errors.multi_paragraph_result"
-          : "ai.errors.unsupported_selection",
-      );
-      // The turn is saved server-side, and the right panel is the durable
-      // conversation view. Keep the temporary review beside the text without
-      // interrupting the person by opening that panel automatically.
+      throw new Error("invalid_structured_output");
     } catch (error) {
       if (error instanceof UnsupportedAIContentError) {
         // An inline action never opens the conversation panel on the person's
@@ -335,21 +619,39 @@ export function TiptapBubbleMenu({
     setInlineOpen(true);
   }
 
-  function acceptInline() {
+  async function acceptInline() {
     if (!pending) return;
     const snapshot = pending.snapshot;
     try {
+      setInlineBusy(true);
       if (snapshot.to > editor.state.doc.content.size || hasSelectionConflict(snapshot, {
         document: editor.getJSON(),
         selectedContent: editor.state.doc.slice(snapshot.from, snapshot.to).content.toJSON(),
       })) throw new Error("selection_conflict");
-      clearInlineAIDiff(editor);
-      const applied = pending.mode === "blocks"
-        ? applyInlineAIBlocks(editor, { from: snapshot.from, to: snapshot.to }, pending.content)
-        : applyInlineAIContent(editor, { from: snapshot.from, to: snapshot.to }, pending.content);
-      if (!applied) {
-        throw new Error("conversion_failed");
+      if (pending.mode === "verified") {
+        await acceptVerifiedEditDraft(
+          editor,
+          {
+            baseDocumentHash: pending.draft.baseDocumentHash,
+            baseSelectionHash: pending.draft.baseSelectionHash,
+            selectionRange: { from: snapshot.from, to: snapshot.to },
+            candidate: pending.draft.candidate,
+          },
+          {
+            createVersion: (live) => snapshotBeforeAIInsert(documentId!, live),
+            saveDocument: (json) => persistAcceptedEditContent(documentId!, json),
+          },
+        );
+      } else {
+        clearInlineAIDiff(editor);
+        const applied = pending.mode === "blocks"
+          ? applyInlineAIBlocks(editor, { from: snapshot.from, to: snapshot.to }, pending.content)
+          : applyInlineAIContent(editor, { from: snapshot.from, to: snapshot.to }, pending.content);
+        if (!applied) {
+          throw new Error("conversion_failed");
+        }
       }
+      clearInlineAIDiff(editor);
       setPending(null);
       setInlineSelectionRange(null);
       setInlineInstruction("");
@@ -369,6 +671,8 @@ export function TiptapBubbleMenu({
       setInlineSelectionRange({ from: snapshot.from, to: snapshot.to });
       setInlineOpen(true);
       setInlineError(inlineAIErrorMessageKey(error));
+    } finally {
+      setInlineBusy(false);
     }
   }
 
@@ -400,8 +704,8 @@ export function TiptapBubbleMenu({
     >
       {pending ? <>
         <span className="px-1 text-xs text-muted-foreground">{tSmart("smart.reviewResult")}</span>
-        <button type="button" className="inline-flex h-8 items-center gap-1 rounded-lg bg-primary px-2 text-xs text-primary-foreground" onMouseDown={(event) => event.preventDefault()} onClick={acceptInline}><Check className="size-3.5" />{tSmart("smart.accept")}</button>
-        <button type="button" className="inline-flex h-8 items-center gap-1 rounded-lg px-2 text-xs hover:bg-muted" onMouseDown={(event) => event.preventDefault()} onClick={rejectInline}><X className="size-3.5" />{tSmart("smart.reject")}</button>
+        <button type="button" disabled={inlineBusy} className="inline-flex h-8 items-center gap-1 rounded-lg bg-primary px-2 text-xs text-primary-foreground disabled:opacity-50" onMouseDown={(event) => event.preventDefault()} onClick={() => void acceptInline()}><Check className="size-3.5" />{tSmart("smart.accept")}</button>
+        <button type="button" disabled={inlineBusy} className="inline-flex h-8 items-center gap-1 rounded-lg px-2 text-xs hover:bg-muted disabled:opacity-50" onMouseDown={(event) => event.preventDefault()} onClick={rejectInline}><X className="size-3.5" />{tSmart("smart.reject")}</button>
       </> : inlineOpen ? <>
         <textarea
           autoFocus
@@ -474,6 +778,10 @@ export function TiptapBubbleMenu({
           const text = editor.state.doc.textBetween(from, to, " ").trim();
           if (!text) {
             onInsertMath("inline");
+            return;
+          }
+          if (containsNaturalLanguageInMathSelection(text)) {
+            toast.error(t("mathSelectionContainsText"));
             return;
           }
           editor.chain().focus().deleteSelection().insertInlineMath({ latex: text }).run();

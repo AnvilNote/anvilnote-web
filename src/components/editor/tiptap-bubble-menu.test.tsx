@@ -1,7 +1,12 @@
 import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
+import { Mathematics } from "@tiptap/extension-mathematics";
+import { buildEditSnapshot } from "@anvilnote/ai-writer";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { tiptapDocumentToAiSnapshotSource } from "@/lib/ai/document/converters";
+import { tiptapSelectionToEditSnapshot } from "@/lib/ai/document/selection-snapshot";
+import { useDocumentStore } from "@/lib/stores/document-store";
 import { useSmartModeUIStore } from "@/lib/stores/smart-mode-ui-store";
 
 const client = vi.hoisted(() => ({ executeConversationTurn: vi.fn() }));
@@ -19,7 +24,10 @@ vi.mock("@tiptap/react/menus", () => ({
   }) => <div data-plugin-key={pluginKey} className={className}>{children}</div>,
 }));
 
-import { TiptapBubbleMenu } from "./tiptap-bubble-menu";
+import {
+  containsNaturalLanguageInMathSelection,
+  TiptapBubbleMenu,
+} from "./tiptap-bubble-menu";
 
 function createEditor() {
   const editor = new Editor({
@@ -34,12 +42,22 @@ function createEditor() {
 }
 
 describe("TiptapBubbleMenu inline Smart Mode", () => {
+  it("distinguishes a formula from natural-language text before inline-math conversion", () => {
+    expect(containsNaturalLanguageInMathSelection("G \\times G \\to G")).toBe(false);
+    expect(containsNaturalLanguageInMathSelection("若 G 為有限群")).toBe(true);
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
+    useDocumentStore.setState({
+      snapshotBeforeAIInsert: vi.fn().mockResolvedValue(undefined),
+      persistAcceptedEditContent: vi.fn().mockResolvedValue(undefined),
+    });
     useSmartModeUIStore.setState({
       open: false,
       activeConversationByDocument: {},
       inlineFallbackInstructionByDocument: {},
+      pendingEditOperationsByMessage: {},
       conversationVersion: 0,
     });
   });
@@ -150,6 +168,95 @@ describe("TiptapBubbleMenu inline Smart Mode", () => {
     expect(screen.queryByText("errors.ai.errors.provider_error")).not.toBeInTheDocument();
     expect(useSmartModeUIStore.getState().open).toBe(false);
     expect(screen.getByRole("textbox")).toBeInTheDocument();
+    editor.destroy();
+  });
+
+  it("submits the canonical V2 selection hash with inline selected content", async () => {
+    client.executeConversationTurn.mockImplementation(() => new Promise(() => {}));
+    const editor = createEditor();
+    const range = { from: 1, to: 9 };
+    const expectedSelectionHash =
+      tiptapSelectionToEditSnapshot(editor, range).baseSelectionHash;
+    render(
+      <TiptapBubbleMenu
+        editor={editor}
+        documentId="doc-1"
+        onInsertMath={vi.fn()}
+        onEditLink={vi.fn()}
+        onEditColor={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "smart.inline" }));
+    fireEvent.change(screen.getByRole("textbox"), {
+      target: { value: "Make this longer" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "smart.rewrite" }));
+
+    await waitFor(() => expect(client.executeConversationTurn).toHaveBeenCalledTimes(1));
+    const request = client.executeConversationTurn.mock.calls[0]?.[1];
+    expect(request.context.selectedContent).toBeDefined();
+    expect(request.context.baseSelectionHash).toBe(expectedSelectionHash);
+    editor.destroy();
+  });
+
+  it("submits a whole mixed prose-and-math paragraph through inline Ask AI", async () => {
+    client.executeConversationTurn.mockImplementation(() => new Promise(() => {}));
+    const editor = new Editor({
+      extensions: [
+        StarterKit,
+        Mathematics.configure({
+          katexOptions: { throwOnError: false, strict: false },
+        }),
+      ],
+      content: {
+        type: "doc",
+        content: [{
+          type: "paragraph",
+          content: [
+            { type: "text", text: "若 " },
+            { type: "inlineMath", attrs: { latex: "a,b\\in G" } },
+            { type: "text", text: "，則 " },
+            { type: "inlineMath", attrs: { latex: "a*b=b*a" } },
+            { type: "text", text: "。" },
+          ],
+        }],
+      },
+    });
+    editor.commands.setTextSelection({
+      from: 1,
+      to: editor.state.doc.content.size - 1,
+    });
+
+    render(
+      <TiptapBubbleMenu
+        editor={editor}
+        documentId="doc-1"
+        onInsertMath={vi.fn()}
+        onEditLink={vi.fn()}
+        onEditColor={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "smart.inline" }));
+    fireEvent.change(screen.getByRole("textbox"), {
+      target: { value: "修改整段" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "smart.rewrite" }));
+
+    await waitFor(() => expect(client.executeConversationTurn).toHaveBeenCalledTimes(1));
+    const selected = client.executeConversationTurn.mock.calls[0]?.[1].context
+      .selectedContent;
+    expect(selected.content[0].content).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: "inlineMath",
+          attrs: { latex: "a,b\\in G" },
+        }),
+        expect.objectContaining({
+          type: "inlineMath",
+          attrs: { latex: "a*b=b*a" },
+        }),
+      ]),
+    );
     editor.destroy();
   });
 
@@ -293,6 +400,297 @@ describe("TiptapBubbleMenu inline Smart Mode", () => {
     expect(editor.view.dom.querySelector(".anvil-ai-inline-original")).toBeNull();
     expect(editor.view.dom.querySelector(".anvil-ai-inline-replacement")).toBeNull();
     expect(editor.getText()).toContain("Clearer");
+    editor.destroy();
+  });
+
+  it("shows an edit-operations single replaceText result via the existing inline diff, unchanged", async () => {
+    client.executeConversationTurn.mockResolvedValue({
+      conversation: {
+        id: "conversation-1",
+        documentId: "doc-1",
+        title: "Rewrite",
+        lastMessageAt: "2026-07-19T00:00:00.000Z",
+        createdAt: "2026-07-19T00:00:00.000Z",
+        updatedAt: "2026-07-19T00:00:00.000Z",
+      },
+      messages: [
+        {
+          id: "message-1",
+          conversationId: "conversation-1",
+          sequence: 1,
+          role: "user",
+          intent: "rewrite-selection",
+          content: "Make this clearer",
+          createdAt: "2026-07-19T00:00:00.000Z",
+        },
+        {
+          id: "message-2",
+          conversationId: "conversation-1",
+          sequence: 2,
+          role: "assistant",
+          intent: "rewrite-selection",
+          content: "Draft",
+          createdAt: "2026-07-19T00:00:00.000Z",
+          draft: {
+            kind: "edit-operations",
+            version: "anvilnote.ai.edit-operations.v1",
+            baseDocumentHash: "0".repeat(64),
+            baseSelectionHash: "1".repeat(64),
+            operations: [
+              { type: "replaceText", targetRef: "n2", text: "Clearer text", marks: [{ type: "bold" }] },
+            ],
+            summary: { operationCount: 1, addedNodeCount: 0, totalCharacterCount: 12 },
+            candidate: [],
+          },
+        },
+      ],
+    });
+    const editor = createEditor();
+    render(
+      <TiptapBubbleMenu
+        editor={editor}
+        documentId="doc-1"
+        onInsertMath={vi.fn()}
+        onEditLink={vi.fn()}
+        onEditColor={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "smart.inline" }));
+    fireEvent.change(screen.getByPlaceholderText("smart.inlinePlaceholder"), {
+      target: { value: "Make this clearer" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "smart.rewrite" }));
+
+    expect(await screen.findByRole("button", { name: "smart.accept" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "smart.reject" })).toBeInTheDocument();
+    expect(useSmartModeUIStore.getState().open).toBe(false);
+    expect(useSmartModeUIStore.getState().inlineFallbackInstructionByDocument["doc-1"]).toBeUndefined();
+    editor.destroy();
+  });
+
+  it("keeps a multi-operation result inline, previews the diff colors, and applies it only after Accept", async () => {
+    const editor = new Editor({
+      extensions: [StarterKit],
+      content: {
+        type: "doc",
+        content: [{ type: "paragraph", content: [{ type: "text", text: "Selected ordinary text" }] }],
+      },
+    });
+    const range = { from: 1, to: 1 + "Selected ordinary text".length };
+    editor.commands.setTextSelection(range);
+    document.body.appendChild(editor.view.dom);
+    const before = editor.getJSON();
+    const candidate = {
+      type: "doc" as const,
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "First explanation" }] },
+        { type: "paragraph", content: [{ type: "text", text: "Second explanation" }] },
+        { type: "paragraph", content: [{ type: "text", text: "Third explanation" }] },
+      ],
+    };
+    const baseDocumentHash =
+      buildEditSnapshot(tiptapDocumentToAiSnapshotSource(before)).baseDocumentHash;
+    const baseSelectionHash =
+      tiptapSelectionToEditSnapshot(editor, range).baseSelectionHash;
+    client.executeConversationTurn.mockResolvedValue({
+      conversation: {
+        id: "conversation-1",
+        documentId: "doc-1",
+        title: "Rewrite",
+        lastMessageAt: "2026-07-19T00:00:00.000Z",
+        createdAt: "2026-07-19T00:00:00.000Z",
+        updatedAt: "2026-07-19T00:00:00.000Z",
+      },
+      messages: [
+        {
+          id: "message-1",
+          conversationId: "conversation-1",
+          sequence: 1,
+          role: "user",
+          intent: "rewrite-selection",
+          content: "Explain this in three paragraphs",
+          createdAt: "2026-07-19T00:00:00.000Z",
+        },
+        {
+          id: "message-2",
+          conversationId: "conversation-1",
+          sequence: 2,
+          role: "assistant",
+          intent: "rewrite-selection",
+          content: "Applied 3 edits.",
+          createdAt: "2026-07-19T00:00:00.000Z",
+          draft: {
+            kind: "edit-operations",
+            version: "anvilnote.ai.edit-operations.v1",
+            baseDocumentHash,
+            baseSelectionHash,
+            operations: [
+              { type: "replaceText", targetRef: "n2", text: "First explanation", marks: [] },
+              {
+                type: "insertNode",
+                parentRef: "n0",
+                index: 1,
+                node: { type: "paragraph", content: [{ type: "text", text: "Second explanation" }] },
+              },
+              {
+                type: "insertNode",
+                parentRef: "n0",
+                index: 2,
+                node: { type: "paragraph", content: [{ type: "text", text: "Third explanation" }] },
+              },
+            ],
+            summary: { operationCount: 3, addedNodeCount: 2, totalCharacterCount: 57 },
+            candidate: [candidate],
+          },
+        },
+      ],
+    });
+    render(
+      <TiptapBubbleMenu
+        editor={editor}
+        documentId="doc-1"
+        onInsertMath={vi.fn()}
+        onEditLink={vi.fn()}
+        onEditColor={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "smart.inline" }));
+    fireEvent.change(screen.getByPlaceholderText("smart.inlinePlaceholder"), {
+      target: { value: "Explain this in three paragraphs" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "smart.rewrite" }));
+
+    const accept = await screen.findByRole("button", { name: "smart.accept" });
+    const original = editor.view.dom.querySelector<HTMLElement>(".anvil-ai-inline-original");
+    const replacement = editor.view.dom.querySelector<HTMLElement>(".anvil-ai-inline-replacement");
+    expect(useSmartModeUIStore.getState().open).toBe(false);
+    expect(original?.textContent).toBe("Selected ordinary text");
+    expect(original?.style.color).toBe("rgb(220, 38, 38)");
+    expect(original?.style.textDecoration).toContain("line-through");
+    expect(replacement?.textContent).toBe(
+      "First explanation\nSecond explanation\nThird explanation",
+    );
+    expect(replacement?.style.color).toBe("rgb(147, 155, 201)");
+    expect(editor.getJSON()).toEqual(before);
+
+    fireEvent.click(accept);
+    await waitFor(() => expect(editor.getJSON()).toEqual(candidate));
+    expect(useDocumentStore.getState().snapshotBeforeAIInsert).toHaveBeenCalledWith("doc-1", before);
+    expect(useDocumentStore.getState().persistAcceptedEditContent).toHaveBeenCalledWith(
+      "doc-1",
+      candidate,
+    );
+    editor.destroy();
+  });
+
+  it("previews a real rich candidate even when the provider changed every selected-document block", async () => {
+    const editor = new Editor({
+      extensions: [StarterKit],
+      content: {
+        type: "doc",
+        content: [
+          { type: "heading", attrs: { level: 1 }, content: [{ type: "text", text: "講義從此開始" }] },
+          { type: "paragraph", content: [{ type: "text", text: "在這裡開始撰寫筆記。" }] },
+          { type: "paragraph" },
+        ],
+      },
+    });
+    const range = { from: 1, to: 1 + "講義從此開始".length };
+    editor.commands.setTextSelection(range);
+    document.body.appendChild(editor.view.dom);
+    const before = editor.getJSON();
+    const candidate = {
+      type: "doc" as const,
+      content: [
+        { type: "heading", attrs: { level: 1 }, content: [{ type: "text", text: "微分規則與例題" }] },
+        {
+          type: "paragraph",
+          content: [
+            { type: "text", text: "冪次規則為 " },
+            { type: "inlineMath", attrs: { latex: "\\frac{d}{dx}x^n=nx^{n-1}" } },
+            { type: "text", text: "。" },
+          ],
+        },
+        { type: "blockMath", attrs: { latex: "\\int_0^1 x^2\\,dx=\\frac{1}{3}" } },
+      ],
+    };
+    const baseDocumentHash =
+      buildEditSnapshot(tiptapDocumentToAiSnapshotSource(before)).baseDocumentHash;
+    const baseSelectionHash =
+      tiptapSelectionToEditSnapshot(editor, range).baseSelectionHash;
+    client.executeConversationTurn.mockResolvedValue({
+      conversation: {
+        id: "conversation-rich",
+        documentId: "doc-1",
+        title: "微分",
+        lastMessageAt: "2026-07-26T09:41:29.000Z",
+        createdAt: "2026-07-26T09:41:29.000Z",
+        updatedAt: "2026-07-26T09:41:29.000Z",
+      },
+      messages: [
+        {
+          id: "message-user-rich",
+          conversationId: "conversation-rich",
+          sequence: 1,
+          role: "user",
+          intent: "rewrite-selection",
+          content: "講解微分規則，要有例子",
+          createdAt: "2026-07-26T09:41:29.000Z",
+        },
+        {
+          id: "message-assistant-rich",
+          conversationId: "conversation-rich",
+          sequence: 2,
+          role: "assistant",
+          intent: "rewrite-selection",
+          content: "Applied 3 edits.",
+          createdAt: "2026-07-26T09:41:29.000Z",
+          draft: {
+            kind: "edit-operations",
+            version: "anvilnote.ai.edit-operations.v1",
+            baseDocumentHash,
+            baseSelectionHash,
+            operations: [
+              { type: "replaceText", targetRef: "n2", text: "微分規則與例題", marks: [] },
+              { type: "replaceNode", targetRef: "n3", node: candidate.content[1] },
+              { type: "replaceNode", targetRef: "n5", node: candidate.content[2] },
+            ],
+            summary: { operationCount: 3, addedNodeCount: 5, totalCharacterCount: 38 },
+            candidate: [candidate],
+          },
+        },
+      ],
+    });
+
+    render(
+      <TiptapBubbleMenu
+        editor={editor}
+        documentId="doc-1"
+        onInsertMath={vi.fn()}
+        onEditLink={vi.fn()}
+        onEditColor={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "smart.inline" }));
+    fireEvent.change(screen.getByPlaceholderText("smart.inlinePlaceholder"), {
+      target: { value: "講解微分規則，要有例子" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "smart.rewrite" }));
+
+    expect(await screen.findByRole("button", { name: "smart.accept" })).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(
+      editor.view.dom.querySelector(".anvil-ai-inline-replacement")?.textContent,
+    ).toContain("微分規則與例題");
+    expect(
+      editor.view.dom.querySelector('[data-type="inline-math"]'),
+    ).toHaveAttribute("data-latex", "\\frac{d}{dx}x^n=nx^{n-1}");
+    expect(
+      editor.view.dom.querySelector('[data-type="inline-math"] .katex'),
+    ).toBeInTheDocument();
+    expect(
+      editor.view.dom.querySelector('[data-type="block-math"] .katex-display'),
+    ).toBeInTheDocument();
     editor.destroy();
   });
 

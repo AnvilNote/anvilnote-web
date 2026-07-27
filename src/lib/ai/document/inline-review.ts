@@ -1,6 +1,12 @@
 import type { Editor, JSONContent } from "@tiptap/core";
 
-const SUPPORTED_INLINE_MARKS = new Set([
+// Exported (Task 24.2) so the bubble menu's edit-operations routing
+// decision can check a `replaceText` operation's OWN result marks against
+// the exact same set this file already uses to gate the ORIGINAL
+// selection — one shared source of truth instead of a second literal list
+// drifting out of sync with this one. No existing behavior in this file
+// changes: this is a visibility-only change on an already-defined constant.
+export const SUPPORTED_INLINE_MARKS = new Set([
   "bold",
   "italic",
   "strike",
@@ -12,7 +18,12 @@ const SUPPORTED_INLINE_MARKS = new Set([
 function isReviewableBlock(block: JSONContent): boolean {
   if (block.type !== "paragraph" && block.type !== "heading") return false;
   const content = block.content ?? [];
-  return content.every((node) => node.type === "text" || node.type === "hardBreak");
+  return content.every(
+    (node) =>
+      node.type === "text"
+      || node.type === "hardBreak"
+      || node.type === "inlineMath",
+  );
 }
 
 /**
@@ -41,7 +52,13 @@ export function inlineReviewBlocks(fragment: JSONContent[]): JSONContent[] | nul
 }
 
 export function inlineReviewText(content: JSONContent[]): string {
-  return content.map((node) => node.type === "hardBreak" ? "\n" : node.text ?? "").join("");
+  return content.map((node) => {
+    if (node.type === "hardBreak") return "\n";
+    if (node.type === "inlineMath") {
+      return typeof node.attrs?.latex === "string" ? node.attrs.latex : "";
+    }
+    return node.text ?? "";
+  }).join("");
 }
 
 /**
@@ -74,7 +91,10 @@ export function isPlainTextSelection(editor: Editor, from: number, to: number): 
       if (node.marks.some((mark) => !SUPPORTED_INLINE_MARKS.has(mark.type.name))) {
         valid = false;
       }
-    } else if (node.type.name !== "hardBreak") {
+    } else if (
+      node.type.name !== "hardBreak"
+      && node.type.name !== "inlineMath"
+    ) {
       valid = false;
     }
     return valid;

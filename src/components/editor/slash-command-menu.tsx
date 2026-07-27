@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { useSlashMenuStore } from "@/lib/stores/slash-menu-store";
 
 export type SlashItem = {
+  featureId?: string;
   title: string;
   subtitle?: string;
   icon: ComponentType<{ className?: string }>;
@@ -33,7 +34,7 @@ type SlashListProps = {
 
 // The popup list. Keyboard navigable: ↑/↓ move, Enter selects. The suggestion
 // plugin forwards key events here via the imperative handle.
-const SlashList = forwardRef<SlashListHandle, SlashListProps>(
+export const SlashList = forwardRef<SlashListHandle, SlashListProps>(
   function SlashList({ items, command }, ref) {
     const [selected, setSelected] = useState(0);
     const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -77,6 +78,7 @@ const SlashList = forwardRef<SlashListHandle, SlashListProps>(
                 itemRefs.current[index] = el;
               }}
               type="button"
+              data-feature-id={item.featureId}
               onMouseEnter={() => setSelected(index)}
               onClick={() => command(item)}
               className={cn(

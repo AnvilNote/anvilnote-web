@@ -142,6 +142,7 @@ export function TourReplayButton() {
         </button>
         <button
           type="button"
+          data-feature-id="help.tour"
           aria-label={t("helpMenu")}
           title={t("helpMenuDragHint")}
           onPointerDown={handlePointerDown}

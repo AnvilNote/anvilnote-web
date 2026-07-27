@@ -59,6 +59,28 @@ describe("inline Smart Mode diff", () => {
     editor.destroy();
   });
 
+  it("renders inline and display math in a rich temporary review", () => {
+    const editor = createEditor();
+    document.body.appendChild(editor.view.dom);
+    showInlineAIDiff(editor, {
+      from: 1,
+      to: 4,
+      replacementText: "derivative and integral",
+      replacementContent: [
+        { type: "inlineMath", attrs: { latex: "\\frac{d}{dx}x^2=2x" } },
+        { type: "blockMath", attrs: { latex: "\\int_0^1 x\\,dx=\\frac12" } },
+      ],
+    });
+
+    expect(
+      editor.view.dom.querySelector('[data-type="inline-math"] .katex'),
+    ).toBeInTheDocument();
+    expect(
+      editor.view.dom.querySelector('[data-type="block-math"] .katex-display'),
+    ).toBeInTheDocument();
+    editor.destroy();
+  });
+
   it("clears an unaccepted review on a document change", () => {
     const editor = createEditor();
     showInlineAIDiff(editor, { from: 1, to: 4, replacementText: "new" });

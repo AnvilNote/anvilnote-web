@@ -74,17 +74,20 @@ function PanelTab({
   active,
   icon: Icon,
   label,
+  featureId,
 }: {
   value: string;
   active: boolean;
   icon: ComponentType<{ className?: string }>;
   label: string;
+  featureId: string;
 }) {
   return (
     <TabsTrigger
       value={value}
       aria-label={label}
       title={label}
+      data-feature-id={featureId}
       className="shrink-0 gap-1.5 rounded-[1.3rem] px-2.5 py-1.5 text-[0.95rem] leading-none whitespace-nowrap data-[state=active]:bg-background data-[state=active]:shadow-sm"
     >
       <Icon className="size-4 shrink-0" />
@@ -121,20 +124,22 @@ function RightPanelContent({ documentId }: { documentId: string }) {
           data-tour="right-tabs"
           className="flex h-auto w-full items-center gap-0.5 overflow-x-auto rounded-[1.7rem] bg-muted p-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
-          <PanelTab value="outline" active={tab === "outline"} icon={List} label={t("outline")} />
-          <PanelTab value="metadata" active={tab === "metadata"} icon={Info} label={t("metadata")} />
+          <PanelTab value="outline" active={tab === "outline"} icon={List} label={t("outline")} featureId="panel.outline" />
+          <PanelTab value="metadata" active={tab === "metadata"} icon={Info} label={t("metadata")} featureId="panel.metadata" />
           <PanelTab
             value="template"
             active={tab === "template"}
             icon={LayoutTemplate}
             label={t("template")}
+            featureId="panel.template"
           />
-          <PanelTab value="export" active={tab === "export"} icon={FileDown} label={t("export")} />
+          <PanelTab value="export" active={tab === "export"} icon={FileDown} label={t("export")} featureId="panel.export" />
           <PanelTab
             value="history"
             active={tab === "history"}
             icon={History}
             label={t("history")}
+            featureId="panel.history"
           />
         </TabsList>
       </div>

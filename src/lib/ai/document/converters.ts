@@ -58,6 +58,14 @@ function optionalString(value: unknown): string | null | undefined {
   return typeof value === "string" ? value : value === null ? null : undefined;
 }
 
+function paragraphIndent(node: JSONContent): number {
+  const value = attrs(node).indent ?? 0;
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0 || value > 8) {
+    throw new UnsupportedAIContentError(["paragraph.indent"]);
+  }
+  return value;
+}
+
 function calloutKind(value: unknown): AnvilNoteCalloutKindV1 {
   if (
     typeof value === "string" &&
@@ -247,8 +255,14 @@ function block(
     throw new UnsupportedAIContentError([node.type ?? "unknown"]);
   }
   switch (node.type) {
-    case "paragraph":
-      return { type: "paragraph", content: content.map((child) => inline(child, registry)) };
+    case "paragraph": {
+      const indent = paragraphIndent(node);
+      return {
+        type: "paragraph",
+        ...(indent > 0 ? { attrs: { indent } } : {}),
+        content: content.map((child) => inline(child, registry)),
+      };
+    }
     case "heading": {
       const values = attrs(node);
       return {
@@ -379,6 +393,11 @@ function block(
             }
           : {}),
       };
+    case "pageBreak":
+      return {
+        type: "pageBreak",
+        attrs: { weak: attrs(node).weak === true },
+      };
     default:
       throw new UnsupportedAIContentError([node.type ?? "unknown"]);
   }
@@ -431,7 +450,11 @@ function tiptapInline(node: AnvilNoteInlineNodeV1): JSONContent {
 function tiptapBlock(node: AnvilNoteBlockNodeV1): JSONContent {
   switch (node.type) {
     case "paragraph":
-      return { type: "paragraph", content: node.content.map(tiptapInline) };
+      return {
+        type: "paragraph",
+        ...(node.attrs?.indent ? { attrs: { indent: node.attrs.indent } } : {}),
+        content: node.content.map(tiptapInline),
+      };
     case "heading":
       return { type: "heading", attrs: { ...node.attrs }, content: node.content.map(tiptapInline) };
     case "bulletList":
@@ -477,6 +500,8 @@ function tiptapBlock(node: AnvilNoteBlockNodeV1): JSONContent {
       return { type: node.type, attrs: { ...node.attrs }, content: node.content.map(tiptapBlock) };
     case "horizontalRule":
       return { type: "horizontalRule", ...(node.attrs ? { attrs: { ...node.attrs } } : {}) };
+    case "pageBreak":
+      return { type: "pageBreak", attrs: { weak: node.attrs.weak } };
   }
 }
 
@@ -493,3 +518,13 @@ export function anvilNoteFragmentToTiptap(
   const converted = fragment.content.map(tiptapBlock);
   return registry ? registry.restore(converted) : converted;
 }
+
+// V2 canonical AST conversion (Task 24.1): implementation lives in
+// ai-snapshot-converters.ts (kept out of this file to stay under ~500
+// lines alongside the OLD V1 code above) — re-exported so callers can
+// still `import ... from "./converters"`. See that module's header for
+// the full design.
+export {
+  aiSnapshotCandidateToTiptap,
+  tiptapDocumentToAiSnapshotSource,
+} from "./ai-snapshot-converters";

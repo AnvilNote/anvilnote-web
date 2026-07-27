@@ -37,12 +37,14 @@ import {
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { AIDocumentPreview } from "./ai-document-preview";
+import { AiOperationPreview } from "./ai-operation-preview";
 import {
   AIClientError,
   aiClient,
   type AIConversation,
   type AIConversationAttachment,
   type AIConversationDraft,
+  type AIConversationEditOperationsDraft,
   type AIConversationMessage,
   type AIConversationTurnRequest,
   type AIProviderMetadata,
@@ -55,12 +57,14 @@ import {
   tiptapSelectionToAnvilNote,
   UnsupportedAIContentError,
 } from "@/lib/ai/document/converters";
-import { applyAIContent } from "@/lib/ai/document/editor-operations";
+import { acceptVerifiedEditDraft, applyAIContent } from "@/lib/ai/document/editor-operations";
+import { buildOperationPreview, type OperationPreviewModel } from "@/lib/ai/document/operation-preview";
 import { ProtectedSelectionRegistry } from "@/lib/ai/document/protected-selection";
 import {
   createSelectionSnapshot,
   hasSelectionConflict,
   stableDocumentHash,
+  tiptapSelectionToEditSnapshot,
   type SelectionSnapshot,
 } from "@/lib/ai/document/selection-snapshot";
 import { useDocumentStore } from "@/lib/stores/document-store";
@@ -182,10 +186,18 @@ function errorKey(error: unknown): string {
   return "ai.errors.unknown_error";
 }
 
+// Only ever called with a "compose"/"rewrite-selection" draft in practice —
+// insertDraft/replaceDraft are exclusively reached through DraftCard's own
+// onInsert/onReplace, and DraftCard itself already returns null for an
+// "edit-operations" draft (routed to EditOperationsDraftCard instead). The
+// third arm below exists only so this stays exhaustive for the type
+// checker; it is not a reachable path.
 function draftContent(draft: AIConversationDraft) {
-  return draft.kind === "compose"
-    ? anvilNoteDocumentToTiptap(draft.document).content ?? []
-    : anvilNoteFragmentToTiptap(draft.replacement, ProtectedSelectionRegistry.create());
+  if (draft.kind === "compose") return anvilNoteDocumentToTiptap(draft.document).content ?? [];
+  if (draft.kind === "rewrite-selection") {
+    return anvilNoteFragmentToTiptap(draft.replacement, ProtectedSelectionRegistry.create());
+  }
+  return [];
 }
 
 function draftTitle(draft: AIConversationDraft): string | null {
@@ -208,6 +220,11 @@ function DraftCard({
   const t = useTranslations("ai");
   if (!message.draft) return null;
   const { draft } = message;
+  // Routed to EditOperationsDraftCard/AiOperationPreview instead (see the
+  // message-list rendering below) — DraftCard/AIDocumentPreview stay the
+  // OLD V1-only renderer for compose/rewrite-selection and never handle
+  // this kind.
+  if (draft.kind === "edit-operations") return null;
   const canApplySelectionRewrite = Boolean(
     operation?.selectionSnapshot && operation.registry,
   );
@@ -235,6 +252,62 @@ function DraftCard({
   );
 }
 
+// Renders a "edit-operations" draft's structural change cards, built
+// ENTIRELY from a detached clone of the live document via
+// buildOperationPreview — never mutates `editor` before the person clicks
+// Accept. Accept/Reject themselves are owned by SmartModePanel (mirroring
+// DraftCard's own onInsert/onReplace prop convention below) — this
+// component only renders the preview and forwards clicks.
+function EditOperationsDraftCard({
+  editor,
+  message,
+  draft,
+  disabled,
+  resolution,
+  onAccept,
+  onReject,
+}: {
+  editor: NonNullable<ReturnType<typeof useEditorBridge.getState>["editor"]>;
+  message: AIConversationMessage;
+  draft: AIConversationEditOperationsDraft;
+  disabled: boolean;
+  resolution?: "accepted" | "rejected";
+  onAccept: (message: AIConversationMessage) => void;
+  onReject: (message: AIConversationMessage) => void;
+}) {
+  const t = useTranslations("ai");
+  // Recomputed only when the draft or the live document identity changes —
+  // a stale conflict is acceptVerifiedEditDraft's own concern (it owns the
+  // real baseDocumentHash comparison against the live document before
+  // Accept can ever apply anything); this card only ever needs a
+  // best-effort, up-to-date preview.
+  const model = useMemo<OperationPreviewModel | null>(() => {
+    try {
+      return buildOperationPreview(editor.getJSON(), draft);
+    } catch {
+      return null;
+    }
+  }, [editor, draft]);
+
+  if (!model) {
+    return (
+      <article className="mt-2 rounded-2xl border border-destructive/30 bg-destructive/5 p-3 text-xs text-muted-foreground">
+        {t("errors.unknown_error")}
+      </article>
+    );
+  }
+
+  return (
+    <AiOperationPreview
+      model={model}
+      disabled={disabled}
+      resolution={resolution}
+      onAccept={() => onAccept(message)}
+      onReject={() => onReject(message)}
+    />
+  );
+}
+
 export function SmartModePanel({
   open,
 }: {
@@ -248,6 +321,7 @@ export function SmartModePanel({
   const settings = useSettingsStore();
   const snapshotBeforeAIInsert = useDocumentStore((state) => state.snapshotBeforeAIInsert);
   const replaceWholeDocumentFromAI = useDocumentStore((state) => state.replaceWholeDocumentFromAI);
+  const persistAcceptedEditContent = useDocumentStore((state) => state.persistAcceptedEditContent);
   const activeConversationId = useSmartModeUIStore((state) =>
     documentId ? state.activeConversationByDocument[documentId] ?? null : null,
   );
@@ -257,6 +331,10 @@ export function SmartModePanel({
     documentId ? state.inlineFallbackInstructionByDocument[documentId] : undefined,
   );
   const setInlineFallbackInstruction = useSmartModeUIStore((state) => state.setInlineFallbackInstruction);
+  const pendingEditOperationsByMessage = useSmartModeUIStore(
+    (state) => state.pendingEditOperationsByMessage,
+  );
+  const setPendingEditOperation = useSmartModeUIStore((state) => state.setPendingEditOperation);
   const conversationVersion = useSmartModeUIStore((state) => state.conversationVersion);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
@@ -270,6 +348,9 @@ export function SmartModePanel({
   const renamePendingRef = useRef(false);
   const applyingDraftsRef = useRef<Set<string>>(new Set());
   const [operations, setOperations] = useState<Map<string, DraftOperation>>(() => new Map());
+  const [resolvedEditOperations, setResolvedEditOperations] = useState<
+    Record<string, "accepted" | "rejected" | undefined>
+  >({});
   const initialConversationSelectionRef = useRef<string | null>(null);
   const currentDocumentIdRef = useRef(documentId);
 
@@ -423,6 +504,7 @@ export function SmartModePanel({
         compositionEndTimerRef.current = null;
       }
       setOperations(new Map());
+      setResolvedEditOperations({});
     };
   }, [documentId]);
 
@@ -483,6 +565,7 @@ export function SmartModePanel({
     const currentSelection = selectedContent(editor);
     let registry: ProtectedSelectionRegistry | null = null;
     let selectedFragment: AnvilNoteDocumentFragmentV1 | undefined;
+    let baseSelectionHash: string | undefined;
     let selectionSnapshot: SelectionSnapshot | null = null;
     if (currentSelection) {
       registry = ProtectedSelectionRegistry.create();
@@ -495,6 +578,10 @@ export function SmartModePanel({
         document: editor.getJSON(),
         selectedContent: currentSelection.content,
       });
+      baseSelectionHash = tiptapSelectionToEditSnapshot(editor, {
+        from: currentSelection.from,
+        to: currentSelection.to,
+      }).baseSelectionHash;
     }
     const documentHash = stableDocumentHash(editor.getJSON());
     return {
@@ -507,6 +594,7 @@ export function SmartModePanel({
           locale,
           writingStyle: settings.aiWritingStyle,
           ...(selectedFragment ? { selectedContent: selectedFragment } : {}),
+          ...(baseSelectionHash ? { baseSelectionHash } : {}),
           ...(readyAttachments.length ? { attachments: readyAttachments } : {}),
         },
         options: { humanizerEnabled: settings.aiHumanizerEnabled },
@@ -578,6 +666,13 @@ export function SmartModePanel({
       if (currentDocumentIdRef.current !== documentId) return;
       const assistant = completed.messages[1];
       setOperations((current) => new Map(current).set(assistant.id, operation));
+      if (assistant.draft?.kind === "edit-operations") {
+        setPendingEditOperation(assistant.id, {
+          documentId: documentId!,
+          documentHash: operation.documentHash,
+          selectionSnapshot: operation.selectionSnapshot,
+        });
+      }
       setConversations((current) => [completed.conversation, ...current.filter((item) => item.id !== completed.conversation.id)]);
       setActiveConversation(documentId!, completed.conversation.id);
       setMessages((current) => {
@@ -677,6 +772,91 @@ export function SmartModePanel({
     } catch (error) {
       setErrorMessageKey(errorKey(error));
     }
+  }
+
+  // Task 24.3's real Accept flow for a structural "edit-operations" draft.
+  // Delegates all of the actual guarded-transaction logic to
+  // acceptVerifiedEditDraft (editor-operations.ts) — this function's own
+  // job is purely to supply that library function's three arguments from
+  // this component's own state, following the SAME conventions the OLD
+  // insertDraft/replaceDraft flows above already establish:
+  // `applyingDraftsRef` reentrancy guard, `setErrorMessageKey(errorKey(...))`
+  // on failure, clearing the message's `operations` entry on success.
+  //
+  // `selectionRange` (for the optional selection-hash re-check) comes from
+  // either this panel's live operation or the shared inline-to-panel
+  // handoff keyed by assistant message id. Historical drafts never
+  // reconstruct a missing selection from the current cursor.
+  //
+  // `dependencies.createVersion`/`saveDocument` intentionally reuse
+  // `snapshotBeforeAIInsert`/`persistAcceptedEditContent` (document-store.ts)
+  // rather than `replaceWholeDocumentFromAI`: that function persists AND
+  // triggers a live-editor REMOUNT (via `restoreNonceById`), which would
+  // fight with/discard the in-place ProseMirror transaction
+  // acceptVerifiedEditDraft already dispatched to make Undo work (spec
+  // 20.6's "one Undo undoes the whole AI change" requirement) — see this
+  // file's own header comment / this task's report for the full reasoning.
+  async function acceptEditOperationsDraft(message: AIConversationMessage) {
+    if (!editor || !documentId || message.draft?.kind !== "edit-operations") return;
+    if (applyingDraftsRef.current.has(message.id)) return;
+    const draft = message.draft;
+    const operation = operations.get(message.id);
+    const pendingOperation = pendingEditOperationsByMessage[message.id];
+    const selectionSnapshot = operation?.selectionSnapshot
+      ?? (pendingOperation?.documentId === documentId ? pendingOperation.selectionSnapshot : null);
+    const selectionRange = selectionSnapshot
+      ? { from: selectionSnapshot.from, to: selectionSnapshot.to }
+      : null;
+    applyingDraftsRef.current.add(message.id);
+    try {
+      await acceptVerifiedEditDraft(
+        editor,
+        {
+          baseDocumentHash: draft.baseDocumentHash,
+          baseSelectionHash: draft.baseSelectionHash,
+          selectionRange,
+          candidate: draft.candidate,
+        },
+        {
+          createVersion: (live) => snapshotBeforeAIInsert(documentId, live),
+          saveDocument: (json) => persistAcceptedEditContent(documentId, json),
+        },
+      );
+      setOperations((current) => {
+        const next = new Map(current);
+        next.delete(message.id);
+        return next;
+      });
+      setPendingEditOperation(message.id, null);
+      setResolvedEditOperations((current) => ({
+        ...current,
+        [message.id]: "accepted",
+      }));
+      editor.commands.focus();
+    } catch (error) {
+      setErrorMessageKey(errorKey(error));
+    } finally {
+      applyingDraftsRef.current.delete(message.id);
+    }
+  }
+
+  // A trivial, local-state-only handler: declining a structural draft never
+  // touches the live editor or makes any network call (there is nothing to
+  // roll back — Accept is the only path that ever mutates anything) — it
+  // only clears this message's tracked operation, mirroring how a
+  // successful insertDraft/replaceDraft/acceptEditOperationsDraft above
+  // clears the SAME map entry on their own success path.
+  function rejectEditOperationsDraft(message: AIConversationMessage) {
+    setOperations((current) => {
+      const next = new Map(current);
+      next.delete(message.id);
+      return next;
+    });
+    setPendingEditOperation(message.id, null);
+    setResolvedEditOperations((current) => ({
+      ...current,
+      [message.id]: "rejected",
+    }));
   }
 
   async function renameConversation() {
@@ -965,10 +1145,46 @@ export function SmartModePanel({
         {activeConversationId && messageCursor ? <div className="mb-3 text-center"><Button type="button" size="sm" variant="ghost" disabled={messagesLoading} onClick={() => void loadMessages(activeConversationId, messageCursor)}>{messagesLoading ? <Loader2 className="size-4 animate-spin" /> : null}{t("smart.loadEarlier")}</Button></div> : null}
         {messages.length === 0 && activeConversationId ? <p className="py-8 text-center text-sm text-muted-foreground">{t("smart.emptyConversation")}</p> : null}
         <div className="space-y-4">
-          {messages.map((message) => <div key={message.id} className={message.role === "user" ? "ml-10" : "mr-4"}>
-            {message.role === "user" ? <UserMessage message={message} /> : <div className="rounded-2xl rounded-bl-md bg-muted px-3 py-2 text-sm">{message.content}</div>}
-            {message.role === "assistant" ? <DraftCard message={message} operation={operations.get(message.id)} disabled={state === "submitting"} onInsert={(value) => void insertDraft(value)} onReplace={(value) => void replaceDraft(value)} /> : null}
-          </div>)}
+          {messages.map((message) => {
+            const candidate = message.draft?.kind === "edit-operations"
+              ? message.draft.candidate[0]
+              : null;
+            const resolution = resolvedEditOperations[message.id]
+              ?? (
+                editor
+                && candidate
+                && stableDocumentHash(editor.getJSON()) === stableDocumentHash(candidate)
+                  ? "accepted"
+                  : undefined
+              );
+            return <div key={message.id} className={message.role === "user" ? "ml-10" : "mr-4"}>
+            {message.role === "user" ? <UserMessage message={message} /> : <div className="rounded-2xl rounded-bl-md bg-muted px-3 py-2 text-sm">
+              {message.draft?.kind === "edit-operations"
+                ? t(resolution === "accepted"
+                  ? "smart.changesApplied"
+                  : resolution === "rejected"
+                    ? "smart.changesRejected"
+                    : "smart.changesReady")
+                : message.content}
+            </div>}
+            {message.role === "assistant" && message.draft?.kind === "edit-operations"
+              ? (editor ? (
+                  <EditOperationsDraftCard
+                    editor={editor}
+                    message={message}
+                    draft={message.draft}
+                    disabled={state === "submitting"}
+                    resolution={resolution}
+                    onAccept={(value) => void acceptEditOperationsDraft(value)}
+                    onReject={(value) => rejectEditOperationsDraft(value)}
+                  />
+                ) : null)
+              : null}
+            {message.role === "assistant" && message.draft?.kind !== "edit-operations"
+              ? <DraftCard message={message} operation={operations.get(message.id)} disabled={state === "submitting"} onInsert={(value) => void insertDraft(value)} onReplace={(value) => void replaceDraft(value)} />
+              : null}
+          </div>;
+          })}
         </div>
         {state === "submitting" ? <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />{t("smart.submitting")}</div> : null}
         {errorMessageKey ? <p role="alert" className="mt-4 rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm">{t(errorMessageKey.replace(/^ai\./, "") as never)}</p> : null}

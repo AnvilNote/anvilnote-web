@@ -1,5 +1,6 @@
 import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
+import { Mathematics } from "@tiptap/extension-mathematics";
 import { describe, expect, it } from "vitest";
 import {
   inlineReviewContent,
@@ -30,14 +31,42 @@ describe("inline Smart Mode review boundaries", () => {
     expect(inlineReviewText(content!)).toBe("Better\nwording");
   });
 
-  it("rejects a structural proposal from an inline review", () => {
+  it("keeps inline math but rejects a multi-block structural proposal", () => {
     expect(inlineReviewContent([
       { type: "paragraph", content: [{ type: "text", text: "First" }] },
       { type: "paragraph", content: [{ type: "text", text: "Second" }] },
     ])).toBeNull();
-    expect(inlineReviewContent([
+    const mathContent = inlineReviewContent([
       { type: "paragraph", content: [{ type: "inlineMath", attrs: { latex: "x" } }] },
-    ])).toBeNull();
+    ]);
+    expect(mathContent).toEqual([
+      { type: "inlineMath", attrs: { latex: "x" } },
+    ]);
+    expect(inlineReviewText(mathContent!)).toBe("x");
+  });
+
+  it("allows one paragraph containing prose and inline math to use inline Ask AI", () => {
+    const editor = new Editor({
+      extensions: [StarterKit, Mathematics],
+      content: {
+        type: "doc",
+        content: [{
+          type: "paragraph",
+          content: [
+            { type: "text", text: "若 " },
+            { type: "inlineMath", attrs: { latex: "a,b\\in G" } },
+            { type: "text", text: "，則 " },
+            { type: "inlineMath", attrs: { latex: "a*b=b*a" } },
+            { type: "text", text: "。" },
+          ],
+        }],
+      },
+    });
+
+    const range = { from: 1, to: editor.state.doc.content.size - 1 };
+    expect(isPlainTextSelection(editor, range.from, range.to)).toBe(true);
+    expect(resolvePlainTextSelectionRange(editor, range.from, range.to)).toEqual(range);
+    editor.destroy();
   });
 
   it("allows one ordinary marked text block but rejects a multi-block selection", () => {

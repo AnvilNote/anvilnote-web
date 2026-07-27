@@ -242,6 +242,7 @@
       "image": "이미지",
       "inlineMath": "인라인 수식",
       "blockMath": "블록 수식",
+      "mathSelectionContainsText": "선택 영역에 일반 텍스트가 포함되어 있습니다. 수식만 선택한 뒤 수학 모드로 변환하세요.",
       "undo": "실행 취소",
       "redo": "다시 실행",
       "linkPrompt": "URL을 입력하세요",
@@ -255,7 +256,13 @@
       "mermaid": "Mermaid 다이어그램",
       "functionPlot": "함수 그래프",
       "statsChart": "통계 차트",
-      "questionBlock": "문제 블록"
+      "questionBlock": "문제 블록",
+      "pageBreak": "페이지 나누기",
+      "pageBreakDelete": "페이지 나누기 삭제",
+      "pageBreakForced": "강제 페이지 나누기",
+      "pageBreakForcedHint": "항상 다음 페이지에서 시작합니다",
+      "pageBreakWeak": "스마트 페이지 나누기",
+      "pageBreakWeakHint": "페이지 맨 위에서는 다시 나누지 않습니다"
     },
     "slash": {
       "text": "텍스트",
@@ -847,7 +854,7 @@
       "dark": "다크",
       "us-letter": "레터"
     },
-    "previewTemplate": "템플릿 보기",
+    "previewTemplate": "문서 미리보기",
     "templatePreview": "미리보기",
     "useThisTemplate": "이 템플릿 적용",
     "noPreviewAvailable": "이 템플릿의 미리보기가 아직 없습니다",
@@ -1010,6 +1017,58 @@
       "renamePalette": "팔레트 이름 변경"
     }
   },
+  "featureFinder": {
+    "group": "기능",
+    "recentSearches": "최근 검색",
+    "here": "{feature} 기능은 여기 있습니다",
+    "noMatch": "원하는 기능을 찾을 수 없나요? 다른 키워드를 사용해 보세요.",
+    "documentRequired": "문서를 연 다음 다시 검색해 주세요.",
+    "desktopRequired": "이 기능은 데스크톱 앱에서만 사용할 수 있습니다.",
+    "targetUnavailable": "지금은 기능 위치를 표시할 수 없습니다. 다시 시도해 주세요.",
+    "labels": {
+      "aiSettings": "AI 설정"
+    },
+    "paths": {
+      "editorToolbar": "편집기 › 도구 모음",
+      "editorSlash": "편집기 › / 명령",
+      "sidebar": "사이드바",
+      "rightPanel": "편집기 › 오른쪽 패널",
+      "settings": "설정",
+      "help": "도움말"
+    },
+    "descriptions": {
+      "openSection": "이 섹션 열기",
+      "insertBlock": "문서에 이 콘텐츠 블록 삽입",
+      "ai": "스마트 모드로 문서 작성, 재작성 및 정리 지원",
+      "help": "튜토리얼, 단축키 및 기능 도움말 보기"
+    },
+    "keywords": {
+      "documents": ["노트", "파일"],
+      "projects": ["분류", "폴더"],
+      "templates": ["레이아웃", "스타일"],
+      "templatePreview": ["미리보기", "눈", "템플릿 보기"],
+      "settings": ["환경설정", "옵션"],
+      "heading": ["제목", "헤딩"],
+      "bold": ["굵게", "bold"],
+      "list": ["글머리표", "번호", "목록"],
+      "question": ["문제", "시험", "선택지"],
+      "chart": ["차트", "통계", "그래프"],
+      "table": ["표", "행", "열"],
+      "image": ["이미지", "사진"],
+      "pageBreak": ["새 페이지", "페이지 나누기", "page break"],
+      "pageBreakSmart": ["스마트 페이지 나누기", "빈 페이지 방지"],
+      "math": ["수학", "수식", "LaTeX"],
+      "ai": ["AI", "스마트 모드"],
+      "proof": ["증명", "proof"],
+      "divider": ["구분선", "가로선"],
+      "history": ["버전", "기록", "스냅샷", "복원"],
+      "export": ["내보내기", "PDF", "DOCX", "Markdown"],
+      "palette": ["팔레트", "색상", "배색"],
+      "backup": ["백업", "복원", "가져오기"],
+      "update": ["업데이트", "업그레이드", "버전"],
+      "help": ["튜토리얼", "도움말", "단축키"]
+    }
+  },
   "command": {
     "placeholder": "검색하거나 명령어 입력…",
     "empty": "일치하는 결과가 없습니다.",
@@ -1161,6 +1220,22 @@
       "warnings": "경고",
       "accept": "수락",
       "reject": "거부",
+      "accepted": "수락됨",
+      "rejected": "거부됨",
+      "changesReady": "아래는 수정 내용입니다. 미리보기를 확인하시고 궁금한 점이 있으면 말씀해 주세요!",
+      "changesApplied": "수정 사항이 적용되었습니다.",
+      "changesRejected": "이번 수정 사항을 거부했습니다.",
+      "before": "변경 전",
+      "after": "변경 후",
+      "emptyFragment": "없음",
+      "operationLabels": {
+        "insertNode": "삽입",
+        "replaceNode": "교체",
+        "deleteNode": "삭제",
+        "moveNode": "이동",
+        "updateAttrs": "속성 업데이트",
+        "replaceText": "텍스트 교체"
+      },
       "insertAtCursor": "커서 위치에 삽입",
       "replaceEmpty": "빈 문서 대체",
       "suggestedTitle": "제안된 제목",
@@ -1200,6 +1275,15 @@
       "rename": "이름 변경",
       "delete": "삭제",
       "save": "저장"
+    },
+    "edits": {
+      "errors": {
+        "invalid_edit_operation": "AI 편집을 안전하게 적용할 수 없습니다. 다시 생성해 주세요.",
+        "invalid_reference": "AI 편집이 더 이상 존재하지 않는 내용을 참조합니다. 다시 생성해 주세요.",
+        "unsupported_image_edit": "스마트 모드에서는 이미지를 직접 추가, 삭제, 이동 또는 변경할 수 없습니다.",
+        "request_too_large": "AI 편집이 너무 커서 안전하게 적용할 수 없습니다. 요청을 줄인 후 다시 시도해 주세요.",
+        "stale_document": "이 AI 편집이 생성된 후 문서가 변경되었습니다. 다시 생성해 주세요."
+      }
     },
     "errors": {
       "invalid_api_key": "OpenAI API 키가 유효하지 않습니다.",

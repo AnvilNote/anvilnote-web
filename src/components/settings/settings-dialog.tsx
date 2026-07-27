@@ -584,6 +584,7 @@ export function SettingsDialog() {
                   <button
                     key={c.id}
                     type="button"
+                    data-feature-id={`settings.${c.id}`}
                     onClick={() => setCategory(c.id)}
                     className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
                       c.id === active.id
