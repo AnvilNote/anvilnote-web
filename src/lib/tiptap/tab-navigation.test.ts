@@ -20,6 +20,7 @@ function createEditor(content: Record<string, unknown>) {
       tableHeaderPlaceholder: "Header",
       tableCellPlaceholder: "Cell",
       onMathClick: vi.fn(),
+      onListItemDemoteBlocked: () => {},
     }),
     content,
   });
@@ -84,15 +85,34 @@ describe("editor Tab behavior", () => {
           "Ordered 4",
           "Ordered 5",
         ]),
-        nestedList("bulletList", ["Bullet 1", "Bullet 2", "Bullet 3", "Bullet 4"]),
+        nestedList("bulletList", [
+          "Bullet 1",
+          "Bullet 2",
+          "Bullet 3",
+          "Bullet 4",
+        ]),
       ],
     });
 
     try {
-      const markers = Array.from(editor.view.dom.querySelectorAll("li")).map((item) =>
-        item.getAttribute("data-list-marker"),
+      const markers = Array.from(editor.view.dom.querySelectorAll("li")).map(
+        (item) => item.getAttribute("data-list-marker"),
       );
-      expect(markers).toEqual(["1.", "(1)", "①", "a.", "(a)", "•", "◦", "▪", "–"]);
+      // Marker choices per depth are now user-configurable (settings-store's
+      // orderedListLevels/unorderedListLevels) -- this is the new default
+      // 5-level cycle, replacing the old hardcoded "(a)" 5th level with the
+      // newly-added roman-numeral module.
+      expect(markers).toEqual([
+        "1.",
+        "(1)",
+        "①",
+        "a.",
+        "i.",
+        "•",
+        "◦",
+        "▪",
+        "–",
+      ]);
     } finally {
       editor.destroy();
     }
@@ -156,7 +176,8 @@ describe("editor Tab behavior", () => {
             content?: Array<{ attrs?: Record<string, unknown> }>;
           }>;
         };
-        return document.content?.find((node) => node.type === "callout")?.content?.[0]?.attrs;
+        return document.content?.find((node) => node.type === "callout")
+          ?.content?.[0]?.attrs;
       };
 
       pressTab(editor);
@@ -183,13 +204,19 @@ describe("editor Tab behavior", () => {
             {
               type: "listItem",
               content: [
-                { type: "paragraph", content: [{ type: "text", text: "First item" }] },
+                {
+                  type: "paragraph",
+                  content: [{ type: "text", text: "First item" }],
+                },
               ],
             },
             {
               type: "listItem",
               content: [
-                { type: "paragraph", content: [{ type: "text", text: "Second item" }] },
+                {
+                  type: "paragraph",
+                  content: [{ type: "text", text: "Second item" }],
+                },
               ],
             },
           ],
@@ -228,11 +255,54 @@ describe("editor Tab behavior", () => {
   it.each([
     ["bulletList", "orderedList"],
     ["orderedList", "bulletList"],
-  ] as const)("nests a %s item under a preceding %s item", (childType, parentType) => {
-    const editor = createEditor({
-      type: "doc",
-      content: [
-        {
+  ] as const)(
+    "nests a %s item under a preceding %s item",
+    (childType, parentType) => {
+      const editor = createEditor({
+        type: "doc",
+        content: [
+          {
+            type: parentType,
+            content: [
+              {
+                type: "listItem",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Parent item" }],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: childType,
+            content: [
+              {
+                type: "listItem",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Mixed child item" }],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+
+      try {
+        editor.commands.setTextSelection(
+          textPosition(editor, "Mixed child item"),
+        );
+
+        pressTab(editor);
+
+        const document = editor.getJSON() as unknown as {
+          content?: Array<Record<string, unknown>>;
+        };
+        expect(document.content?.[0]).toMatchObject({
           type: parentType,
           content: [
             {
@@ -242,78 +312,38 @@ describe("editor Tab behavior", () => {
                   type: "paragraph",
                   content: [{ type: "text", text: "Parent item" }],
                 },
-              ],
-            },
-          ],
-        },
-        {
-          type: childType,
-          content: [
-            {
-              type: "listItem",
-              content: [
                 {
-                  type: "paragraph",
-                  content: [{ type: "text", text: "Mixed child item" }],
+                  type: childType,
+                  content: [
+                    {
+                      type: "listItem",
+                      content: [
+                        {
+                          type: "paragraph",
+                          content: [{ type: "text", text: "Mixed child item" }],
+                        },
+                      ],
+                    },
+                  ],
                 },
               ],
             },
           ],
-        },
-      ],
-    });
+        });
 
-    try {
-      editor.commands.setTextSelection(textPosition(editor, "Mixed child item"));
-
-      pressTab(editor);
-
-      const document = editor.getJSON() as unknown as {
-        content?: Array<Record<string, unknown>>;
-      };
-      expect(document.content?.[0]).toMatchObject({
-        type: parentType,
-        content: [
-          {
-            type: "listItem",
-            content: [
-              {
-                type: "paragraph",
-                content: [{ type: "text", text: "Parent item" }],
-              },
-              {
-                type: childType,
-                content: [
-                  {
-                    type: "listItem",
-                    content: [
-                      {
-                        type: "paragraph",
-                        content: [
-                          { type: "text", text: "Mixed child item" },
-                        ],
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      });
-
-      const parentTag = parentType === "orderedList" ? "ol" : "ul";
-      const childTag = childType === "orderedList" ? "ol" : "ul";
-      const childItem = editor.view.dom.querySelector(
-        `${parentTag} > li > ${childTag} > li`,
-      );
-      expect(childItem?.getAttribute("data-list-marker")).toBe(
-        childType === "orderedList" ? "1." : "•",
-      );
-    } finally {
-      editor.destroy();
-    }
-  });
+        const parentTag = parentType === "orderedList" ? "ol" : "ul";
+        const childTag = childType === "orderedList" ? "ol" : "ul";
+        const childItem = editor.view.dom.querySelector(
+          `${parentTag} > li > ${childTag} > li`,
+        );
+        expect(childItem?.getAttribute("data-list-marker")).toBe(
+          childType === "orderedList" ? "1." : "•",
+        );
+      } finally {
+        editor.destroy();
+      }
+    },
+  );
 
   it("nests a list item on Tab inside a callout", () => {
     const editor = createEditor({
@@ -356,7 +386,9 @@ describe("editor Tab behavior", () => {
     });
 
     try {
-      editor.commands.setTextSelection(textPosition(editor, "Second callout item"));
+      editor.commands.setTextSelection(
+        textPosition(editor, "Second callout item"),
+      );
 
       pressTab(editor);
 
@@ -400,7 +432,10 @@ describe("editor Tab behavior", () => {
             {
               type: "listItem",
               content: [
-                { type: "paragraph", content: [{ type: "text", text: "Only item" }] },
+                {
+                  type: "paragraph",
+                  content: [{ type: "text", text: "Only item" }],
+                },
               ],
             },
           ],

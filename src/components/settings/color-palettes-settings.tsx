@@ -77,7 +77,7 @@ export function ColorPalettesSettings() {
             }}
           />
         </div>
-        <Button type="button" size="sm" onClick={handleAddPalette} className="gap-1.5">
+        <Button type="button" onClick={handleAddPalette} className="gap-1.5">
           <Plus className="size-3.5" />
           {t("newPalette")}
         </Button>

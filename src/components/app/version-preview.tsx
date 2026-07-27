@@ -36,6 +36,7 @@ export function VersionPreview({ content }: { content: JSONContent }) {
         tableHeaderPlaceholder: "",
         tableCellPlaceholder: "",
         onMathClick: () => {},
+        onListItemDemoteBlocked: () => {},
       }),
     [t],
   );

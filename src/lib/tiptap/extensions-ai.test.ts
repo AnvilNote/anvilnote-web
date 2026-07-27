@@ -33,6 +33,7 @@ function buildTestEditor() {
     tableHeaderPlaceholder: "Header",
     tableCellPlaceholder: "Cell",
     onMathClick: vi.fn(),
+    onListItemDemoteBlocked: () => {},
   });
   return new Editor({ extensions });
 }
@@ -79,9 +80,12 @@ describe("production editor extensions", () => {
       tableHeaderPlaceholder: "Header",
       tableCellPlaceholder: "Cell",
       onMathClick: vi.fn(),
+      onListItemDemoteBlocked: () => {},
     });
 
-    expect(extensions.map((extension) => extension.name)).toContain("anvilNoteInlineAIDiff");
+    expect(extensions.map((extension) => extension.name)).toContain(
+      "anvilNoteInlineAIDiff",
+    );
   });
 
   it("renders historical malformed math without KaTeX strict-mode warning spam", () => {
@@ -111,7 +115,9 @@ describe("production editor extensions", () => {
       // Fails loudly with the exact missing/extra names (not just a boolean)
       // the moment a new editor extension is registered in extensions.ts
       // without a matching capability-manifest.ts entry, or vice versa.
-      expect(() => assertRegisteredCapabilities({ nodes, marks })).not.toThrow();
+      expect(() =>
+        assertRegisteredCapabilities({ nodes, marks }),
+      ).not.toThrow();
     } finally {
       editor.destroy();
     }
@@ -123,7 +129,10 @@ describe("production editor extensions", () => {
       const registeredNodeNames = new Set(Object.keys(editor.schema.nodes));
 
       const protectedInEditor = Object.entries(AI_NODE_CAPABILITIES)
-        .filter(([name, policy]) => policy === "protected-image" && registeredNodeNames.has(name))
+        .filter(
+          ([name, policy]) =>
+            policy === "protected-image" && registeredNodeNames.has(name),
+        )
         .map(([name]) => name)
         .sort();
 
@@ -138,7 +147,9 @@ describe("production editor extensions", () => {
     try {
       const registeredMarkNames = Object.keys(editor.schema.marks);
       for (const name of registeredMarkNames) {
-        expect(AI_MARK_CAPABILITIES[name as keyof typeof AI_MARK_CAPABILITIES]).toBe("editable");
+        expect(
+          AI_MARK_CAPABILITIES[name as keyof typeof AI_MARK_CAPABILITIES],
+        ).toBe("editable");
       }
     } finally {
       editor.destroy();

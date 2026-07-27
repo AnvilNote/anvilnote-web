@@ -865,6 +865,9 @@
       "brokenHint": "The referenced question could not be found — it may have been deleted",
       "pickerEmpty": "No questions to reference yet",
       "pickerUntitled": "Question {number}"
+    },
+    "list": {
+      "demoteBlocked": "Can't do that here."
     }
   },
   "documents": {
@@ -1220,7 +1223,18 @@
       "button": "Back up now",
       "import": "Import",
       "importHint": "Restore from a .md, .json, or .anvilnote file, or a backup .zip.",
-      "importButton": "Choose file…"
+      "importButton": "Choose file…",
+      "config": "Settings backup",
+      "configHint": "Export or import every App setting.",
+      "configExport": "Export config",
+      "configImport": "Import config",
+      "configExportError": "Couldn't export settings.",
+      "configImportSuccess": "Settings imported.",
+      "configImportError": "Couldn't import settings — check the file.",
+      "resetAll": "Reset to default",
+      "resetAllConfirmTitle": "Reset all settings?",
+      "resetAllConfirmDescription": "Clears every app setting (list markers, AI, export, etc.) back to default. Your documents aren't affected.",
+      "resetAllSuccess": "Settings reset."
     },
     "update": {
       "title": "Software update",
@@ -1250,6 +1264,45 @@
       "author": "Default author",
       "authorHint": "Filled into a new document's Author field, for templates that have one.",
       "authorPlaceholder": "Your name"
+    },
+    "listMarkers": {
+      "title": "List markers",
+      "description": "Choose which symbol or numbering style each nested list level uses, for both ordered and unordered lists.",
+      "ordered": "Ordered lists",
+      "unordered": "Unordered lists",
+      "level": "Level {level}",
+      "addOrderedLevel": "Add level",
+      "addUnorderedLevel": "Add level",
+      "removeLevel": "Remove level",
+      "modules": {
+        "arabic": "Arabic numeral",
+        "paren-arabic": "Arabic in parentheses",
+        "circled": "Circled number",
+        "alpha-lower": "Lowercase letter",
+        "alpha-upper": "Uppercase letter",
+        "roman-lower": "Lowercase roman numeral",
+        "roman-upper": "Uppercase roman numeral",
+        "chinese-numeral": "Chinese numeral",
+        "japanese-formal": "Japanese formal",
+        "japanese-informal": "Japanese informal",
+        "korean-hangul": "Korean hangul",
+        "thai-consonant": "Thai consonant"
+      },
+      "symbols": {
+        "bullet": "Bullet",
+        "whiteBullet": "White Bullet",
+        "blackSmallSquare": "Small Black Square",
+        "enDash": "En Dash",
+        "blackSquare": "Black Square",
+        "whiteSquare": "White Square",
+        "triangleUp": "Up-Pointing Triangle",
+        "triangleDown": "Down-Pointing Triangle",
+        "triangleLeft": "Left-Pointing Triangle",
+        "triangleRight": "Right-Pointing Triangle",
+        "blackDiamond": "Black Diamond",
+        "whiteDiamond": "White Diamond"
+      },
+      "resetToDefault": "Reset to default"
     },
     "colorPalettes": {
       "title": "Custom palettes",

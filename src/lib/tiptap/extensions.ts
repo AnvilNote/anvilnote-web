@@ -38,6 +38,7 @@ import { QuestionBlank } from "@/lib/tiptap/question-blank";
 import { QuestionBlankSuggestion } from "@/components/editor/question-blank-suggestion";
 import { InlineBlank } from "@/lib/tiptap/inline-blank";
 import { TabNavigation } from "@/lib/tiptap/tab-navigation";
+import { ListItemDemote } from "@/lib/tiptap/list-item-demote";
 import { ParagraphIndent } from "@/lib/tiptap/paragraph-indent";
 import { ListMarkers } from "@/lib/tiptap/list-markers";
 import { PageBreak } from "@/lib/tiptap/page-break";
@@ -999,6 +1000,10 @@ export type BuildExtensionsOptions = {
   // dialog seeded with the existing LaTeX and its document position (and, for
   // block math, its optional cross-ref display name).
   onMathClick: (mode: MathClickMode, pos: number, latex: string, refName?: string) => void;
+  // Double-Tab on a nested list item tried to demote to a markerless
+  // continuation somewhere invalid (top-level item, or not the last
+  // sibling) — see list-item-demote.ts.
+  onListItemDemoteBlocked: () => void;
 };
 
 export function buildExtensions({
@@ -1017,6 +1022,7 @@ export function buildExtensions({
   tableHeaderPlaceholder,
   tableCellPlaceholder,
   onMathClick,
+  onListItemDemoteBlocked,
 }: BuildExtensionsOptions): Extensions {
   return [
     StarterKit.configure({
@@ -1176,6 +1182,7 @@ export function buildExtensions({
     QuestionBlankSuggestion,
     InlineBlank,
     TabNavigation.configure({ onMathClick }),
+    ListItemDemote.configure({ onBlocked: onListItemDemoteBlocked }),
     InlineAIDiffExtension,
   ];
 }
