@@ -5,59 +5,69 @@ import { useTranslations } from "next-intl";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { Trash2 } from "lucide-react";
 import { FunctionPlotDialog } from "@/components/editor/function-plot-dialog";
-import type { FunctionPlotCurve, FunctionPlotSpec } from "@/lib/tiptap/function-plot";
+import {
+  defaultFunctionPlotSpec,
+  type FunctionPlotCurve,
+  type FunctionPlotSpec,
+} from "@/lib/tiptap/function-plot";
 
-export function FunctionPlotNodeView({ node, updateAttributes, deleteNode }: NodeViewProps) {
+export function FunctionPlotNodeView({
+  node,
+  updateAttributes,
+  deleteNode,
+}: NodeViewProps) {
   const t = useTranslations("editor.block");
-  const curves: FunctionPlotCurve[] = Array.isArray(node.attrs.curves) ? node.attrs.curves : [];
-  const svg = typeof node.attrs.svg === "string" ? node.attrs.svg : null;
-  // Freshly inserted nodes have one curve with an empty formula (see
-  // function-plot.ts's defaultCurves()) — open the dialog immediately so
-  // inserting flows straight into editing, without needing a separate
-  // "insert vs. edit" mode threaded through from the slash command.
-  const [dialogOpen, setDialogOpen] = useState(() => !curves[0]?.formula);
+  const defaults = defaultFunctionPlotSpec();
+  const curves: FunctionPlotCurve[] = Array.isArray(node.attrs.curves)
+    ? node.attrs.curves.map((curve: Record<string, unknown>) => ({
+        ...defaults.curves[0],
+        ...curve,
+        expr:
+          typeof curve.expr === "string"
+            ? curve.expr
+            : typeof curve.formula === "string"
+              ? curve.formula
+              : "",
+      }))
+    : defaults.curves;
+  const preview =
+    typeof node.attrs.preview === "string" ? node.attrs.preview : null;
+  const [dialogOpen, setDialogOpen] = useState(() => !curves[0]?.expr);
+  const hasSavedRef = useRef(!!curves[0]?.expr);
 
-  // Closing without ever having saved a formula (Cancel, or the ×/Esc
-  // dismiss) removes the node entirely rather than leaving a blank,
-  // useless chart block behind. Tracked via a REF (not by reading
-  // node.attrs.curves in the close effect) because updateAttributes'
-  // underlying ProseMirror transaction and React's own state update
-  // (setDialogOpen(false), fired right after it by the dialog's save
-  // wrapper) aren't guaranteed to land in the same render pass — a real
-  // save's onSave→updateAttributes call can still be "in flight" by the
-  // time the close-effect below runs, which would otherwise see STALE
-  // (still-empty) attrs and incorrectly delete a just-saved node. This
-  // was caught by an actual live test on stats-chart-node-view.tsx's
-  // equivalent check (save real data, node vanished immediately after),
-  // not just reasoned about — a ref mutation inside onSave is
-  // synchronous and has no such race, since it doesn't depend on which
-  // render the effect happens to run in.
-  const hasSavedRef = useRef(!!curves[0]?.formula);
   useEffect(() => {
-    if (!dialogOpen && !hasSavedRef.current) {
-      deleteNode();
-    }
+    if (!dialogOpen && !hasSavedRef.current) deleteNode();
+    // deleteNode is a stable Tiptap callback; adding it here makes newly
+    // inserted nodes disappear during harmless NodeView re-renders.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dialogOpen]);
 
   const spec: FunctionPlotSpec = {
+    mode: node.attrs.mode ?? defaults.mode,
     curves,
-    xMin: typeof node.attrs.xMin === "number" ? node.attrs.xMin : -10,
-    xMax: typeof node.attrs.xMax === "number" ? node.attrs.xMax : 10,
-    showGridlines: node.attrs.showGridlines !== false,
-    showAxisTicks: node.attrs.showAxisTicks !== false,
+    axis: node.attrs.axis ?? defaults.axis,
+    grid: node.attrs.grid ?? defaults.grid,
+    ticks: node.attrs.ticks ?? defaults.ticks,
+    colorMode: node.attrs.colorMode ?? defaults.colorMode,
   };
 
   return (
     <NodeViewWrapper className="relative my-2" contentEditable={false}>
       <div
-        className="group relative flex min-h-[80px] cursor-pointer items-center justify-center rounded border"
+        className="group relative flex min-h-20 cursor-pointer items-center justify-center rounded-md border bg-background"
         onClick={() => setDialogOpen(true)}
       >
-        {svg ? (
-          <div dangerouslySetInnerHTML={{ __html: svg }} />
+        {preview ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            alt={t("types.functionPlot")}
+            className="max-h-[32rem] max-w-full object-contain"
+            src={preview}
+          />
         ) : (
-          <span className="text-muted-foreground p-4 text-sm">{t("types.functionPlot")}</span>
+          <span className="p-4 text-sm text-muted-foreground">
+            {t("types.functionPlot")}
+          </span>
         )}
         <div
           className="absolute top-1 right-1 hidden group-hover:flex"
@@ -65,7 +75,7 @@ export function FunctionPlotNodeView({ node, updateAttributes, deleteNode }: Nod
         >
           <button
             aria-label={t("delete", { type: t("types.functionPlot") })}
-            className="flex size-6 items-center justify-center rounded text-muted-foreground/60 transition-colors hover:text-destructive"
+            className="flex size-7 items-center justify-center rounded text-muted-foreground/60 transition-colors hover:bg-muted hover:text-destructive"
             onClick={(event) => {
               event.stopPropagation();
               deleteNode();
@@ -80,9 +90,9 @@ export function FunctionPlotNodeView({ node, updateAttributes, deleteNode }: Nod
       <FunctionPlotDialog
         initialSpec={spec}
         onOpenChange={setDialogOpen}
-        onSave={(nextSpec, nextSvg) => {
+        onSave={(nextSpec, pdf, nextPreview) => {
           hasSavedRef.current = true;
-          updateAttributes({ ...nextSpec, svg: nextSvg });
+          updateAttributes({ ...nextSpec, pdf, preview: nextPreview });
         }}
         open={dialogOpen}
       />
