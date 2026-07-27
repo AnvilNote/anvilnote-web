@@ -41,6 +41,17 @@ export function buildExportPayload(
   doc: AnvilDocument,
   options: ExportOptions,
 ): ExportPayload {
+  // Every caller constructs `options` from pageSize/fontPreset alone (see
+  // export-panel.tsx etc.) — reading the list-marker levels straight from
+  // the settings store here, same as formatDateFields' dateFormat lookup
+  // above, means the exported PDF matches the live editor without every
+  // call site needing to remember to pass them.
+  const { orderedListLevels, unorderedListLevels } = useSettingsStore.getState();
+  const exportOptions: ExportOptions = {
+    ...options,
+    orderedListLevels: options.orderedListLevels ?? orderedListLevels,
+    unorderedListLevels: options.unorderedListLevels ?? unorderedListLevels,
+  };
   return {
     documentId: doc.id,
     title: doc.title,
@@ -57,6 +68,6 @@ export function buildExportPayload(
     content: normalizeHeadingLevels(doc.content),
     sourceFormat: "tiptap-json",
     mathFormat: "latex",
-    exportOptions: options,
+    exportOptions,
   };
 }

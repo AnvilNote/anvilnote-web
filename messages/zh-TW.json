@@ -865,6 +865,9 @@
       "brokenHint": "找不到引用的題目，可能已被刪除",
       "pickerEmpty": "目前沒有可引用的題目",
       "pickerUntitled": "第 {number} 題"
+    },
+    "list": {
+      "demoteBlocked": "這裡沒辦法這樣做。"
     }
   },
   "documents": {
@@ -1215,12 +1218,23 @@
       "title": "備份",
       "description": "將文件匯出成 Markdown 或 .anvilnote 以妥善保存，兩種格式都能匯入還原。",
       "allDocuments": "備份全部",
-      "allDocumentsHint": "將全部 {count} 篇文件依專案分類，匯出成一個 Markdown 檔案的 zip。",
+      "allDocumentsHint": "依專案分類，匯出全部 {count} 篇文件為 Markdown zip。",
       "format": "格式",
       "button": "立即備份",
       "import": "匯入",
       "importHint": "從 .md、.json、.anvilnote 檔案或備份 .zip 還原。",
-      "importButton": "選擇檔案…"
+      "importButton": "選擇檔案…",
+      "config": "設定備份",
+      "configHint": "匯出/匯入所有 App 設定。",
+      "configExport": "匯出設定",
+      "configImport": "匯入設定",
+      "configExportError": "設定匯出失敗。",
+      "configImportSuccess": "設定已匯入。",
+      "configImportError": "設定匯入失敗——請檢查檔案。",
+      "resetAll": "恢復預設值",
+      "resetAllConfirmTitle": "確定要恢復所有設定的預設值嗎？",
+      "resetAllConfirmDescription": "會將全部設定（列表標記、AI、匯出等）還原為預設值，不影響你的文件。",
+      "resetAllSuccess": "設定已恢復預設值。"
     },
     "update": {
       "title": "軟體更新",
@@ -1250,6 +1264,45 @@
       "author": "預設作者",
       "authorHint": "帶入新文件的「作者」欄位（限有該欄位的範本）。",
       "authorPlaceholder": "你的名字"
+    },
+    "listMarkers": {
+      "title": "清單標記",
+      "description": "設定有序與無序清單，每一層嵌套要用哪種符號或編號樣式。",
+      "ordered": "有序清單",
+      "unordered": "無序清單",
+      "level": "第 {level} 層",
+      "addOrderedLevel": "新增層級",
+      "addUnorderedLevel": "新增層級",
+      "removeLevel": "移除層級",
+      "modules": {
+        "arabic": "阿拉伯數字",
+        "paren-arabic": "圓括號阿拉伯數字",
+        "circled": "圓圈數字",
+        "alpha-lower": "小寫字母",
+        "alpha-upper": "大寫字母",
+        "roman-lower": "小寫羅馬數字",
+        "roman-upper": "大寫羅馬數字",
+        "chinese-numeral": "中文數字",
+        "japanese-formal": "日文正式",
+        "japanese-informal": "日文非正式",
+        "korean-hangul": "韓文諺文",
+        "thai-consonant": "泰文輔音"
+      },
+      "symbols": {
+        "bullet": "實心圓點",
+        "whiteBullet": "空心圓點",
+        "blackSmallSquare": "小型實心方塊",
+        "enDash": "短破折號",
+        "blackSquare": "實心正方形",
+        "whiteSquare": "空心正方形",
+        "triangleUp": "上三角形",
+        "triangleDown": "下三角形",
+        "triangleLeft": "左三角形",
+        "triangleRight": "右三角形",
+        "blackDiamond": "實心菱形",
+        "whiteDiamond": "空心菱形"
+      },
+      "resetToDefault": "恢復預設值"
     },
     "colorPalettes": {
       "title": "自訂色盤",

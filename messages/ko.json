@@ -614,6 +614,9 @@
       "brokenHint": "참조한 문제를 찾을 수 없습니다. 삭제되었을 수 있습니다",
       "pickerEmpty": "참조할 수 있는 문제가 아직 없습니다",
       "pickerUntitled": "문제 {number}"
+    },
+    "list": {
+      "demoteBlocked": "여기서는 할 수 없어요."
     }
   },
   "documents": {
@@ -969,7 +972,18 @@
       "button": "지금 백업",
       "import": "가져오기",
       "importHint": ".md, .json, .anvilnote 파일 또는 백업 .zip에서 복원합니다.",
-      "importButton": "파일 선택…"
+      "importButton": "파일 선택…",
+      "config": "설정 백업",
+      "configHint": "모든 앱 설정을 내보내거나 가져옵니다.",
+      "configExport": "설정 내보내기",
+      "configImport": "설정 가져오기",
+      "configExportError": "설정을 내보내지 못했습니다.",
+      "configImportSuccess": "설정을 가져왔습니다.",
+      "configImportError": "설정을 가져오지 못했습니다 — 파일을 확인하세요.",
+      "resetAll": "기본값으로 재설정",
+      "resetAllConfirmTitle": "모든 설정을 재설정할까요?",
+      "resetAllConfirmDescription": "목록 표시, AI, 내보내기 등 모든 앱 설정이 기본값으로 돌아갑니다. 문서에는 영향이 없습니다.",
+      "resetAllSuccess": "설정이 재설정되었습니다."
     },
     "update": {
       "title": "소프트웨어 업데이트",
@@ -999,6 +1013,45 @@
       "author": "기본 작성자",
       "authorHint": "작성자 필드가 있는 템플릿의 새 문서에 자동으로 입력됩니다.",
       "authorPlaceholder": "이름"
+    },
+    "listMarkers": {
+      "title": "목록 마커",
+      "description": "순서 있는 목록과 순서 없는 목록 각각, 중첩 단계마다 사용할 기호나 번호 스타일을 선택합니다.",
+      "ordered": "순서 있는 목록",
+      "unordered": "순서 없는 목록",
+      "level": "{level}단계",
+      "addOrderedLevel": "단계 추가",
+      "addUnorderedLevel": "단계 추가",
+      "removeLevel": "단계 제거",
+      "modules": {
+        "arabic": "아라비아 숫자",
+        "paren-arabic": "괄호 숫자",
+        "circled": "원문자",
+        "alpha-lower": "소문자 알파벳",
+        "alpha-upper": "대문자 알파벳",
+        "roman-lower": "소문자 로마 숫자",
+        "roman-upper": "대문자 로마 숫자",
+        "chinese-numeral": "한자 숫자",
+        "japanese-formal": "일본어 정식",
+        "japanese-informal": "일본어 약식",
+        "korean-hangul": "한글 숫자",
+        "thai-consonant": "태국 자음"
+      },
+      "symbols": {
+        "bullet": "검은 원",
+        "whiteBullet": "흰 원",
+        "blackSmallSquare": "작은 검은 사각형",
+        "enDash": "엔 대시",
+        "blackSquare": "검은 사각형",
+        "whiteSquare": "흰 사각형",
+        "triangleUp": "위쪽 삼각형",
+        "triangleDown": "아래쪽 삼각형",
+        "triangleLeft": "왼쪽 삼각형",
+        "triangleRight": "오른쪽 삼각형",
+        "blackDiamond": "검은 마름모",
+        "whiteDiamond": "흰 마름모"
+      },
+      "resetToDefault": "기본값으로 재설정"
     },
     "colorPalettes": {
       "title": "사용자 지정 팔레트",

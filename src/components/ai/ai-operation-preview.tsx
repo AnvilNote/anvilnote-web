@@ -68,6 +68,7 @@ function useReadOnlyPreviewExtensions() {
         tableHeaderPlaceholder: "",
         tableCellPlaceholder: "",
         onMathClick: () => {},
+        onListItemDemoteBlocked: () => {},
       }),
     [t],
   );

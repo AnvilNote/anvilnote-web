@@ -614,6 +614,9 @@
       "brokenHint": "参照先の問題が見つかりません。削除された可能性があります",
       "pickerEmpty": "参照できる問題がまだありません",
       "pickerUntitled": "問題 {number}"
+    },
+    "list": {
+      "demoteBlocked": "ここではできません。"
     }
   },
   "documents": {
@@ -969,7 +972,18 @@
       "button": "今すぐバックアップ",
       "import": "インポート",
       "importHint": ".md、.json、.anvilnote ファイル、またはバックアップ .zip から復元します。",
-      "importButton": "ファイルを選択…"
+      "importButton": "ファイルを選択…",
+      "config": "設定のバックアップ",
+      "configHint": "全アプリ設定を書き出し/読み込みます。",
+      "configExport": "設定を書き出す",
+      "configImport": "設定を読み込む",
+      "configExportError": "設定の書き出しに失敗しました。",
+      "configImportSuccess": "設定を読み込みました。",
+      "configImportError": "設定の読み込みに失敗しました——ファイルを確認してください。",
+      "resetAll": "デフォルトに戻す",
+      "resetAllConfirmTitle": "すべての設定をリセットしますか？",
+      "resetAllConfirmDescription": "リストマーカー、AI、書き出しなど、すべてのアプリ設定がデフォルトに戻ります。ドキュメントには影響しません。",
+      "resetAllSuccess": "設定をリセットしました。"
     },
     "update": {
       "title": "ソフトウェアアップデート",
@@ -999,6 +1013,45 @@
       "author": "デフォルトの著者",
       "authorHint": "「著者」欄がある範本で、新しい文書に自動入力されます。",
       "authorPlaceholder": "あなたの名前"
+    },
+    "listMarkers": {
+      "title": "リストマーカー",
+      "description": "番号付き・箇条書きリストそれぞれ、入れ子の階層ごとに使う記号や番号スタイルを選びます。",
+      "ordered": "番号付きリスト",
+      "unordered": "箇条書きリスト",
+      "level": "レベル {level}",
+      "addOrderedLevel": "レベルを追加",
+      "addUnorderedLevel": "レベルを追加",
+      "removeLevel": "レベルを削除",
+      "modules": {
+        "arabic": "算用数字",
+        "paren-arabic": "括弧付き数字",
+        "circled": "丸数字",
+        "alpha-lower": "小文字アルファベット",
+        "alpha-upper": "大文字アルファベット",
+        "roman-lower": "小文字ローマ数字",
+        "roman-upper": "大文字ローマ数字",
+        "chinese-numeral": "漢数字",
+        "japanese-formal": "大字",
+        "japanese-informal": "漢数字",
+        "korean-hangul": "ハングル数字",
+        "thai-consonant": "タイ文字"
+      },
+      "symbols": {
+        "bullet": "黒丸",
+        "whiteBullet": "白丸",
+        "blackSmallSquare": "小さい黒四角",
+        "enDash": "ダッシュ",
+        "blackSquare": "黒四角",
+        "whiteSquare": "白四角",
+        "triangleUp": "上向き三角",
+        "triangleDown": "下向き三角",
+        "triangleLeft": "左向き三角",
+        "triangleRight": "右向き三角",
+        "blackDiamond": "黒ひし形",
+        "whiteDiamond": "白ひし形"
+      },
+      "resetToDefault": "デフォルトに戻す"
     },
     "colorPalettes": {
       "title": "カスタムパレット",

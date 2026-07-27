@@ -9,6 +9,7 @@ import {
   Download,
   FileText,
   History,
+  ListOrdered,
   Loader2,
   Moon,
   Palette,
@@ -41,6 +42,8 @@ import { SettingsRow } from "@/components/settings/settings-section";
 import { FolderPicker } from "@/components/settings/folder-picker";
 import { AISettingsSection } from "@/components/settings/ai-settings-section";
 import { ColorPalettesSettings } from "@/components/settings/color-palettes-settings";
+import { ListMarkerSettings } from "@/components/settings/list-marker-settings";
+import { SettingsConfigButtons } from "@/components/settings/settings-config-buttons";
 import { LocaleSwitcher } from "@/components/app/locale-switcher";
 import { ImportBackupButton } from "@/components/app/import-backup-button";
 import { isDesktopShell, useAppVersion } from "@/components/app/app-version";
@@ -69,6 +72,7 @@ const CATEGORY_ICONS: Record<SettingsCategoryId, typeof Palette> = {
   language: Type,
   ai: Sparkles,
   documentDefaults: FileText,
+  listMarkers: ListOrdered,
   versionHistory: History,
   export: Download,
   colorPalettes: Paintbrush,
@@ -330,6 +334,12 @@ export function SettingsDialog() {
       ),
     },
     {
+      id: "listMarkers",
+      title: t("settings.listMarkers.title"),
+      description: t("settings.listMarkers.description"),
+      content: <ListMarkerSettings />,
+    },
+    {
       id: "versionHistory",
       title: t("settings.versionHistory.title"),
       description: t("settings.versionHistory.description"),
@@ -480,6 +490,13 @@ export function SettingsDialog() {
             hint={t("settings.backup.importHint")}
             control={<ImportBackupButton label={t("settings.backup.importButton")} />}
           />
+          <SettingsRow
+            id="backup-config"
+            highlighted={highlightedRowId === "backup-config"}
+            label={t("settings.backup.config")}
+            hint={t("settings.backup.configHint")}
+            control={<SettingsConfigButtons />}
+          />
         </>
       ),
     },
@@ -543,6 +560,13 @@ export function SettingsDialog() {
       <DialogContent
         showCloseButton={false}
         className="flex h-[36rem] max-h-[85vh] w-full max-w-3xl flex-col gap-0 overflow-hidden p-0 sm:max-w-3xl"
+        onInteractOutside={(event) => {
+          // Radix Select renders its menu in a portal, so clicking outside
+          // that menu (to dismiss it) otherwise bubbles into Dialog's own
+          // outside-interaction handler and closes the whole settings
+          // dialog along with it -- same fix as function-plot-dialog.tsx.
+          event.preventDefault();
+        }}
       >
         <DialogClose asChild>
           <Button variant="ghost" size="icon-sm" className="absolute top-3 right-3 z-10">

@@ -104,6 +104,10 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
     [t],
   );
 
+  const handleListItemDemoteBlocked = useCallback(() => {
+    toast.error(t("editor.list.demoteBlocked"));
+  }, [t]);
+
   const [mathDialog, setMathDialog] = useState<MathDialogState>(CLOSED_MATH_DIALOG);
   const [linkOpen, setLinkOpen] = useState(false);
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
@@ -183,6 +187,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         tableHeaderPlaceholder,
         tableCellPlaceholder,
         onMathClick: handleMathClick,
+        onListItemDemoteBlocked: handleListItemDemoteBlocked,
       }),
     // choicePlaceholder is intentionally excluded from this dep array — its
     // CONTENT is fully determined by choicePlaceholderKey below (already a
@@ -207,6 +212,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
       tableHeaderPlaceholder,
       tableCellPlaceholder,
       handleMathClick,
+      handleListItemDemoteBlocked,
     ],
   );
 

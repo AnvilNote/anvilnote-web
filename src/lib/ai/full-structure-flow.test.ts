@@ -66,12 +66,16 @@ const mixedDocument: JSONContent = {
         {
           type: "footnote",
           attrs: { id: "fn:1", "data-id": "fn-1" },
-          content: [{ type: "paragraph", content: [{ type: "text", text: "註腳一" }] }],
+          content: [
+            { type: "paragraph", content: [{ type: "text", text: "註腳一" }] },
+          ],
         },
         {
           type: "footnote",
           attrs: { id: "fn:2", "data-id": "fn-2" },
-          content: [{ type: "paragraph", content: [{ type: "text", text: "註腳二" }] }],
+          content: [
+            { type: "paragraph", content: [{ type: "text", text: "註腳二" }] },
+          ],
         },
       ],
     },
@@ -96,12 +100,16 @@ function createMixedEditor(): Editor {
       tableHeaderPlaceholder: "",
       tableCellPlaceholder: "",
       onMathClick: () => {},
+      onListItemDemoteBlocked: () => {},
     }),
     content: mixedDocument,
   });
 }
 
-function rangeForText(editor: Editor, text: string): { from: number; to: number } {
+function rangeForText(
+  editor: Editor,
+  text: string,
+): { from: number; to: number } {
   let range: { from: number; to: number } | undefined;
   editor.state.doc.descendants((node, pos) => {
     if (!range && node.isText && node.text === text) {
@@ -113,16 +121,15 @@ function rangeForText(editor: Editor, text: string): { from: number; to: number 
 }
 
 function documentHash(editor: Editor): string {
-  return buildEditSnapshot(
-    tiptapDocumentToAiSnapshotSource(editor.getJSON()),
-  ).baseDocumentHash;
+  return buildEditSnapshot(tiptapDocumentToAiSnapshotSource(editor.getJSON()))
+    .baseDocumentHash;
 }
 
 function findRef(snapshot: EditSnapshotV1, path: readonly number[]): string {
   for (const [ref, candidatePath] of snapshot.nodeRefs) {
     if (
-      candidatePath.length === path.length
-      && candidatePath.every((index, position) => index === path[position])
+      candidatePath.length === path.length &&
+      candidatePath.every((index, position) => index === path[position])
     ) {
       return ref;
     }
@@ -160,7 +167,9 @@ function verifiedDraftWithBothChanges(editor: Editor): {
   const replaceText = operations[0];
   const insertNode = operations[1];
   if (replaceText.type !== "replaceText" || insertNode.type !== "insertNode") {
-    throw new Error("Expected the verified replaceText and insertNode operations.");
+    throw new Error(
+      "Expected the verified replaceText and insertNode operations.",
+    );
   }
   firstText.text = replaceText.text;
   candidate.content?.splice(-1, 0, {
@@ -174,8 +183,10 @@ describe("full-structure AI flow", () => {
     const editor = createMixedEditor();
     const original = editor.getJSON();
     const selectionRange = rangeForText(editor, "尾段");
-    const { baseSelectionHash } =
-      tiptapSelectionToEditSnapshot(editor, selectionRange);
+    const { baseSelectionHash } = tiptapSelectionToEditSnapshot(
+      editor,
+      selectionRange,
+    );
     const { operations, candidate } = verifiedDraftWithBothChanges(editor);
     const dependencies = {
       createVersion: vi.fn().mockResolvedValue(undefined),
@@ -202,20 +213,26 @@ describe("full-structure AI flow", () => {
       content: [{ content: [{ text: "新增的結構段落" }] }],
     });
     expect(editor.getJSON()).toEqual(original);
-    await acceptVerifiedEditDraft(editor, {
-      baseDocumentHash: documentHash(editor),
-      baseSelectionHash,
-      selectionRange,
-      candidate: [candidate as { type: "doc"; content: JSONContent[] }],
-    }, dependencies);
+    await acceptVerifiedEditDraft(
+      editor,
+      {
+        baseDocumentHash: documentHash(editor),
+        baseSelectionHash,
+        selectionRange,
+        candidate: [candidate as { type: "doc"; content: JSONContent[] }],
+      },
+      dependencies,
+    );
 
     const accepted = editor.getJSON() as MutableJSONNode;
     expect(accepted.content?.[0]?.content?.[0]?.text).toBe(
       "這是一段變長的文字",
     );
-    expect(accepted.content?.some(
-      (node) => node.content?.[0]?.text === "新增的結構段落",
-    )).toBe(true);
+    expect(
+      accepted.content?.some(
+        (node) => node.content?.[0]?.text === "新增的結構段落",
+      ),
+    ).toBe(true);
     expect(dependencies.createVersion).toHaveBeenCalledOnce();
     expect(dependencies.saveDocument).toHaveBeenCalledOnce();
     expect(editor.commands.undo()).toBe(true);
@@ -226,8 +243,10 @@ describe("full-structure AI flow", () => {
   it("rejects a genuine selection mutation before createVersion or saveDocument", async () => {
     const editor = createMixedEditor();
     const selectionRange = rangeForText(editor, "尾段");
-    const { baseSelectionHash } =
-      tiptapSelectionToEditSnapshot(editor, selectionRange);
+    const { baseSelectionHash } = tiptapSelectionToEditSnapshot(
+      editor,
+      selectionRange,
+    );
     editor.commands.insertContentAt(selectionRange, "異動");
     const mutated = editor.getJSON();
     const dependencies = {
@@ -235,12 +254,18 @@ describe("full-structure AI flow", () => {
       saveDocument: vi.fn().mockResolvedValue(undefined),
     };
 
-    await expect(acceptVerifiedEditDraft(editor, {
-      baseDocumentHash: documentHash(editor),
-      baseSelectionHash,
-      selectionRange,
-      candidate: [mutated as { type: "doc"; content: JSONContent[] }],
-    }, dependencies)).rejects.toThrow("selection_conflict");
+    await expect(
+      acceptVerifiedEditDraft(
+        editor,
+        {
+          baseDocumentHash: documentHash(editor),
+          baseSelectionHash,
+          selectionRange,
+          candidate: [mutated as { type: "doc"; content: JSONContent[] }],
+        },
+        dependencies,
+      ),
+    ).rejects.toThrow("selection_conflict");
 
     expect(dependencies.createVersion).not.toHaveBeenCalled();
     expect(dependencies.saveDocument).not.toHaveBeenCalled();

@@ -614,6 +614,9 @@
       "brokenHint": "ไม่พบคำถามที่อ้างอิง อาจถูกลบไปแล้ว",
       "pickerEmpty": "ยังไม่มีคำถามให้อ้างอิง",
       "pickerUntitled": "คำถาม {number}"
+    },
+    "list": {
+      "demoteBlocked": "ทำแบบนี้ที่นี่ไม่ได้"
     }
   },
   "documents": {
@@ -969,7 +972,18 @@
       "button": "สำรองข้อมูลตอนนี้",
       "import": "นำเข้า",
       "importHint": "กู้คืนจากไฟล์ .md, .json, .anvilnote หรือไฟล์สำรอง .zip",
-      "importButton": "เลือกไฟล์…"
+      "importButton": "เลือกไฟล์…",
+      "config": "สำรองข้อมูลการตั้งค่า",
+      "configHint": "ส่งออก/นำเข้าการตั้งค่าแอปทั้งหมด",
+      "configExport": "ส่งออกการตั้งค่า",
+      "configImport": "นำเข้าการตั้งค่า",
+      "configExportError": "ส่งออกการตั้งค่าไม่สำเร็จ",
+      "configImportSuccess": "นำเข้าการตั้งค่าแล้ว",
+      "configImportError": "นำเข้าการตั้งค่าไม่สำเร็จ — โปรดตรวจสอบไฟล์",
+      "resetAll": "รีเซ็ตเป็นค่าเริ่มต้น",
+      "resetAllConfirmTitle": "รีเซ็ตการตั้งค่าทั้งหมด?",
+      "resetAllConfirmDescription": "จะรีเซ็ตการตั้งค่าแอปทั้งหมด (เครื่องหมายรายการ, AI, การส่งออก ฯลฯ) กลับเป็นค่าเริ่มต้น ไม่กระทบเอกสารของคุณ",
+      "resetAllSuccess": "รีเซ็ตการตั้งค่าแล้ว"
     },
     "update": {
       "title": "อัปเดตซอฟต์แวร์",
@@ -999,6 +1013,45 @@
       "author": "ผู้เขียนเริ่มต้น",
       "authorHint": "กรอกให้อัตโนมัติในช่อง \"ผู้เขียน\" ของเอกสารใหม่ สำหรับเทมเพลตที่มีช่องนี้",
       "authorPlaceholder": "ชื่อของคุณ"
+    },
+    "listMarkers": {
+      "title": "เครื่องหมายรายการ",
+      "description": "เลือกสัญลักษณ์หรือรูปแบบการนับเลขที่แต่ละระดับของรายการแบบมีลำดับและไม่มีลำดับจะใช้",
+      "ordered": "รายการแบบมีลำดับ",
+      "unordered": "รายการแบบไม่มีลำดับ",
+      "level": "ระดับ {level}",
+      "addOrderedLevel": "เพิ่มระดับ",
+      "addUnorderedLevel": "เพิ่มระดับ",
+      "removeLevel": "ลบระดับ",
+      "modules": {
+        "arabic": "เลขอารบิก",
+        "paren-arabic": "เลขในวงเล็บ",
+        "circled": "เลขในวงกลม",
+        "alpha-lower": "ตัวอักษรพิมพ์เล็ก",
+        "alpha-upper": "ตัวอักษรพิมพ์ใหญ่",
+        "roman-lower": "เลขโรมันพิมพ์เล็ก",
+        "roman-upper": "เลขโรมันพิมพ์ใหญ่",
+        "chinese-numeral": "เลขจีน",
+        "japanese-formal": "ญี่ปุ่นแบบทางการ",
+        "japanese-informal": "ญี่ปุ่นแบบไม่เป็นทางการ",
+        "korean-hangul": "ฮันกึลเกาหลี",
+        "thai-consonant": "พยัญชนะไทย"
+      },
+      "symbols": {
+        "bullet": "จุดกลมทึบ",
+        "whiteBullet": "จุดกลมโปร่ง",
+        "blackSmallSquare": "สี่เหลี่ยมทึบเล็ก",
+        "enDash": "ขีดสั้น",
+        "blackSquare": "สี่เหลี่ยมทึบ",
+        "whiteSquare": "สี่เหลี่ยมโปร่ง",
+        "triangleUp": "สามเหลี่ยมชี้ขึ้น",
+        "triangleDown": "สามเหลี่ยมชี้ลง",
+        "triangleLeft": "สามเหลี่ยมชี้ซ้าย",
+        "triangleRight": "สามเหลี่ยมชี้ขวา",
+        "blackDiamond": "สี่เหลี่ยมข้าวหลามตัดทึบ",
+        "whiteDiamond": "สี่เหลี่ยมข้าวหลามตัดโปร่ง"
+      },
+      "resetToDefault": "รีเซ็ตเป็นค่าเริ่มต้น"
     },
     "colorPalettes": {
       "title": "ชุดสีกำหนดเอง",

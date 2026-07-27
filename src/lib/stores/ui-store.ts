@@ -24,6 +24,7 @@ export type SettingsCategoryId =
   | "language"
   | "ai"
   | "documentDefaults"
+  | "listMarkers"
   | "versionHistory"
   | "export"
   | "colorPalettes"
