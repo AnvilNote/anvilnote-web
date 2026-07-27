@@ -57,4 +57,60 @@ describe("BlockHandle", () => {
       "anvil-drag-handle--list",
     );
   });
+
+  it("sets a wider offset for a wider marker than for a narrow one", () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const li = document.createElement("li");
+    container.appendChild(li);
+
+    // jsdom has no real canvas 2d context, so measureText always reports 0
+    // width regardless of the string — fake one whose width scales with
+    // string length, closely mirroring how a real font actually behaves.
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
+      measureText: (text: string) => ({ width: text.length * 10 }),
+    } as unknown as CanvasRenderingContext2D);
+
+    const editor = {
+      view: {
+        dom: { parentElement: container },
+        nodeDOM: () => li,
+      },
+    } as unknown as Editor;
+    render(<BlockHandle editor={editor} />);
+
+    li.setAttribute("data-list-marker", "•");
+    act(() => {
+      dragHandleState.onNodeChange?.({
+        node: { type: { name: "listItem" } } as PMNode,
+        pos: 1,
+      });
+    });
+    const narrowOffset = container.style.getPropertyValue(
+      "--anvil-drag-handle-list-offset",
+    );
+
+    li.setAttribute("data-list-marker", "viii.");
+    act(() => {
+      dragHandleState.onNodeChange?.({
+        node: { type: { name: "paragraph" } } as PMNode,
+        pos: 1,
+      });
+    });
+    act(() => {
+      dragHandleState.onNodeChange?.({
+        node: { type: { name: "listItem" } } as PMNode,
+        pos: 1,
+      });
+    });
+    const wideOffset = container.style.getPropertyValue(
+      "--anvil-drag-handle-list-offset",
+    );
+
+    expect(narrowOffset).toBe("-26px");
+    expect(wideOffset).toBe("-66px");
+
+    container.remove();
+    vi.restoreAllMocks();
+  });
 });
