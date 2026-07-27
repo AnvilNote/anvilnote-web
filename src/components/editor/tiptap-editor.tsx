@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { ChainedCommands } from "@tiptap/core";
 import type { EditorView } from "@tiptap/pm/view";
+import { fixMisWrappedListItemDrop } from "@/lib/tiptap/list-item-drop-fix";
 import { EditorContent, useEditor } from "@tiptap/react";
 import {
   BarChart3,
@@ -485,7 +486,8 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
           const footnotesStart = doc.content.size - last.nodeSize;
           if (dropPos.pos >= footnotesStart) return true;
         }
-        return false;
+
+        return fixMisWrappedListItemDrop(view, dropPos.pos);
       },
     }),
     [],

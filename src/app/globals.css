@@ -166,7 +166,7 @@
 }
 
 .anvil-drag-handle--list {
-  transform: translateX(-1rem);
+  transform: translateX(var(--anvil-drag-handle-list-offset, -1rem));
 }
 
 .anvil-editor:hover .anvil-drag-handle {
