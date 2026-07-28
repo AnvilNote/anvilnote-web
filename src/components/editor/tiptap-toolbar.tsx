@@ -461,13 +461,13 @@ export function TiptapToolbar({
           active={s.functionPlot}
           onClick={() => insertFunctionPlot(editor)}
         /> */}
-        <ToolbarButton
+        {/* <ToolbarButton
           icon={BarChart3}
           label={t("statsChart")}
           featureId="editor.statsChart"
           active={s.statsChart}
           onClick={() => insertStatsChart(editor)}
-        />
+        /> */}
         <ToolbarButton
           icon={Code2}
           label={t("codeBlock")}
