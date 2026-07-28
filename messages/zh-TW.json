@@ -316,8 +316,8 @@
         }
       },
       "footnote": {
-        "title": "腳注",
-        "body": "除了工具列按鈕，也可以直接在文字後方輸入來插入腳注。腳注內容固定顯示在文件最底部，跟正文分開排版，適合放引用來源或補充說明，不會打斷閱讀。"
+        "title": "腳註",
+        "body": "除了工具列按鈕，也可以直接在文字後方輸入來插入腳註。腳註內容固定顯示在文件最底部，跟正文分開排版，適合放引用來源或補充說明，不會打斷閱讀。"
       },
       "crossRef": {
         "title": "交互參照",
@@ -347,7 +347,7 @@
       "heading3": "最小的標題層級",
       "bold": "讓文字變粗",
       "italic": "讓文字傾斜",
-      "footnote": "插入腳注，固定顯示在底部",
+      "footnote": "插入腳註，固定顯示在底部",
       "strike": "加上刪除線",
       "code": "標記為行內程式碼",
       "bulletList": "無序項目清單",
@@ -365,7 +365,7 @@
       "undo": "復原上一步",
       "redo": "取消復原"
     },
-    "footnoteHint": "試著插入一個腳注",
+    "footnoteHint": "試著插入一個腳註",
     "crossRefHint": "在編輯器任意處輸入 @ 開啟選單",
     "questionBlockHint": "點問號圖示，選一個題型",
     "clozeHint": "輸入 #，選一題來引用"
@@ -479,7 +479,7 @@
       "heading3": "標題 3",
       "bold": "粗體",
       "italic": "斜體",
-      "footnote": "腳注",
+      "footnote": "腳註",
       "strike": "刪除線",
       "code": "行內程式碼",
       "bulletList": "無序清單",
@@ -786,9 +786,9 @@
       }
     },
     "footnotes": {
-      "title": "腳注",
-      "expand": "展開腳注區",
-      "collapse": "收合腳注區"
+      "title": "腳註",
+      "expand": "展開腳註區",
+      "collapse": "收合腳註區"
     },
     "crossRef": {
       "labels": {
@@ -1014,7 +1014,7 @@
       },
       "toffee-tufte": {
         "name": "Toffee Tufte",
-        "description": "Tufte 風格學術報告範本，側邊註解取代傳統腳注。"
+        "description": "Tufte 風格學術報告範本，側邊註解取代傳統腳註。"
       }
     },
     "fields": {
@@ -1234,7 +1234,8 @@
       "resetAll": "恢復預設值",
       "resetAllConfirmTitle": "確定要恢復所有設定的預設值嗎？",
       "resetAllConfirmDescription": "會將全部設定（列表標記、AI、匯出等）還原為預設值，不影響你的文件。",
-      "resetAllSuccess": "設定已恢復預設值。"
+      "resetAllSuccess": "設定已恢復預設值。",
+      "configExportSuccess": "設定已匯出。"
     },
     "update": {
       "title": "軟體更新",
@@ -1370,7 +1371,8 @@
       "palette": ["色盤", "配色", "顏色"],
       "backup": ["備份", "還原", "匯入", "backup"],
       "update": ["更新", "升級", "版本"],
-      "help": ["教學", "說明", "小抄", "快捷鍵"]
+      "help": ["教學", "說明", "小抄", "快捷鍵"],
+      "footnote": ["註腳", "附註", "footnote"]
     }
   },
   "command": {

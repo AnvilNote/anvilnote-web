@@ -1234,7 +1234,8 @@
       "resetAll": "Reset to default",
       "resetAllConfirmTitle": "Reset all settings?",
       "resetAllConfirmDescription": "Clears every app setting (list markers, AI, export, etc.) back to default. Your documents aren't affected.",
-      "resetAllSuccess": "Settings reset."
+      "resetAllSuccess": "Settings reset.",
+      "configExportSuccess": "Settings exported."
     },
     "update": {
       "title": "Software update",
@@ -1370,7 +1371,8 @@
       "palette": ["palette", "colors", "theme"],
       "backup": ["backup", "restore", "import"],
       "update": ["update", "upgrade", "version"],
-      "help": ["tutorial", "help", "cheat sheet", "shortcuts"]
+      "help": ["tutorial", "help", "cheat sheet", "shortcuts"],
+      "footnote": ["footnote", "note", "endnote"]
     }
   },
   "command": {

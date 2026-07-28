@@ -29,6 +29,7 @@ export function SettingsConfigButtons() {
   async function handleExport() {
     try {
       await exportSettingsConfig(useSettingsStore.getState());
+      toast.success(t("configExportSuccess"));
     } catch {
       toast.error(t("configExportError"));
     }
