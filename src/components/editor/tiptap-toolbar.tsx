@@ -8,7 +8,6 @@ import {
   AlignCenter,
   AlignLeft,
   AlignRight,
-  BarChart3,
   Bold,
   Check,
   ChevronDown,
@@ -59,7 +58,6 @@ import { QuestionKindMenu } from "@/components/editor/question-kind-menu";
 import { PageBreakMenu } from "@/components/editor/page-break-menu";
 import { insertMermaid } from "@/lib/tiptap/mermaid";
 import { insertFunctionPlot } from "@/lib/tiptap/function-plot";
-import { insertStatsChart } from "@/lib/tiptap/stats-chart";
 import { DEFAULT_CALLOUT_KIND } from "@/config/callouts";
 import type {
   MathClickMode,
@@ -303,7 +301,6 @@ export function TiptapToolbar({
       question: e.isActive("question"),
       mermaid: e.isActive("mermaid"),
       functionPlot: e.isActive("functionPlot"),
-      statsChart: e.isActive("statsChart"),
       codeBlock: e.isActive("codeBlock"),
       link: e.isActive("link"),
       inlineMath: e.isActive("inlineMath"),
@@ -461,13 +458,9 @@ export function TiptapToolbar({
           active={s.functionPlot}
           onClick={() => insertFunctionPlot(editor)}
         /> */}
-        {/* <ToolbarButton
-          icon={BarChart3}
-          label={t("statsChart")}
-          featureId="editor.statsChart"
-          active={s.statsChart}
-          onClick={() => insertStatsChart(editor)}
-        /> */}
+        {/* Statistics chart stays available to existing documents and the
+            slash menu, but is intentionally hidden from the toolbar while
+            its editing experience is being revised. */}
         <ToolbarButton
           icon={Code2}
           label={t("codeBlock")}
