@@ -64,4 +64,15 @@ describe("FEATURE_CATALOG", () => {
       "panel.templatePreview",
     );
   });
+
+  it("finds footnote by its reversed-order synonym, not just the literal label", () => {
+    const resolved = resolveFeatureCatalog(translator(zhTW));
+
+    // The feature's own label is "腳註" — "註腳" only matches at all because
+    // it's in the curated keyword list (subsequence fuzzy matching alone
+    // can't match a reordering of the label's own characters).
+    expect(searchFeatures(resolved, "註腳").map((feature) => feature.id)).toContain(
+      "editor.footnote",
+    );
+  });
 });

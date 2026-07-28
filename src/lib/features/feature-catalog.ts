@@ -162,6 +162,8 @@ export const FEATURE_CATALOG: FeatureDefinition[] = [
     "editor.footnote",
     "editor.toolbar.footnote",
     "tour.itemHints.footnote",
+    undefined,
+    "featureFinder.keywords.footnote",
   ),
   toolbarFeature(
     "editor.strike",

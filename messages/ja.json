@@ -983,7 +983,8 @@
       "resetAll": "デフォルトに戻す",
       "resetAllConfirmTitle": "すべての設定をリセットしますか？",
       "resetAllConfirmDescription": "リストマーカー、AI、書き出しなど、すべてのアプリ設定がデフォルトに戻ります。ドキュメントには影響しません。",
-      "resetAllSuccess": "設定をリセットしました。"
+      "resetAllSuccess": "設定をリセットしました。",
+      "configExportSuccess": "設定を書き出しました。"
     },
     "update": {
       "title": "ソフトウェアアップデート",
@@ -1119,7 +1120,8 @@
       "palette": ["パレット", "配色", "色"],
       "backup": ["バックアップ", "復元", "読み込み"],
       "update": ["更新", "アップグレード", "バージョン"],
-      "help": ["チュートリアル", "ヘルプ", "ショートカット"]
+      "help": ["チュートリアル", "ヘルプ", "ショートカット"],
+      "footnote": ["脚注", "注釈"]
     }
   },
   "command": {

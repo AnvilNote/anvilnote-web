@@ -561,11 +561,19 @@ export function SettingsDialog() {
         showCloseButton={false}
         className="flex h-[36rem] max-h-[85vh] w-full max-w-3xl flex-col gap-0 overflow-hidden p-0 sm:max-w-3xl"
         onInteractOutside={(event) => {
-          // Radix Select renders its menu in a portal, so clicking outside
-          // that menu (to dismiss it) otherwise bubbles into Dialog's own
+          // Radix Select renders its menu in a portal (outside this
+          // DialogContent's own DOM subtree), so clicking outside that menu
+          // (to dismiss it) otherwise bubbles into Dialog's own
           // outside-interaction handler and closes the whole settings
           // dialog along with it -- same fix as function-plot-dialog.tsx.
-          event.preventDefault();
+          // Scoped to just that case (checking for Radix's own popper-portal
+          // wrapper marker) rather than function-plot-dialog's blanket
+          // "never close on outside click" -- unlike that draft-editing
+          // dialog, settings has nothing to lose by closing, so a genuine
+          // click outside (on the dark overlay) should still dismiss it.
+          if ((event.target as Element | null)?.closest("[data-radix-popper-content-wrapper]")) {
+            event.preventDefault();
+          }
         }}
       >
         <DialogClose asChild>

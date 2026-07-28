@@ -983,7 +983,8 @@
       "resetAll": "기본값으로 재설정",
       "resetAllConfirmTitle": "모든 설정을 재설정할까요?",
       "resetAllConfirmDescription": "목록 표시, AI, 내보내기 등 모든 앱 설정이 기본값으로 돌아갑니다. 문서에는 영향이 없습니다.",
-      "resetAllSuccess": "설정이 재설정되었습니다."
+      "resetAllSuccess": "설정이 재설정되었습니다.",
+      "configExportSuccess": "설정을 내보냈습니다."
     },
     "update": {
       "title": "소프트웨어 업데이트",
@@ -1119,7 +1120,8 @@
       "palette": ["팔레트", "색상", "배색"],
       "backup": ["백업", "복원", "가져오기"],
       "update": ["업데이트", "업그레이드", "버전"],
-      "help": ["튜토리얼", "도움말", "단축키"]
+      "help": ["튜토리얼", "도움말", "단축키"],
+      "footnote": ["각주", "주석"]
     }
   },
   "command": {
