@@ -134,7 +134,27 @@ export const ColorPickerSelection = memo(({ className, ...props }: ColorPickerSe
   const [isDragging, setIsDragging] = useState(false)
   const [positionX, setPositionX] = useState(0)
   const [positionY, setPositionY] = useState(0)
-  const { hue, setSaturation, setLightness } = useColorPicker()
+  const { hue, saturation, lightness, setSaturation, setLightness } = useColorPicker()
+
+  // The puck's on-screen position was only ever written by a drag inside
+  // THIS component (applyPointerPosition) — it never read the picker's
+  // actual saturation/lightness on mount or when `value` changed out from
+  // under it (e.g. opening the popover for a different swatch, which resets
+  // hue/saturation/lightness via ColorPicker's own value-sync effect). The
+  // puck stayed frozen at its (0,0) initial state — always the top-left
+  // corner — regardless of which color was actually selected, making the
+  // picker look like it opened to a "random"/wrong color. This is the exact
+  // inverse of applyPointerPosition's forward saturation/lightness formula,
+  // so it stays reconciled with the puck's own drag updates (idempotent —
+  // recomputing from the values a drag just set reproduces the same
+  // position, no visible jump).
+  useEffect(() => {
+    const x = saturation / 100
+    const topLightness = x < 0.01 ? 100 : 50 + 50 * (1 - x)
+    const y = topLightness > 0 ? 1 - lightness / topLightness : 0
+    setPositionX(Math.max(0, Math.min(1, x)))
+    setPositionY(Math.max(0, Math.min(1, y)))
+  }, [saturation, lightness])
 
   const backgroundGradient = useMemo(() => {
     return `linear-gradient(0deg, rgba(0,0,0,1), rgba(0,0,0,0)),
@@ -361,7 +381,7 @@ const PercentageInput = ({ className, value, onChange, ...props }: PercentageInp
         }
         {...(props as any)}
         className={cn(
-          "h-8 w-[3.25rem] rounded-l-none bg-secondary px-2 text-xs shadow-none",
+          "h-8 w-[3.25rem] rounded-l-none bg-secondary px-2 text-xs shadow-none focus-visible:ring-0",
           className,
         )}
       />
@@ -458,7 +478,7 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
         {...(props as any)}
       >
         <Input
-          className="h-8 rounded-r-none bg-secondary px-2 text-xs shadow-none"
+          className="h-8 rounded-r-none bg-secondary px-2 text-xs shadow-none focus-visible:ring-0"
           onChange={e => {
             const next = e.target.value
             setHexDraft(next)
@@ -488,7 +508,7 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
         {rgbDraft.map((value, index) => (
           <Input
             className={cn(
-              "h-8 rounded-r-none bg-secondary px-2 text-xs shadow-none",
+              "h-8 rounded-r-none bg-secondary px-2 text-xs shadow-none focus-visible:ring-0",
               index && "rounded-l-none",
               className,
             )}
@@ -517,7 +537,7 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
     return (
       <div className={cn("w-full rounded-md shadow-sm", className)} {...(props as any)}>
         <Input
-          className="h-8 w-full bg-secondary px-2 text-xs shadow-none"
+          className="h-8 w-full bg-secondary px-2 text-xs shadow-none focus-visible:ring-0"
           onChange={e => {
             const next = e.target.value
             setCssDraft(next)
@@ -548,7 +568,7 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
         {hslDraft.map((value, index) => (
           <Input
             className={cn(
-              "h-8 rounded-r-none bg-secondary px-2 text-xs shadow-none",
+              "h-8 rounded-r-none bg-secondary px-2 text-xs shadow-none focus-visible:ring-0",
               index && "rounded-l-none",
               className,
             )}

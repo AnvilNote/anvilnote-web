@@ -55,7 +55,7 @@ describe("production editor extensions", () => {
         content: [
           { type: "pageBreak", attrs: { weak: false } },
           { type: "pageBreak", attrs: { weak: true } },
-          { type: "paragraph", attrs: { indent: 0 } },
+          { type: "paragraph", attrs: { indent: 0, textAlign: null } },
         ],
       });
     } finally {

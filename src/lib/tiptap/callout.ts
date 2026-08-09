@@ -32,7 +32,20 @@ export const AnvilCallout = Node.create({
   // subpar.grid() emission regardless of nesting depth. table included for
   // the same reason — renderTable() is called generically from renderBlocks()
   // regardless of nesting, same as every other case here.
-  content: "(paragraph|bulletList|orderedList|codeBlock|blockMath|image|proof|mermaid|imageRow|table)+",
+  // chart included for the same reason as image/mermaid — an atom node
+  // whose tiptap-to-typst.ts case (embeds the cached staticImage via
+  // renderImage(), same as every other visual node) is already called
+  // generically by renderBlocks() regardless of nesting depth, so no
+  // renderer-side change was needed to support this. question included so
+  // a question block (single/multi-choice or written) can be dragged or
+  // slash-inserted into a callout (e.g. a "warning" callout containing a
+  // sample exam question) — tiptap-to-typst.ts's own "question" case is
+  // already a pure container that recurses via renderBlocks(), so this too
+  // needed no renderer-side change, only this content-spec addition; the
+  // drag-handle's own drop validation is schema-driven (ProseMirror checks
+  // the target content expression), so without "question" here the block
+  // would silently refuse to drop into a callout with no error shown.
+  content: "(paragraph|bulletList|orderedList|codeBlock|blockMath|image|proof|mermaid|imageRow|table|chart|question)+",
   defining: true,
   isolating: true,
 
@@ -54,6 +67,18 @@ export const AnvilCallout = Node.create({
         renderHTML: (attributes) => ({
           "data-title-touched": attributes.titleTouched ? "true" : "false",
         }),
+      },
+      // Per-instance override of the kind's own preset background — null
+      // means "use the kind's palette" (the default, and what every callout
+      // had before this existed). Applies identically in light and dark
+      // mode (unlike the kind palette's own light/dark pair) since the user
+      // picked this exact color deliberately; accent/border color still
+      // always comes from the kind, this only ever touches the fill.
+      customBackground: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("data-custom-background") || null,
+        renderHTML: (attributes) =>
+          attributes.customBackground ? { "data-custom-background": attributes.customBackground } : {},
       },
     };
   },

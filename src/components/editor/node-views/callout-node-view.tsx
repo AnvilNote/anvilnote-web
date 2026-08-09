@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import {
   NodeViewContent,
@@ -15,7 +15,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  ColorPicker,
+  ColorPickerSelection,
+  ColorPickerHue,
+  ColorPickerEyeDropper,
+  ColorPickerOutput,
+  ColorPickerFormat,
+} from "@/components/ui/color-picker";
 import { CALLOUT_KINDS, calloutPalette, normalizeCalloutKind } from "@/config/callouts";
+
+function rgbaToHex(rgba: number[]): string {
+  const [r, g, b] = rgba as [number, number, number, number];
+  return `#${[r, g, b].map((c) => Math.round(c).toString(16).padStart(2, "0")).join("")}`;
+}
 
 // React NodeView for callouts: a colored box (accent left border + tinted
 // background from the kind's palette), an editable title, the paragraph body
@@ -37,10 +51,14 @@ import { CALLOUT_KINDS, calloutPalette, normalizeCalloutKind } from "@/config/ca
 export function CalloutNodeView({ node, updateAttributes, deleteNode }: NodeViewProps) {
   const t = useTranslations("editor.callout");
   const tBlock = useTranslations("editor.block");
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const kind = normalizeCalloutKind(node.attrs.kind as string | undefined);
   const title = typeof node.attrs.title === "string" ? node.attrs.title : "";
   const titleTouched = Boolean(node.attrs.titleTouched);
+  const customBackground = typeof node.attrs.customBackground === "string" ? node.attrs.customBackground : null;
   const palette = calloutPalette(kind);
+  const backgroundLight = customBackground || palette.background;
+  const backgroundDark = customBackground || palette.darkBackground;
 
   function setKind(nextKind: string) {
     const normalized = normalizeCalloutKind(nextKind);
@@ -52,6 +70,10 @@ export function CalloutNodeView({ node, updateAttributes, deleteNode }: NodeView
 
   function setTitle(value: string) {
     updateAttributes({ title: value, titleTouched: true });
+  }
+
+  function setCustomBackground(hex: string | null) {
+    updateAttributes({ customBackground: hex });
   }
 
   return (
@@ -66,8 +88,8 @@ export function CalloutNodeView({ node, updateAttributes, deleteNode }: NodeView
       // need to know the current theme itself.
       style={
         {
-          "--callout-bg-light": palette.background,
-          "--callout-bg-dark": palette.darkBackground,
+          "--callout-bg-light": backgroundLight,
+          "--callout-bg-dark": backgroundDark,
           borderLeftColor: palette.accent,
         } as CSSProperties
       }
@@ -102,6 +124,46 @@ export function CalloutNodeView({ node, updateAttributes, deleteNode }: NodeView
             ))}
           </SelectContent>
         </Select>
+        <Popover onOpenChange={setColorPickerOpen} open={colorPickerOpen}>
+          <PopoverTrigger asChild>
+            <button
+              aria-label={t("customBackground")}
+              className="flex size-6 items-center justify-center rounded"
+              onMouseDown={(event) => event.stopPropagation()}
+              title={t("customBackground")}
+              type="button"
+            >
+              <span
+                className="size-3.5 rounded-full border"
+                style={{ backgroundColor: backgroundLight }}
+              />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 rounded-2xl" onMouseDown={(event) => event.stopPropagation()}>
+            <ColorPicker
+              className="gap-3"
+              onChange={(rgba) => setCustomBackground(rgbaToHex(rgba as number[]))}
+              value={backgroundLight}
+            >
+              <ColorPickerSelection className="h-32" />
+              <ColorPickerHue />
+              <div className="flex items-center gap-2">
+                <ColorPickerEyeDropper />
+                <ColorPickerOutput />
+              </div>
+              <ColorPickerFormat />
+            </ColorPicker>
+            {customBackground ? (
+              <button
+                className="mt-2 text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => setCustomBackground(null)}
+                type="button"
+              >
+                {t("resetBackground")}
+              </button>
+            ) : null}
+          </PopoverContent>
+        </Popover>
         <button
           type="button"
           aria-label={tBlock("delete", { type: tBlock("types.callout") })}

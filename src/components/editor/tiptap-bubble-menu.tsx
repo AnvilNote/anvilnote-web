@@ -7,7 +7,22 @@ import { CellSelection } from "@tiptap/pm/tables";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { useEditorState } from "@tiptap/react";
 import { useLocale, useTranslations } from "next-intl";
-import { Bot, Check, Code, Bold, Italic, Link2, Loader2, Send, Sigma, Strikethrough, X } from "lucide-react";
+import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
+  Bot,
+  Check,
+  Code,
+  Bold,
+  Italic,
+  Link2,
+  Loader2,
+  Send,
+  Sigma,
+  Strikethrough,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { MathClickMode } from "@/lib/tiptap/extensions";
@@ -329,6 +344,9 @@ export function TiptapBubbleMenu({
       code: e.isActive("code"),
       link: e.isActive("link"),
       color: e.getAttributes("textStyle").color as string | undefined,
+      alignLeft: e.isActive({ textAlign: "left" }),
+      alignCenter: e.isActive({ textAlign: "center" }),
+      alignRight: e.isActive({ textAlign: "right" }),
     }),
   });
   const [inlineOpen, setInlineOpen] = useState(false);
@@ -816,6 +834,25 @@ export function TiptapBubbleMenu({
           {tSmart("smart.inline")}
         </button>
       ) : null}
+      <span className="mx-0.5 h-5 w-px bg-border" />
+      <MenuButton
+        icon={AlignLeft}
+        label={t("textAlignLeft")}
+        active={s.alignLeft}
+        onClick={() => editor.chain().focus().setTextAlign("left").run()}
+      />
+      <MenuButton
+        icon={AlignCenter}
+        label={t("textAlignCenter")}
+        active={s.alignCenter}
+        onClick={() => editor.chain().focus().setTextAlign("center").run()}
+      />
+      <MenuButton
+        icon={AlignRight}
+        label={t("textAlignRight")}
+        active={s.alignRight}
+        onClick={() => editor.chain().focus().setTextAlign("right").run()}
+      />
       <span className="mx-0.5 h-5 w-px bg-border" />
       <button
         type="button"

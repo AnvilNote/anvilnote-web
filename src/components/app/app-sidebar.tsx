@@ -3,7 +3,7 @@
 import type { MouseEvent } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { FileText, FolderKanban, Info, LayoutTemplate, Search, Settings } from "lucide-react";
+import { FileText, FolderKanban, Info, LayoutTemplate, PanelLeftIcon, Search, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -26,7 +26,7 @@ import { getActiveHoliday } from "@/lib/holidays";
 
 export function AppSidebar() {
   const t = useTranslations();
-  const { setOpenMobile, isMobile } = useSidebar();
+  const { setOpenMobile, isMobile, toggleSidebar } = useSidebar();
   const holiday = getActiveHoliday();
 
   const setCommandOpen = useUiStore((s) => s.setCommandOpen);
@@ -147,6 +147,16 @@ export function AppSidebar() {
                 >
                   <Settings className="size-4" />
                   <span>{t("nav.settings")}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              {/* Collapses only this (left) sidebar — toggleSidebar() from
+                  useSidebar() acts on whichever SidebarProvider context it's
+                  rendered under, and AppShell only ever mounts one, wrapping
+                  just AppSidebar. */}
+              <SidebarMenuItem>
+                <SidebarMenuButton tooltip={t("nav.collapseSidebar")} onClick={toggleSidebar}>
+                  <PanelLeftIcon className="size-4" />
+                  <span>{t("nav.collapseSidebar")}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

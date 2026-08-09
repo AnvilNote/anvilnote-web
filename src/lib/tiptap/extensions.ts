@@ -29,7 +29,7 @@ import { AnvilCallout } from "@/lib/tiptap/callout";
 import { AnvilProof } from "@/lib/tiptap/proof";
 import { AnvilMermaid } from "@/lib/tiptap/mermaid";
 import { AnvilFunctionPlot } from "./function-plot";
-import { AnvilStatsChart } from "./stats-chart";
+import { AnvilChart } from "./chart";
 import { AnvilQuestion, AnvilQuestionItem, AnvilChoiceList, AnvilChoiceItem } from "./question";
 import { AnvilImageRow } from "@/lib/tiptap/image-row";
 import { CrossRef, CrossRefTargetIds } from "@/lib/tiptap/cross-ref";
@@ -40,6 +40,7 @@ import { InlineBlank } from "@/lib/tiptap/inline-blank";
 import { TabNavigation } from "@/lib/tiptap/tab-navigation";
 import { ListItemDemote } from "@/lib/tiptap/list-item-demote";
 import { ParagraphIndent } from "@/lib/tiptap/paragraph-indent";
+import TextAlign from "@tiptap/extension-text-align";
 import { ListMarkers } from "@/lib/tiptap/list-markers";
 import { PageBreak } from "@/lib/tiptap/page-break";
 import { AnvilDivider } from "@/lib/tiptap/divider";
@@ -1047,6 +1048,15 @@ export function buildExtensions({
       },
     }),
     ParagraphIndent,
+    // Same scope as ParagraphIndent right above it — paragraph only, not
+    // heading/blockquote/etc. `updateAttributes` (what setTextAlign calls
+    // under the hood) already applies across every paragraph the current
+    // selection spans, not just the anchor's own paragraph, so selecting
+    // text across several paragraphs and clicking align affects all of
+    // them at once, matching Docs/Notion's own behavior. "justify" left
+    // out of `alignments` entirely — only left/center/right were asked
+    // for, and offering a 4th button nobody requested is pure clutter.
+    TextAlign.configure({ types: ["paragraph"], alignments: ["left", "center", "right"] }),
     ListMarkers,
     AnvilDocument,
     AnvilBlockquote,
@@ -1124,7 +1134,7 @@ export function buildExtensions({
     AnvilProof,
     AnvilMermaid,
     AnvilFunctionPlot,
-    AnvilStatsChart,
+    AnvilChart,
     AnvilQuestion,
     AnvilQuestionItem,
     AnvilChoiceList,

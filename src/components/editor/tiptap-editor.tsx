@@ -3,29 +3,41 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import type { ChainedCommands } from "@tiptap/core";
+import type { ChainedCommands, Editor, Range } from "@tiptap/core";
 import type { EditorView } from "@tiptap/pm/view";
+import { Fragment, Node as PMNode, Slice } from "@tiptap/pm/model";
 import { fixMisWrappedListItemDrop } from "@/lib/tiptap/list-item-drop-fix";
+import { containsMathSyntax, parsePastedMathText } from "@/lib/tiptap/paste-math";
 import { EditorContent, useEditor } from "@tiptap/react";
 import {
   BarChart3,
+  Bold,
+  CheckSquare,
+  Circle,
+  Code,
   Code2,
   Heading1,
   Heading2,
   Heading3,
   ImagePlus as ImageIcon,
   Images,
+  Italic,
   LineChart,
   List,
   ListOrdered,
+  MessageCircleQuestion,
   MessageSquareWarning,
   Minus,
+  PenLine,
   Quote,
   SeparatorHorizontal,
   Sigma,
   Square,
+  SquareAsterisk,
   SquareSigma,
+  Strikethrough,
   Table as TableIcon,
+  TextWrap,
   Type,
   Workflow,
 } from "lucide-react";
@@ -63,8 +75,10 @@ import { insertCallout } from "@/lib/tiptap/callout";
 import { insertProof } from "@/lib/tiptap/proof";
 import { insertMermaid } from "@/lib/tiptap/mermaid";
 import { insertFunctionPlot } from "@/lib/tiptap/function-plot";
-import { insertStatsChart } from "@/lib/tiptap/stats-chart";
+import { insertChart } from "@/lib/tiptap/chart";
 import { insertInlineBlank } from "@/lib/tiptap/inline-blank";
+import { insertQuestion } from "@/lib/tiptap/question";
+import { insertPageBreak } from "@/lib/tiptap/page-break";
 import { DEFAULT_CALLOUT_KIND } from "@/config/callouts";
 import { migratedDocIds } from "@/lib/tiptap/serialization";
 import { emptyTiptapContent } from "@/lib/tiptap/default-content";
@@ -222,7 +236,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
   const slashItems = useMemo<SlashItem[]>(() => {
     const run =
       (fn: (chain: ChainedCommands) => void) =>
-        ({ editor, range }: Parameters<SlashItem["run"]>[0]) => {
+        ({ editor, range }: { editor: Editor; range: Range }) => {
           fn(editor.chain().focus().deleteRange(range));
         };
     return [
@@ -253,6 +267,41 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         icon: Heading3,
         aliases: ["h3"],
         run: run((c) => c.toggleHeading({ level: 3 }).run()),
+      },
+      {
+        title: t("editor.toolbar.bold"),
+        subtitle: tt("boldHint"),
+        icon: Bold,
+        aliases: ["bold", "粗體"],
+        run: run((c) => c.toggleBold().run()),
+      },
+      {
+        title: t("editor.toolbar.italic"),
+        subtitle: tt("italicHint"),
+        icon: Italic,
+        aliases: ["italic", "斜體"],
+        run: run((c) => c.toggleItalic().run()),
+      },
+      {
+        title: t("editor.toolbar.footnote"),
+        subtitle: tt("footnoteHint"),
+        icon: SquareAsterisk,
+        aliases: ["footnote", "腳註"],
+        run: run((c) => c.addFootnote().run()),
+      },
+      {
+        title: t("editor.toolbar.strike"),
+        subtitle: tt("strikeHint"),
+        icon: Strikethrough,
+        aliases: ["strike", "strikethrough", "刪除線"],
+        run: run((c) => c.toggleStrike().run()),
+      },
+      {
+        title: t("editor.toolbar.code"),
+        subtitle: tt("inlineCodeHint"),
+        icon: Code,
+        aliases: ["inline code", "inlinecode", "行內程式碼"],
+        run: run((c) => c.toggleCode().run()),
       },
       {
         title: tt("bulletList"),
@@ -290,6 +339,38 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
         },
       },
       {
+        title: t("editor.toolbar.questionBlock"),
+        subtitle: tt("questionBlockHint"),
+        icon: MessageCircleQuestion,
+        aliases: ["question", "問題", "問題方塊"],
+        children: [
+          {
+            title: t("editor.questionBlock.kinds.single"),
+            icon: Circle,
+            run: ({ editor, range }) => {
+              editor.chain().focus().deleteRange(range).run();
+              insertQuestion(editor, "single");
+            },
+          },
+          {
+            title: t("editor.questionBlock.kinds.multi"),
+            icon: CheckSquare,
+            run: ({ editor, range }) => {
+              editor.chain().focus().deleteRange(range).run();
+              insertQuestion(editor, "multi");
+            },
+          },
+          {
+            title: t("editor.questionBlock.kinds.written"),
+            icon: PenLine,
+            run: ({ editor, range }) => {
+              editor.chain().focus().deleteRange(range).run();
+              insertQuestion(editor, "written");
+            },
+          },
+        ],
+      },
+      {
         title: tt("mermaid"),
         subtitle: tt("mermaidHint"),
         icon: Workflow,
@@ -312,13 +393,13 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
       //   },
       // },
       {
-        title: tt("statsChart"),
-        subtitle: tt("statsChartHint"),
+        title: tt("chart"),
+        subtitle: tt("chartHint"),
         icon: BarChart3,
         aliases: ["stats", "chart", "bar", "pie", "統計圖", "長條圖", "圓餅圖"],
         run: ({ editor, range }) => {
           editor.chain().focus().deleteRange(range).run();
-          insertStatsChart(editor);
+          insertChart(editor);
         },
       },
       {
@@ -387,6 +468,32 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
           editor.chain().focus().deleteRange(range).run();
           pickAndInsertImageRow(editor, handleImageRowError);
         },
+      },
+      {
+        title: t("editor.toolbar.pageBreak"),
+        subtitle: tt("pageBreakHint"),
+        icon: TextWrap,
+        aliases: ["pagebreak", "page break", "分頁"],
+        children: [
+          {
+            title: t("editor.toolbar.pageBreakForced"),
+            subtitle: t("editor.toolbar.pageBreakForcedHint"),
+            icon: TextWrap,
+            run: ({ editor, range }) => {
+              editor.chain().focus().deleteRange(range).run();
+              insertPageBreak(editor, false);
+            },
+          },
+          {
+            title: t("editor.toolbar.pageBreakWeak"),
+            subtitle: t("editor.toolbar.pageBreakWeakHint"),
+            icon: TextWrap,
+            run: ({ editor, range }) => {
+              editor.chain().focus().deleteRange(range).run();
+              insertPageBreak(editor, true);
+            },
+          },
+        ],
       },
       {
         title: tt("inlineMath"),
@@ -469,6 +576,43 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
       // drop outright here — before any transaction is dispatched — is
       // cheaper and safer than trying to make the reorder logic itself
       // schema-aware.
+      // Pasting an AI reply's math previously dropped any "$...$"/
+      // "$$...$$"/"\(...\)"/"\[...\]" LaTeX straight in as literal
+      // characters, unrendered: ProseMirror's default paste has no markdown
+      // awareness at all. Checked against the PLAIN-TEXT clipboard data
+      // regardless of whether text/html is ALSO present — not "only when
+      // there's no HTML", which was this handler's first version. Real bug
+      // that caught: copying a reply straight out of chatgpt.com's own
+      // rendered page carries text/html too (it's a real DOM selection, not
+      // a synthetic plain-text write), and for a math block chatGPT's own
+      // renderer failed to parse (e.g. a multi-line "\[...\]" with a blank
+      // line in the middle, breaking CommonMark's blank-line-terminates-
+      // paragraph rule mid-formula), that HTML is ALSO broken — one
+      // reproduced case turned "[\n\int_C f,ds" into an actual `<h1>` in
+      // chatGPT's own DOM (apparently the same setext-heading confusion
+      // paste-math.ts's own header comment describes, just happening
+      // upstream in their renderer instead of in a later plain-text
+      // serialization pass), which Tiptap's default rich-paste faithfully
+      // turned into a real heading node. Preferring the math-aware
+      // plain-text parse WHENEVER it finds real math syntax — instead of
+      // trusting whatever HTML the source page happened to produce — sidesteps
+      // that regardless of which upstream tool's renderer is at fault.
+      // Genuinely rich, non-math pastes (a table copied from a webpage, text
+      // from Word, another AnvilNote doc) are untouched: containsMathSyntax
+      // returns false for those and this still falls through to
+      // ProseMirror's normal HTML paste path.
+      handlePaste: (view: EditorView, event: ClipboardEvent) => {
+        const text = event.clipboardData?.getData("text/plain");
+        if (!text || !containsMathSyntax(text)) return false;
+
+        const { state } = view;
+        const blocks = parsePastedMathText(text).map((json) =>
+          PMNode.fromJSON(state.schema, json),
+        );
+        const tr = state.tr.replaceSelection(new Slice(Fragment.fromArray(blocks), 0, 0));
+        view.dispatch(tr.scrollIntoView());
+        return true;
+      },
       handleDrop: (view: EditorView, event: DragEvent) => {
         const coords = { left: event.clientX, top: event.clientY };
         const dropPos = view.posAtCoords(coords);
@@ -660,7 +804,7 @@ export function TiptapEditor({ documentId }: { documentId: string }) {
               items={slashItems}
               command={(item) => {
                 const { from, to } = editor.state.selection;
-                item.run({ editor, range: { from, to } });
+                item.run?.({ editor, range: { from, to } });
                 dismissFeatureGuide();
               }}
             />
