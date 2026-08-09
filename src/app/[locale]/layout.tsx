@@ -4,8 +4,10 @@ import { Geist, Geist_Mono, Noto_Sans_TC, Source_Serif_4 } from "next/font/googl
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages } from "next-intl/server";
-import { routing } from "@/lib/i18n/routing";
+import { routing, type AppLocale } from "@/lib/i18n/routing";
+import { readChangelog } from "@/lib/changelog/read.server";
 import { StoreHydrator } from "@/components/app/store-hydrator";
+import { ChangelogHydrator } from "@/components/app/changelog-hydrator";
 import { AppShell } from "@/components/app/app-shell";
 import { ThemeFavicon } from "@/components/app/theme-favicon";
 import { ThemeProvider } from "@/components/app/theme-provider";
@@ -48,6 +50,7 @@ export default async function LocaleLayout({
   if (!hasLocale(routing.locales, locale)) notFound();
 
   const messages = await getMessages();
+  const changelogEntries = await readChangelog(locale as AppLocale);
 
   return (
     <html
@@ -75,6 +78,7 @@ export default async function LocaleLayout({
             disableTransitionOnChange
           >
             <ThemeFavicon />
+            <ChangelogHydrator entries={changelogEntries} />
             <StoreHydrator>
               <AppShell>{children}</AppShell>
             </StoreHydrator>

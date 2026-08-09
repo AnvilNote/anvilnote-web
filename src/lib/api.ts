@@ -67,6 +67,7 @@ type ApiDocument = {
   marginBottomCm?: number | null;
   marginLeftCm?: number | null;
   marginRightCm?: number | null;
+  pageSize?: "A4" | "B4" | "B5" | "Letter" | null;
   projectId?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -93,6 +94,7 @@ type ApiTemplate = {
   universeUrl?: string;
   supportsNumberedHeadings?: boolean;
   supportsCustomMargins?: boolean;
+  supportsPageSize?: boolean;
 };
 
 type ApiRenderResponse = {
@@ -163,6 +165,7 @@ function fromApiDocument(document: ApiDocument): AnvilDocument {
     marginBottomCm: document.marginBottomCm ?? null,
     marginLeftCm: document.marginLeftCm ?? null,
     marginRightCm: document.marginRightCm ?? null,
+    pageSize: document.pageSize ?? null,
     projectId: document.projectId ?? null,
     createdAt: document.createdAt,
     updatedAt: document.updatedAt,
@@ -218,6 +221,7 @@ function fromApiTemplate(template: ApiTemplate): AnvilTemplate {
     universeUrl: template.universeUrl,
     supportsNumberedHeadings: template.supportsNumberedHeadings ?? false,
     supportsCustomMargins: template.supportsCustomMargins ?? false,
+    supportsPageSize: template.supportsPageSize ?? false,
   };
 }
 
@@ -246,6 +250,7 @@ export async function createDocument(input: {
   marginBottomCm?: number | null;
   marginLeftCm?: number | null;
   marginRightCm?: number | null;
+  pageSize?: "A4" | "B4" | "B5" | "Letter" | null;
   projectId?: string | null;
 }) {
   const response = await requestJson<ApiDocument>("/api/documents", {
@@ -261,6 +266,7 @@ export async function createDocument(input: {
       marginBottomCm: input.marginBottomCm ?? null,
       marginLeftCm: input.marginLeftCm ?? null,
       marginRightCm: input.marginRightCm ?? null,
+      pageSize: input.pageSize ?? null,
       projectId: input.projectId ?? null,
     }),
   });
@@ -281,6 +287,7 @@ export async function updateDocument(
     marginBottomCm: number | null;
     marginLeftCm: number | null;
     marginRightCm: number | null;
+    pageSize: "A4" | "B4" | "B5" | "Letter" | null;
     projectId: string | null;
   }>,
 ) {

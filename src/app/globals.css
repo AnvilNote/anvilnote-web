@@ -1669,11 +1669,39 @@ body.anvil-resize-column * {
   font-weight: 600;
   font-size: 0.95em;
   outline: none;
+  /* Was a plain inline style={{color: palette.accent}} -- moved to a CSS
+     var pair so it can differ between light/dark mode (callout-node-
+     view.tsx computes both: accentOrReadableTextColor falls back away from
+     the kind's accent only for a pathologically low-contrast custom
+     accent/background pairing, unreachable by any of the 12 presets). */
+  color: var(--callout-title-light);
+}
+
+.dark .anvil-callout__title {
+  color: var(--callout-title-dark);
 }
 
 .anvil-callout__title::placeholder {
   color: inherit;
   opacity: 0.7;
+}
+
+.anvil-callout__content {
+  /* Unset for an ordinary light/dark-preset background (callout-node-
+     view.tsx only ever sets these two custom properties when its own
+     isBackgroundDark() says the background needs it) -- var() on an
+     inherited property like color falls through to the normal inherited
+     value when the custom property doesn't exist anywhere in the cascade,
+     so this line is a no-op then, same as before this existed. Only a
+     genuinely dark callout background (reachable via a dark custom accent,
+     or a dark customBackground override applied in EITHER theme -- see
+     callout-node-view.tsx's own comment on why that needs checking
+     independently of the page's light/dark theme) ever sets these. */
+  color: var(--callout-content-light);
+}
+
+.dark .anvil-callout__content {
+  color: var(--callout-content-dark);
 }
 
 .anvil-callout__content p {

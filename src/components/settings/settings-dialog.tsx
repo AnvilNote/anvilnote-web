@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import {
   DatabaseBackup,
   Download,
+  Droplets,
   FileText,
   History,
   ListOrdered,
@@ -15,6 +16,7 @@ import {
   Palette,
   Paintbrush,
   RefreshCw,
+  ScrollText,
   Search,
   Sparkles,
   Sun,
@@ -42,6 +44,8 @@ import { SettingsRow } from "@/components/settings/settings-section";
 import { FolderPicker } from "@/components/settings/folder-picker";
 import { AISettingsSection } from "@/components/settings/ai-settings-section";
 import { ColorPalettesSettings } from "@/components/settings/color-palettes-settings";
+import { WatermarkSettings } from "@/components/settings/watermark-settings";
+import { ChangelogSettings } from "@/components/settings/changelog-settings";
 import { ListMarkerSettings } from "@/components/settings/list-marker-settings";
 import { SettingsConfigButtons } from "@/components/settings/settings-config-buttons";
 import { LocaleSwitcher } from "@/components/app/locale-switcher";
@@ -76,8 +80,10 @@ const CATEGORY_ICONS: Record<SettingsCategoryId, typeof Palette> = {
   versionHistory: History,
   export: Download,
   colorPalettes: Paintbrush,
+  watermark: Droplets,
   backup: DatabaseBackup,
   update: RefreshCw,
+  changelog: ScrollText,
 };
 
 type SearchEntry = { categoryId: SettingsCategoryId; rowId: string; label: string };
@@ -145,11 +151,13 @@ export function SettingsDialog() {
     { categoryId: "export", rowId: "export-pageSize", label: t("settings.export.pageSize") },
     { categoryId: "export", rowId: "export-fontPreset", label: t("settings.export.fontPreset") },
     { categoryId: "export", rowId: "export-storageLocation", label: t("settings.export.storageLocation") },
+    { categoryId: "watermark", rowId: "watermark-enabled", label: t("settings.watermark.enabled") },
     { categoryId: "backup", rowId: "backup-all", label: t("settings.backup.allDocuments") },
     { categoryId: "backup", rowId: "backup-import", label: t("settings.backup.import") },
     ...(isDesktop
       ? [{ categoryId: "update" as const, rowId: "update-version", label: t("settings.update.title") }]
       : []),
+    { categoryId: "changelog", rowId: "changelog-list", label: t("settings.changelog.title") },
   ];
 
   const searchResults = searchEntries
@@ -444,6 +452,12 @@ export function SettingsDialog() {
       content: <ColorPalettesSettings />,
     },
     {
+      id: "watermark",
+      title: t("settings.watermark.title"),
+      description: t("settings.watermark.description"),
+      content: <WatermarkSettings />,
+    },
+    {
       id: "backup",
       title: t("settings.backup.title"),
       description: t("settings.backup.description"),
@@ -548,6 +562,12 @@ export function SettingsDialog() {
           }
         />
       ),
+    },
+    {
+      id: "changelog",
+      title: t("settings.changelog.title"),
+      description: t("settings.changelog.description"),
+      content: <ChangelogSettings />,
     },
   ];
 

@@ -54,6 +54,7 @@ export function useImportBackup() {
       marginBottomCm: parsed.marginBottomCm,
       marginLeftCm: parsed.marginLeftCm,
       marginRightCm: parsed.marginRightCm,
+      pageSize: parsed.pageSize,
     });
   }
 

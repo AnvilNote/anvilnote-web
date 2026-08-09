@@ -622,6 +622,8 @@
     },
     "blockquote": {
       "author": "出典：人物",
+      "color": "枠線の色をカスタマイズ",
+      "resetColor": "デフォルトに戻す",
       "authorPlaceholder": "誰の言葉ですか？",
       "source": "出典：作品",
       "sourcePlaceholder": "どの本／作品からの引用ですか？"
@@ -629,6 +631,7 @@
     "callout": {
       "selectKind": "コールアウトの種類",
       "customBackground": "背景色をカスタマイズ",
+      "customAccent": "アクセントカラーをカスタマイズ",
       "resetBackground": "デフォルトに戻す",
       "kinds": {
         "note": "メモ",
@@ -642,7 +645,8 @@
         "danger": "危険",
         "bug": "バグ",
         "example": "例",
-        "quote": "引用"
+        "quote": "引用",
+        "custom": "カスタム"
       }
     },
     "footnotes": {
@@ -980,6 +984,8 @@
     "metadata": "情報",
     "template": "ひな形",
     "export": "書き出し",
+    "collapse": "右パネルを折りたたむ",
+    "expand": "右パネルを展開する",
     "outlineEmpty": "書き進めると見出しがここに表示されます。",
     "outlineDocument": "ドキュメント",
     "metadataEmpty": "このテンプレートには入力できる項目がありません。",
@@ -1005,6 +1011,11 @@
       "bottom": "下",
       "left": "左",
       "right": "右"
+    },
+    "pageSize": {
+      "label": "用紙サイズ",
+      "default": "デフォルト (A4)",
+      "letter": "レター"
     }
   },
   "export": {
@@ -1111,6 +1122,10 @@
       "upToDate": "最新バージョンです。",
       "download": "ダウンロード"
     },
+    "changelog": {
+      "title": "更新履歴",
+      "description": "各バージョンの新機能と修正内容を確認できます。"
+    },
     "versionHistory": {
       "title": "バージョン履歴",
       "description": "文書を自動的にスナップショットし、以前のバージョンに戻せるようにします。",
@@ -1180,6 +1195,32 @@
       "removePaletteTitle": "「{name}」パレットを削除しますか？",
       "removePaletteDescription": "このパレットと中の色がすべて完全に削除されます。",
       "renamePalette": "パレット名を変更"
+    },
+    "watermark": {
+      "title": "透かし",
+      "description": "エクスポートした PDF に画像またはテキストの透かしを追加します。",
+      "enabled": "透かしを有効にする",
+      "enabledHint": "エクスポートした PDF の各ページに透かしを追加します。",
+      "applyToFirstPage": "1 ページ目にも適用",
+      "applyToFirstPageHint": "オフにすると、タイトルのある 1 ページ目には透かしが表示されません。",
+      "type": "種類",
+      "typeImage": "画像",
+      "typeText": "テキスト",
+      "image": "透かし画像",
+      "imageDefaultHint": "未アップロードの場合、AnvilNote のデフォルトアイコンを使用します。",
+      "upload": "画像をアップロード",
+      "resetToDefault": "デフォルトアイコンに戻す",
+      "imageSize": "画像サイズ",
+      "text": "透かしテキスト",
+      "fontFamily": "フォント",
+      "fontFamilySerif": "セリフ体",
+      "fontFamilySans": "サンセリフ体",
+      "fontFamilyRounded": "丸ゴシック体",
+      "textSize": "テキストサイズ",
+      "rotation": "回転角度",
+      "opacity": "不透明度",
+      "cropTitle": "透かし画像をトリミング",
+      "aspectLocked": "縦横比を固定"
     }
   },
   "featureFinder": {
@@ -1306,6 +1347,14 @@
         "バックアップ",
         "復元",
         "読み込み"
+      ],
+      "watermark": [
+        "透かし",
+        "ウォーターマーク"
+      ],
+      "changelog": [
+        "更新履歴",
+        "リリースノート"
       ],
       "update": [
         "更新",

@@ -46,11 +46,21 @@ export function buildExportPayload(
   // the settings store here, same as formatDateFields' dateFormat lookup
   // above, means the exported PDF matches the live editor without every
   // call site needing to remember to pass them.
-  const { orderedListLevels, unorderedListLevels } = useSettingsStore.getState();
+  const { orderedListLevels, unorderedListLevels, watermark, exportPageSize } =
+    useSettingsStore.getState();
   const exportOptions: ExportOptions = {
     ...options,
     orderedListLevels: options.orderedListLevels ?? orderedListLevels,
     unorderedListLevels: options.unorderedListLevels ?? unorderedListLevels,
+    // Same backfill pattern as the two list-marker fields above: a global
+    // setting (Settings > Watermark), not something export-panel.tsx or any
+    // other call site needs to remember to pass explicitly.
+    watermark: options.watermark ?? watermark,
+    // The document's own override (Info panel, only shown for templates
+    // that actually honor it) wins over the global Settings > Export
+    // default when set -- same "explicit input wins, else fall back" as
+    // the API's own render.service.ts margin handling.
+    pageSize: options.pageSize ?? doc.pageSize ?? exportPageSize,
   };
   return {
     documentId: doc.id,

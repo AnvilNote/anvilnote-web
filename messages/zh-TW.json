@@ -873,6 +873,8 @@
     },
     "blockquote": {
       "author": "署名：人物",
+      "color": "自訂邊框顏色",
+      "resetColor": "還原預設顏色",
       "authorPlaceholder": "這句話是誰說的？",
       "source": "署名：出處",
       "sourcePlaceholder": "出自哪本書／作品？"
@@ -880,6 +882,7 @@
     "callout": {
       "selectKind": "Callout 類型",
       "customBackground": "自訂背景顏色",
+      "customAccent": "自訂主色",
       "resetBackground": "還原預設顏色",
       "kinds": {
         "note": "筆記",
@@ -893,7 +896,8 @@
         "danger": "危險",
         "bug": "臭蟲",
         "example": "範例",
-        "quote": "引言"
+        "quote": "引言",
+        "custom": "自訂"
       }
     },
     "footnotes": {
@@ -1231,6 +1235,8 @@
     "metadata": "資訊",
     "template": "範本",
     "export": "匯出",
+    "collapse": "收合右側面板",
+    "expand": "展開右側面板",
     "outlineEmpty": "書寫時，標題會顯示在這裡。",
     "outlineDocument": "文件",
     "metadataEmpty": "此範本沒有可填寫的欄位。",
@@ -1256,6 +1262,11 @@
       "bottom": "下",
       "left": "左",
       "right": "右"
+    },
+    "pageSize": {
+      "label": "紙張尺寸",
+      "default": "預設 (A4)",
+      "letter": "Letter"
     }
   },
   "export": {
@@ -1362,6 +1373,10 @@
       "upToDate": "目前已是最新版本。",
       "download": "下載"
     },
+    "changelog": {
+      "title": "更新日誌",
+      "description": "查看每個版本新增與修正的內容。"
+    },
     "versionHistory": {
       "title": "版本歷史",
       "description": "自動為文件建立時間點快照，可以隨時回復到先前版本。",
@@ -1431,6 +1446,32 @@
       "removePaletteTitle": "要移除「{name}」這個色盤嗎？",
       "removePaletteDescription": "這會永久刪除這個色盤和裡面的所有顏色。",
       "renamePalette": "重新命名色盤"
+    },
+    "watermark": {
+      "title": "浮水印",
+      "description": "在匯出的 PDF 上加入浮水印，可以是圖片或文字。",
+      "enabled": "開啟浮水印",
+      "enabledHint": "匯出 PDF 時，在每一頁加上浮水印。",
+      "applyToFirstPage": "首頁是否套用",
+      "applyToFirstPageHint": "關閉的話，標題所在的第一頁不會顯示浮水印。",
+      "type": "類型",
+      "typeImage": "圖片",
+      "typeText": "文字",
+      "image": "浮水印圖片",
+      "imageDefaultHint": "尚未上傳，將使用 AnvilNote 預設圖示。",
+      "upload": "上傳圖片",
+      "resetToDefault": "還原為預設圖示",
+      "imageSize": "圖片大小",
+      "text": "浮水印文字",
+      "fontFamily": "字體",
+      "fontFamilySerif": "襯線",
+      "fontFamilySans": "無襯線",
+      "fontFamilyRounded": "圓體",
+      "textSize": "文字大小",
+      "rotation": "旋轉角度",
+      "opacity": "透明度",
+      "cropTitle": "裁切浮水印圖片",
+      "aspectLocked": "鎖定長寬比"
     }
   },
   "featureFinder": {
@@ -1565,6 +1606,16 @@
         "還原",
         "匯入",
         "backup"
+      ],
+      "watermark": [
+        "浮水印",
+        "水印",
+        "watermark"
+      ],
+      "changelog": [
+        "更新日誌",
+        "版本紀錄",
+        "新功能"
       ],
       "update": [
         "更新",

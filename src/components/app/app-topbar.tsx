@@ -40,7 +40,9 @@ export function AppTopbar() {
     }
     try {
       const result = await renderDocument(activeDoc.id, {
-        pageSize: settings.exportPageSize,
+        // pageSize isn't passed here -- buildExportPayload (src/lib/export.ts)
+        // backfills it from the document's own override, else the Settings
+        // > Export default, same as watermark/list-marker levels.
         fontPreset: settings.exportFontPreset,
         includeMetadata: true,
       });

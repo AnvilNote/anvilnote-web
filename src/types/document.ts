@@ -28,6 +28,11 @@ export type AnvilDocument = {
   marginBottomCm: number | null;
   marginLeftCm: number | null;
   marginRightCm: number | null;
+  // Document-level, template-independent, same "null = use the active
+  // template's own built-in default" reasoning as the margin fields above.
+  // Only templates whose manifest declares supportsPageSize actually honor
+  // it (see anvilnote-renderer's template-loader.ts).
+  pageSize: "A4" | "B4" | "B5" | "Letter" | null;
   // Optional grouping; null means the document is unfiled.
   projectId: string | null;
   createdAt: string;

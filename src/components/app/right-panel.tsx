@@ -2,7 +2,17 @@
 
 import type { ComponentType } from "react";
 import { useTranslations } from "next-intl";
-import { FileDown, FileText, Hash, History, Info, LayoutTemplate, List } from "lucide-react";
+import {
+  ChevronRight,
+  FileDown,
+  FileText,
+  Hash,
+  History,
+  Info,
+  LayoutTemplate,
+  List,
+  PanelRightIcon,
+} from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -17,7 +27,11 @@ import { TemplateSelector } from "@/components/templates/template-selector";
 import { ExportPanel } from "@/components/export/export-panel";
 import { VersionHistoryPanel } from "@/components/app/version-history-panel";
 import { useDocumentStore } from "@/lib/stores/document-store";
-import { useUiStore, useRightPanelTabStore } from "@/lib/stores/ui-store";
+import {
+  useUiStore,
+  useRightPanelCollapsedStore,
+  useRightPanelTabStore,
+} from "@/lib/stores/ui-store";
 import { useTourStore } from "@/lib/stores/tour-store";
 import { extractOutline, type OutlineItem } from "@/lib/tiptap/serialization";
 import { cn } from "@/lib/utils";
@@ -176,17 +190,66 @@ export function RightPanel({
   const t = useTranslations();
   const open = useUiStore((s) => s.mobilePanelOpen);
   const setOpen = useUiStore((s) => s.setMobilePanelOpen);
+  const collapsed = useRightPanelCollapsedStore((s) => s.collapsed);
+  const toggleCollapsed = useRightPanelCollapsedStore((s) => s.toggle);
 
   return (
     <>
-      <aside
-        className={cn(
-          "hidden w-80 shrink-0 border-l bg-sidebar lg:flex lg:flex-col",
-          className,
-        )}
-      >
-        <RightPanelContent documentId={documentId} />
-      </aside>
+      {/* relative anchor for the floating toggle button below -- it needs
+          to stay put right on the border seam regardless of the aside's own
+          width, so it can't live inside the width-animated element itself.
+          Collapsed width (w-12/3rem) matches the left sidebar's own
+          icon-rail width (SIDEBAR_WIDTH_ICON in ui/sidebar.tsx) --
+          collapsing still leaves a visible strip, not w-0 (which hid the
+          button along with the panel, leaving no way back short of
+          reloading). */}
+      <div className="relative hidden lg:block">
+        <aside
+          className={cn(
+            "flex h-full flex-col overflow-hidden border-l bg-sidebar transition-[width] duration-200 ease-linear",
+            collapsed ? "w-12" : "w-80",
+            className,
+          )}
+        >
+          {/* w-80 fixed so content doesn't reflow/wrap mid-collapse-animation
+              while the parent shrinks around it -- collapsed's overflow-hidden
+              on the aside clips it the rest of the way. Content itself is
+              hidden (not just visually clipped) once collapsed so its form
+              fields/tabs drop out of tab order. */}
+          <div className={cn("min-h-0 w-80 flex-1", collapsed && "invisible")}>
+            <RightPanelContent documentId={documentId} />
+          </div>
+        </aside>
+
+        {/* On the border seam itself (half in the main content, half over
+            the panel) so it never competes for space with RightPanelContent's
+            own TabsList -- putting it inside the panel's own top-left corner
+            (this component's previous version) visibly collided with the
+            Outline tab's icon there. */}
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          aria-label={t(collapsed ? "panel.expand" : "panel.collapse")}
+          title={t(collapsed ? "panel.expand" : "panel.collapse")}
+          className={cn(
+            "absolute top-3 z-10 flex size-6 items-center justify-center text-muted-foreground transition-colors hover:text-foreground",
+            // Collapsed: centered within the w-12 strip itself (left-1/2 +
+            // -translate-x-1/2 centers within whatever the relative
+            // ancestor's current width is, so this stays correct across the
+            // width transition without a separate collapsed-only offset).
+            // Expanded: back on the border seam, straddling the aside's
+            // left edge.
+            collapsed ? "left-1/2 -translate-x-1/2" : "-left-3",
+            !collapsed && "rounded-full border bg-background shadow-sm",
+          )}
+        >
+          {collapsed ? (
+            <PanelRightIcon className="size-3.5" />
+          ) : (
+            <ChevronRight className="size-3.5" />
+          )}
+        </button>
+      </div>
 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent

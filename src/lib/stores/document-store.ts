@@ -137,6 +137,7 @@ type DocumentState = {
     marginBottomCm?: number | null;
     marginLeftCm?: number | null;
     marginRightCm?: number | null;
+    pageSize?: AnvilDocument["pageSize"];
   }) => Promise<AnvilDocument>;
   setDocumentProject: (id: string, projectId: string | null) => Promise<void>;
   unfileDocuments: (projectId: string) => void;
@@ -169,6 +170,7 @@ type DocumentState = {
     side: "top" | "bottom" | "left" | "right",
     value: number | null,
   ) => void;
+  setPageSize: (id: string, value: AnvilDocument["pageSize"]) => void;
   setTemplate: (id: string, templateId: string) => void;
   saveDocument: (id: string, options?: { manual?: boolean }) => Promise<AnvilDocument | undefined>;
   restoreVersion: (id: string, versionId: string) => Promise<void>;
@@ -364,6 +366,7 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
       marginBottomCm: source.marginBottomCm,
       marginLeftCm: source.marginLeftCm,
       marginRightCm: source.marginRightCm,
+      pageSize: source.pageSize,
       projectId: source.projectId,
     });
 
@@ -473,6 +476,7 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
         marginBottomCm: current.marginBottomCm,
         marginLeftCm: current.marginLeftCm,
         marginRightCm: current.marginRightCm,
+        pageSize: current.pageSize,
       });
       const created = await createDocumentVersion(id);
       const contentJson = JSON.stringify(content);
@@ -660,6 +664,15 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
     scheduleSave(id);
   },
 
+  setPageSize: (id, value) => {
+    set((state) => ({
+      documents: state.documents.map((document) =>
+        document.id === id ? touch(document, { pageSize: value }) : document,
+      ),
+    }));
+    scheduleSave(id);
+  },
+
   setTemplate: (id, templateId) => {
     const template = useTemplatesStore.getState().getTemplate(templateId);
     set((state) => ({
@@ -702,6 +715,7 @@ export const useDocumentStore = create<DocumentState>()((set, get) => ({
         marginBottomCm: document.marginBottomCm,
         marginLeftCm: document.marginLeftCm,
         marginRightCm: document.marginRightCm,
+        pageSize: document.pageSize,
       });
 
       // Don't overwrite the local document with the server echo: the user may

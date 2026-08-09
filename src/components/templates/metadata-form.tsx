@@ -1,7 +1,16 @@
 "use client";
 
+import { Fragment } from "react";
 import { useTranslations } from "next-intl";
-import { CalendarIcon, ChevronDown, RotateCcw } from "lucide-react";
+import {
+  ArrowDownToLine,
+  ArrowLeftToLine,
+  ArrowRightToLine,
+  ArrowUpToLine,
+  CalendarIcon,
+  ChevronDown,
+  RotateCcw,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,7 +48,7 @@ import {
 } from "@/components/ui/color-picker";
 import { useDocumentStore } from "@/lib/stores/document-store";
 import { useTemplatesStore } from "@/lib/stores/templates-store";
-import type { AnvilMetadataValue } from "@/types/document";
+import type { AnvilDocument, AnvilMetadataValue } from "@/types/document";
 import type { TemplateField } from "@/types/template";
 
 function todayIso() {
@@ -84,6 +93,7 @@ export function MetadataForm({ documentId }: { documentId: string }) {
   );
   const setNumberedHeadings = useDocumentStore((s) => s.setNumberedHeadings);
   const setMarginCm = useDocumentStore((s) => s.setMarginCm);
+  const setPageSize = useDocumentStore((s) => s.setPageSize);
   const template = useTemplatesStore((s) =>
     doc ? s.getTemplate(doc.templateId) : undefined,
   );
@@ -108,42 +118,60 @@ export function MetadataForm({ documentId }: { documentId: string }) {
     </div>
   ) : null;
 
-  // 2x2 grid, top/bottom on the first row and left/right on the second —
-  // no per-field text label, just a placeholder inside each input (per
-  // explicit feedback: the section heading alone is enough context, a
-  // label on every one of the 4 cells was redundant). null (cleared/empty
-  // input) means "use the active template's own built-in margin" for
+  // 2x2 grid, top/bottom on the first row and left/right on the second. A
+  // placeholder alone turned out to be invisible in practice (the input
+  // always has a displayed value — see the 2.54 fallback below — so the
+  // placeholder never actually shows), leaving no way to tell which of the
+  // 4 identical-looking boxes was which side. A leading direction icon
+  // fixes that permanently, not just until the user types. null (cleared/
+  // empty input) means "use the active template's own built-in margin" for
   // that side. The "cm" unit is shown inline inside the input (right-
-  // aligned, pr-7 makes room for it) rather than as a separate label.
+  // aligned) rather than as a separate label.
+  const MARGIN_ICONS = {
+    top: ArrowUpToLine,
+    bottom: ArrowDownToLine,
+    left: ArrowLeftToLine,
+    right: ArrowRightToLine,
+  } as const;
+
   const marginField = (
     side: "top" | "bottom" | "left" | "right",
     value: number | null,
-  ) => (
-    <div className="relative">
-      <Input
-        type="number"
-        min={0}
-        step={0.1}
-        placeholder={t(`panel.margins.${side}`)}
-        // A stored null (old documents predating this feature, or a field
-        // the user cleared) still DISPLAYS the 2.54cm default rather than
-        // an empty box — per explicit feedback, the user should see it and
-        // be able to actively delete it, not just infer it's there.
-        value={value ?? 2.54}
-        onChange={(event) => {
-          const raw = event.target.value;
-          setMarginCm(doc.id, side, raw === "" ? null : Number(raw));
-        }}
-        className="pr-8 text-sm"
-      />
-      <span className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-xs text-muted-foreground">
-        cm
-      </span>
-    </div>
-  );
+  ) => {
+    const Icon = MARGIN_ICONS[side];
+    return (
+      <div className="relative">
+        <Icon className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          type="number"
+          min={0}
+          step={0.1}
+          aria-label={t(`panel.margins.${side}`)}
+          // A stored null (old documents predating this feature, or a field
+          // the user cleared) still DISPLAYS the 2.54cm default rather than
+          // an empty box — per explicit feedback, the user should see it and
+          // be able to actively delete it, not just infer it's there.
+          value={value ?? 2.54}
+          onChange={(event) => {
+            const raw = event.target.value;
+            setMarginCm(doc.id, side, raw === "" ? null : Number(raw));
+          }}
+          className="pr-8 pl-8 text-sm"
+        />
+        <span className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-xs text-muted-foreground">
+          cm
+        </span>
+      </div>
+    );
+  };
 
+  // No outer border/box -- per explicit feedback, the individual inputs
+  // already draw their own border, so wrapping the whole group in another
+  // one just nested boxes inside a box. Matches the borderless spacing
+  // (space-y-1.5, no rounded/border/px/py) every other field row in this
+  // form already uses.
   const marginsSection = template?.supportsCustomMargins ? (
-    <div className="space-y-2 rounded-lg border px-3 py-2">
+    <div className="space-y-1.5">
       <Label className="text-sm font-normal">{t("panel.margins.label")}</Label>
       <div className="grid grid-cols-2 gap-2">
         {marginField("top", doc.marginTopCm)}
@@ -154,6 +182,37 @@ export function MetadataForm({ documentId }: { documentId: string }) {
     </div>
   ) : null;
 
+  // Placed right after the "date" field inside the fields loop below (per
+  // explicit request) rather than down here with numberedHeadingsToggle/
+  // marginsSection, since "date" isn't a fixed position — it's one of
+  // several template-driven fields rendered in whatever order the active
+  // template's manifest declares. Gated the same way as the other two:
+  // several wrapped @preview packages hardcode their own page-paper default
+  // and silently ignore the override (see anvilnote-renderer's
+  // template-loader.ts supportsPageSize schema comment for the full audit).
+  const pageSizeControl = template?.supportsPageSize ? (
+    <div className="space-y-1.5">
+      <Label className="text-sm font-normal">{t("panel.pageSize.label")}</Label>
+      <Select
+        value={doc.pageSize ?? "__default"}
+        onValueChange={(v) =>
+          setPageSize(doc.id, v === "__default" ? null : (v as NonNullable<AnvilDocument["pageSize"]>))
+        }
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__default">{t("panel.pageSize.default")}</SelectItem>
+          <SelectItem value="A4">A4</SelectItem>
+          <SelectItem value="B4">B4</SelectItem>
+          <SelectItem value="B5">B5</SelectItem>
+          <SelectItem value="Letter">{t("panel.pageSize.letter")}</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  ) : null;
+
   if (!template || template.fields.length === 0) {
     return (
       <div className="space-y-5">
@@ -161,6 +220,7 @@ export function MetadataForm({ documentId }: { documentId: string }) {
           {t("panel.metadataEmpty")}
         </p>
         {numberedHeadingsToggle}
+        {pageSizeControl}
         {marginsSection}
       </div>
     );
@@ -183,11 +243,18 @@ export function MetadataForm({ documentId }: { documentId: string }) {
   const labelFor = (field: TemplateField) =>
     tt.has(field.label as never) ? tt(field.label as never) : field.label;
 
+  // Not every supportsPageSize template actually declares a "date" field
+  // (bubble/flow-way/mousse-notes/typsidian don't) — pageSizeControl still
+  // needs to render SOMEWHERE for those, so it falls back to the bottom
+  // (alongside numberedHeadingsToggle/marginsSection) instead of silently
+  // never appearing.
+  const hasDateField = template.fields.some((field) => field.type === "date");
+
   return (
     <div className="space-y-5">
       <p className="text-xs text-muted-foreground">{t("panel.metadataHint")}</p>
 
-      {template.fields.map((field) => {
+      {template.fields.flatMap((field) => {
         if (field.dependsOn) {
           const dependsField = template.fields.find(
             (f) => f.key === field.dependsOn?.key,
@@ -208,7 +275,7 @@ export function MetadataForm({ documentId }: { documentId: string }) {
               ? raw
               : "";
 
-        return (
+        const fieldElement = (
           <div key={field.key} className="space-y-1.5">
             {field.type !== "boolean" ? (
               <div className="flex items-center gap-2">
@@ -384,7 +451,15 @@ export function MetadataForm({ documentId }: { documentId: string }) {
             )}
           </div>
         );
+
+        // Placed right after "date" specifically because that's where the
+        // user asked for it — see pageSizeControl's own comment above.
+        return field.type === "date" && pageSizeControl
+          ? [fieldElement, <Fragment key={`${field.key}-pageSize`}>{pageSizeControl}</Fragment>]
+          : fieldElement;
       })}
+
+      {!hasDateField ? pageSizeControl : null}
 
       {numberedHeadingsToggle}
       {marginsSection}

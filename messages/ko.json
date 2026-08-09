@@ -622,6 +622,8 @@
     },
     "blockquote": {
       "author": "출처: 인물",
+      "color": "테두리 색 사용자 지정",
+      "resetColor": "기본값으로 재설정",
       "authorPlaceholder": "누가 한 말인가요?",
       "source": "출처: 작품",
       "sourcePlaceholder": "어느 책/작품에서 인용했나요?"
@@ -629,6 +631,7 @@
     "callout": {
       "selectKind": "콜아웃 종류",
       "customBackground": "배경색 사용자 지정",
+      "customAccent": "강조 색상 사용자 지정",
       "resetBackground": "기본값으로 재설정",
       "kinds": {
         "note": "노트",
@@ -642,7 +645,8 @@
         "danger": "위험",
         "bug": "버그",
         "example": "예시",
-        "quote": "인용"
+        "quote": "인용",
+        "custom": "사용자 지정"
       }
     },
     "footnotes": {
@@ -980,6 +984,8 @@
     "metadata": "정보",
     "template": "템플릿",
     "export": "내보내기",
+    "collapse": "오른쪽 패널 접기",
+    "expand": "오른쪽 패널 펼치기",
     "outlineEmpty": "작성하면 제목이 여기에 표시됩니다.",
     "outlineDocument": "문서",
     "metadataEmpty": "이 템플릿에는 입력할 항목이 없습니다.",
@@ -1005,6 +1011,11 @@
       "bottom": "아래",
       "left": "왼쪽",
       "right": "오른쪽"
+    },
+    "pageSize": {
+      "label": "용지 크기",
+      "default": "기본값 (A4)",
+      "letter": "레터"
     }
   },
   "export": {
@@ -1111,6 +1122,10 @@
       "upToDate": "최신 버전을 사용 중입니다.",
       "download": "다운로드"
     },
+    "changelog": {
+      "title": "업데이트 내역",
+      "description": "버전별 새로운 기능과 수정 사항을 확인하세요."
+    },
     "versionHistory": {
       "title": "버전 기록",
       "description": "문서를 자동으로 스냅샷하여 이전 버전으로 복원할 수 있도록 합니다.",
@@ -1180,6 +1195,32 @@
       "removePaletteTitle": "\"{name}\" 팔레트를 삭제할까요?",
       "removePaletteDescription": "이 팔레트와 안에 있는 모든 색상이 영구적으로 삭제됩니다.",
       "renamePalette": "팔레트 이름 변경"
+    },
+    "watermark": {
+      "title": "워터마크",
+      "description": "내보낸 PDF에 이미지 또는 텍스트 워터마크를 추가합니다.",
+      "enabled": "워터마크 사용",
+      "enabledHint": "내보낸 PDF의 모든 페이지에 워터마크를 추가합니다.",
+      "applyToFirstPage": "첫 페이지에 적용",
+      "applyToFirstPageHint": "끄면 제목이 있는 첫 페이지에는 워터마크가 표시되지 않습니다.",
+      "type": "유형",
+      "typeImage": "이미지",
+      "typeText": "텍스트",
+      "image": "워터마크 이미지",
+      "imageDefaultHint": "업로드된 이미지가 없어 AnvilNote 기본 아이콘을 사용합니다.",
+      "upload": "이미지 업로드",
+      "resetToDefault": "기본 아이콘으로 재설정",
+      "imageSize": "이미지 크기",
+      "text": "워터마크 텍스트",
+      "fontFamily": "글꼴",
+      "fontFamilySerif": "세리프",
+      "fontFamilySans": "산세리프",
+      "fontFamilyRounded": "둥근체",
+      "textSize": "텍스트 크기",
+      "rotation": "회전 각도",
+      "opacity": "불투명도",
+      "cropTitle": "워터마크 이미지 자르기",
+      "aspectLocked": "가로세로 비율 고정"
     }
   },
   "featureFinder": {
@@ -1308,6 +1349,13 @@
         "백업",
         "복원",
         "가져오기"
+      ],
+      "watermark": [
+        "워터마크"
+      ],
+      "changelog": [
+        "업데이트 내역",
+        "릴리스 노트"
       ],
       "update": [
         "업데이트",

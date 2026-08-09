@@ -677,6 +677,7 @@ describe("SmartModePanel", () => {
         marginBottomCm: null,
         marginLeftCm: null,
         marginRightCm: null,
+        pageSize: null,
         projectId: null,
         createdAt: "2026-07-19T00:00:00.000Z",
         updatedAt: "2026-07-19T00:00:00.000Z",

@@ -24,6 +24,7 @@ export type AnvilNoteFile = {
   marginBottomCm: number | null;
   marginLeftCm: number | null;
   marginRightCm: number | null;
+  pageSize: "A4" | "B4" | "B5" | "Letter" | null;
   content: JSONContent;
   createdAt: string;
   updatedAt: string;
@@ -39,6 +40,7 @@ export type ParsedAnvilNoteDocument = {
   marginBottomCm: number | null;
   marginLeftCm: number | null;
   marginRightCm: number | null;
+  pageSize: "A4" | "B4" | "B5" | "Letter" | null;
   content: JSONContent;
 };
 
@@ -55,6 +57,7 @@ export function serializeDocumentToAnvilNote(doc: AnvilDocument): AnvilNoteFile 
     marginBottomCm: doc.marginBottomCm,
     marginLeftCm: doc.marginLeftCm,
     marginRightCm: doc.marginRightCm,
+    pageSize: doc.pageSize,
     content: doc.content,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
@@ -92,6 +95,7 @@ export function parseAnvilNoteFile(raw: string, fallbackTitle: string): ParsedAn
     marginBottomCm: file.marginBottomCm ?? null,
     marginLeftCm: file.marginLeftCm ?? null,
     marginRightCm: file.marginRightCm ?? null,
+    pageSize: file.pageSize ?? null,
     content: file.content ?? { type: "doc", content: [] },
   };
 }

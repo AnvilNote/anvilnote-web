@@ -873,6 +873,8 @@
     },
     "blockquote": {
       "author": "Attribution: person",
+      "color": "Custom border color",
+      "resetColor": "Reset to default",
       "authorPlaceholder": "Who said this?",
       "source": "Attribution: source",
       "sourcePlaceholder": "Which book/work is this from?"
@@ -880,6 +882,7 @@
     "callout": {
       "selectKind": "Callout type",
       "customBackground": "Custom background color",
+      "customAccent": "Custom accent color",
       "resetBackground": "Reset to default",
       "kinds": {
         "note": "Note",
@@ -893,7 +896,8 @@
         "danger": "Danger",
         "bug": "Bug",
         "example": "Example",
-        "quote": "Quote"
+        "quote": "Quote",
+        "custom": "Custom"
       }
     },
     "footnotes": {
@@ -1231,6 +1235,8 @@
     "metadata": "Info",
     "template": "Template",
     "export": "Export",
+    "collapse": "Collapse right panel",
+    "expand": "Expand right panel",
     "outlineEmpty": "Headings will appear here as you write.",
     "outlineDocument": "Document",
     "metadataEmpty": "This template has no fields to fill in.",
@@ -1256,6 +1262,11 @@
       "bottom": "Bottom",
       "left": "Left",
       "right": "Right"
+    },
+    "pageSize": {
+      "label": "Page size",
+      "default": "Default (A4)",
+      "letter": "Letter"
     }
   },
   "export": {
@@ -1362,6 +1373,10 @@
       "upToDate": "You're on the latest version.",
       "download": "Download"
     },
+    "changelog": {
+      "title": "Changelog",
+      "description": "See what's new and fixed in each version."
+    },
     "versionHistory": {
       "title": "Version History",
       "description": "Automatically snapshot documents over time so you can restore an earlier version.",
@@ -1431,6 +1446,32 @@
       "removePaletteTitle": "Remove the \"{name}\" palette?",
       "removePaletteDescription": "This permanently deletes the palette and every color in it.",
       "renamePalette": "Rename palette"
+    },
+    "watermark": {
+      "title": "Watermark",
+      "description": "Add a watermark to exported PDFs, as an image or text.",
+      "enabled": "Enable watermark",
+      "enabledHint": "Adds a watermark to every page of the exported PDF.",
+      "applyToFirstPage": "Apply to first page",
+      "applyToFirstPageHint": "When off, the first page (with the title) has no watermark.",
+      "type": "Type",
+      "typeImage": "Image",
+      "typeText": "Text",
+      "image": "Watermark image",
+      "imageDefaultHint": "No upload yet — the default AnvilNote icon will be used.",
+      "upload": "Upload image",
+      "resetToDefault": "Reset to default icon",
+      "imageSize": "Image size",
+      "text": "Watermark text",
+      "fontFamily": "Font",
+      "fontFamilySerif": "Serif",
+      "fontFamilySans": "Sans-serif",
+      "fontFamilyRounded": "Rounded",
+      "textSize": "Text size",
+      "rotation": "Rotation",
+      "opacity": "Opacity",
+      "cropTitle": "Crop watermark image",
+      "aspectLocked": "Lock aspect ratio"
     }
   },
   "featureFinder": {
@@ -1562,6 +1603,14 @@
         "backup",
         "restore",
         "import"
+      ],
+      "watermark": [
+        "watermark"
+      ],
+      "changelog": [
+        "changelog",
+        "release notes",
+        "whats new"
       ],
       "update": [
         "update",

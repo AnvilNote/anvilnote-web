@@ -28,8 +28,10 @@ export type SettingsCategoryId =
   | "versionHistory"
   | "export"
   | "colorPalettes"
+  | "watermark"
   | "backup"
-  | "update";
+  | "update"
+  | "changelog";
 
 type SettingsDialogState = {
   open: boolean;
@@ -73,6 +75,33 @@ export const useRightPanelTabStore = create<RightPanelTabState>()(
     }),
     {
       name: RIGHT_PANEL_TAB_STORAGE_KEY,
+      storage: createJSONStorage(() => localStorage),
+      skipHydration: true,
+    },
+  ),
+);
+
+const RIGHT_PANEL_COLLAPSED_STORAGE_KEY = "anvilnote.right-panel-collapsed";
+
+type RightPanelCollapsedState = {
+  collapsed: boolean;
+  toggle: () => void;
+};
+
+// Persisted like useRightPanelTabStore above (same reasoning: a genuine
+// layout preference, not transient UI state) -- mirrors the left sidebar's
+// own collapse toggle (app-sidebar.tsx), but that one uses shadcn's Sidebar
+// primitive (useSidebar()/SidebarProvider) which already tracks its own
+// open state; the right panel is a plain hand-rolled <aside> with no such
+// primitive backing it, so it needs its own store.
+export const useRightPanelCollapsedStore = create<RightPanelCollapsedState>()(
+  persist(
+    (set) => ({
+      collapsed: false,
+      toggle: () => set((s) => ({ collapsed: !s.collapsed })),
+    }),
+    {
+      name: RIGHT_PANEL_COLLAPSED_STORAGE_KEY,
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
     },

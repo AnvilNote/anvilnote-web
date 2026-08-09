@@ -29,6 +29,17 @@ export const AnvilBlockquote = Blockquote.extend({
         renderHTML: (attributes) =>
           attributes.source ? { "data-source": attributes.source } : {},
       },
+      // Custom left-border accent color (hex). null falls back to the
+      // default var(--border) gray in the web CSS, and to no border at all
+      // in the Typst PDF export (tiptap-to-typst.ts's blockquote case only
+      // wraps in a colored #block when this is set — there's no default
+      // bar to color in the PDF the way there is in the web CSS).
+      color: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("data-color"),
+        renderHTML: (attributes) =>
+          attributes.color ? { "data-color": attributes.color } : {},
+      },
     };
   },
 

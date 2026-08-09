@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import {
   NodeViewContent,
@@ -10,8 +10,21 @@ import {
 import { BookPlus, Trash2, UserPlus } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
+import {
+  ColorPicker,
+  ColorPickerSelection,
+  ColorPickerHue,
+  ColorPickerEyeDropper,
+  ColorPickerOutput,
+  ColorPickerFormat,
+} from "@/components/ui/color-picker";
 
-type OpenPopover = "author" | "source" | null;
+function rgbaToHex(rgba: number[]): string {
+  const [r, g, b] = rgba as [number, number, number, number];
+  return `#${[r, g, b].map((c) => Math.round(c).toString(16).padStart(2, "0")).join("")}`;
+}
+
+type OpenPopover = "color" | "author" | "source" | null;
 
 // Same Han-ideograph + CJK-punctuation/fullwidth-forms test as
 // tiptap-to-typst.ts's CJK_PATTERN — kept as a separate literal (not a
@@ -48,6 +61,7 @@ export function BlockquoteNodeView({ node, updateAttributes, deleteNode }: NodeV
   const tBlock = useTranslations("editor.block");
   const author = typeof node.attrs.author === "string" ? node.attrs.author : "";
   const source = typeof node.attrs.source === "string" ? node.attrs.source : "";
+  const color = typeof node.attrs.color === "string" ? node.attrs.color : null;
   const hasAttribution = Boolean(author || source);
   // Controlled, mutually exclusive: two independent uncontrolled Popovers
   // don't close each other, so clicking the second icon while the first
@@ -55,8 +69,20 @@ export function BlockquoteNodeView({ node, updateAttributes, deleteNode }: NodeV
   // confirmed via a real reported screenshot, not just reasoned about.
   const [openPopover, setOpenPopover] = useState<OpenPopover>(null);
 
+  function setColor(hex: string | null) {
+    updateAttributes({ color: hex });
+  }
+
   return (
-    <NodeViewWrapper as="blockquote" className="group relative">
+    <NodeViewWrapper
+      as="blockquote"
+      className="group relative"
+      // Only overrides border-left-color (the .ProseMirror blockquote CSS
+      // rule's own border-left/padding/color stay as-is) — undefined when no
+      // custom color is set, so the default var(--border) gray keeps coming
+      // from the stylesheet rather than being duplicated here.
+      style={color ? ({ borderLeftColor: color } as CSSProperties) : undefined}
+    >
       <div
         className="absolute top-1 right-1 hidden group-hover:flex"
         contentEditable={false}
@@ -82,6 +108,49 @@ export function BlockquoteNodeView({ node, updateAttributes, deleteNode }: NodeV
         </p>
       ) : null}
       <div className="mt-1 flex items-center justify-end gap-1" contentEditable={false}>
+        <Popover
+          onOpenChange={(open) => setOpenPopover(open ? "color" : null)}
+          open={openPopover === "color"}
+        >
+          <PopoverTrigger asChild>
+            <button
+              aria-label={t("color")}
+              className="flex size-6 items-center justify-center rounded transition-colors hover:bg-accent"
+              onMouseDown={(event) => event.stopPropagation()}
+              title={t("color")}
+              type="button"
+            >
+              <span
+                className="size-3.5 rounded-full border"
+                style={{ backgroundColor: color ?? "var(--border)" }}
+              />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 rounded-2xl" onMouseDown={(event) => event.stopPropagation()}>
+            <ColorPicker
+              className="gap-3"
+              onChange={(rgba) => setColor(rgbaToHex(rgba as number[]))}
+              value={color ?? "#d4d4d4"}
+            >
+              <ColorPickerSelection className="h-32" />
+              <ColorPickerHue />
+              <div className="flex items-center gap-2">
+                <ColorPickerEyeDropper />
+                <ColorPickerOutput />
+              </div>
+              <ColorPickerFormat />
+            </ColorPicker>
+            {color ? (
+              <button
+                className="mt-2 text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => setColor(null)}
+                type="button"
+              >
+                {t("resetColor")}
+              </button>
+            ) : null}
+          </PopoverContent>
+        </Popover>
         <Popover
           onOpenChange={(open) => setOpenPopover(open ? "author" : null)}
           open={openPopover === "author"}

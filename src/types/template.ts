@@ -72,4 +72,7 @@ export type AnvilTemplate = {
   // layout container, actually fail to render).
   supportsNumberedHeadings: boolean;
   supportsCustomMargins: boolean;
+  // Same mirroring reasoning as the two flags above, for the page-size
+  // (A4/B4/B5/Letter) override.
+  supportsPageSize: boolean;
 };

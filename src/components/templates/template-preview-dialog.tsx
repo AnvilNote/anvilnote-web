@@ -46,7 +46,6 @@ export function TemplatePreviewDialog({
   const t = useTranslations("templates");
   const locale = useLocale() as AppLocale;
   const staticPreview = getTemplatePreview(template, locale);
-  const exportPageSize = useSettingsStore((s) => s.exportPageSize);
   const exportFontPreset = useSettingsStore((s) => s.exportFontPreset);
 
   const [livePdfUrl, setLivePdfUrl] = useState<string | null>(null);
@@ -58,7 +57,9 @@ export function TemplatePreviewDialog({
     setLiveState("loading");
     setLivePdfUrl(null);
     renderDocumentPreview(document, template.id, {
-      pageSize: exportPageSize,
+      // pageSize isn't passed here -- buildExportPayload (src/lib/export.ts)
+      // backfills it from the document's own override, else the Settings
+      // > Export default, same as watermark/list-marker levels.
       fontPreset: exportFontPreset,
       includeMetadata: true,
     })
@@ -77,7 +78,7 @@ export function TemplatePreviewDialog({
     return () => {
       active = false;
     };
-  }, [open, document, template.id, exportPageSize, exportFontPreset]);
+  }, [open, document, template.id, exportFontPreset]);
 
   const pdfUrl = document ? livePdfUrl : staticPreview.pdfUrl;
 

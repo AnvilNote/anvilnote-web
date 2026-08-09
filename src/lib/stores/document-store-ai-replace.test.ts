@@ -27,6 +27,7 @@ const original: AnvilDocument = {
   marginBottomCm: 2,
   marginLeftCm: 2,
   marginRightCm: 2,
+  pageSize: null,
   projectId: "project-1",
   createdAt: "2026-07-19T00:00:00.000Z",
   updatedAt: "2026-07-19T00:00:00.000Z",
@@ -181,6 +182,7 @@ describe("AI insertion snapshots", () => {
       marginBottomCm: original.marginBottomCm,
       marginLeftCm: original.marginLeftCm,
       marginRightCm: original.marginRightCm,
+      pageSize: original.pageSize,
     });
     expect(api.createDocumentVersion).toHaveBeenCalledWith("doc-1");
     expect(api.updateDocument.mock.invocationCallOrder[0]).toBeLessThan(

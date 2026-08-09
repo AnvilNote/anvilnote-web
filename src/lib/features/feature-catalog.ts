@@ -55,7 +55,9 @@ function settingsFeature(
     | "export"
     | "colorPalettes"
     | "backup"
-    | "update",
+    | "update"
+    | "watermark"
+    | "changelog",
   availability: FeatureAvailability = "global",
   keywordKey?: string,
 ): FeatureDefinition {
@@ -405,6 +407,14 @@ export const FEATURE_CATALOG: FeatureDefinition[] = [
     "featureFinder.keywords.palette",
   ),
   settingsFeature(
+    "settings.watermark",
+    "settings.watermark.title",
+    "settings.watermark.description",
+    "watermark",
+    "global",
+    "featureFinder.keywords.watermark",
+  ),
+  settingsFeature(
     "settings.backup",
     "settings.backup.title",
     "settings.backup.description",
@@ -419,6 +429,14 @@ export const FEATURE_CATALOG: FeatureDefinition[] = [
     "update",
     "desktop",
     "featureFinder.keywords.update",
+  ),
+  settingsFeature(
+    "settings.changelog",
+    "settings.changelog.title",
+    "settings.changelog.description",
+    "changelog",
+    "global",
+    "featureFinder.keywords.changelog",
   ),
   {
     id: "help.tour",

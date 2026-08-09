@@ -63,15 +63,18 @@ export function ExportPanel({ documentId }: { documentId: string }) {
   async function handleExportPdf() {
     if (!doc) return;
     // Reveal the renderer payload (Tiptap JSON + LaTeX math) and render to PDF.
+    // watermark and pageSize (like orderedListLevels/unorderedListLevels)
+    // aren't passed here -- buildExportPayload (src/lib/export.ts) backfills
+    // them (pageSize: the document's own override, else the settings store
+    // default) on its own, so this call site (and every other one) doesn't
+    // need to remember to.
     setPayload(
       buildExportPayload(doc, {
-        pageSize: settings.exportPageSize,
         fontPreset: settings.exportFontPreset,
         includeMetadata: true,
       }),
     );
     const result = await renderDocument(doc.id, {
-      pageSize: settings.exportPageSize,
       fontPreset: settings.exportFontPreset,
       includeMetadata: true,
     });

@@ -80,6 +80,20 @@ export const AnvilCallout = Node.create({
         renderHTML: (attributes) =>
           attributes.customBackground ? { "data-custom-background": attributes.customBackground } : {},
       },
+      // Only meaningful when kind === CUSTOM_CALLOUT_KIND -- the accent for
+      // the "自訂"/Custom kind entry, which (unlike the 12 fixed presets) has
+      // no preset accent of its own. background/darkBackground for that kind
+      // are computed FROM this at read time (config/callouts.ts's
+      // computeCustomPalette), not stored separately, so this one attr alone
+      // drives the whole custom palette -- customBackground above still
+      // layers on top as a further per-instance override, same as it does
+      // for every other kind.
+      customAccent: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("data-custom-accent") || null,
+        renderHTML: (attributes) =>
+          attributes.customAccent ? { "data-custom-accent": attributes.customAccent } : {},
+      },
     };
   },
 

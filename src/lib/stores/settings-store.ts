@@ -34,6 +34,55 @@ const DEFAULT_ORDERED_LIST_LEVELS: OrderedModuleId[] = [
 ];
 const DEFAULT_UNORDERED_LIST_LEVELS: UnorderedSymbol[] = ["•", "◦", "▪", "–", "■"];
 
+export type WatermarkType = "image" | "text";
+export type WatermarkFontFamily = "serif" | "sans" | "rounded";
+
+// Grouped as one object (unlike most of this store's other settings, which
+// are flat top-level fields) since these always travel together as a unit —
+// threaded straight through into ExportOptions.watermark (src/types/export.ts)
+// at export time, and it's easier to keep one object in sync across that
+// boundary than seven separately-named fields.
+export type WatermarkSettings = {
+  enabled: boolean;
+  type: WatermarkType;
+  // A cropped upload, stored as a base64 data URL -- same "no upload
+  // backend, store inline" convention as document images (see
+  // lib/tiptap/image.ts's own comment on why). null means "use the built-in
+  // AnvilNote icon" (image.ts's own default asset, not stored here).
+  image: string | null;
+  text: string;
+  // Only meaningful for type: "text" -- an image watermark has no font.
+  fontFamily: WatermarkFontFamily;
+  // Applies to both types -- percent of the renderer's baseline size
+  // (image: 12cm width, text: 64pt), 100 = baseline, 200 = 2x, etc.
+  sizePercent: number;
+  rotationDeg: number;
+  opacityPercent: number;
+  // Only actually consulted while cropping a freshly-picked image
+  // (react-image-crop's own aspect prop) -- persisted purely as a
+  // remembered UI preference so reopening the cropper doesn't reset it.
+  aspectLocked: boolean;
+  // Page 1 (the document's title/date/author block, then body content
+  // flowing right after it on the same page -- this app has no separate
+  // cover-page concept) is common enough to want watermark-free (a title
+  // page often gets printed/shared on its own) that it's a dedicated
+  // toggle, not just "on everywhere".
+  applyToFirstPage: boolean;
+};
+
+const DEFAULT_WATERMARK: WatermarkSettings = {
+  enabled: false,
+  type: "image",
+  image: null,
+  text: "",
+  fontFamily: "sans",
+  sizePercent: 100,
+  rotationDeg: -45,
+  opacityPercent: 15,
+  aspectLocked: true,
+  applyToFirstPage: true,
+};
+
 type SettingsState = {
   autosave: boolean;
   spellcheck: boolean;
@@ -76,6 +125,7 @@ type SettingsState = {
   // exported PDF matches what's shown on screen.
   orderedListLevels: OrderedModuleId[];
   unorderedListLevels: UnorderedSymbol[];
+  watermark: WatermarkSettings;
   setAutosave: (v: boolean) => void;
   setSpellcheck: (v: boolean) => void;
   setExportPageSize: (v: ExportPageSize) => void;
@@ -98,6 +148,7 @@ type SettingsState = {
   removeUnorderedListLevel: (index: number) => void;
   resetOrderedListLevels: () => void;
   resetUnorderedListLevels: () => void;
+  setWatermark: (v: Partial<WatermarkSettings>) => void;
   resetAllSettings: () => void;
 };
 
@@ -129,6 +180,7 @@ const DEFAULT_SETTINGS: Omit<
   | "removeUnorderedListLevel"
   | "resetOrderedListLevels"
   | "resetUnorderedListLevels"
+  | "setWatermark"
   | "resetAllSettings"
 > = {
   autosave: true,
@@ -148,6 +200,7 @@ const DEFAULT_SETTINGS: Omit<
   aiWritingStyle: "auto",
   orderedListLevels: DEFAULT_ORDERED_LIST_LEVELS,
   unorderedListLevels: DEFAULT_UNORDERED_LIST_LEVELS,
+  watermark: DEFAULT_WATERMARK,
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -198,6 +251,7 @@ export const useSettingsStore = create<SettingsState>()(
         set({ orderedListLevels: DEFAULT_ORDERED_LIST_LEVELS }),
       resetUnorderedListLevels: () =>
         set({ unorderedListLevels: DEFAULT_UNORDERED_LIST_LEVELS }),
+      setWatermark: (v) => set((state) => ({ watermark: { ...state.watermark, ...v } })),
       resetAllSettings: () => set({ ...DEFAULT_SETTINGS }),
     }),
     {
