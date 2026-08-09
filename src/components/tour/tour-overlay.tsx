@@ -81,7 +81,7 @@ const TOOLBAR_GROUPS: ToolbarItem[][] = [
     { icon: MessageSquareWarning, key: "callout" },
     { icon: MessageCircleQuestion, key: "questionBlock" },
     { icon: Workflow, key: "mermaid" },
-    { icon: BarChart3, key: "statsChart" },
+    { icon: BarChart3, key: "chart" },
     { icon: Code2, key: "codeBlock" },
     { icon: TableIcon, key: "table" },
     { icon: ImagePlus, key: "image" },

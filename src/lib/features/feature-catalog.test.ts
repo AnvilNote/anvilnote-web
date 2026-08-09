@@ -57,8 +57,8 @@ describe("FEATURE_CATALOG", () => {
     );
     expect(searchFeatures(resolved, "備份")[0]?.id).toBe("settings.backup");
     expect(searchFeatures(resolved, "教學")[0]?.id).toBe("help.tour");
-    expect(searchFeatures(resolved, "統計圖")[0]?.id).toBe(
-      "editor.statsChart",
+    expect(searchFeatures(resolved, "圖表")[0]?.id).toBe(
+      "editor.chart",
     );
     expect(searchFeatures(resolved, "眼睛")[0]?.id).toBe(
       "panel.templatePreview",

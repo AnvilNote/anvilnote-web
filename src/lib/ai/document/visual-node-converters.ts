@@ -1,142 +1,59 @@
 import type { JSONContent } from "@tiptap/core";
-import { AiSnapshotConversionError } from "./ai-snapshot-errors";
 import type { SnapshotConversionContext, TiptapConversionContext } from "./core-node-converters";
 
 // Tiptap JSON <-> AI document v2 mapping for the "visual" node family
-// (mermaid, functionPlot, statsChart) — all atom nodes whose real
-// content lives entirely in attrs, re-rendered client-side.
+// (mermaid, functionPlot, chart) — all atom nodes whose real content lives
+// entirely in attrs, re-rendered client-side.
 //
-// `svg` caching, verified by reading the real extensions directly:
+// `svg`/cached-render caching, verified by reading the real extensions
+// directly:
 //   - mermaid.ts's AnvilMermaid declares NO `svg` attr at all — it
 //     re-renders from `source` via the `mermaid` package on every mount
 //     (see mermaid-node-view.tsx's own local `useState<string | null>`,
-//     never persisted onto the node). The plan text driving this task
-//     claimed all three visual nodes need an `svg` attr stripped; that is
-//     only true for functionPlot/statsChart — mermaid has nothing to
-//     strip. Documented here as a correction, not silently "fixed".
-//   - function-plot.ts's AnvilFunctionPlot and stats-chart.ts's
-//     AnvilStatsChart both DO declare a real `svg` attr (a rendered-output
-//     cache, `default: null`, populated by their own NodeViews after
-//     rendering) — never forwarded to the AI, and never reconstructed
-//     here on the way back (see function-plot-node-view.tsx/
-//     stats-chart-node-view.tsx: both recompute their SVG from the
-//     semantic attrs on mount/update whenever the cached `svg` is missing
-//     or stale, so simply omitting/nulling it here is sufficient — no
-//     extra trigger needed).
+//     never persisted onto the node).
+//   - function-plot.ts's AnvilFunctionPlot declares a real `svg` attr (a
+//     rendered-output cache, `default: null`) — never forwarded to the AI,
+//     never reconstructed here on the way back; function-plot-node-view.tsx
+//     recomputes it from the semantic attrs whenever missing/stale.
+//   - chart.ts's AnvilChart caches TWO rendered outputs (`plotlyJson`,
+//     `staticImage`) instead of one `svg` — same rationale, same handling:
+//     stripped going out, nulled coming back, forcing chart-node-view.tsx to
+//     treat the node as unrendered until its own dialog/render effect
+//     repopulates them. The actual chart semantics (chartType + the API
+//     request body minus chart/format) live in the `spec` attr as a JSON
+//     STRING (see chart.ts's own comment on why one blob, not one
+//     ProseMirror attribute per field, across 23 chart types) — parsed to a
+//     nested object here so the AI reads/writes structured JSON, not an
+//     opaque string.
 function attrsOf(node: JSONContent): Record<string, unknown> {
   return node.attrs ?? {};
 }
 
-const STATS_CHART_AXIS_LABEL_TYPES = new Set([
-  "bar",
-  "column",
-  "stackedBar",
-  "stackedColumn",
-  "line",
-  "scatter",
-]);
-
-function statsChartAttrsToSnapshot(values: Record<string, unknown>): Record<string, unknown> {
-  const chartType = values.chartType;
-  const caption = typeof values.caption === "string" && values.caption.length > 0 ? values.caption : undefined;
-  const sizeAndCaption = {
-    ...(typeof values.width === "number" ? { width: values.width } : {}),
-    ...(typeof values.height === "number" ? { height: values.height } : {}),
-    ...(caption !== undefined ? { caption } : {}),
-  };
-  const fontFamily = typeof values.fontFamily === "string" ? values.fontFamily : "sans";
-  const axisLabels = STATS_CHART_AXIS_LABEL_TYPES.has(String(chartType))
-    ? {
-        xLabel: typeof values.xLabel === "string" ? values.xLabel : "",
-        yLabel: typeof values.yLabel === "string" ? values.yLabel : "",
-        yLabelRotated: Boolean(values.yLabelRotated ?? true),
-      }
-    : {};
-
-  switch (chartType) {
-    case "bar":
-    case "column":
-      return {
-        chartType,
-        data: values.data,
-        showValues: Boolean(values.showValues),
-        showGridLines: Boolean(values.showGridLines),
-        showBorder: Boolean(values.showBorder),
-        fontFamily,
-        ...axisLabels,
-        ...sizeAndCaption,
-      };
-    case "stackedBar":
-    case "stackedColumn":
-      return {
-        chartType,
-        data: values.data,
-        seriesLabels: Array.isArray(values.seriesLabels) ? values.seriesLabels : [],
-        ...(Array.isArray(values.seriesColors) ? { seriesColors: values.seriesColors } : {}),
-        showLegend: Boolean(values.showLegend),
-        showGridLines: Boolean(values.showGridLines),
-        showBorder: Boolean(values.showBorder),
-        fontFamily,
-        ...axisLabels,
-        ...sizeAndCaption,
-      };
-    case "line":
-      return { chartType, data: values.data, fontFamily, ...axisLabels, ...sizeAndCaption };
-    case "scatter":
-      return {
-        chartType,
-        data: values.data,
-        fontFamily,
-        trendLine: typeof values.trendLine === "string" ? values.trendLine : "none",
-        trendLineColor: typeof values.trendLineColor === "string" ? values.trendLineColor : "#E3120B",
-        showGridLines: Boolean(values.showGridLines),
-        ...axisLabels,
-        ...sizeAndCaption,
-      };
-    case "pie":
-      return {
-        chartType,
-        data: values.data,
-        showLegend: Boolean(values.showLegend),
-        showPercentage: typeof values.showPercentage === "string" ? values.showPercentage : "none",
-        fontFamily,
-        ...sizeAndCaption,
-      };
-    case "boxwhisker":
-      return { chartType, data: values.data, fontFamily, ...sizeAndCaption };
-    default:
-      throw new AiSnapshotConversionError(`Unknown statsChart chartType: ${String(chartType)}`);
+function parseSpec(raw: unknown): Record<string, unknown> {
+  if (typeof raw !== "string") return {};
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : {};
+  } catch {
+    return {};
   }
 }
 
-function statsChartAttrsFromSnapshot(values: Record<string, unknown>): Record<string, unknown> {
-  const chartType = values.chartType;
-  const hasAxisLabels = STATS_CHART_AXIS_LABEL_TYPES.has(String(chartType));
-  const isStacked = chartType === "stackedBar" || chartType === "stackedColumn";
-  const isBarColumn = chartType === "bar" || chartType === "column";
-  const isPie = chartType === "pie";
-  const isScatter = chartType === "scatter";
-
+function chartAttrsToSnapshot(values: Record<string, unknown>): Record<string, unknown> {
   return {
-    chartType,
-    data: values.data,
-    seriesLabels: isStacked && Array.isArray(values.seriesLabels) ? values.seriesLabels : [],
-    ...(isStacked && Array.isArray(values.seriesColors) ? { seriesColors: values.seriesColors } : {}),
-    showLegend: isStacked || isPie ? Boolean(values.showLegend) : true,
-    showValues: isBarColumn ? Boolean(values.showValues) : false,
-    showPercentage: isPie && typeof values.showPercentage === "string" ? values.showPercentage : "none",
-    showGridLines: isBarColumn || isStacked || isScatter ? Boolean(values.showGridLines) : true,
-    showBorder: isBarColumn || isStacked ? Boolean(values.showBorder) : true,
-    ...(typeof values.width === "number" ? { width: values.width } : {}),
-    ...(typeof values.height === "number" ? { height: values.height } : {}),
-    xLabel: hasAxisLabels && typeof values.xLabel === "string" ? values.xLabel : "",
-    yLabel: hasAxisLabels && typeof values.yLabel === "string" ? values.yLabel : "",
-    yLabelRotated: hasAxisLabels ? Boolean(values.yLabelRotated ?? true) : true,
-    trendLine: isScatter && typeof values.trendLine === "string" ? values.trendLine : "none",
-    trendLineColor:
-      isScatter && typeof values.trendLineColor === "string" ? values.trendLineColor : "#E3120B",
-    fontFamily: typeof values.fontFamily === "string" ? values.fontFamily : "sans",
-    svg: null,
+    chartType: values.chartType,
+    spec: parseSpec(values.spec),
+    caption: typeof values.caption === "string" && values.caption.length > 0 ? values.caption : undefined,
+  };
+}
+
+function chartAttrsFromSnapshot(values: Record<string, unknown>): Record<string, unknown> {
+  const spec = values.spec && typeof values.spec === "object" ? (values.spec as Record<string, unknown>) : {};
+  return {
+    chartType: typeof values.chartType === "string" ? values.chartType : "scatter",
+    spec: JSON.stringify(spec),
+    plotlyJson: null,
+    staticImage: null,
     caption: typeof values.caption === "string" ? values.caption : "",
   };
 }
@@ -187,8 +104,8 @@ export function visualBlockToSnapshot(
         },
       };
     }
-    case "statsChart":
-      return { type: "statsChart", attrs: statsChartAttrsToSnapshot(values) };
+    case "chart":
+      return { type: "chart", attrs: chartAttrsToSnapshot(values) };
     default:
       return undefined;
   }
@@ -225,8 +142,8 @@ export function visualBlockFromSnapshot(
           svg: null,
         },
       };
-    case "statsChart":
-      return { type: "statsChart", attrs: statsChartAttrsFromSnapshot(values) };
+    case "chart":
+      return { type: "chart", attrs: chartAttrsFromSnapshot(values) };
     default:
       return undefined;
   }

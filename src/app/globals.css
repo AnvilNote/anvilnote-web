@@ -339,17 +339,17 @@
    .anvil-image, a chart has no data-align attribute of its own (no left/
    right variant), so its caption is unconditionally centered here rather
    than relying on the `.anvil-image[data-align="center"] .anvil-image__
-   caption` selector, which wouldn't ever match a `.anvil-stats-chart`
+   caption` selector, which wouldn't ever match a `.anvil-chart`
    ancestor. */
-.anvil-stats-chart {
+.anvil-chart {
   counter-increment: anvil-figure;
 }
 
-.anvil-stats-chart .anvil-image__caption {
+.anvil-chart .anvil-image__caption {
   /* Unlike .anvil-image's own figcaption (a child of a width-constrained
      image frame, whose caption naturally spans that same narrower
      width and is recentered via data-align + justify-content),
-     .anvil-stats-chart's figcaption is a direct sibling of the chart box
+     .anvil-chart's figcaption is a direct sibling of the chart box
      with no data-align concept of its own — `justify-content: center`
      alone has no visible effect on a flex container that's already
      shrunk to its own content width. Using width: fit-content +

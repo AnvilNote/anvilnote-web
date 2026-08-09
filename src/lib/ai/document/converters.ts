@@ -21,7 +21,7 @@ const BLOCKED_NODES = new Set([
   "imageRow",
   "mermaid",
   "functionPlot",
-  "statsChart",
+  "chart",
   "inlineBlank",
   "questionBlank",
   "taskList",

@@ -11,7 +11,7 @@ import {
 } from "@/lib/export/anvilnote-format";
 
 // A document whose content includes node types Markdown export cannot
-// round-trip (statsChart, mermaid, question) — this is exactly what
+// round-trip (chart, mermaid, question) — this is exactly what
 // .anvilnote/JSON export exists to preserve losslessly.
 function makeDoc(overrides: Partial<AnvilDocument> = {}): AnvilDocument {
   return {
@@ -21,8 +21,8 @@ function makeDoc(overrides: Partial<AnvilDocument> = {}): AnvilDocument {
       type: "doc",
       content: [
         {
-          type: "statsChart",
-          attrs: { chartType: "bar", categoricalData: [{ label: "A", value: 1 }] },
+          type: "chart",
+          attrs: { chartType: "bar", spec: JSON.stringify({ data: [{ category: "A", value: 1 }] }) },
         },
         { type: "mermaid", attrs: { source: "graph TD; A-->B;" } },
         { type: "question", attrs: { prompt: "2+2=?", answer: "4" } },

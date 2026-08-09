@@ -187,7 +187,7 @@ describe("buildOperationPreview", () => {
     expect(updateCard.after?.content?.[0]).toMatchObject({ type: "heading", attrs: { level: 3 } });
   });
 
-  it("renders mermaid/functionPlot/statsChart previews from real semantic attrs, never a provider-supplied svg", () => {
+  it("renders mermaid/functionPlot previews from real semantic attrs, never a provider-supplied svg", () => {
     const liveDocument: JSONContent = {
       type: "doc",
       content: [

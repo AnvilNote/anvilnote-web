@@ -212,9 +212,9 @@ export const FEATURE_CATALOG: FeatureDefinition[] = [
     "tour.itemHints.mermaid",
   ),
   toolbarFeature(
-    "editor.statsChart",
-    "editor.toolbar.statsChart",
-    "tour.itemHints.statsChart",
+    "editor.chart",
+    "editor.toolbar.chart",
+    "tour.itemHints.chart",
     undefined,
     "featureFinder.keywords.chart",
   ),

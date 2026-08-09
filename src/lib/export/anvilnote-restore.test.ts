@@ -15,7 +15,7 @@ function makeDoc(overrides: Partial<AnvilDocument> = {}): AnvilDocument {
     content: {
       type: "doc",
       content: [
-        { type: "statsChart", attrs: { chartType: "pie", categoricalData: [] } },
+        { type: "chart", attrs: { chartType: "bar", spec: "{}" } },
         { type: "question", attrs: { prompt: "?", answer: "!" } },
       ],
     },
