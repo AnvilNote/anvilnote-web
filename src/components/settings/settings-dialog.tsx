@@ -8,6 +8,7 @@ import {
   DatabaseBackup,
   Download,
   Droplets,
+  ExternalLink,
   FileText,
   History,
   ListOrdered,
@@ -68,6 +69,8 @@ import {
   useSettingsDialogStore,
   type SettingsCategoryId,
 } from "@/lib/stores/ui-store";
+
+const KOFI_URL = "https://ko-fi.com/anvilnote";
 
 // Each category's nav icon; title/description/content are resolved inside
 // the component since most need hooks (translations, store state).
@@ -155,7 +158,10 @@ export function SettingsDialog() {
     { categoryId: "backup", rowId: "backup-all", label: t("settings.backup.allDocuments") },
     { categoryId: "backup", rowId: "backup-import", label: t("settings.backup.import") },
     ...(isDesktop
-      ? [{ categoryId: "update" as const, rowId: "update-version", label: t("settings.update.title") }]
+      ? [
+          { categoryId: "update" as const, rowId: "update-version", label: t("settings.update.title") },
+          { categoryId: "update" as const, rowId: "update-support", label: t("settings.support.title") },
+        ]
       : []),
     { categoryId: "changelog", rowId: "changelog-list", label: t("settings.changelog.title") },
   ];
@@ -519,48 +525,63 @@ export function SettingsDialog() {
       title: t("settings.update.title"),
       description: t("settings.update.description"),
       content: (
-        <SettingsRow
-          id="update-version"
-          highlighted={highlightedRowId === "update-version"}
-          label={t("settings.update.currentVersion", { version })}
-          hint={
-            desktopUpdatePhase === "checking"
-              ? t("settings.update.checking")
-              : desktopUpdatePhase === "downloading"
-                ? t("settings.update.downloading", { percent: desktopUpdatePercent })
-                : desktopUpdatePhase === "downloaded"
-                  ? t("settings.update.downloaded")
-                  : desktopUpdatePhase === "error"
-                    ? t("settings.update.updateError")
-                    : hasUpdate
-                      ? t("settings.update.available")
-                      : t("settings.update.upToDate")
-          }
-          control={
-            desktopUpdatePhase === "downloaded" ? (
-              <Button size="sm" onClick={() => void installDesktopUpdate()}>
-                {t("settings.update.restartToInstall")}
-              </Button>
-            ) : desktopUpdatePhase === "available" ? (
-              <Button size="sm" onClick={() => void downloadDesktopUpdate()}>
-                {t("settings.update.download")}
-              </Button>
-            ) : desktopUpdatePhase === "downloading" ? (
-              <Button size="sm" disabled className="gap-1.5">
-                <Loader2 className="size-4 animate-spin" />
-                {t("settings.update.download")}
-              </Button>
-            ) : desktopUpdatePhase === "error" || (hasUpdate && desktopUpdatePhase === "idle") ? (
-              <Button asChild size="sm" variant={desktopUpdatePhase === "error" ? "outline" : "default"}>
-                <a href={LATEST_RELEASE_PAGE_URL} target="_blank" rel="noopener noreferrer">
-                  {desktopUpdatePhase === "error"
-                    ? t("settings.update.manualDownload")
-                    : t("settings.update.download")}
+        <>
+          <SettingsRow
+            id="update-version"
+            highlighted={highlightedRowId === "update-version"}
+            label={t("settings.update.currentVersion", { version })}
+            hint={
+              desktopUpdatePhase === "checking"
+                ? t("settings.update.checking")
+                : desktopUpdatePhase === "downloading"
+                  ? t("settings.update.downloading", { percent: desktopUpdatePercent })
+                  : desktopUpdatePhase === "downloaded"
+                    ? t("settings.update.downloaded")
+                    : desktopUpdatePhase === "error"
+                      ? t("settings.update.updateError")
+                      : hasUpdate
+                        ? t("settings.update.available")
+                        : t("settings.update.upToDate")
+            }
+            control={
+              desktopUpdatePhase === "downloaded" ? (
+                <Button size="sm" onClick={() => void installDesktopUpdate()}>
+                  {t("settings.update.restartToInstall")}
+                </Button>
+              ) : desktopUpdatePhase === "available" ? (
+                <Button size="sm" onClick={() => void downloadDesktopUpdate()}>
+                  {t("settings.update.download")}
+                </Button>
+              ) : desktopUpdatePhase === "downloading" ? (
+                <Button size="sm" disabled className="gap-1.5">
+                  <Loader2 className="size-4 animate-spin" />
+                  {t("settings.update.download")}
+                </Button>
+              ) : desktopUpdatePhase === "error" || (hasUpdate && desktopUpdatePhase === "idle") ? (
+                <Button asChild size="sm" variant={desktopUpdatePhase === "error" ? "outline" : "default"}>
+                  <a href={LATEST_RELEASE_PAGE_URL} target="_blank" rel="noopener noreferrer">
+                    {desktopUpdatePhase === "error"
+                      ? t("settings.update.manualDownload")
+                      : t("settings.update.download")}
+                  </a>
+                </Button>
+              ) : null
+            }
+          />
+          <SettingsRow
+            id="update-support"
+            highlighted={highlightedRowId === "update-support"}
+            label={t("settings.support.title")}
+            hint={t("settings.support.hint")}
+            control={
+              <Button asChild variant="ghost" size="icon-sm" aria-label={t("settings.support.title")}>
+                <a href={KOFI_URL} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="size-4" />
                 </a>
               </Button>
-            ) : null
-          }
-        />
+            }
+          />
+        </>
       ),
     },
     {

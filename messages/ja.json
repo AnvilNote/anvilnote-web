@@ -1122,6 +1122,10 @@
       "upToDate": "最新バージョンです。",
       "download": "ダウンロード"
     },
+    "support": {
+      "title": "AnvilNote を応援する",
+      "hint": "AnvilNote の継続的な開発を応援できます。"
+    },
     "changelog": {
       "title": "更新履歴",
       "description": "各バージョンの新機能と修正内容を確認できます。"

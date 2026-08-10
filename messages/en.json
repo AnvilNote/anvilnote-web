@@ -1373,6 +1373,10 @@
       "upToDate": "You're on the latest version.",
       "download": "Download"
     },
+    "support": {
+      "title": "Support AnvilNote",
+      "hint": "Support the continued development of AnvilNote."
+    },
     "changelog": {
       "title": "Changelog",
       "description": "See what's new and fixed in each version."

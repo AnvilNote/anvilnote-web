@@ -1373,6 +1373,10 @@
       "upToDate": "目前已是最新版本。",
       "download": "下載"
     },
+    "support": {
+      "title": "支持 AnvilNote",
+      "hint": "覺得 AnvilNote 還不錯嗎？可以請我們團隊喝杯咖啡，讓我們慢慢把它做好。"
+    },
     "changelog": {
       "title": "更新日誌",
       "description": "查看每個版本新增與修正的內容。"
