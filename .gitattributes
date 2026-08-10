@@ -1,0 +1,4 @@
+# Force LF regardless of platform/core.autocrlf. Windows CI checkout
+# previously converted src/content/changelog/*.md to CRLF, which broke
+# parseChangelogMarkdown's $-anchored regexes (see parse.ts).
+* text=auto eol=lf

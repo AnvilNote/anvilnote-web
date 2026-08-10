@@ -58,4 +58,16 @@ describe("parseChangelogMarkdown", () => {
       { version: "0.0.1", date: "2026-01-01", bullets: [] },
     ]);
   });
+
+  test("parses correctly with CRLF line endings (e.g. Windows CI checkout)", () => {
+    const raw = "## 0.1.21\r\n2026-08-10\r\n- **Watermarks**: add a watermark\r\n- Page size\r\n";
+    const entries = parseChangelogMarkdown(raw);
+    expect(entries).toEqual([
+      {
+        version: "0.1.21",
+        date: "2026-08-10",
+        bullets: ["**Watermarks**: add a watermark", "Page size"],
+      },
+    ]);
+  });
 });

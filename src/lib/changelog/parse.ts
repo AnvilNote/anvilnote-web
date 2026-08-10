@@ -24,7 +24,12 @@ export function parseChangelogMarkdown(raw: string): ChangelogEntry[] {
   const entries: ChangelogEntry[] = [];
   let current: ChangelogEntry | null = null;
 
-  for (const line of raw.split("\n")) {
+  // A trailing \r (CRLF source, e.g. Windows CI checkout without a
+  // .gitattributes eol=lf pin) makes every `$`-anchored regex below fail to
+  // match at all -- `.` doesn't consume \r, so `$` never reaches the true
+  // end of the line -- silently producing zero entries. Normalize up front
+  // so parsing is line-ending-agnostic regardless of source.
+  for (const line of raw.replace(/\r\n/g, "\n").split("\n")) {
     const versionMatch = /^##\s+(.+)$/.exec(line);
     if (versionMatch) {
       if (current) entries.push(current);
